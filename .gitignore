@@ -1,0 +1,20 @@
+# Dart & Flutter
+.dart_tool/
+.packages
+.pub/
+build/
+flutter_*.png
+
+# IDE related files (optional)
+.idea/
+.vscode/
+
+# Miscellaneous
+*.log
+*.lock
+*.pyc
+*.tmp
+*.bak
+*.swp
+*.DS_Store
+*.iml
