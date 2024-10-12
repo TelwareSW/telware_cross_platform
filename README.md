@@ -2,6 +2,14 @@
 
 A new Flutter project.
 
+---
+
+## :bar_chart: Project Flow
+
+For a detailed overview of our project's branching strategy, commit conventions, and overall workflow, please refer to the [PROJECT_FLOW.md](./docs/PROJECT_FLOW.md) document.
+
+---
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
