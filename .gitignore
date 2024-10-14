@@ -18,3 +18,4 @@ flutter_*.png
 *.swp
 *.DS_Store
 *.iml
+.flutter-plugins*
