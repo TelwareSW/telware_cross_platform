@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const TalWare());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class TalWare extends StatelessWidget {
+  const TalWare({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'TalWare',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
