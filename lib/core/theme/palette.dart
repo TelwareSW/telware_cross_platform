@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
-class Palette{
-   static const Color background = Color(0x001d2733);
-   static const Color primary = Color(0x005FA3DE);
-   static const Color accent = Color(0x006EB2EF);
-   static const Color primaryText = Color(0x00FFFFFF);
-   static const Color subtitleText = Color(0x007D8B99);
+class Palette {
+  static const Color background = Color.fromRGBO(29, 39, 51, 1);
+  static const Color primary = Color.fromRGBO(95, 163, 222, 1);
+  static const Color accent = Color.fromRGBO(110, 178, 239, 1);
+  static const Color primaryText = Color.fromRGBO(255, 255, 255, 1);
+  static const Color accentText = Color.fromRGBO(125, 139, 153, 1);
+  static const Color icons = Colors.white;
 }
