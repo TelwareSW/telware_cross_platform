@@ -16,7 +16,7 @@ class TelWare extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'TalWare',
+      title: 'TelWare',
       theme: authTheme,
       routes: {
         SignUpScreen.route: (context) => const SignUpScreen(),
