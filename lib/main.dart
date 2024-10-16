@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
+import 'core/theme/auth_theme.dart';
+import 'features/auth/view/screens/user_profile_screen.dart';
 
 void main() {
-  runApp(const TalWare());
+  runApp(const TelWare());
 }
 
-class TalWare extends StatelessWidget {
-  const TalWare({super.key});
+class TelWare extends StatelessWidget {
+  const TelWare({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'TalWare',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const Placeholder(),
+      title: 'TelWare',
+      theme: authTheme,
+      routes: {
+        UserProfileScreen.route: (context) => const UserProfileScreen(),
+      },
+      initialRoute: UserProfileScreen.route,
     );
   }
 }
