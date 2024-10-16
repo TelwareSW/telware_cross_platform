@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_input_field.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
+import 'package:telware_cross_platform/features/auth/view/widget/circular_button.dart';
+import 'package:telware_cross_platform/core/theme/dimensions.dart';
+import 'package:telware_cross_platform/core/theme/sizes.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
   static const String route = '/sign-up';
@@ -48,6 +51,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     super.dispose();
   }
 
+  bool isKeyboardOpen(BuildContext context) {
+    return MediaQuery.of(context).viewInsets.bottom != 0;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,85 +62,81 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       body: Padding(
         padding: const EdgeInsets.only(top: 40),
         child: Form(
-          key: formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              const TitleElement(
-                  name: 'Your email address',
-                  color: Palette.primaryText,
-                  fontSize: 22.0,
-                  fontWeight: FontWeight.bold,
-                  paddingBottom: 10.0),
-              const TitleElement(
-                  name:
-                      'Please confirm your email address and enter your password.',
-                  color: Palette.accentText,
-                  fontSize: 15.0,
-                  paddingBottom: 30.0,
-                  width: 250.0),
-              AuthInputField(
-                  name: 'Email',
-                  paddingBottom: 25,
-                  paddingLeft: 40,
-                  paddingRight: 40,
-                  isFocused: isEmailFocused,
-                  focusNode: emailFocusNode),
-              AuthInputField(
-                  name: 'Password',
-                  paddingBottom: 25,
-                  paddingLeft: 40,
-                  paddingRight: 40,
-                  isFocused: isPasswordFocused,
-                  focusNode: passwordFocusNode),
-              AuthInputField(
-                  name: 'Confirm Password',
-                  paddingBottom: 60,
-                  paddingLeft: 40,
-                  paddingRight: 40,
-                  isFocused: isConfirmPasswordFocused,
-                  focusNode: confirmPasswordFocusNode),
-              const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TitleElement(
-                      name: 'Already have an account?  ',
-                      paddingBottom: 0,
-                      color: Palette.primaryText,
-                      fontSize: 12),
-                  TitleElement(
-                    name: 'Log in',
-                    paddingBottom: 0,
-                    color: Palette.accent,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  )
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.only(right: 15, top: 30),
-                child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      // Button action
-                    },
-                    style: ElevatedButton.styleFrom(
-                      shape: const CircleBorder(),
-                      padding: const EdgeInsets.all(16),
-                      backgroundColor: Palette.primary, // Button color
+            key: formKey,
+            child: Stack(
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    SizedBox(
+                      height: isKeyboardOpen(context) ? 160 : 0,
                     ),
-                    child: const Icon(
-                      Icons.arrow_forward,
-                      color: Palette.icons,
-                      size: 22, // Icon size
+                    const TitleElement(
+                        name: 'Your email address',
+                        color: Palette.primaryText,
+                        fontSize: Sizes.primaryText,
+                        fontWeight: FontWeight.bold,
+                        paddingBottom: 10.0),
+                    const TitleElement(
+                        name:
+                            'Please confirm your email address and enter your password.',
+                        color: Palette.accentText,
+                        fontSize: Sizes.secondaryText,
+                        paddingBottom: 30.0,
+                        width: 250.0),
+                    AuthInputField(
+                        name: 'Email',
+                        paddingBottom: 25,
+                        paddingLeft: Dimensions.inputPaddingLeft,
+                        paddingRight: Dimensions.inputPaddingRight,
+                        isFocused: isEmailFocused,
+                        focusNode: emailFocusNode),
+                    AuthInputField(
+                        name: 'Password',
+                        paddingBottom: 25,
+                        paddingLeft: Dimensions.inputPaddingLeft,
+                        paddingRight: Dimensions.inputPaddingRight,
+                        isFocused: isPasswordFocused,
+                        focusNode: passwordFocusNode),
+                    AuthInputField(
+                        name: 'Confirm Password',
+                        paddingBottom: 60,
+                        paddingLeft: Dimensions.inputPaddingLeft,
+                        paddingRight: Dimensions.inputPaddingRight,
+                        isFocused: isConfirmPasswordFocused,
+                        focusNode: confirmPasswordFocusNode),
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TitleElement(
+                            name: 'Already have an account?  ',
+                            color: Palette.primaryText,
+                            fontSize: Sizes.infoText),
+                        TitleElement(
+                          name: 'Log in',
+                          color: Palette.accent,
+                          fontSize: Sizes.infoText,
+                          fontWeight: FontWeight.bold,
+                        )
+                      ],
                     ),
-                  )
-                ]),
-              ),
-            ],
-          ),
-        ),
+                  ],
+                ),
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.easeInOut,
+                  right: 20,
+                  bottom: isKeyboardOpen(context) ? 10 : 150,
+                  child: const CircularButton(
+                    icon: Icons.arrow_forward,
+                    iconSize: Sizes.iconSize,
+                    radius: Sizes.circleButtonRadius
+                    ,
+                  ),
+                )
+              ],
+            )),
       ),
     );
   }

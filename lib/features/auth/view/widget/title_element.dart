@@ -4,7 +4,7 @@ class TitleElement extends StatelessWidget {
   const TitleElement({
     super.key,
     required this.name,
-    required this.paddingBottom,
+    this.paddingBottom = 0,
     required this.color,
     required this.fontSize,
     this.fontWeight,
