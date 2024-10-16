@@ -11,6 +11,8 @@ class AuthInputField extends ConsumerStatefulWidget {
   final bool isFocused;
   final bool obscure;
   final FocusNode focusNode;
+  final FormFieldValidator<String>? validator;
+  final TextEditingController? controller;
 
   const AuthInputField({
     super.key,
@@ -22,6 +24,8 @@ class AuthInputField extends ConsumerStatefulWidget {
     required this.isFocused,
     required this.focusNode,
     this.obscure = false,
+    this.validator,
+    this.controller,
   });
 
   @override
@@ -53,6 +57,10 @@ class _AuthInputField extends ConsumerState<AuthInputField> {
 
   bool get isFocused => widget.isFocused;
 
+  FormFieldValidator<String>? get validator => widget.validator;
+
+  TextEditingController? get controller => widget.controller;
+
   void _toggleVisibility() {
     setState(() {
       _obscure = !_obscure;
@@ -81,9 +89,11 @@ class _AuthInputField extends ConsumerState<AuthInputField> {
             right: paddingRight,
             top: paddingTop),
         child: TextFormField(
+          controller: controller,
           focusNode: focusNode,
           obscureText: _obscure,
           cursorColor: Palette.accent,
+          validator: validator,
           decoration: InputDecoration(
             hintText: isFocused ? '' : name,
             labelText: !isFocused ? '' : name,

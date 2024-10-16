@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 
 class CircularButton extends StatelessWidget {
@@ -11,6 +12,8 @@ class CircularButton extends StatelessWidget {
     this.paddingLeft = 0,
     this.paddingRight = 0,
     required this.radius,
+    this.formKey,
+    this.handelSubmit,
   });
 
   final IconData icon;
@@ -20,6 +23,8 @@ class CircularButton extends StatelessWidget {
   final double paddingLeft;
   final double paddingRight;
   final double radius;
+  final GlobalKey<FormState>? formKey;
+  final Function? handelSubmit;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +33,14 @@ class CircularButton extends StatelessWidget {
       child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
         ElevatedButton(
           onPressed: () {
-            // Button action
+            if (formKey != null) {
+              if (formKey?.currentState?.validate() ?? false) {
+                debugPrint('Form is valid!');
+                handelSubmit!();
+              } else {
+                debugPrint('Form is invalid!');
+              }
+            }
           },
           style: ElevatedButton.styleFrom(
             shape: const CircleBorder(),

@@ -1,11 +1,14 @@
+import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_input_field.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/circular_button.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
+import 'package:vibration/vibration.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
   static const String route = '/sign-up';
@@ -24,6 +27,15 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   bool isEmailFocused = false;
   bool isPasswordFocused = false;
   bool isConfirmPasswordFocused = false;
+
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
+
+  final emailShakeKey = GlobalKey<ShakeWidgetState>();
+  final passwordShakeKey = GlobalKey<ShakeWidgetState>();
+  final confirmPasswordShakeKey = GlobalKey<ShakeWidgetState>();
 
   @override
   void initState() {
@@ -47,12 +59,40 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   @override
   void dispose() {
-    emailFocusNode.dispose(); // Dispose the FocusNode to avoid memory leaks
+    emailFocusNode.dispose();
+    passwordFocusNode.dispose();
+    confirmPasswordFocusNode.dispose();
     super.dispose();
   }
 
   bool isKeyboardOpen(BuildContext context) {
     return MediaQuery.of(context).viewInsets.bottom != 0;
+  }
+
+  void handelSubmit() {
+    bool someNotFilled = emailController.text.isEmpty ||
+        passwordController.text.isEmpty ||
+        confirmPasswordController.text.isEmpty;
+
+    if (emailController.text.isEmpty) {
+      emailShakeKey.currentState?.shake();
+    } else if (passwordController.text.isEmpty) {
+      passwordShakeKey.currentState?.shake();
+    } else if (confirmPasswordController.text.isEmpty) {
+      confirmPasswordShakeKey.currentState?.shake();
+    }
+
+    if (someNotFilled) {
+      Vibration.hasVibrator().then((hasVibrator) {
+        if (hasVibrator ?? false) {
+          Vibration.vibrate(duration: 100);
+        }
+      });
+    }
+  }
+
+  String? customValidation(String? value) {
+    return confirmPasswordValidation(passwordController.text, value);
   }
 
   @override
@@ -85,31 +125,53 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         fontSize: Sizes.secondaryText,
                         paddingBottom: 30.0,
                         width: 250.0),
-                    AuthInputField(
+                    ShakeMe(
+                      key: emailShakeKey,
+                      shakeCount: 3,
+                      shakeOffset: 10,
+                      shakeDuration: const Duration(milliseconds: 500),
+                      child: AuthInputField(
                         name: 'Email',
                         paddingBottom: 25,
                         paddingLeft: Dimensions.inputPaddingLeft,
                         paddingRight: Dimensions.inputPaddingRight,
                         isFocused: isEmailFocused,
-                        focusNode: emailFocusNode),
-                    AuthInputField(
-                      name: 'Password',
-                      paddingBottom: 25,
-                      paddingLeft: Dimensions.inputPaddingLeft,
-                      paddingRight: Dimensions.inputPaddingRight,
-                      isFocused: isPasswordFocused,
-                      focusNode: passwordFocusNode,
-                      obscure: true,
+                        focusNode: emailFocusNode,
+                        validator: emailValidator,
+                        controller: emailController,
+                      ),
                     ),
-                    AuthInputField(
-                      name: 'Confirm Password',
-                      paddingBottom: 60,
-                      paddingLeft: Dimensions.inputPaddingLeft,
-                      paddingRight: Dimensions.inputPaddingRight,
-                      isFocused: isConfirmPasswordFocused,
-                      focusNode: confirmPasswordFocusNode,
-                      obscure: true,
-                    ),
+                    ShakeMe(
+                        key: passwordShakeKey,
+                        shakeCount: 3,
+                        shakeOffset: 10,
+                        shakeDuration: const Duration(milliseconds: 500),
+                        child: AuthInputField(
+                          name: 'Password',
+                          paddingBottom: 25,
+                          paddingLeft: Dimensions.inputPaddingLeft,
+                          paddingRight: Dimensions.inputPaddingRight,
+                          isFocused: isPasswordFocused,
+                          focusNode: passwordFocusNode,
+                          obscure: true,
+                          controller: passwordController,
+                        )),
+                    ShakeMe(
+                        key: confirmPasswordShakeKey,
+                        shakeCount: 3,
+                        shakeOffset: 10,
+                        shakeDuration: const Duration(milliseconds: 500),
+                        child: AuthInputField(
+                          name: 'Confirm Password',
+                          paddingBottom: 60,
+                          paddingLeft: Dimensions.inputPaddingLeft,
+                          paddingRight: Dimensions.inputPaddingRight,
+                          isFocused: isConfirmPasswordFocused,
+                          focusNode: confirmPasswordFocusNode,
+                          obscure: true,
+                          controller: confirmPasswordController,
+                          validator: customValidation,
+                        )),
                     const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -132,10 +194,12 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   curve: Curves.easeInOut,
                   right: 20,
                   bottom: isKeyboardOpen(context) ? 10 : 150,
-                  child: const CircularButton(
+                  child: CircularButton(
                     icon: Icons.arrow_forward,
                     iconSize: Sizes.iconSize,
                     radius: Sizes.circleButtonRadius,
+                    formKey: formKey,
+                    handelSubmit: handelSubmit,
                   ),
                 )
               ],
