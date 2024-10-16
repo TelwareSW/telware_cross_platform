@@ -39,7 +39,7 @@ class _TelWareState extends ConsumerState<TelWare> {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const Placeholder(),
+      home: const SplashScreen(),
     );
   }
 }
