@@ -5,12 +5,12 @@ import 'features/auth/view/screens/sign_up_screen.dart';
 
 void main() {
   runApp(const ProviderScope(
-    child: TalWare(),
+    child: TelWare(),
   ));
 }
 
-class TalWare extends StatelessWidget {
-  const TalWare({super.key});
+class TelWare extends StatelessWidget {
+  const TelWare({super.key});
 
   @override
   Widget build(BuildContext context) {
