@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 
 class CircularButton extends StatelessWidget {
