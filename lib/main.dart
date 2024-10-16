@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:telware_cross_platform/core/view/screen/splash_screen.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
 
-void main() {
+void main() async {
+  await init();
   runApp(const ProviderScope(child: TelWare()));
+}
+
+Future<void> init() async {
+  await Hive.initFlutter();
+  await Hive.openBox<String>('auth-token');
 }
 
 class TelWare extends ConsumerStatefulWidget {
