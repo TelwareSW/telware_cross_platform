@@ -93,19 +93,23 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         isFocused: isEmailFocused,
                         focusNode: emailFocusNode),
                     AuthInputField(
-                        name: 'Password',
-                        paddingBottom: 25,
-                        paddingLeft: Dimensions.inputPaddingLeft,
-                        paddingRight: Dimensions.inputPaddingRight,
-                        isFocused: isPasswordFocused,
-                        focusNode: passwordFocusNode),
+                      name: 'Password',
+                      paddingBottom: 25,
+                      paddingLeft: Dimensions.inputPaddingLeft,
+                      paddingRight: Dimensions.inputPaddingRight,
+                      isFocused: isPasswordFocused,
+                      focusNode: passwordFocusNode,
+                      obscure: true,
+                    ),
                     AuthInputField(
-                        name: 'Confirm Password',
-                        paddingBottom: 60,
-                        paddingLeft: Dimensions.inputPaddingLeft,
-                        paddingRight: Dimensions.inputPaddingRight,
-                        isFocused: isConfirmPasswordFocused,
-                        focusNode: confirmPasswordFocusNode),
+                      name: 'Confirm Password',
+                      paddingBottom: 60,
+                      paddingLeft: Dimensions.inputPaddingLeft,
+                      paddingRight: Dimensions.inputPaddingRight,
+                      isFocused: isConfirmPasswordFocused,
+                      focusNode: confirmPasswordFocusNode,
+                      obscure: true,
+                    ),
                     const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -131,8 +135,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   child: const CircularButton(
                     icon: Icons.arrow_forward,
                     iconSize: Sizes.iconSize,
-                    radius: Sizes.circleButtonRadius
-                    ,
+                    radius: Sizes.circleButtonRadius,
                   ),
                 )
               ],
