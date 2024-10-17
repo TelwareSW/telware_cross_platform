@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'core/theme/auth_theme.dart';
+import 'core/theme/app_theme.dart';
 import 'features/auth/view/screens/sign_up_screen.dart';
 
 void main() {
@@ -17,7 +17,7 @@ class TelWare extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'TelWare',
-      theme: authTheme,
+      theme: appTheme,
       routes: {
         SignUpScreen.route: (context) => const SignUpScreen(),
       },
