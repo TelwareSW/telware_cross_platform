@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 
-final authTheme = ThemeData.dark().copyWith(
+final appTheme = ThemeData.dark().copyWith(
   scaffoldBackgroundColor: Palette.background,
   appBarTheme: const AppBarTheme(color: Palette.background),
   inputDecorationTheme: InputDecorationTheme(
