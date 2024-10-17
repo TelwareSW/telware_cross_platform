@@ -1,21 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'core/theme/app_theme.dart';
+import 'features/auth/view/screens/sign_up_screen.dart';
 
 void main() {
-  runApp(const TalWare());
+  runApp(const ProviderScope(
+    child: TelWare(),
+  ));
 }
 
-class TalWare extends StatelessWidget {
-  const TalWare({super.key});
+class TelWare extends StatelessWidget {
+  const TelWare({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'TalWare',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const Placeholder(),
+      debugShowCheckedModeBanner: false,
+      title: 'TelWare',
+      theme: appTheme,
+      routes: {
+        SignUpScreen.route: (context) => const SignUpScreen(),
+      },
+      initialRoute: SignUpScreen.route,
     );
   }
 }
