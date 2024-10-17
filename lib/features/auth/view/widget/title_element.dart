@@ -34,6 +34,6 @@ class TitleElement extends StatelessWidget {
         ),
       ),
     );
-    return width != null ? SizedBox(width: width, child: child) : child;
+    return SizedBox(width: width, child: child);
   }
 }
