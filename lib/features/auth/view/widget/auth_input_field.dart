@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 
-class AuthInputField extends ConsumerStatefulWidget {
+class AuthInputField extends StatefulWidget {
   final String name;
   final double paddingTop;
   final double paddingBottom;
@@ -29,10 +28,10 @@ class AuthInputField extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<AuthInputField> createState() => _AuthInputField();
+  AuthInputFieldState createState() => AuthInputFieldState();
 }
 
-class _AuthInputField extends ConsumerState<AuthInputField> {
+class AuthInputFieldState extends State<AuthInputField> {
   late bool _obscure;
   late bool _allowVisibility;
 
@@ -41,25 +40,6 @@ class _AuthInputField extends ConsumerState<AuthInputField> {
     super.initState();
     _allowVisibility = _obscure = widget.obscure;
   }
-
-  //getters
-  double get paddingTop => widget.paddingTop;
-
-  double get paddingBottom => widget.paddingBottom;
-
-  double get paddingLeft => widget.paddingLeft;
-
-  double get paddingRight => widget.paddingRight;
-
-  String get name => widget.name;
-
-  FocusNode get focusNode => widget.focusNode;
-
-  bool get isFocused => widget.isFocused;
-
-  FormFieldValidator<String>? get validator => widget.validator;
-
-  TextEditingController? get controller => widget.controller;
 
   void _toggleVisibility() {
     setState(() {
@@ -84,19 +64,19 @@ class _AuthInputField extends ConsumerState<AuthInputField> {
   Widget build(BuildContext context) {
     return Padding(
         padding: EdgeInsets.only(
-            bottom: paddingBottom,
-            left: paddingLeft,
-            right: paddingRight,
-            top: paddingTop),
+            bottom: widget.paddingBottom,
+            left: widget.paddingLeft,
+            right: widget.paddingRight,
+            top: widget.paddingTop),
         child: TextFormField(
-          controller: controller,
-          focusNode: focusNode,
+          controller: widget.controller,
+          focusNode: widget.focusNode,
           obscureText: _obscure,
           cursorColor: Palette.accent,
-          validator: validator,
+          validator: widget.validator,
           decoration: InputDecoration(
-            hintText: isFocused ? '' : name,
-            labelText: !isFocused ? '' : name,
+            hintText: widget.isFocused ? '' : widget.name,
+            labelText: !widget.isFocused ? '' : widget.name,
             hintStyle: const TextStyle(
                 color: Palette.accentText, fontWeight: FontWeight.normal),
             labelStyle: const TextStyle(
