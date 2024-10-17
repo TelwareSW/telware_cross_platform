@@ -1,7 +1,6 @@
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_input_field.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
@@ -10,16 +9,16 @@ import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:vibration/vibration.dart';
 
-class SignUpScreen extends ConsumerStatefulWidget {
+class SignUpScreen extends StatefulWidget {
   static const String route = '/sign-up';
 
   const SignUpScreen({super.key});
 
   @override
-  ConsumerState<SignUpScreen> createState() => _SignUpScreenState();
+  SignUpScreenState createState() => SignUpScreenState();
 }
 
-class _SignUpScreenState extends ConsumerState<SignUpScreen> {
+class SignUpScreenState extends State<SignUpScreen> {
   final formKey = GlobalKey<FormState>();
   final FocusNode emailFocusNode = FocusNode();
   final FocusNode passwordFocusNode = FocusNode();
@@ -62,6 +61,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     emailFocusNode.dispose();
     passwordFocusNode.dispose();
     confirmPasswordFocusNode.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -110,7 +112,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     SizedBox(
-                      height: isKeyboardOpen(context) ? 160 : 0,
+                      height: isKeyboardOpen(context) ? 150 : 0,
                     ),
                     const TitleElement(
                         name: 'Your email address',
@@ -132,7 +134,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       shakeDuration: const Duration(milliseconds: 500),
                       child: AuthInputField(
                         name: 'Email',
-                        paddingBottom: 25,
+                        paddingBottom: Dimensions.inputPaddingBottom,
                         paddingLeft: Dimensions.inputPaddingLeft,
                         paddingRight: Dimensions.inputPaddingRight,
                         isFocused: isEmailFocused,
@@ -148,7 +150,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         shakeDuration: const Duration(milliseconds: 500),
                         child: AuthInputField(
                           name: 'Password',
-                          paddingBottom: 25,
+                          paddingBottom: Dimensions.inputPaddingBottom,
                           paddingLeft: Dimensions.inputPaddingLeft,
                           paddingRight: Dimensions.inputPaddingRight,
                           isFocused: isPasswordFocused,
@@ -163,7 +165,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         shakeDuration: const Duration(milliseconds: 500),
                         child: AuthInputField(
                           name: 'Confirm Password',
-                          paddingBottom: 60,
+                          paddingBottom: Dimensions.inputPaddingBottom,
                           paddingLeft: Dimensions.inputPaddingLeft,
                           paddingRight: Dimensions.inputPaddingRight,
                           isFocused: isConfirmPasswordFocused,
@@ -172,19 +174,26 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           controller: confirmPasswordController,
                           validator: customValidation,
                         )),
-                    const Row(
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        TitleElement(
+                        const TitleElement(
                             name: 'Already have an account?  ',
                             color: Palette.primaryText,
                             fontSize: Sizes.infoText),
-                        TitleElement(
-                          name: 'Log in',
-                          color: Palette.accent,
-                          fontSize: Sizes.infoText,
-                          fontWeight: FontWeight.bold,
-                        )
+                        TextButton(
+                            onPressed: () => {},
+                            style: TextButton.styleFrom(
+                              minimumSize: Size.zero,
+                              padding: EdgeInsets.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: const TitleElement(
+                              name: 'Log in',
+                              color: Palette.accent,
+                              fontSize: Sizes.infoText,
+                              fontWeight: FontWeight.bold,
+                            )),
                       ],
                     ),
                   ],
