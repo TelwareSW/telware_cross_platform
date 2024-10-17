@@ -41,6 +41,8 @@ dependencies:
   hive_flutter: ^1.1.0
   dio: ^5.7.0
   fpdart: ^1.1.0
+  vibration: ^2.0.1
+  flutter_shakemywidget: ^1.0.5+1
 
 dev_dependencies:
   flutter_test:

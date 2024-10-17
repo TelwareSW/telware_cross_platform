@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:telware_cross_platform/core/view/screen/splash_screen.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
+import 'core/theme/app_theme.dart';
+import 'features/auth/view/screens/sign_up_screen.dart';
 
 void main() async {
   await init();
@@ -34,12 +36,13 @@ class _TelWareState extends ConsumerState<TelWare> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'TelWare',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
+      theme: appTheme,
+      routes: {
+        SignUpScreen.route: (context) => const SignUpScreen(),
+      },
       home: const SplashScreen(),
-    );
-  }
+    );
+  }
 }
