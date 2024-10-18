@@ -1,4 +1,5 @@
 class Sizes {
+  static const double headingText = 62;
   static const double primaryText = 22;
   static const double secondaryText = 15;
   static const double infoText = 12;
