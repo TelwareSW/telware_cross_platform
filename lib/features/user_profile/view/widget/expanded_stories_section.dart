@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:telware_cross_platform/features/user_profile/models/story_model.dart';
 import 'package:telware_cross_platform/features/user_profile/view/widget/stories_list_with_names.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 

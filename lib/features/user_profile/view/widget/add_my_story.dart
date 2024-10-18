@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
 import 'package:telware_cross_platform/features/user_profile/view/widget/story_Avatar.dart';
 import '../../../../core/theme/palette.dart';
-import '../../models/story_model.dart';
 
 class AddMyStory extends StatelessWidget {
   const AddMyStory({

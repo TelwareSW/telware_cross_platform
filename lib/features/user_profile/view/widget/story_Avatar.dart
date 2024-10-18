@@ -3,9 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
 import 'package:telware_cross_platform/features/user_profile/view/screens/story_screen.dart';
 import '../../../../core/theme/palette.dart';
-import '../../models/story_model.dart';
 import '../../view_model/story_view_model.dart';
-import '../screens/temp_story.dart';
 
 class StoryAvatar extends ConsumerWidget {
   final UserModel user;
