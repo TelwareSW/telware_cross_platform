@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:telware_cross_platform/core/view/screen/splash_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/log_in_screen.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
+import 'core/models/user_model.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/view/screens/sign_up_screen.dart';
 
@@ -13,8 +14,10 @@ void main() async {
 }
 
 Future<void> init() async {
+  Hive.registerAdapter(UserModelAdapter());
   await Hive.initFlutter();
   await Hive.openBox<String>('auth-token');
+  await Hive.openBox<UserModel>('auth-user');
 }
 
 class TelWare extends ConsumerStatefulWidget {

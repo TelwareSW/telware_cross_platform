@@ -6,18 +6,20 @@ import 'package:telware_cross_platform/features/auth/view/widget/shake_my_auth_i
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/circular_button.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
+import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
 import 'package:vibration/vibration.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SignUpScreen extends StatefulWidget {
+class SignUpScreen extends ConsumerStatefulWidget {
   static const String route = '/sign-up';
 
   const SignUpScreen({super.key});
 
   @override
-  SignUpScreenState createState() => SignUpScreenState();
+  ConsumerState<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class SignUpScreenState extends State<SignUpScreen> {
+class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final formKey = GlobalKey<FormState>();
   final FocusNode emailFocusNode = FocusNode();
   final FocusNode passwordFocusNode = FocusNode();
@@ -70,7 +72,7 @@ class SignUpScreenState extends State<SignUpScreen> {
     return MediaQuery.of(context).viewInsets.bottom != 0;
   }
 
-  void handelSubmit() {
+  void signUp() {
     bool someNotFilled = emailController.text.isEmpty ||
         passwordController.text.isEmpty ||
         confirmPasswordController.text.isEmpty;
@@ -89,6 +91,12 @@ class SignUpScreenState extends State<SignUpScreen> {
           Vibration.vibrate(duration: 100);
         }
       });
+    } else {
+      ref.read(authViewModelProvider.notifier).signUp(
+            email: emailController.text,
+            phone: '',
+            password: passwordController.text,
+          );
     }
   }
 
@@ -187,7 +195,7 @@ class SignUpScreenState extends State<SignUpScreen> {
                   iconSize: Sizes.iconSize,
                   radius: Sizes.circleButtonRadius,
                   formKey: formKey,
-                  handelSubmit: handelSubmit,
+                  handelSubmit: signUp,
                 ),
               ),
             ],
