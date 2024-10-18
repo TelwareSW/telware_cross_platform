@@ -12,7 +12,8 @@ class SplashScreen extends ConsumerWidget {
 
     ref.listen<AuthState>(
       authViewModelProvider,
-      (_, state) { // a callback function that takes the old and current state
+      (_, state) {
+        // a callback function that takes the old and current state
         if (state == AuthState.authorized) {
           // todo: navigate to the home screen
         } else if (state == AuthState.unauthorized) {
@@ -26,7 +27,7 @@ class SplashScreen extends ConsumerWidget {
         child: SizedBox(
           width: imageSize,
           height: imageSize,
-          child: Image.asset('icon/splash_icon.png'),
+          child: Image.asset('assets/icon/splash_icon.png'),
         ),
       ),
     );
