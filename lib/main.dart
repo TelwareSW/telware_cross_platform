@@ -13,6 +13,7 @@ void main() async {
 }
 
 Future<void> init() async {
+  Hive.registerAdapter(UserModelAdapter());
   await Hive.initFlutter();
   await Hive.openBox<String>('auth-token');
   await Hive.openBox<UserModel>('auth-user');
