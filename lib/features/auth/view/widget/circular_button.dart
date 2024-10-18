@@ -33,9 +33,9 @@ class CircularButton extends StatelessWidget {
         ElevatedButton(
           onPressed: () {
             if (formKey != null) {
-              if (formKey?.currentState?.validate() ?? false) {
+              if (formKey!.currentState?.validate() ?? false) {
                 debugPrint('Form is valid!');
-                handelSubmit!();
+                handelSubmit != null ? handelSubmit!() : null;
               } else {
                 debugPrint('Form is invalid!');
               }
