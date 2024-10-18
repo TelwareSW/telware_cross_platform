@@ -18,7 +18,7 @@ class ShakeMyAuthInput extends StatelessWidget {
 
   final GlobalKey<ShakeWidgetState> shakeKey;
   final String name;
-  final double paddingBottom
+  final double paddingBottom;
   final bool obscure;
   final bool isFocused;
   final FocusNode focusNode;
