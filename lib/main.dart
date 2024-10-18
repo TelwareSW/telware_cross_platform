@@ -24,7 +24,6 @@ class TelWare extends ConsumerStatefulWidget {
 }
 
 class _TelWareState extends ConsumerState<TelWare> {
-
   @override
   void initState() {
     super.initState();
@@ -43,6 +42,6 @@ class _TelWareState extends ConsumerState<TelWare> {
         SignUpScreen.route: (context) => const SignUpScreen(),
       },
       home: const SplashScreen(),
-    );
-  }
+    );
+  }
 }
