@@ -25,9 +25,8 @@ class AuthViewModel extends _$AuthViewModel {
     }
 
     // try getting updated user data
-    // todo: get user data from remote
-    // ignore: avoid_manual_providers_as_generated_provider_dependency
     final Either<AppError, UserModel> res =
+        // ignore: avoid_manual_providers_as_generated_provider_dependency
         await ref.read(authRemoteRepositoryProvider).getUser();
 
     res.match(
@@ -49,7 +48,6 @@ class AuthViewModel extends _$AuthViewModel {
     );
   }
 
-  // todo: create the sign up function
   void signUp(
       {required String email,
       required String phone,

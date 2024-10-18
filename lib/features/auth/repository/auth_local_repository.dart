@@ -16,8 +16,6 @@ AuthLocalRepository authLocalRepository(AuthLocalRepositoryRef ref) {
 }
 
 class AuthLocalRepository {
-  // todo: create user box attribute
-
   final Box<String> _tokenBox;
   final Box<UserModel> _userBox;
   final ProviderRef<AuthLocalRepository> _ref;
