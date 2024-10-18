@@ -12,7 +12,7 @@ class CircularButton extends StatelessWidget {
     this.paddingRight = 0,
     required this.radius,
     this.formKey,
-    this.handelSubmit,
+    this.handelClick,
   });
 
   final IconData icon;
@@ -23,7 +23,7 @@ class CircularButton extends StatelessWidget {
   final double paddingRight;
   final double radius;
   final GlobalKey<FormState>? formKey;
-  final Function? handelSubmit;
+  final Function? handelClick;
 
   @override
   Widget build(BuildContext context) {
@@ -33,13 +33,16 @@ class CircularButton extends StatelessWidget {
         ElevatedButton(
           onPressed: () {
             if (formKey != null) {
-              if (formKey!.currentState?.validate() ?? false) {
-                debugPrint('Form is valid!');
-                handelSubmit != null ? handelSubmit!() : null;
-              } else {
+              if (!(formKey!.currentState?.validate() ?? false)) {
+                // handle the case when the form is invalid
                 debugPrint('Form is invalid!');
+                return;
               }
             }
+            // As a general widget if we passed a handelClick function
+            // we will call it only if no formKey is passed or
+            // when a formKey is passed and the form is valid
+            handelClick != null ? handelClick!() : null;
           },
           style: ElevatedButton.styleFrom(
             shape: const CircleBorder(),

@@ -5,12 +5,12 @@ import 'package:telware_cross_platform/features/auth/view/widget/circular_button
 class AuthFloatingActionButton extends StatelessWidget {
   const AuthFloatingActionButton({
     super.key,
-    required this.onSubmit,
-    required this.formKey,
+    this.onSubmit,
+    this.formKey,
   });
 
-  final VoidCallback onSubmit;
-  final GlobalKey<FormState> formKey;
+  final VoidCallback? onSubmit;
+  final GlobalKey<FormState>? formKey;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class AuthFloatingActionButton extends StatelessWidget {
         iconSize: Sizes.iconSize,
         radius: Sizes.circleButtonRadius,
         formKey: formKey,
-        handelSubmit: onSubmit,
+        handelClick: onSubmit,
       ),
     );
   }

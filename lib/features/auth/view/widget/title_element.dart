@@ -4,7 +4,7 @@ class TitleElement extends StatelessWidget {
   const TitleElement({
     super.key,
     required this.name,
-    this.paddingBottom = 0,
+    this.padding = const EdgeInsets.all(0),
     required this.color,
     required this.fontSize,
     this.fontWeight,
@@ -12,7 +12,7 @@ class TitleElement extends StatelessWidget {
   });
 
   final String name;
-  final double paddingBottom;
+  final EdgeInsetsGeometry padding;
   final Color color;
   final double fontSize;
   final FontWeight? fontWeight;
@@ -21,7 +21,7 @@ class TitleElement extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final child = Padding(
-      padding: EdgeInsets.only(bottom: paddingBottom),
+      padding: padding,
       child: Center(
         child: Text(
           name,
