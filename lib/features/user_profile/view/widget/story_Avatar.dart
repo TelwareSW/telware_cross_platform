@@ -1,17 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
+import 'package:telware_cross_platform/features/user_profile/view/screens/story_screen.dart';
 import '../../../../core/theme/palette.dart';
 import '../../models/story_model.dart';
+import '../../view_model/story_view_model.dart';
+import '../screens/temp_story.dart';
 
-class StoryAvatar extends StatelessWidget {
-  final StoryModel storyModel;
+class StoryAvatar extends ConsumerWidget {
+  final UserModel user;
   const StoryAvatar({
     super.key,
-    required this.storyModel,
+    required this.user,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
+      onTap: () async {
+        await ref.read(storyViewModelProvider.notifier).fetchStories();
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => StoryScreen()),
+        );
+      },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         child: Container(
@@ -34,7 +46,7 @@ class StoryAvatar extends StatelessWidget {
                 BoxDecoration(shape: BoxShape.circle, color: Palette.secondary),
             child: ClipOval(
               child: Image.network(
-                storyModel.userImageUrl,
+                user.imageUrl,
                 fit: BoxFit.cover,
               ),
             ),

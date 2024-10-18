@@ -41,6 +41,13 @@ dependencies:
   hive_flutter: ^1.1.0
   dio: ^5.7.0
   fpdart: ^1.1.0
+  story: ^1.1.0
+  font_awesome_flutter: ^10.7.0
+  intl: ^0.17.0
+  path_provider: ^2.1.4
+  http: ^1.2.2
+
+
 
 dev_dependencies:
   flutter_test:

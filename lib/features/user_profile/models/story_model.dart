@@ -1,48 +1,47 @@
+import 'package:hive/hive.dart';
+
+part 'story_model.g.dart'; // Hive code generation part
+
+@HiveType(typeId: 0)
 class StoryModel {
-  // Private fields
-  String _userName;
-  String _userImageUrl;
-  String _storyContentType;
-  dynamic _storyContent;
-  DateTime _createdAt;
+  @HiveField(0)
+  String userName;
+
+  @HiveField(1)
+  String userImageUrl;
+
+  @HiveField(2)
+  String storyContentType;
+
+  @HiveField(3)
+  String storyContent;
+
+  @HiveField(4)
+  DateTime createdAt;
 
   // Constructor
   StoryModel({
-    required String userName,
-    required String userImageUrl,
-    required DateTime createdAt,
-    String storyContentType = 'image',
-    dynamic storyContent = 'place holder for content',
-  })  : _userName = userName,
-        _userImageUrl = userImageUrl,
-        _createdAt = createdAt,
-        _storyContentType = storyContentType,
-        _storyContent = storyContent;
+    required this.userName,
+    required this.userImageUrl,
+    required this.createdAt,
+    this.storyContentType = 'image',
+    this.storyContent = 'placeholder for content',
+  });
 
-  // Getters
-  String get title => _userName;
-  String get userImageUrl => _userImageUrl;
-  DateTime get createdAt => _createdAt;
-  String get storyContentType => _storyContentType;
-  dynamic get storyContent => _storyContent;
+  // Setters and Getters are optional if you want to provide controlled access
+  String get getUserName => userName;
+  set setUserName(String userName) => this.userName = userName;
 
-  set title(String userName) {
-    _userName = userName;
-  }
+  String get getUserImageUrl => userImageUrl;
+  set setUserImageUrl(String userImageUrl) => this.userImageUrl = userImageUrl;
 
-  set imageUrl(String userImageUrl) {
-    _userImageUrl = userImageUrl;
-  }
+  DateTime get getCreatedAt => createdAt;
+  set setCreatedAt(DateTime createdAt) => this.createdAt = createdAt;
 
-  set createdAt(DateTime createdAt) {
-    _createdAt = createdAt;
-  }
+  String get getStoryContentType => storyContentType;
+  set setStoryContentType(String storyContentType) =>
+      this.storyContentType = storyContentType;
 
-  set storyContentType(String storyContentType) {
-    _storyContentType = storyContentType;
-  }
-
-  set storyContent(dynamic storyContent) {
-    _storyContent = storyContent;
-  }
+  String get getStoryContent => storyContent;
+  set setStoryContent(String storyContent) => this.storyContent = storyContent;
 }

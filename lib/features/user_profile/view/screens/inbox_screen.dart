@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/features/user_profile/view/widget/colapsed_story_section.dart';
-
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../widget/chats_list.dart';
 import '../widget/expanded_stories_section.dart';
 
@@ -41,43 +41,46 @@ class _InboxScreenState extends State<InboxScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: CustomScrollView(
-        controller: _scrollController,
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverAppBar(
-            backgroundColor: Palette.secondary,
-            expandedHeight: 130.0,
-            floating: false,
-            snap: false,
-            pinned: true,
-            leading: Icon(Icons.menu),
-            title: isAppBarCollapsed
-                ? ColapsedStorySection()
-                : Text(
-                    'TelWare',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+    return LayoutBuilder(
+      builder: (context,constraints){
+      return Scaffold(
+        body: CustomScrollView(
+          controller: _scrollController,
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverAppBar(
+              backgroundColor: Palette.secondary,
+              expandedHeight: kIsWeb ? 150 : constraints.maxWidth > 600 ? 140 : 130,
+              floating: false,
+              snap: false,
+              pinned: true,
+              leading: Icon(Icons.menu),
+              title: isAppBarCollapsed
+                  ? ColapsedStorySection()
+                  : Text(
+                      'TelWare',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
+              flexibleSpace: FlexibleSpaceBar(
+                background: ExpandedStoriesSection()
+              ),
+              actions: [
+                Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Icon(
+                    Icons.search_rounded,
+                    size: 30,
                   ),
-            flexibleSpace: FlexibleSpaceBar(
-              background: ExpandedStoriesSection()
+                )
+              ],
             ),
-            actions: [
-              Padding(
-                padding: EdgeInsets.all(16),
-                child: Icon(
-                  Icons.search_rounded,
-                  size: 30,
-                ),
-              )
-            ],
-          ),
-          ChatsList(),
-        ],
-      ),
+            ChatsList(),
+          ],
+        ),
+      );},
     );
   }
 }

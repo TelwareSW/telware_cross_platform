@@ -2,48 +2,63 @@ import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/features/user_profile/view/widget/story_Avatar.dart';
 
 import '../../models/story_model.dart';
+import '../../models/user_model.dart';
 
 class StoriesList extends StatelessWidget {
-  final List<StoryModel> stories = [
-    StoryModel(
-      userName: 'Bishoy',
-      userImageUrl: 'https://st2.depositphotos.com/2703645/7304/v/450/depositphotos_73040253-stock-illustration-male-avatar-icon.jpg',
-      createdAt: DateTime(2023, 10, 16), // Use a static date for example
+  final List<UserModel> usersWithStories = [
+    UserModel(
+      userName: 'rings of power',
+      imageUrl:
+      'https://st2.depositphotos.com/2703645/7304/v/450/depositphotos_73040253-stock-illustration-male-avatar-icon.jpg',
+      stories: [
+        StoryModel(
+          userName: 'rings of power',
+          userImageUrl:
+          'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+          createdAt: DateTime.now(),
+          storyContent:
+          'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+        ),
+        StoryModel(
+          userName: 'game of thrones',
+          userImageUrl:
+          'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
+          createdAt: DateTime.now().subtract(Duration(hours: 1)),
+          storyContent:
+          'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
+        ),
+      ],
     ),
-    StoryModel(
-      userName: 'Ahmed',
-      userImageUrl: 'https://st2.depositphotos.com/2703645/7304/v/450/depositphotos_73040253-stock-illustration-male-avatar-icon.jpg',
-      createdAt: DateTime(2023, 10, 16), // Use a static date for example
-    ),
-    StoryModel(
-      userName: 'Moamen',
-      userImageUrl: 'https://st2.depositphotos.com/2703645/7304/v/450/depositphotos_73040253-stock-illustration-male-avatar-icon.jpg',
-      createdAt: DateTime(2023, 10, 16), // Use a static date for example
-    ),
-    StoryModel(
-      userName: 'marwan',
-      userImageUrl: 'https://st2.depositphotos.com/2703645/7304/v/450/depositphotos_73040253-stock-illustration-male-avatar-icon.jpg',
-      createdAt: DateTime(2023, 10, 16), // Use a static date for example
-    ),
-    StoryModel(
-      userName: 'marwan',
-      userImageUrl: 'https://st2.depositphotos.com/2703645/7304/v/450/depositphotos_73040253-stock-illustration-male-avatar-icon.jpg',
-      createdAt: DateTime(2023, 10, 16), // Use a static date for example
-    ),
-    StoryModel(
-      userName: 'marwan',
-      userImageUrl: 'https://st2.depositphotos.com/2703645/7304/v/450/depositphotos_73040253-stock-illustration-male-avatar-icon.jpg',
-      createdAt: DateTime(2023, 10, 16), // Use a static date for example
-    ),
-    StoryModel(
-      userName: 'marwan',
-      userImageUrl: 'https://st2.depositphotos.com/2703645/7304/v/450/depositphotos_73040253-stock-illustration-male-avatar-icon.jpg',
-      createdAt: DateTime(2023, 10, 16), // Use a static date for example
-    ),
-    StoryModel(
-      userName: 'marwan',
-      userImageUrl: 'https://st2.depositphotos.com/2703645/7304/v/450/depositphotos_73040253-stock-illustration-male-avatar-icon.jpg',
-      createdAt: DateTime(2023, 10, 16), // Use a static date for example
+    UserModel(
+      userName: 'game of thrones',
+      imageUrl:
+      'https://st2.depositphotos.com/2703645/7304/v/450/depositphotos_73040253-stock-illustration-male-avatar-icon.jpg',
+      stories: [
+        StoryModel(
+          userName: 'rings of power',
+          userImageUrl:
+          'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+          createdAt: DateTime.now(),
+          storyContent:
+          'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+        ),
+        StoryModel(
+          userName: 'game of thrones',
+          userImageUrl:
+          'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
+          createdAt: DateTime.now().subtract(Duration(hours: 1)),
+          storyContent:
+          'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
+        ),
+        StoryModel(
+          userName: 'rings of power',
+          userImageUrl:
+          'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+          createdAt: DateTime.now(),
+          storyContent:
+          'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+        ),
+      ],
     ),
   ];
 
@@ -57,8 +72,8 @@ class StoriesList extends StatelessWidget {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          children: stories.map((story) {
-            return StoryAvatar(storyModel: story,);
+          children: usersWithStories.map((user) {
+            return StoryAvatar(user: user,);
           }).toList(),
         ),
       ),

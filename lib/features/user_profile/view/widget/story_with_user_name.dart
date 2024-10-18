@@ -1,12 +1,13 @@
+import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
 import 'package:telware_cross_platform/features/user_profile/view/widget/story_Avatar.dart';
 
 import '../../models/story_model.dart';
 import 'package:flutter/material.dart';
 
 class StoryWithUserName extends StatelessWidget {
-  final StoryModel story;
+  final UserModel user;
   const StoryWithUserName({
-    super.key, required this.story,
+    super.key, required this.user,
   });
 
   @override
@@ -16,7 +17,7 @@ class StoryWithUserName extends StatelessWidget {
         Padding(
           padding: EdgeInsets.only(right: 10),
           child: StoryAvatar(
-            storyModel: story,
+            user: user,
           ),
         ),
         Padding(
@@ -26,7 +27,7 @@ class StoryWithUserName extends StatelessWidget {
               maxWidth: 80, // Set the maximum width to 50 pixels
             ),
             child: Text(
-              story.title,
+              user.userName,
               style: TextStyle(color: Colors.white),
               overflow: TextOverflow.ellipsis, // Trim with ellipsis if text exceeds the width
               maxLines: 1, // Limit to a single line

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
 import 'package:telware_cross_platform/features/user_profile/view/widget/story_Avatar.dart';
 import '../../../../core/theme/palette.dart';
 import '../../models/story_model.dart';
@@ -6,10 +7,10 @@ import '../../models/story_model.dart';
 class AddMyStory extends StatelessWidget {
   const AddMyStory({
     super.key,
-    required this.myStory,
+    required this.myUser,
   });
 
-  final StoryModel myStory;
+  final UserModel myUser;
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +21,7 @@ class AddMyStory extends StatelessWidget {
           child: Stack(
             children: [
               StoryAvatar(
-                storyModel: myStory,
+                user: myUser,
               ),
               Positioned(
                 bottom: 2,
