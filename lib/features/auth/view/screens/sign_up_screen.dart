@@ -2,11 +2,14 @@ import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/utils.dart';
+import 'package:telware_cross_platform/core/view/widget/responsive.dart';
+import 'package:telware_cross_platform/features/auth/view/screens/log_in_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/shake_my_auth_input.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/circular_button.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
+import 'package:telware_cross_platform/features/auth/view/widget/auth_sub_text_button.dart';
+import 'package:telware_cross_platform/features/auth/view/widget/auth_floating_action_button.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -108,99 +111,87 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Palette.background,
-      body: Padding(
-        padding: const EdgeInsets.only(top: 40),
-        child: Form(
-          key: formKey,
-          child: Stack(
-            children: [
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  SizedBox(
-                    height: isKeyboardOpen(context) ? 150 : 0,
-                  ),
-                  const TitleElement(
-                    name: 'Your email address',
-                    color: Palette.primaryText,
-                    fontSize: Sizes.primaryText,
-                    fontWeight: FontWeight.bold,
-                    paddingBottom: 10.0,
-                  ),
-                  const TitleElement(
-                      name:
-                          'Please confirm your email address and enter your password.',
-                      color: Palette.accentText,
-                      fontSize: Sizes.secondaryText,
-                      paddingBottom: 30.0,
-                      width: 250.0),
-                  ShakeMyAuthInput(
-                    name: 'Email',
-                    shakeKey: emailShakeKey,
-                    isFocused: isEmailFocused,
-                    focusNode: emailFocusNode,
-                    controller: emailController,
-                    validator: emailValidator,
-                  ),
-                  ShakeMyAuthInput(
-                    name: 'Password',
-                    shakeKey: passwordShakeKey,
-                    isFocused: isPasswordFocused,
-                    focusNode: passwordFocusNode,
-                    controller: passwordController,
-                    obscure: true,
-                  ),
-                  ShakeMyAuthInput(
-                    name: 'Confirm Password',
-                    shakeKey: confirmPasswordShakeKey,
-                    isFocused: isConfirmPasswordFocused,
-                    focusNode: confirmPasswordFocusNode,
-                    controller: confirmPasswordController,
-                    obscure: true,
-                    validator: customValidation,
-                  ),
-                  Row(
+      body: Responsive(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 40),
+            child: Form(
+              key: formKey,
+              child: Stack(
+                children: [
+                  Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      SizedBox(
+                        height: isKeyboardOpen(context) ? 150 : 0,
+                      ),
                       const TitleElement(
-                          name: 'Already have an account?  ',
-                          color: Palette.primaryText,
-                          fontSize: Sizes.infoText),
-                      TextButton(
-                        onPressed: () => {},
-                        style: TextButton.styleFrom(
-                          minimumSize: Size.zero,
-                          padding: EdgeInsets.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: const TitleElement(
-                          name: 'Log in',
-                          color: Palette.accent,
-                          fontSize: Sizes.infoText,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        name: 'Your email address',
+                        color: Palette.primaryText,
+                        fontSize: Sizes.primaryText,
+                        fontWeight: FontWeight.bold,
+                        paddingBottom: 10.0,
+                      ),
+                      const TitleElement(
+                          name:
+                              'Please confirm your email address and enter your password.',
+                          color: Palette.accentText,
+                          fontSize: Sizes.secondaryText,
+                          paddingBottom: 30.0,
+                          width: 250.0),
+                      ShakeMyAuthInput(
+                        name: 'Email',
+                        shakeKey: emailShakeKey,
+                        isFocused: isEmailFocused,
+                        focusNode: emailFocusNode,
+                        controller: emailController,
+                        validator: emailValidator,
+                      ),
+                      ShakeMyAuthInput(
+                        name: 'Password',
+                        shakeKey: passwordShakeKey,
+                        isFocused: isPasswordFocused,
+                        focusNode: passwordFocusNode,
+                        controller: passwordController,
+                        obscure: true,
+                      ),
+                      ShakeMyAuthInput(
+                        name: 'Confirm Password',
+                        shakeKey: confirmPasswordShakeKey,
+                        isFocused: isConfirmPasswordFocused,
+                        focusNode: confirmPasswordFocusNode,
+                        controller: confirmPasswordController,
+                        obscure: true,
+                        validator: customValidation,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const TitleElement(
+                              name: 'Already have an account?  ',
+                              color: Palette.primaryText,
+                              fontSize: Sizes.infoText),
+                          AuthSubTextButton(
+                            onPressed: () {
+                              Navigator.pushReplacementNamed(
+                                  context, LogInScreen.route);
+                            },
+                            label: 'Log in',
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ],
               ),
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 500),
-                curve: Curves.easeInOut,
-                right: 20,
-                bottom: isKeyboardOpen(context) ? 10 : 150,
-                child: CircularButton(
-                  icon: Icons.arrow_forward,
-                  iconSize: Sizes.iconSize,
-                  radius: Sizes.circleButtonRadius,
-                  formKey: formKey,
-                  handelSubmit: signUp,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
+      ),
+      floatingActionButton: AuthFloatingActionButton(
+        formKey: formKey,
+        onSubmit: signUp,
       ),
     );
   }
