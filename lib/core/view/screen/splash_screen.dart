@@ -5,6 +5,7 @@ import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.
 
 class SplashScreen extends ConsumerWidget {
   const SplashScreen({super.key});
+  static const String route = '/splash';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
