@@ -4,6 +4,7 @@ import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/responsive.dart';
+import 'package:telware_cross_platform/features/auth/view/widget/auth_floating_action_button.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_sub_text_button.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/shake_my_auth_input.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/social_log_in.dart';
@@ -74,6 +75,8 @@ class LogInScreenState extends State<LogInScreen> {
           Vibration.vibrate(duration: 100);
         }
       });
+    } else {
+      // todo handle logic for successful submit
     }
   }
 
@@ -150,15 +153,9 @@ class LogInScreenState extends State<LogInScreen> {
           ),
         ),
       ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 20),
-        child: CircularButton(
-          icon: Icons.arrow_forward,
-          iconSize: Sizes.iconSize,
-          radius: Sizes.circleButtonRadius,
-          formKey: formKey,
-          handelSubmit: handelSubmit,
-        ),
+      floatingActionButton: AuthFloatingActionButton(
+        formKey: formKey,
+        onSubmit: handelSubmit,
       ),
     );
   }
@@ -169,7 +166,7 @@ class LogInScreenState extends State<LogInScreen> {
       children: [
         Padding(
           padding:
-              const EdgeInsets.only(left: Dimensions.inputPaddingLeft, top: 3),
+              const EdgeInsets.only(left: Dimensions.inputPaddingLeft, top: 5),
           child: AuthSubTextButton(
             onPressed: () {},
             label: 'Forgot Password?',
