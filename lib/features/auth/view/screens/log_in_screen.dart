@@ -1,8 +1,10 @@
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
+import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/responsive.dart';
+import 'package:telware_cross_platform/features/auth/view/widget/auth_sub_text_button.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/shake_my_auth_input.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/social_log_in.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
@@ -93,9 +95,6 @@ class LogInScreenState extends State<LogInScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                  // const SizedBox(
-                  //   height: 150,
-                  // ),
                   const TitleElement(
                     name: 'Log In',
                     color: Palette.primaryText,
@@ -124,31 +123,23 @@ class LogInScreenState extends State<LogInScreen> {
                     isFocused: isPasswordFocused,
                     focusNode: passwordFocusNode,
                     controller: passwordController,
+                    paddingBottom: 0,
                     obscure: true,
                     // todo: add validator for the password
                   ),
-                  const SizedBox(height: 30),
+                  _forgetPasswordButton(),
+                  const SizedBox(height: 50),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
+                    children: <Widget>[
                       const TitleElement(
                         name: 'Don\'t have an account?  ',
                         color: Palette.primaryText,
                         fontSize: Sizes.infoText,
                       ),
-                      TextButton(
-                        onPressed: () => {},
-                        style: TextButton.styleFrom(
-                          minimumSize: Size.zero,
-                          padding: EdgeInsets.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: const TitleElement(
-                          name: 'Sign Up',
-                          color: Palette.accent,
-                          fontSize: Sizes.infoText,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      AuthSubTextButton(
+                        onPressed: () {},
+                        label: 'Sign Up',
                       ),
                     ],
                   ),
@@ -169,6 +160,22 @@ class LogInScreenState extends State<LogInScreen> {
           handelSubmit: handelSubmit,
         ),
       ),
+    );
+  }
+
+  Widget _forgetPasswordButton() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Padding(
+          padding:
+              const EdgeInsets.only(left: Dimensions.inputPaddingLeft, top: 3),
+          child: AuthSubTextButton(
+            onPressed: () {},
+            label: 'Forgot Password?',
+          ),
+        )
+      ],
     );
   }
 }
