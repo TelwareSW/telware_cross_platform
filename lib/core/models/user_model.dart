@@ -10,14 +10,11 @@ class UserModel {
   final String email;
   @HiveField(2)
   final String phone;
-  @HiveField(3)
-  final String password;
 
   const UserModel({
     required this.name,
     required this.email,
     required this.phone,
-    required this.password,
   });
 
   @override
@@ -27,29 +24,25 @@ class UserModel {
           runtimeType == other.runtimeType &&
           name == other.name &&
           email == other.email &&
-          phone == other.phone &&
-          password == other.password);
+          phone == other.phone);
 
   @override
-  int get hashCode =>
-      name.hashCode ^ email.hashCode ^ phone.hashCode ^ password.hashCode;
+  int get hashCode => name.hashCode ^ email.hashCode ^ phone.hashCode;
 
   @override
   String toString() {
-    return 'UserModel{ name: $name, email: $email, phone: $phone, password: $password,}';
+    return 'UserModel{ name: $name, email: $email, phone: $phone,}';
   }
 
   UserModel copyWith({
     String? name,
     String? email,
     String? phone,
-    String? password,
   }) {
     return UserModel(
       name: name ?? this.name,
       email: email ?? this.email,
       phone: phone ?? this.phone,
-      password: password ?? this.password,
     );
   }
 
@@ -58,7 +51,6 @@ class UserModel {
       'name': name,
       'email': email,
       'phone': phone,
-      'password': password,
     };
   }
 
@@ -67,7 +59,6 @@ class UserModel {
       name: map['name'] as String,
       email: map['email'] as String,
       phone: map['phone'] as String,
-      password: map['password'] as String,
     );
   }
 }
