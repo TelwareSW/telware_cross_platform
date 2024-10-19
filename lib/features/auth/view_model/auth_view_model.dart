@@ -3,7 +3,6 @@ import 'package:telware_cross_platform/features/auth/repository/auth_local_repos
 import 'package:telware_cross_platform/features/auth/repository/auth_remote_repository.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
 
 part 'auth_view_model.g.dart';
@@ -25,40 +24,37 @@ class AuthViewModel extends _$AuthViewModel {
     }
 
     // try getting updated user data
-    final Either<AppError, UserModel> res =
-        // ignore: avoid_manual_providers_as_generated_provider_dependency
+    final AppError? response =
         await ref.read(authRemoteRepositoryProvider).getUser();
 
-    res.match(
-      (l) {
-        // getting user data from remote failed
-        final user = ref.read(authLocalRepositoryProvider).getUser();
-        if (user == null) {
-          state = AuthState.unauthorized;
-          return;
-        }
-        state = AuthState.authorized;
+    if (response != null) {
+      state = AuthState.failed(response.error);
+      // getting user data from remote failed
+      final user = ref.read(authLocalRepositoryProvider).getUser();
+      if (user == null) {
+        state = AuthState.unauthorized;
         return;
-      },
-      (r) {
-        // getting user data from remote succeeded
-        state = AuthState.authorized;
-        return;
-      },
-    );
+      }
+      state = AuthState.authorized;
+    } else {
+      // getting user data from remote succeeded
+      state = AuthState.authorized;
+    }
   }
 
-  void signUp(
-      {required String email,
-      required String phone,
-      required String password}) async {
+  void signUp({
+    required String email,
+    required String phone,
+    required String password,
+    // todo(marwan): add the confirm password field
+  }) async {
     state = AuthState.loading;
 
-    final Either<AppError, String> res = await ref
+    final Either<AppError, String> response = await ref
         // ignore: avoid_manual_providers_as_generated_provider_dependency
         .read(authRemoteRepositoryProvider)
         .signUp(email: email, phone: phone, password: password);
-    res.match(
+    response.match(
       (l) {
         state = AuthState.unauthorized;
         return;
@@ -70,8 +66,26 @@ class AuthViewModel extends _$AuthViewModel {
     );
   }
 
-  void login({required String email, required String password}) {
-    // todo: implement login functionality
+  // todo(marwan): resend verification code function
+
+  // todo(marwan): send the verification code to the back-end to verify it
+
+  void login({required String email, required String password}) async {
+    state = AuthState.loading;
+
+    final appError = await ref
+        .read(authRemoteRepositoryProvider)
+        .logIn(email: email, password: password);
+
+    if (appError != null) {
+      state = AuthState.failed(appError.error);
+    } else {
+      state = AuthState.authorized;
+    }
+  }
+
+  void forgotPassword(String email) {
+    ref.read(authRemoteRepositoryProvider).forgotPassword(email);
   }
 
   void loginWithGoogle() {}
