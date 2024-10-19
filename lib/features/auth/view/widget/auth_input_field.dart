@@ -4,6 +4,7 @@ import 'package:telware_cross_platform/core/theme/palette.dart';
 class AuthInputField extends StatefulWidget {
   final String name;
   final EdgeInsetsGeometry padding;
+  final GlobalKey<FormFieldState>? formFieldKey;
   final bool isFocused;
   final bool obscure;
   final FocusNode focusNode;
@@ -14,6 +15,7 @@ class AuthInputField extends StatefulWidget {
     super.key,
     required this.name,
     this.padding = const EdgeInsets.all(0),
+    this.formFieldKey,
     required this.isFocused,
     required this.focusNode,
     this.obscure = false,
@@ -61,6 +63,7 @@ class AuthInputFieldState extends State<AuthInputField> {
         child: TextFormField(
           controller: widget.controller,
           focusNode: widget.focusNode,
+          key: widget.formFieldKey,
           obscureText: _obscure,
           cursorColor: Palette.accent,
           validator: widget.validator,
