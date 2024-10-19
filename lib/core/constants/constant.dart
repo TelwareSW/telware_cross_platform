@@ -1,0 +1,1 @@
+const VERIFICATION_LENGTH = 4;
