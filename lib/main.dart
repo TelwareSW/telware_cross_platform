@@ -47,7 +47,7 @@ class _TelWareState extends ConsumerState<TelWare> {
         LogInScreen.route: (context) => const LogInScreen(),
         SignUpScreen.route: (context) => const SignUpScreen(),
       },
-      home: const LogInScreen(),
+      initialRoute: LogInScreen.route,
     );
   }
 }
