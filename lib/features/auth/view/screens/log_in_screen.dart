@@ -5,13 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/responsive.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/sign_up_screen.dart';
-import 'package:telware_cross_platform/features/auth/view/screens/verification_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_floating_action_button.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_sub_text_button.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/shake_my_auth_input.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/social_log_in.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/confirmation_dialog.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:vibration/vibration.dart';
 
@@ -61,16 +59,6 @@ class LogInScreenState extends State<LogInScreen> {
     super.dispose();
   }
 
-  void login() {
-    // todo handle logic for login
-    Navigator.of(context).pop(); // to close the dialog
-    Navigator.pushNamed(context, VerificationScreen.route);
-  }
-
-  void onEdit() {
-    Navigator.of(context).pop(); // to close the dialog
-  }
-
   void handelSubmit() {
     bool someNotFilled =
         emailController.text.isEmpty || passwordController.text.isEmpty;
@@ -89,7 +77,6 @@ class LogInScreenState extends State<LogInScreen> {
       });
     } else {
       // todo handle logic for successful submit
-      showConfirmationDialog(context, emailController, login, onEdit);
     }
   }
 
