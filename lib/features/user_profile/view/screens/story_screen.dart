@@ -6,9 +6,7 @@ import 'package:story/story_image.dart';
 import 'package:story/story_page_view.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
-
 import '../../models/story_model.dart';
-import '../../view_model/user_view_model.dart';
 
 
 class StoryScreen extends ConsumerStatefulWidget {

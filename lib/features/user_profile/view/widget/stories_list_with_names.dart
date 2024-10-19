@@ -8,7 +8,7 @@ import '../../models/story_model.dart';
 import 'add_my_story.dart';
 
 class StoriesListWithNames extends ConsumerWidget {
-  UserModel myUser = new UserModel(
+  final UserModel myUser = new UserModel(
     userName: 'game of thrones',
     imageUrl:
         'https://st2.depositphotos.com/2703645/7304/v/450/depositphotos_73040253-stock-illustration-male-avatar-icon.jpg',

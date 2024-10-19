@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/features/user_profile/view/widget/story_Avatar.dart';
-
-import '../../models/story_model.dart';
 import '../../models/user_model.dart';
 import '../screens/story_screen.dart';
 

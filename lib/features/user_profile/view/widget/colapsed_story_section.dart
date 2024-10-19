@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/features/user_profile/view/screens/story_screen.dart';
 import 'package:telware_cross_platform/features/user_profile/view/widget/story_Avatar.dart';
-
-import '../../models/story_model.dart';
 import '../../models/user_model.dart';
 
 class ColapsedStorySection extends StatelessWidget
     implements PreferredSizeWidget {
-  TextDirection direction = TextDirection.ltr;
-  double size = 50;
-  double xShift = 25;
+  final TextDirection direction = TextDirection.ltr;
+  final double size = 50;
+  final double xShift = 25;
 
   final List<UserModel> usersWithStories = [
   ];
