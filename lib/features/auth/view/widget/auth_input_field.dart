@@ -7,6 +7,7 @@ class AuthInputField extends StatefulWidget {
   final double paddingBottom;
   final double paddingLeft;
   final double paddingRight;
+  final GlobalKey<FormFieldState>? formFieldKey;
   final bool isFocused;
   final bool obscure;
   final FocusNode focusNode;
@@ -20,6 +21,7 @@ class AuthInputField extends StatefulWidget {
     this.paddingBottom = 0,
     this.paddingLeft = 0,
     this.paddingRight = 0,
+    this.formFieldKey,
     required this.isFocused,
     required this.focusNode,
     this.obscure = false,
@@ -71,6 +73,7 @@ class AuthInputFieldState extends State<AuthInputField> {
         child: TextFormField(
           controller: widget.controller,
           focusNode: widget.focusNode,
+          key: widget.formFieldKey,
           obscureText: _obscure,
           cursorColor: Palette.accent,
           validator: widget.validator,

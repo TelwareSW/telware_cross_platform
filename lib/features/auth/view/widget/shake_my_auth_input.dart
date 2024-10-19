@@ -7,6 +7,7 @@ class ShakeMyAuthInput extends StatelessWidget {
   const ShakeMyAuthInput({
     super.key,
     required this.name,
+    this.formKey,
     required this.shakeKey,
     required this.isFocused,
     required this.focusNode,
@@ -17,6 +18,7 @@ class ShakeMyAuthInput extends StatelessWidget {
   });
 
   final GlobalKey<ShakeWidgetState> shakeKey;
+  final GlobalKey<FormFieldState>? formKey;
   final String name;
   final double paddingBottom;
   final bool obscure;
@@ -37,6 +39,7 @@ class ShakeMyAuthInput extends StatelessWidget {
         paddingBottom: paddingBottom,
         paddingLeft: Dimensions.inputPaddingLeft,
         paddingRight: Dimensions.inputPaddingRight,
+        formFieldKey: formKey,
         isFocused: isFocused,
         focusNode: focusNode,
         validator: validator,
