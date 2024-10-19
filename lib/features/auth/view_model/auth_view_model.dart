@@ -93,4 +93,13 @@ class AuthViewModel extends _$AuthViewModel {
   void loginWithFacebook() {}
 
   void loginWithGitHub() {}
+
+  Future<void> logOut() async {
+    state = AuthState.loading;
+    // delete the stored user data
+    await ref.read(authLocalRepositoryProvider).deleteToken();
+    await ref.read(authLocalRepositoryProvider).deleteUser();
+    
+    state = AuthState.init;
+  }
 }
