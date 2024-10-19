@@ -93,7 +93,7 @@ class AuthRemoteRepository {
         },
       );
 
-      if (response.statusCode != 200) {
+      if (response.statusCode != 200 && response.statusCode != 204) {
         final String message = response.data?['message'] ?? 'Unexpected Error';
         return AppError(message);
       }
