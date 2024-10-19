@@ -32,6 +32,7 @@ class AuthRemoteRepository {
     required String email,
     required String phone,
     required String password,
+    // todo(marwan): add the confirm password field
   }) async {
     try {
       final res = await _dio.post('/auth/sign-up', data: {
@@ -40,6 +41,9 @@ class AuthRemoteRepository {
         'password': password,
       });
 
+      // todo(marwan): this is not how the respond look
+      // you can check the api documentation here: 
+      // https://app.clickup.com/9012337468/v/dc/8cjuptw-2832/8cjuptw-4012
       final details = res.data['details'];
       if (res.statusCode != 201) {
         return Left(AppError(details));
@@ -71,11 +75,14 @@ class AuthRemoteRepository {
   Future<Either<AppError, UserModel>> getUser() async {
     final token = _ref.read(tokenProvider);
     try {
+      // todo(marwan): update the url to match the api documentation
       final res = await _dio.get('/auth/user',
           options: Options(
             headers: {HttpHeaders.authorizationHeader: 'Bearer $token'},
           ));
-
+      
+      // todo(marwan): you will need to get the user property of the re.data to get the user data
+      // check api documentation
       final user = UserModel.fromMap(res.data);
       _ref.read(authLocalRepositoryProvider).setUser(user);
       return Right(user);
