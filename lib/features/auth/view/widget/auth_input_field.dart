@@ -3,10 +3,7 @@ import 'package:telware_cross_platform/core/theme/palette.dart';
 
 class AuthInputField extends StatefulWidget {
   final String name;
-  final double paddingTop;
-  final double paddingBottom;
-  final double paddingLeft;
-  final double paddingRight;
+  final EdgeInsetsGeometry padding;
   final bool isFocused;
   final bool obscure;
   final FocusNode focusNode;
@@ -16,10 +13,7 @@ class AuthInputField extends StatefulWidget {
   const AuthInputField({
     super.key,
     required this.name,
-    this.paddingTop = 0,
-    this.paddingBottom = 0,
-    this.paddingLeft = 0,
-    this.paddingRight = 0,
+    this.padding = const EdgeInsets.all(0),
     required this.isFocused,
     required this.focusNode,
     this.obscure = false,
@@ -63,11 +57,7 @@ class AuthInputFieldState extends State<AuthInputField> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: EdgeInsets.only(
-            bottom: widget.paddingBottom,
-            left: widget.paddingLeft,
-            right: widget.paddingRight,
-            top: widget.paddingTop),
+        padding: widget.padding,
         child: TextFormField(
           controller: widget.controller,
           focusNode: widget.focusNode,

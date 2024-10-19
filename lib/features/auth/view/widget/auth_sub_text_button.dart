@@ -5,11 +5,17 @@ import 'package:telware_cross_platform/features/auth/view/widget/title_element.d
 
 class AuthSubTextButton extends StatelessWidget {
   const AuthSubTextButton({
-    super.key, required this.onPressed, required this.label,
+    super.key,
+    required this.onPressed,
+    required this.label,
+    this.padding = const EdgeInsets.all(0),
+    this.fontSize = Sizes.infoText,
   });
 
   final VoidCallback onPressed;
   final String label;
+  final EdgeInsetsGeometry padding;
+  final double fontSize;
 
   @override
   Widget build(BuildContext context) {
@@ -23,8 +29,9 @@ class AuthSubTextButton extends StatelessWidget {
       child: TitleElement(
         name: label,
         color: Palette.accent,
-        fontSize: Sizes.infoText,
+        fontSize: fontSize,
         fontWeight: FontWeight.bold,
+        padding: padding,
       ),
     );
   }

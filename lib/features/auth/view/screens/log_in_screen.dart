@@ -4,12 +4,12 @@ import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/responsive.dart';
+import 'package:telware_cross_platform/features/auth/view/screens/sign_up_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_floating_action_button.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_sub_text_button.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/shake_my_auth_input.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/social_log_in.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/circular_button.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:vibration/vibration.dart';
 
@@ -103,13 +103,13 @@ class LogInScreenState extends State<LogInScreen> {
                     color: Palette.primaryText,
                     fontSize: Sizes.headingText,
                     fontWeight: FontWeight.bold,
-                    paddingBottom: 10.0,
+                    padding: EdgeInsets.only(bottom: 10),
                   ),
                   const TitleElement(
                     name: 'Enter your credentials',
                     color: Palette.accentText,
                     fontSize: Sizes.secondaryText,
-                    paddingBottom: 30.0,
+                    padding: EdgeInsets.only(bottom: 30),
                     width: 250.0,
                   ),
                   ShakeMyAuthInput(
@@ -126,7 +126,10 @@ class LogInScreenState extends State<LogInScreen> {
                     isFocused: isPasswordFocused,
                     focusNode: passwordFocusNode,
                     controller: passwordController,
-                    paddingBottom: 0,
+                    padding: const EdgeInsets.only(
+                      left: Dimensions.inputPaddingRight,
+                      right: Dimensions.inputPaddingLeft,
+                    ),
                     obscure: true,
                     // todo: add validator for the password
                   ),
@@ -141,7 +144,9 @@ class LogInScreenState extends State<LogInScreen> {
                         fontSize: Sizes.infoText,
                       ),
                       AuthSubTextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.pushNamed(context, SignUpScreen.route);
+                        },
                         label: 'Sign Up',
                       ),
                     ],

@@ -7,6 +7,7 @@ import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.
 import 'core/models/user_model.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/view/screens/sign_up_screen.dart';
+import 'features/auth/view/screens/verification_screen.dart';
 
 void main() async {
   await init();
@@ -46,6 +47,7 @@ class _TelWareState extends ConsumerState<TelWare> {
         SplashScreen.route: (context) => const SplashScreen(),
         LogInScreen.route: (context) => const LogInScreen(),
         SignUpScreen.route: (context) => const SignUpScreen(),
+        VerificationScreen.route: (context) => const VerificationScreen(),
       },
       home: const LogInScreen(),
     );
