@@ -16,18 +16,6 @@ class ProfileSection extends StatelessWidget {
           radius: 50,
           backgroundColor: Palette.primary,
         ),
-        InfoTextWidget(
-          text: phoneNumber,
-          subText: 'Tap to change phone number',
-        ),
-        InfoTextWidget(
-          text: username,
-          subText: 'Username',
-        ),
-        InfoTextWidget(
-          text: bio,
-          subText: 'Add a few words about yourself',
-        ),
       ],
     );
   }
