@@ -2,7 +2,7 @@ import 'package:hive/hive.dart';
 
 part 'story_model.g.dart'; // Hive code generation part
 
-@HiveType(typeId: 0)
+@HiveType(typeId: 1)
 class StoryModel {
   @HiveField(0)
   String userName;

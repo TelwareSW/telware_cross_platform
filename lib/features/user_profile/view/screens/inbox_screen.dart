@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/features/user_profile/view/widget/colapsed_story_section.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../widget/chats_list.dart';
 import '../widget/expanded_stories_section.dart';
 
-class InboxScreen extends StatefulWidget {
+class InboxScreen extends ConsumerStatefulWidget {
   static const String route = '/profile';
   const InboxScreen({super.key});
 
   @override
-  State<InboxScreen> createState() => _InboxScreenState();
+  ConsumerState<InboxScreen> createState() => _InboxScreenState();
 }
 
-class _InboxScreenState extends State<InboxScreen> {
+class _InboxScreenState extends ConsumerState<InboxScreen> {
   final ScrollController _scrollController = ScrollController();
   bool isAppBarCollapsed = false;
 
@@ -41,6 +42,7 @@ class _InboxScreenState extends State<InboxScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     return LayoutBuilder(
       builder: (context,constraints){
       return Scaffold(
@@ -50,7 +52,7 @@ class _InboxScreenState extends State<InboxScreen> {
           slivers: [
             SliverAppBar(
               backgroundColor: Palette.secondary,
-              expandedHeight: kIsWeb ? 150 : constraints.maxWidth > 600 ? 140 : 130,
+              expandedHeight: kIsWeb ? 150 : constraints.maxWidth > 600 ? 150 : 140,
               floating: false,
               snap: false,
               pinned: true,

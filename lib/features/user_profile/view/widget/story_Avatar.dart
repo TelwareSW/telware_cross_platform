@@ -1,25 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
+import 'package:telware_cross_platform/features/user_profile/view/screens/add_my_story_screen.dart';
 import 'package:telware_cross_platform/features/user_profile/view/screens/story_screen.dart';
+import 'package:telware_cross_platform/features/user_profile/view/widget/add_my_story.dart';
 import '../../../../core/theme/palette.dart';
-import '../../view_model/story_view_model.dart';
+import '../../view_model/user_view_model.dart';
 
 class StoryAvatar extends ConsumerWidget {
   final UserModel user;
+  final Type screenType; // Accept the screen type
+
   const StoryAvatar({
     super.key,
     required this.user,
+    required this.screenType
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
       onTap: () async {
-        await ref.read(storyViewModelProvider.notifier).fetchStories();
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => StoryScreen()),
+          MaterialPageRoute(
+              builder: (context) => screenType == StoryScreen ? StoryScreen(
+                user: user,
+              ):CameraApp()
+          ),
         );
       },
       child: Padding(

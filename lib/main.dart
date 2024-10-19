@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
 import 'package:telware_cross_platform/features/user_profile/view/screens/inbox_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hive/hive.dart';
@@ -10,8 +11,9 @@ import 'features/user_profile/models/story_model.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-  Hive.registerAdapter(StoryModelAdapter()); // Make sure to register your adapter
-  await Hive.openBox<StoryModel>('stories'); // Open the box// Replace 'stories' with your actual box name
+  Hive.registerAdapter(UserModelAdapter()); // Make sure to register your adapter
+  Hive.registerAdapter(StoryModelAdapter()); // Register the StoryModel adapter
+  await Hive.openBox<UserModel>('users'); // Open the box// Replace 'stories' with your actual box name
 
   runApp(
     const ProviderScope(

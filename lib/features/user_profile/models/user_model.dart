@@ -13,13 +13,29 @@ class UserModel {
   String userName;
 
   @HiveField(2)
+  String userId;
+
+  @HiveField(3)
   String imageUrl;
 
   UserModel({
     required this.stories,
     required this.userName,
+    required this.userId,
     required this.imageUrl,
   });
 
-
+  UserModel copyWith({
+    String? userId,
+    String? userName,
+    String? imageUrl,
+    List<StoryModel>? stories,
+  }) {
+    return UserModel(
+      userId: userId ?? this.userId,
+      userName: userName ?? this.userName,
+      imageUrl: imageUrl ?? this.imageUrl,
+      stories: stories ?? this.stories,
+    );
+  }
 }

@@ -5,12 +5,15 @@ import 'package:intl/intl.dart';
 import 'package:story/story_image.dart';
 import 'package:story/story_page_view.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
+import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
 
-import '../../view_model/story_view_model.dart';
+import '../../models/story_model.dart';
+import '../../view_model/user_view_model.dart';
 
 
 class StoryScreen extends ConsumerStatefulWidget {
-  const StoryScreen({Key? key}) : super(key: key);
+  final UserModel user;
+  StoryScreen({Key? key, required this.user}): super(key: key);
 
   @override
   _StoryScreenState createState() => _StoryScreenState();
@@ -18,7 +21,8 @@ class StoryScreen extends ConsumerStatefulWidget {
 
 class _StoryScreenState extends ConsumerState<StoryScreen> {
   late ValueNotifier<IndicatorAnimationCommand> indicatorAnimationController;
-  late final storiesList = ref.watch(storyViewModelProvider);
+  List<StoryModel> storiesList = []; // Initialize your stories list
+
   @override
   void initState() {
     super.initState();
@@ -28,9 +32,9 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
   }
 
   // Load stories from Hive
-  void loadStories() {
-    final viewModel = ref.read(storyViewModelProvider.notifier);
-    viewModel.fetchStories(); // Fetch stories from the backend and save to Hive
+  Future<void> loadStories() async {
+    storiesList = await widget.user.stories;
+    setState(() {});
   }
 
   FocusNode _focusNode = FocusNode();
@@ -48,7 +52,6 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
       resizeToAvoidBottomInset: true,
       body: StoryPageView(
         itemBuilder: (context, pageIndex, storyIndex) {
-          final story = storiesList[storyIndex];
           return Stack(
             children: [
               Positioned.fill(
@@ -56,10 +59,8 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
               ),
               Positioned.fill(
                 child: StoryImage(
-                  key: ValueKey(story.storyContent),
-                  imageProvider: NetworkImage(
-                      story.storyContent
-                  ),
+                  key: ValueKey(widget.user.stories[storyIndex].userImageUrl),
+                  imageProvider: NetworkImage(widget.user.stories[storyIndex].userImageUrl),
                   fit: BoxFit.fitWidth,
                 ),
               ),
@@ -67,14 +68,14 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
                 padding: const EdgeInsets.only(top: 44, left: 8),
                 child: Row(
                   crossAxisAlignment:
-                  CrossAxisAlignment.center, // Center-align image and text
+                      CrossAxisAlignment.center, // Center-align image and text
                   children: [
                     Container(
                       height: 32,
                       width: 32,
                       decoration: BoxDecoration(
                         image: DecorationImage(
-                          image: NetworkImage(story.userImageUrl),
+                          image: NetworkImage(widget.user.imageUrl),
                           fit: BoxFit.cover,
                         ),
                         shape: BoxShape.circle,
@@ -85,12 +86,12 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
                     ),
                     Column(
                       crossAxisAlignment:
-                      CrossAxisAlignment.start, // Align text to start
+                          CrossAxisAlignment.start, // Align text to start
                       mainAxisSize: MainAxisSize
                           .min, // Prevents Column from expanding vertically
                       children: [
                         Text(
-                          'user1',
+                          widget.user.userId,
                           style: const TextStyle(
                             fontSize: 17,
                             color: Colors.white,
@@ -98,7 +99,7 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
                           ),
                         ),
                         Text(
-                          DateFormat('dd-MM-yyyy').format(story.createdAt),
+                          DateFormat('dd-MM-yyyy').format(widget.user.stories[storyIndex].createdAt),
                           style: const TextStyle(
                             fontSize: 17,
                             color: Colors.white,
@@ -160,7 +161,6 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
                           indicatorAnimationController.value =
                               IndicatorAnimationCommand.pause;
                         },
-
                         focusNode: _focusNode,
                         decoration: InputDecoration(
                           hintStyle: TextStyle(color: Palette.accentText),
@@ -169,8 +169,7 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
                             borderRadius: BorderRadius.circular(20),
                             borderSide: BorderSide.none,
                           ),
-                          contentPadding:
-                          EdgeInsets.symmetric(horizontal: 16),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 16),
                         ),
                       ),
                     ),
@@ -195,14 +194,11 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
         },
         indicatorAnimationController: indicatorAnimationController,
         initialStoryIndex: (pageIndex) {
-          if (pageIndex == 0) {
-            return 1;
-          }
           return 0;
         },
-        pageLength: storiesList.length,
+        pageLength: 1,
         storyLength: (int pageIndex) {
-          return storiesList.length;
+          return widget.user.stories.length;
         },
         onPageLimitReached: () {
           Navigator.pop(context);

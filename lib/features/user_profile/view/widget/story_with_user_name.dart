@@ -1,4 +1,5 @@
 import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
+import 'package:telware_cross_platform/features/user_profile/view/screens/story_screen.dart';
 import 'package:telware_cross_platform/features/user_profile/view/widget/story_Avatar.dart';
 import 'package:flutter/material.dart';
 
@@ -16,6 +17,7 @@ class StoryWithUserName extends StatelessWidget {
           padding: EdgeInsets.only(right: 10),
           child: StoryAvatar(
             user: user,
+            screenType: StoryScreen,
           ),
         ),
         Padding(
