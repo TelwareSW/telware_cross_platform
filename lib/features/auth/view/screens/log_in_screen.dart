@@ -126,7 +126,10 @@ class LogInScreenState extends State<LogInScreen> {
                     isFocused: isPasswordFocused,
                     focusNode: passwordFocusNode,
                     controller: passwordController,
-                    paddingBottom: 0,
+                    padding: const EdgeInsets.only(
+                      left: Dimensions.inputPaddingRight,
+                      right: Dimensions.inputPaddingLeft,
+                    ),
                     obscure: true,
                     // todo: add validator for the password
                   ),
