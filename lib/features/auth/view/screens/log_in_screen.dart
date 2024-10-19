@@ -9,7 +9,6 @@ import 'package:telware_cross_platform/features/auth/view/widget/auth_sub_text_b
 import 'package:telware_cross_platform/features/auth/view/widget/shake_my_auth_input.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/social_log_in.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/circular_button.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:vibration/vibration.dart';
 
