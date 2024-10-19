@@ -1,6 +1,7 @@
 // common utility functions are added here
 
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 String? emailValidator(String? value) {
   const String emailPattern =
@@ -15,7 +16,7 @@ String? emailValidator(String? value) {
   return null;
 }
 
-// todo: update this function to handle more cases
+// todo(ahmed): update this function to handle more cases
 String? confirmPasswordValidation(String? password, String? confirmedPassword) {
   if (password!.isEmpty || confirmedPassword!.isEmpty) return null;
   if (password != confirmedPassword) return 'Passwords do not match.';
@@ -24,4 +25,20 @@ String? confirmPasswordValidation(String? password, String? confirmedPassword) {
 
 bool isKeyboardOpen(BuildContext context) {
   return MediaQuery.of(context).viewInsets.bottom != 0;
+}
+
+void showSnackBarMessage(BuildContext context, String message) {
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        content: Center(
+          child: Text(message),
+        ),
+      ),
+    );
+}
+
+void showToastMessage(String message) {
+  Fluttertoast.showToast(msg: message);
 }
