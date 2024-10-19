@@ -126,12 +126,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       appBar: AppBar(
         backgroundColor: Palette.background,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).maybePop();
-          },
-        ),
       ),
       backgroundColor: Palette.background,
       body: Responsive(

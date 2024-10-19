@@ -104,12 +104,6 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
       appBar: AppBar(
         backgroundColor: Palette.background,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).maybePop();
-          },
-        ),
       ),
       body: Responsive(
         child: SingleChildScrollView(
