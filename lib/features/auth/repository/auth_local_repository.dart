@@ -39,6 +39,11 @@ class AuthLocalRepository {
     return token;
   }
 
+  Future<void> deleteToken() async {
+    await _tokenBox.delete('token');
+    _ref.read(tokenProvider.notifier).update((_) => null);
+  }
+
   // todo: create the user setting and getting methods
   void setUser(UserModel user) async {
     await _userBox.put('user', user);
@@ -49,5 +54,10 @@ class AuthLocalRepository {
     UserModel? user = _userBox.get('user');
     _ref.read(userProvider.notifier).update((_) => user);
     return user;
+  }
+
+  Future<void> deleteUser() async {
+    await _userBox.delete('user');
+    _ref.read(userProvider.notifier).update((_) => null);
   }
 }
