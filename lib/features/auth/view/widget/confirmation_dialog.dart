@@ -24,7 +24,7 @@ void showConfirmationDialog(
             borderRadius: BorderRadius.circular(10),
           ),
           actionsAlignment: MainAxisAlignment.spaceBetween,
-          contentPadding: const EdgeInsets.all(16.0),
+          contentPadding: const EdgeInsets.only(top: 16),
           content: SizedBox(
             width: 1000, // 90% of screen width
             height: 60,
@@ -43,7 +43,6 @@ void showConfirmationDialog(
                   color: Palette.primaryText,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  padding: const EdgeInsets.only(right: 80),
                 ),
               ],
             ),
