@@ -28,7 +28,7 @@ class AuthViewModel extends _$AuthViewModel {
         await ref.read(authRemoteRepositoryProvider).getUser();
 
     if (response != null) {
-      state = AuthState.failed(response.error);
+      state = AuthState.fail(response.error);
       // getting user data from remote failed
       final user = ref.read(authLocalRepositoryProvider).getUser();
       if (user == null) {
@@ -78,14 +78,20 @@ class AuthViewModel extends _$AuthViewModel {
         .logIn(email: email, password: password);
 
     if (appError != null) {
-      state = AuthState.failed(appError.error);
+      state = AuthState.fail(appError.error);
     } else {
       state = AuthState.authorized;
     }
   }
 
-  void forgotPassword(String email) {
-    ref.read(authRemoteRepositoryProvider).forgotPassword(email);
+  void forgotPassword(String email) async {
+    state = AuthState.loading;
+    final appError = await ref.read(authRemoteRepositoryProvider).forgotPassword(email);
+    if (appError != null) {
+      state = AuthState.fail(appError.error);
+    } else {
+      state = AuthState.success('A reset link will be sent to your email');
+    }
   }
 
   void loginWithGoogle() {}
