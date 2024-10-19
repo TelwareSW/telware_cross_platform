@@ -44,6 +44,8 @@ dependencies:
   vibration: ^2.0.1
   flutter_shakemywidget: ^1.0.5+1
   fluttertoast: ^8.2.8
+  flutter_verification_code: ^1.1.7
+  phone_form_field: ^9.2.8
 
 dev_dependencies:
   flutter_test:

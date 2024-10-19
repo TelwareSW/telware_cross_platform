@@ -141,18 +141,17 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
                           color: Palette.primaryText,
                           fontSize: Sizes.headingText,
                           fontWeight: FontWeight.bold,
-                          paddingBottom: 10.0,
+                          padding: EdgeInsets.only(bottom: 10),
                         ),
                         const TitleElement(
                           name: 'Enter your credentials',
                           color: Palette.accentText,
                           fontSize: Sizes.secondaryText,
-                          paddingBottom: 30.0,
+                          padding: EdgeInsets.only(bottom: 30),
                           width: 250.0,
                         ),
                         ShakeMyAuthInput(
                           name: 'Email',
-                          formKey: emailKey,
                           shakeKey: emailShakeKey,
                           isFocused: isEmailFocused,
                           focusNode: emailFocusNode,
@@ -165,7 +164,10 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
                           isFocused: isPasswordFocused,
                           focusNode: passwordFocusNode,
                           controller: passwordController,
-                          paddingBottom: 0,
+                          padding: const EdgeInsets.only(
+                            left: Dimensions.inputPaddingRight,
+                            right: Dimensions.inputPaddingLeft,
+                          ),
                           obscure: true,
                           // todo: add validator for the password
                         ),

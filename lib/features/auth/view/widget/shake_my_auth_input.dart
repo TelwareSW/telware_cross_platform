@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
-import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_input_field.dart';
+import 'package:telware_cross_platform/core/theme/dimensions.dart';
 
 class ShakeMyAuthInput extends StatelessWidget {
   const ShakeMyAuthInput({
@@ -11,7 +11,11 @@ class ShakeMyAuthInput extends StatelessWidget {
     required this.shakeKey,
     required this.isFocused,
     required this.focusNode,
-    this.paddingBottom = Dimensions.inputPaddingBottom,
+    this.padding = const EdgeInsets.only(
+      bottom: Dimensions.inputPaddingBottom,
+      left: Dimensions.inputPaddingLeft,
+      right: Dimensions.inputPaddingRight,
+    ),
     this.obscure = false,
     required this.controller,
     this.validator,
@@ -20,7 +24,7 @@ class ShakeMyAuthInput extends StatelessWidget {
   final GlobalKey<ShakeWidgetState> shakeKey;
   final GlobalKey<FormFieldState>? formKey;
   final String name;
-  final double paddingBottom;
+  final EdgeInsetsGeometry padding;
   final bool obscure;
   final bool isFocused;
   final FocusNode focusNode;
@@ -36,9 +40,7 @@ class ShakeMyAuthInput extends StatelessWidget {
       shakeDuration: const Duration(milliseconds: 500),
       child: AuthInputField(
         name: name,
-        paddingBottom: paddingBottom,
-        paddingLeft: Dimensions.inputPaddingLeft,
-        paddingRight: Dimensions.inputPaddingRight,
+        padding: padding,
         formFieldKey: formKey,
         isFocused: isFocused,
         focusNode: focusNode,
