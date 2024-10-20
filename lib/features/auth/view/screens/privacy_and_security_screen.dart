@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/profile_section.dart';
+import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/settings_section.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/toolbar_widget.dart';
 
@@ -72,7 +72,7 @@ class _PrivacySettingsScreen extends State<PrivacySettingsScreen> {
                     return  Column(
                       children: [
                         SettingsSection(title: title, settingsOptions: options, trailing: trailing,),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: Dimensions.sectionGaps),
                       ],
                     );
                   }

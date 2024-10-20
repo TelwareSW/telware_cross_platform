@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:telware_cross_platform/core/theme/palette.dart';
+import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/settings_input_widget.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/settings_section.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/toolbar_widget.dart';
@@ -46,16 +46,16 @@ class _ProfileInfoScreen extends State<ProfileInfoScreen> {
           child: Column(
             children: [
               SettingsSection(title: "Your Name",
-                settingsOptions: [],
+                settingsOptions: const [],
                 actions: [
                   SettingsInputWidget(controller:_firstNameController),
                   SettingsInputWidget(controller:_secondNameController),
                 ],),
-              const SizedBox(height: 20),
+              const SizedBox(height: Dimensions.sectionGaps),
               const SettingsSection(title: "Your channel",
                 settingsOptions: [{"text": "Personal channel", "trailing": "Add"}],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: Dimensions.sectionGaps),
               SettingsSection(title: "Your bio",
                 settingsOptions: const [],
                 actions: [
@@ -64,7 +64,7 @@ class _ProfileInfoScreen extends State<ProfileInfoScreen> {
                 ],
                 trailing: "You can add a few lines about yourself. Choose who can "
                     "see your bio in Settings",),
-              const SizedBox(height: 20),
+              const SizedBox(height: Dimensions.sectionGaps),
               const SettingsSection(title: "Your birthday",
                 settingsOptions: [{"text": "Date of birth", "trailing": "Add"}],
                 trailing: "Only your contacts can see your birthday. Change>",),
