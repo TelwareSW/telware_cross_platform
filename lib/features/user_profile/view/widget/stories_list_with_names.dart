@@ -18,21 +18,21 @@ class StoriesListWithNames extends ConsumerWidget {
         createdAt: DateTime.now(),
         storyContent:
             'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
-        isSeen: true,
+        isSeen: false,
       ),
       StoryModel(
         storyId: 'idd12',
         createdAt: DateTime.now().subtract(const Duration(hours: 1)),
         storyContent:
             'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
-        isSeen: true,
+        isSeen: false,
       ),
       StoryModel(
         storyId: 'idd13',
         createdAt: DateTime.now(),
         storyContent:
             'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
-        isSeen: true,
+        isSeen: false,
       ),
     ],
     userId: 'idd1',

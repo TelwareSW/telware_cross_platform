@@ -1,15 +1,16 @@
-import 'dart:io';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:telware_cross_platform/features/user_profile/view/widget/pick_from_gallery.dart';
 
 class TakePhotoRow extends StatelessWidget {
   const TakePhotoRow({
     super.key,
     required String selectedMode,
+    required this.onCapture,
+    required this.onToggle,
   }) : _selectedMode = selectedMode;
   final String _selectedMode;
+  final VoidCallback onCapture;
+  final VoidCallback onToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +32,7 @@ class TakePhotoRow extends StatelessWidget {
         ),
         GestureDetector(
           onTap: () {
-              print('Button Pressed');
+            onCapture();
           },
           child: Container(
             width: 80.0,
@@ -55,7 +56,7 @@ class TakePhotoRow extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(right: 40.0),
           child: GestureDetector(
-            onTap: () {},
+            onTap: onToggle,
             child: ClipOval(
                 child: Container(
                     color: Colors.grey.shade900.withOpacity(0.5),
@@ -73,47 +74,3 @@ class TakePhotoRow extends StatelessWidget {
   }
 }
 
-class PickFromGallery extends StatefulWidget {
-  const PickFromGallery({super.key});
-
-  @override
-  _PickFromGalleryState createState() => _PickFromGalleryState();
-}
-
-class _PickFromGalleryState extends State<PickFromGallery> {
-  File? _image;
-  final ImagePicker _picker = ImagePicker();
-
-  Future<void> _pickImage() async {
-    final XFile? pickedImage =
-        await _picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedImage != null) {
-      setState(() {
-        _image = File(pickedImage.path);
-      });
-    } else {
-      if (kDebugMode) {
-        print("No image selected.");
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          GestureDetector(
-            onTap: _pickImage,
-            child: const Icon(
-              Icons.image,
-              size: 35,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

@@ -10,6 +10,8 @@ class ColapsedStorySection extends ConsumerWidget {
   final double size = 50;
   final double xShift = 25;
 
+  const ColapsedStorySection({super.key});
+
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -65,7 +65,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
                 pinned: true,
                 leading: const Icon(Icons.menu),
                 title: isAppBarCollapsed
-                    ? ColapsedStorySection()
+                    ? const ColapsedStorySection()
                     : const Text(
                         'TelWare',
                         style: TextStyle(
