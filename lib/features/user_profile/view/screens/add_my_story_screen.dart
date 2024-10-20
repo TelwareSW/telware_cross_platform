@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../widget/choice_mode_in_camera_container.dart';
 import '../widget/take_photo_row.dart';
 
 class CameraApp extends StatefulWidget {
+  const CameraApp({super.key});
+
   @override
   _CameraAppState createState() => _CameraAppState();
 }
@@ -24,7 +27,9 @@ class _CameraAppState extends State<CameraApp> {
   Future<void> _initializeCamera() async {
     final cameras = await availableCameras();
     if (cameras.isEmpty) {
-      print('No cameras available');
+      if (kDebugMode) {
+        print('No cameras available');
+      }
       return;
     }
     final camera = cameras.first;
@@ -63,7 +68,6 @@ class _CameraAppState extends State<CameraApp> {
           if (snapshot.connectionState == ConnectionState.done) {
             return Stack(
               children: [
-                // Camera preview takes the full screen
                 Positioned.fill(
                   child: CameraPreview(_controller!),
                 ),
@@ -76,9 +80,9 @@ class _CameraAppState extends State<CameraApp> {
                     backgroundColor: Colors.transparent,
                     elevation: 0,
                     leading: IconButton(
-                      icon: Icon(Icons.arrow_back, color: Colors.white),
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
                       onPressed: () {
-                        Navigator.pop(context); // Pops the current screen to go back
+                        Navigator.pop(context);
                       },
                     ),
                   ),
@@ -91,7 +95,7 @@ class _CameraAppState extends State<CameraApp> {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           TakePhotoRow(selectedMode: _selectedMode),
-                          SizedBox(
+                          const SizedBox(
                             height: 25,
                           ),
                           buildCameraModeRow(constraints),
@@ -105,7 +109,7 @@ class _CameraAppState extends State<CameraApp> {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
         },
       ),
@@ -127,7 +131,7 @@ class _CameraAppState extends State<CameraApp> {
             _toggleMode(_selectedMode);
           },
         ),
-        SizedBox(
+        const SizedBox(
           width: 16,
         ),
         GestureDetector(

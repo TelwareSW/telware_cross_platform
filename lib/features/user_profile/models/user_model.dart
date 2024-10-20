@@ -1,7 +1,7 @@
 import 'package:telware_cross_platform/features/user_profile/models/story_model.dart';
 import 'package:hive/hive.dart';
 
-part 'user_model.g.dart'; // Hive code generation part
+part 'user_model.g.dart';
 
 @HiveType(typeId: 0)
 class UserModel {
@@ -37,5 +37,10 @@ class UserModel {
       imageUrl: imageUrl ?? this.imageUrl,
       stories: stories ?? this.stories,
     );
+  }
+
+  @override
+  String toString() {
+    return 'UserModel(userId: $userId, userName: $userName, imageUrl: $imageUrl, stories: $stories)';
   }
 }

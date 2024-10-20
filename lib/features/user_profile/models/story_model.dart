@@ -1,14 +1,14 @@
 import 'package:hive/hive.dart';
 
-part 'story_model.g.dart'; // Hive code generation part
+part 'story_model.g.dart';
 
 @HiveType(typeId: 1)
 class StoryModel {
   @HiveField(0)
-  String userName;
+  String storyId;
 
   @HiveField(1)
-  String userImageUrl;
+  bool isSeen;
 
   @HiveField(2)
   String storyContentType;
@@ -21,27 +21,31 @@ class StoryModel {
 
   // Constructor
   StoryModel({
-    required this.userName,
-    required this.userImageUrl,
+    required this.storyId,
+    required this.isSeen,
     required this.createdAt,
     this.storyContentType = 'image',
     this.storyContent = 'placeholder for content',
   });
 
-  // Setters and Getters are optional if you want to provide controlled access
-  String get getUserName => userName;
-  set setUserName(String userName) => this.userName = userName;
+  StoryModel copyWith({
+    String? storyId,
+    bool? isSeen,
+    String? storyContentType,
+    String? storyContent,
+    DateTime? createdAt,
+  }) {
+    return StoryModel(
+      storyId: storyId ?? this.storyId,
+      isSeen: isSeen ?? this.isSeen,
+      storyContentType: storyContentType ?? this.storyContentType,
+      storyContent: storyContent ?? this.storyContent,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 
-  String get getUserImageUrl => userImageUrl;
-  set setUserImageUrl(String userImageUrl) => this.userImageUrl = userImageUrl;
-
-  DateTime get getCreatedAt => createdAt;
-  set setCreatedAt(DateTime createdAt) => this.createdAt = createdAt;
-
-  String get getStoryContentType => storyContentType;
-  set setStoryContentType(String storyContentType) =>
-      this.storyContentType = storyContentType;
-
-  String get getStoryContent => storyContent;
-  set setStoryContent(String storyContent) => this.storyContent = storyContent;
+  @override
+  String toString() {
+    return 'StoryModel(storyId: $storyId, isSeen: $isSeen, storyContentType: $storyContentType, storyContent: $storyContent, createdAt: $createdAt)';
+  }
 }

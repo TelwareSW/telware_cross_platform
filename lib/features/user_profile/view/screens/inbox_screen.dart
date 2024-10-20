@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/features/user_profile/view/widget/colapsed_story_section.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import '../../view_model/user_view_model.dart';
 import '../widget/chats_list.dart';
 import '../widget/expanded_stories_section.dart';
 
@@ -40,47 +41,54 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
     super.dispose();
   }
 
+  Future<void> _refreshPage() async {
+    await ref.read(usersViewModelProvider.notifier).fetchUsers();
+    await Future.delayed(const Duration(seconds: 2));
+  }
+
   @override
   Widget build(BuildContext context) {
-
     return LayoutBuilder(
       builder: (context,constraints){
       return Scaffold(
-        body: CustomScrollView(
-          controller: _scrollController,
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            SliverAppBar(
-              backgroundColor: Palette.secondary,
-              expandedHeight: kIsWeb ? 150 : constraints.maxWidth > 600 ? 150 : 140,
-              floating: false,
-              snap: false,
-              pinned: true,
-              leading: Icon(Icons.menu),
-              title: isAppBarCollapsed
-                  ? ColapsedStorySection()
-                  : Text(
-                      'TelWare',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+        body: RefreshIndicator(
+          onRefresh: _refreshPage,
+          child: CustomScrollView(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverAppBar(
+                backgroundColor: Palette.secondary,
+                expandedHeight: kIsWeb ? 150 : constraints.maxWidth > 600 ? 150 : 140,
+                floating: false,
+                snap: false,
+                pinned: true,
+                leading: const Icon(Icons.menu),
+                title: isAppBarCollapsed
+                    ? ColapsedStorySection()
+                    : const Text(
+                        'TelWare',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
+                flexibleSpace: FlexibleSpaceBar(
+                  background: !isAppBarCollapsed ? const ExpandedStoriesSection() : Container(),
+                ),
+                actions: const [
+                  Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Icon(
+                      Icons.search_rounded,
+                      size: 30,
                     ),
-              flexibleSpace: FlexibleSpaceBar(
-                background: ExpandedStoriesSection()
+                  )
+                ],
               ),
-              actions: [
-                Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Icon(
-                    Icons.search_rounded,
-                    size: 30,
-                  ),
-                )
-              ],
-            ),
-            ChatsList(),
-          ],
+              const ChatsList(),
+            ],
+          ),
         ),
       );},
     );

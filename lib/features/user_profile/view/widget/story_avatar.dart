@@ -7,7 +7,7 @@ import '../../../../core/theme/palette.dart';
 
 class StoryAvatar extends ConsumerWidget {
   final UserModel user;
-  final Type screenType; // Accept the screen type
+  final Type screenType;
 
   const StoryAvatar({
     super.key,
@@ -17,6 +17,9 @@ class StoryAvatar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    bool allSeen = user.stories.every((story) => story.isSeen);
+    debugPrint('Building StoryAvatar...');
+
     return GestureDetector(
       onTap: () async {
         Navigator.push(
@@ -24,30 +27,31 @@ class StoryAvatar extends ConsumerWidget {
           MaterialPageRoute(
               builder: (context) => screenType == StoryScreen ? StoryScreen(
                 user: user,
-              ):CameraApp()
+              ):const CameraApp()
           ),
         );
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         child: Container(
-          padding: EdgeInsets.all(2),
+          padding: const EdgeInsets.all(2),
           width: 45,
           height: 45,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            gradient: LinearGradient(
+            gradient: allSeen ? null : const LinearGradient(
               colors: [Colors.greenAccent, Colors.blue],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
+            color: allSeen ? Colors.grey : null,
           ),
           child: Container(
-            padding: EdgeInsets.all(2),
+            padding: const EdgeInsets.all(2),
             width: 45,
             height: 45,
             decoration:
-                BoxDecoration(shape: BoxShape.circle, color: Palette.secondary),
+                const BoxDecoration(shape: BoxShape.circle, color: Palette.secondary),
             child: ClipOval(
               child: Image.network(
                 user.imageUrl,

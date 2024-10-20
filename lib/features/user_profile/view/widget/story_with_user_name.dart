@@ -1,6 +1,6 @@
 import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
 import 'package:telware_cross_platform/features/user_profile/view/screens/story_screen.dart';
-import 'package:telware_cross_platform/features/user_profile/view/widget/story_Avatar.dart';
+import 'package:telware_cross_platform/features/user_profile/view/widget/story_avatar.dart';
 import 'package:flutter/material.dart';
 
 class StoryWithUserName extends StatelessWidget {
@@ -11,26 +11,27 @@ class StoryWithUserName extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('Building StoryWithUserName...');
     return Column(
       children: [
         Padding(
-          padding: EdgeInsets.only(right: 10),
+          padding: const EdgeInsets.only(right: 10),
           child: StoryAvatar(
             user: user,
             screenType: StoryScreen,
           ),
         ),
         Padding(
-          padding: EdgeInsets.only(right: 10),
+          padding: const EdgeInsets.only(right: 10),
           child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: 80, // Set the maximum width to 50 pixels
+            constraints: const BoxConstraints(
+              maxWidth: 80,
             ),
             child: Text(
               user.userName,
-              style: TextStyle(color: Colors.white),
-              overflow: TextOverflow.ellipsis, // Trim with ellipsis if text exceeds the width
-              maxLines: 1, // Limit to a single line
+              style: const TextStyle(color: Colors.white),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
           ),
         )

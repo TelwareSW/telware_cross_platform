@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
@@ -9,25 +10,21 @@ class UsersRepository {
   UsersRepository(this._userBox);
 
   Future<List<UserModel>> fetchUsersFromBackend() async {
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
     List<UserModel> users = [
       UserModel(
         stories: [
           StoryModel(
-            userName: 'rings of power',
-            userImageUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+            storyId: 'id11',
             createdAt: DateTime.now(),
             storyContent:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',isSeen: false,
           ),
           StoryModel(
-            userName: 'game of thrones',
-            userImageUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
-            createdAt: DateTime.now().subtract(Duration(hours: 1)),
+            storyId: 'id12',
+            createdAt: DateTime.now().subtract(const Duration(hours: 1)),
             storyContent:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
+            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',isSeen: false,
           ),
         ],
         userName: 'game of thrones',
@@ -38,34 +35,54 @@ class UsersRepository {
       UserModel(
         stories: [
           StoryModel(
-            userName: 'rings of power',
-            userImageUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+            storyId: 'id21',
             createdAt: DateTime.now(),
             storyContent:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg', isSeen: false,
           ),
           StoryModel(
-            userName: 'game of thrones',
-            userImageUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
-            createdAt: DateTime.now().subtract(Duration(hours: 1)),
+            storyId: 'id22',
+            createdAt: DateTime.now().subtract(const Duration(hours: 1)),
             storyContent:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
+            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',isSeen: false,
           ),
           StoryModel(
-            userName: 'rings of power',
-            userImageUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+            storyId: 'id23',
             createdAt: DateTime.now(),
             storyContent:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',isSeen: false,
           ),
         ],
         userName: 'rings of power',
         imageUrl:
         'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
         userId: 'id2',
+      ),
+      UserModel(
+        stories: [
+          StoryModel(
+            storyId: 'id31',
+            createdAt: DateTime.now(),
+            storyContent:
+            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',isSeen: false,
+          ),
+          StoryModel(
+            storyId: 'id32',
+            createdAt: DateTime.now().subtract(const Duration(hours: 1)),
+            storyContent:
+            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',isSeen: false,
+          ),
+          StoryModel(
+            storyId: 'id33',
+            createdAt: DateTime.now(),
+            storyContent:
+            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',isSeen: false,
+          ),
+        ],
+        userName: 'rings of power',
+        imageUrl:
+        'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+        userId: 'id3',
       ),
     ];
     return users;
@@ -76,7 +93,9 @@ class UsersRepository {
       try{
         await _userBox.put(user.userId,user);
       }catch(e){
-        print(e);
+        if (kDebugMode) {
+          print(e);
+        }
       }
     }
   }
@@ -100,6 +119,29 @@ class UsersRepository {
     return getAllUsersFromHive();
   }
 
+  Future<void> deleteUserFromHive(String userId) async {
+    final box = await Hive.openBox<UserModel>('users');
+    await box.delete(userId);
+  }
+
+  Future<void> updateUserInHive(UserModel updatedUser) async {
+    try {
+      final existingUser = _userBox.get(updatedUser.userId);
+
+      if (existingUser != null) {
+        await _userBox.put(updatedUser.userId, updatedUser);
+      } else {
+        if (kDebugMode) {
+          print('User not found');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Failed to update user in Hive: $e');
+      }
+      throw Exception('Error updating user in Hive');
+    }
+  }
 }
 
 final usersRepositoryProvider  = Provider((ref) {

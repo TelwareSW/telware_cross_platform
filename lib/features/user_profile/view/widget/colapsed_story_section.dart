@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/features/user_profile/view/screens/story_screen.dart';
-import 'package:telware_cross_platform/features/user_profile/view/widget/story_Avatar.dart';
+import 'package:telware_cross_platform/features/user_profile/view/widget/story_avatar.dart';
 import '../../models/user_model.dart';
+import '../../view_model/user_view_model.dart';
 
-class ColapsedStorySection extends StatelessWidget
-    implements PreferredSizeWidget {
+class ColapsedStorySection extends ConsumerWidget {
   final TextDirection direction = TextDirection.ltr;
   final double size = 50;
   final double xShift = 25;
 
-  final List<UserModel> usersWithStories = [
-  ];
-
-  ColapsedStorySection({
-    super.key,
-  });
 
   @override
-  Widget build(BuildContext context) {
-    List<Container> allItems = _buildStackedStories();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(usersViewModelProvider);
+    final users = state.users;
+    final reorderedUsers = reorderUsers(users);
+    List<Container> allItems = _buildStackedStories(reorderedUsers);
 
+    debugPrint('Building ColapsedStorySection...');
     return Row(
       children: [
         Stack(
@@ -30,19 +29,20 @@ class ColapsedStorySection extends StatelessWidget
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Text(
-            '${usersWithStories.length} Story',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            '${users.length} Story',
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
         )
       ],
     );
   }
 
-  List<Container> _buildStackedStories() {
-    final items = usersWithStories
+  List<Container> _buildStackedStories(List<UserModel> users) {
+    final items = users
         .take(3)
         .map((user) => StoryAvatar(
-              user: user, screenType: StoryScreen,
+              user: user,
+              screenType: StoryScreen,
             ))
         .toList();
 
@@ -51,8 +51,8 @@ class ColapsedStorySection extends StatelessWidget
         .map((index, item) {
           final left = size - xShift;
           final value = Container(
-            child: item,
             margin: EdgeInsets.only(left: left * index),
+            child: item,
           );
           return MapEntry(index, value);
         })
@@ -61,6 +61,13 @@ class ColapsedStorySection extends StatelessWidget
     return allItems;
   }
 
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  List<UserModel> reorderUsers(List<UserModel> users) {
+    List<UserModel> unseenStoriesUsers = [];
+    List<UserModel> seenStoriesUsers = [];
+    for (var user in users) {
+      bool allSeen = user.stories.every((story) => story.isSeen);
+      allSeen ? seenStoriesUsers.add(user) : unseenStoriesUsers.add(user);
+    }
+    return [...unseenStoriesUsers, ...seenStoriesUsers];
+  }
 }

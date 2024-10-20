@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -8,11 +9,11 @@ class TakePhotoRow extends StatelessWidget {
     super.key,
     required String selectedMode,
   }) : _selectedMode = selectedMode;
-
   final String _selectedMode;
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('Building TakePhotoRow...');
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -21,8 +22,8 @@ class TakePhotoRow extends StatelessWidget {
           child: ClipOval(
             child: Container(
               color: Colors.grey.shade900.withOpacity(0.5),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
+              child: const Padding(
+                padding: EdgeInsets.all(8.0),
                 child: PickFromGallery(),
               ),
             ),
@@ -30,7 +31,7 @@ class TakePhotoRow extends StatelessWidget {
         ),
         GestureDetector(
           onTap: () {
-            print('Button Pressed');
+              print('Button Pressed');
           },
           child: Container(
             width: 80.0,
@@ -54,14 +55,12 @@ class TakePhotoRow extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(right: 40.0),
           child: GestureDetector(
-            onTap: (){
-
-            },
+            onTap: () {},
             child: ClipOval(
                 child: Container(
                     color: Colors.grey.shade900.withOpacity(0.5),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
+                    child: const Padding(
+                      padding: EdgeInsets.all(8.0),
                       child: Icon(
                         Icons.cached,
                         size: 35,
@@ -82,20 +81,21 @@ class PickFromGallery extends StatefulWidget {
 }
 
 class _PickFromGalleryState extends State<PickFromGallery> {
-  File? _image; // To store the selected image
-  final ImagePicker _picker = ImagePicker(); // ImagePicker instance
+  File? _image;
+  final ImagePicker _picker = ImagePicker();
 
-  // Function to pick image from gallery
   Future<void> _pickImage() async {
     final XFile? pickedImage =
         await _picker.pickImage(source: ImageSource.gallery);
 
     if (pickedImage != null) {
       setState(() {
-        _image = File(pickedImage.path); // Save the selected image
+        _image = File(pickedImage.path);
       });
     } else {
-      print("No image selected.");
+      if (kDebugMode) {
+        print("No image selected.");
+      }
     }
   }
 
@@ -107,7 +107,7 @@ class _PickFromGalleryState extends State<PickFromGallery> {
         children: [
           GestureDetector(
             onTap: _pickImage,
-            child: Icon(
+            child: const Icon(
               Icons.image,
               size: 35,
             ),

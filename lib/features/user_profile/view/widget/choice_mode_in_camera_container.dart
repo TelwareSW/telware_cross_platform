@@ -5,6 +5,7 @@ class ChoiceModeInCameraContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('Building ChoiceModeInCameraContainer...');
     return Container(
       decoration: BoxDecoration(
           color: Colors.grey.shade800, borderRadius: BorderRadius.circular(20)),

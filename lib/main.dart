@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
 import 'package:telware_cross_platform/features/user_profile/view/screens/inbox_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:hive/hive.dart';
 
 import 'core/theme/auth_theme.dart';
 import 'features/user_profile/models/story_model.dart';
@@ -38,18 +37,3 @@ class TelWare extends StatelessWidget {
     );
   }
 }
-
-class Home extends StatelessWidget {
-  const Home({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(),
-      body: TextField(
-
-      ),
-    );
-  }
-}
-

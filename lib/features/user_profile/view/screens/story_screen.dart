@@ -6,12 +6,13 @@ import 'package:story/story_image.dart';
 import 'package:story/story_page_view.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
+import 'package:telware_cross_platform/features/user_profile/view_model/user_view_model.dart';
 import '../../models/story_model.dart';
 
 
 class StoryScreen extends ConsumerStatefulWidget {
   final UserModel user;
-  StoryScreen({Key? key, required this.user}): super(key: key);
+  const StoryScreen({super.key, required this.user});
 
   @override
   _StoryScreenState createState() => _StoryScreenState();
@@ -19,7 +20,7 @@ class StoryScreen extends ConsumerStatefulWidget {
 
 class _StoryScreenState extends ConsumerState<StoryScreen> {
   late ValueNotifier<IndicatorAnimationCommand> indicatorAnimationController;
-  List<StoryModel> storiesList = []; // Initialize your stories list
+  List<StoryModel> storiesList = [];
 
   @override
   void initState() {
@@ -29,13 +30,12 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
         IndicatorAnimationCommand.resume);
   }
 
-  // Load stories from Hive
   Future<void> loadStories() async {
-    storiesList = await widget.user.stories;
+    storiesList = widget.user.stories;
     setState(() {});
   }
 
-  FocusNode _focusNode = FocusNode();
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void dispose() {
@@ -50,6 +50,10 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
       resizeToAvoidBottomInset: true,
       body: StoryPageView(
         itemBuilder: (context, pageIndex, storyIndex) {
+          final story = widget.user.stories[storyIndex];
+          if(!story.isSeen){
+            ref.read(usersViewModelProvider.notifier).markStoryAsSeen(widget.user.userId, story.storyId);
+          }
           return Stack(
             children: [
               Positioned.fill(
@@ -57,8 +61,8 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
               ),
               Positioned.fill(
                 child: StoryImage(
-                  key: ValueKey(widget.user.stories[storyIndex].userImageUrl),
-                  imageProvider: NetworkImage(widget.user.stories[storyIndex].userImageUrl),
+                  key: ValueKey(widget.user.imageUrl),
+                  imageProvider: NetworkImage(widget.user.imageUrl),
                   fit: BoxFit.fitWidth,
                 ),
               ),
@@ -66,7 +70,7 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
                 padding: const EdgeInsets.only(top: 44, left: 8),
                 child: Row(
                   crossAxisAlignment:
-                      CrossAxisAlignment.center, // Center-align image and text
+                      CrossAxisAlignment.center,
                   children: [
                     Container(
                       height: 32,
@@ -84,9 +88,9 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
                     ),
                     Column(
                       crossAxisAlignment:
-                          CrossAxisAlignment.start, // Align text to start
+                          CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize
-                          .min, // Prevents Column from expanding vertically
+                          .min,
                       children: [
                         Text(
                           widget.user.userId,
@@ -154,34 +158,31 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
                     Expanded(
                       child: TextField(
                         onTap: () {
-                          // Ensure the keyboard is shown
                           _focusNode.requestFocus();
                           indicatorAnimationController.value =
                               IndicatorAnimationCommand.pause;
                         },
                         focusNode: _focusNode,
                         decoration: InputDecoration(
-                          hintStyle: TextStyle(color: Palette.accentText),
+                          hintStyle: const TextStyle(color: Palette.accentText),
                           hintText: 'Reply privately...',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20),
                             borderSide: BorderSide.none,
                           ),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
                     IconButton(
-                      icon: FaIcon(FontAwesomeIcons.share),
+                      icon: const FaIcon(FontAwesomeIcons.share),
                       onPressed: () {
-                        print('bitch');
                       },
                     ),
                     IconButton(
-                      icon: FaIcon(FontAwesomeIcons.heart),
+                      icon: const FaIcon(FontAwesomeIcons.heart),
                       onPressed: () {
-                        // Handle more options action
                       },
                     ),
                   ],

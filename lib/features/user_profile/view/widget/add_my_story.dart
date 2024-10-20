@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
-import 'package:telware_cross_platform/features/user_profile/view/widget/story_Avatar.dart';
+import 'package:telware_cross_platform/features/user_profile/view/widget/story_avatar.dart';
 import '../../../../core/theme/palette.dart';
 import '../screens/add_my_story_screen.dart';
 
@@ -14,10 +14,11 @@ class AddMyStory extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('Building add_my_Story...');
     return Column(
       children: [
         Padding(
-          padding: EdgeInsets.only(right: 10),
+          padding: const EdgeInsets.only(right: 10),
           child: Stack(
             children: [
               StoryAvatar(
@@ -28,24 +29,24 @@ class AddMyStory extends StatelessWidget {
                 bottom: 2,
                 right: 2,
                 child: Container(
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors
                         .white,
                   ),
                   padding:
-                  EdgeInsets.all(4),
-                  child: Icon(
+                  const EdgeInsets.all(4),
+                  child: const Icon(
                     Icons.add,
                     size: 15,
-                    color: Palette.secondary, // Icon color
+                    color: Palette.secondary,
                   ),
                 ),
               ),
             ],
           ),
         ),
-        Padding(
+        const Padding(
           padding: EdgeInsets.only(right: 10),
           child: Text(
             "My Story",

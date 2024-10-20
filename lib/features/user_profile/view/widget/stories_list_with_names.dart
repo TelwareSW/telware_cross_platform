@@ -8,34 +8,31 @@ import '../../models/story_model.dart';
 import 'add_my_story.dart';
 
 class StoriesListWithNames extends ConsumerWidget {
-  final UserModel myUser = new UserModel(
+  final UserModel myUser = UserModel(
     userName: 'game of thrones',
     imageUrl:
         'https://st2.depositphotos.com/2703645/7304/v/450/depositphotos_73040253-stock-illustration-male-avatar-icon.jpg',
     stories: [
       StoryModel(
-        userName: 'rings of power',
-        userImageUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+        storyId: 'idd11',
         createdAt: DateTime.now(),
         storyContent:
             'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+        isSeen: true,
       ),
       StoryModel(
-        userName: 'game of thrones',
-        userImageUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
-        createdAt: DateTime.now().subtract(Duration(hours: 1)),
+        storyId: 'idd12',
+        createdAt: DateTime.now().subtract(const Duration(hours: 1)),
         storyContent:
             'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
+        isSeen: true,
       ),
       StoryModel(
-        userName: 'rings of power',
-        userImageUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+        storyId: 'idd13',
         createdAt: DateTime.now(),
         storyContent:
             'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+        isSeen: true,
       ),
     ],
     userId: 'idd1',
@@ -48,17 +45,29 @@ class StoriesListWithNames extends ConsumerWidget {
     final viewModelState = ref.watch(usersViewModelProvider);
 
     final users = viewModelState.users;
+    List<UserModel> reorderedUsers = reorderUsers(users);
+    debugPrint('Building StoriesListWithNames...');
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(children: [
         AddMyStory(myUser: myUser),
-        ...users.map((user) {
+        ...reorderedUsers.map((user) {
           return StoryWithUserName(
             user: user,
           );
-        }).toList(),
+        }),
       ]),
     );
+  }
+
+  List<UserModel> reorderUsers(List<UserModel> users) {
+    List<UserModel> unseenStoriesUsers = [];
+    List<UserModel> seenStoriesUsers = [];
+    for (var user in users) {
+      bool allSeen = user.stories.every((story) => story.isSeen);
+      allSeen ? seenStoriesUsers.add(user) : unseenStoriesUsers.add(user);
+    }
+    return [...unseenStoriesUsers, ...seenStoriesUsers];
   }
 }

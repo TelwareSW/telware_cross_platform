@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
 import '../models/story_model.dart';
@@ -36,8 +37,8 @@ class UserViewModel extends StateNotifier<UserViewModelState> {
 
   Future<void> fetchUsers() async {
     try {
-      final users = await _usersRepository.fetchAndSaveUsers();
-      state = state.copyWith(users: users, isLoading: false);
+      final fetchedUsers = await _usersRepository.fetchAndSaveUsers();
+      state = state.copyWith(users: List.from(fetchedUsers), isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false);
     }
@@ -49,6 +50,49 @@ class UserViewModel extends StateNotifier<UserViewModelState> {
 
   Future<UserModel?> getUserById(String userId) async {
     return await _usersRepository.fetchUserFromHive(userId);
+  }
+
+  Future<void> deleteUser(String userId) async {
+    try {
+      await _usersRepository.deleteUserFromHive(userId);
+
+      final updatedUsers = state.users.where((user) => user.userId != userId).toList();
+      state = state.copyWith(users: updatedUsers);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Failed to delete user: $e');
+      }
+    }
+  }
+
+  Future<void> markStoryAsSeen(String userId, String storyId) async {
+    try {
+      final user = await getUserById(userId);
+      if (user != null) {
+        final updatedStories = user.stories.map((story) {
+          if (story.storyId == storyId) {
+            return story.copyWith(isSeen: true);
+          }
+          return story;
+        }).toList();
+
+        final updatedUser = user.copyWith(stories: updatedStories);
+        await _usersRepository.updateUserInHive(updatedUser);
+
+        final updatedUsers = state.users.map((u) {
+          if (u.userId == userId) {
+            return updatedUser;
+          }
+          return u;
+        }).toList();
+
+        state = state.copyWith(users: updatedUsers);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Failed to mark story as seen: $e');
+      }
+    }
   }
 
 }
