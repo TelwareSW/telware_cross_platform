@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/profile_section.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/settings_section.dart';
 
-class UserProfileScreen extends StatefulWidget {
+class SettingsScreen extends StatefulWidget {
   static const String route = '/profile';
 
-  const UserProfileScreen({super.key});
+  const SettingsScreen({super.key});
 
   @override
-  State<UserProfileScreen> createState() => _UserProfileScreenState();
+  State<SettingsScreen> createState() => _SettingsScreen();
 }
 
-class _UserProfileScreenState extends State<UserProfileScreen> {
+class _SettingsScreen extends State<SettingsScreen> {
   static const String fullName = "Moamen Hefny";
   static var user = {
     "phoneNumber": "+20 110 5035588",
