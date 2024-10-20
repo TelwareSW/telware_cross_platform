@@ -26,8 +26,12 @@ class LogInScreen extends ConsumerStatefulWidget {
 }
 
 class _LogInScreenState extends ConsumerState<LogInScreen> {
-  final formKey = GlobalKey<FormState>();
-  final emailKey = GlobalKey<FormFieldState>();
+  final formKey = GlobalKey<FormState>(debugLabel:'login_form');
+  final emailKey = GlobalKey<FormFieldState>(debugLabel:'login_email_input');
+  final passwordKey = GlobalKey<FormFieldState>(debugLabel:'login_password_input');
+  final forgotPasswordKey = GlobalKey<State>(debugLabel:'login_forgot_password_button');
+  final signUpKey = GlobalKey<State>(debugLabel:'login_signup_button');
+  final logInSubmitKey = GlobalKey<State>(debugLabel:'login_submit_button');
   final FocusNode emailFocusNode = FocusNode();
   final FocusNode passwordFocusNode = FocusNode();
   bool isEmailFocused = false;
@@ -160,6 +164,7 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
                         ),
                         ShakeMyAuthInput(
                           name: 'Password',
+                          formKey: passwordKey,
                           shakeKey: passwordShakeKey,
                           isFocused: isPasswordFocused,
                           focusNode: passwordFocusNode,
@@ -182,6 +187,7 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
                               fontSize: Sizes.infoText,
                             ),
                             AuthSubTextButton(
+                              buttonKey: signUpKey,
                               onPressed: () {
                                 Navigator.pushNamed(
                                     context, SignUpScreen.route);
@@ -199,6 +205,7 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
             ),
       floatingActionButton: AuthFloatingActionButton(
         formKey: formKey,
+        buttonKey: logInSubmitKey,
         onSubmit: login,
       ),
     );
@@ -212,6 +219,7 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
           padding:
               const EdgeInsets.only(left: Dimensions.inputPaddingLeft, top: 5),
           child: AuthSubTextButton(
+            buttonKey: forgotPasswordKey, 
             onPressed: forgotPassword,
             label: 'Forgot Password?',
           ),
