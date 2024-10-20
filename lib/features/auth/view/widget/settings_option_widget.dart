@@ -46,7 +46,6 @@ class SettingsOptionWidget extends StatelessWidget {
                     children: [
                       Text(text, style: TextStyle(color: color, fontSize: fontSize),),
                       if (subtext != "") ...[
-                        const SizedBox(height: 5,),
                         Text(subtext, style: TextStyle(color: Palette.accentText, fontSize: fontSize*0.8))
                       ]
                     ]
