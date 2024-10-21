@@ -68,8 +68,8 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
               ),
               Positioned.fill(
                 child: StoryImage(
-                  key: ValueKey(story.storyContent),
-                  imageProvider: NetworkImage(story.storyContent),
+                  key: ValueKey(story.storyContentUrl),
+                  imageProvider: NetworkImage(story.storyContentUrl),
                   fit: BoxFit.fitWidth,
                 ),
               ),
@@ -87,7 +87,7 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
                           width: 32,
                           decoration: BoxDecoration(
                             image: DecorationImage(
-                              image: NetworkImage(widget.user.imageUrl),
+                              image: MemoryImage(widget.user.userImage!),
                               fit: BoxFit.cover,
                             ),
                             shape: BoxShape.circle,

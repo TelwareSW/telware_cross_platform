@@ -29,7 +29,9 @@ class StoryAvatar extends StatelessWidget {
           width: 45,
           height: 45,
           child: CustomPaint(
-            painter: showBorder ? StoryBorderPainter(user.stories) : null, // Conditionally apply painter
+            painter: showBorder
+                ? StoryBorderPainter(user.stories)
+                : null, // Conditionally apply painter
             child: Container(
               padding: const EdgeInsets.all(2),
               decoration: const BoxDecoration(
@@ -37,10 +39,12 @@ class StoryAvatar extends StatelessWidget {
                 color: Palette.secondary,
               ),
               child: ClipOval(
-                child: Image.network(
-                  user.imageUrl,
-                  fit: BoxFit.cover,
-                ),
+                child: user.userImage != null
+                    ? Image.memory(
+                        user.userImage!,
+                        fit: BoxFit.cover,
+                      )
+                    : const Icon(Icons.person),
               ),
             ),
           ),
