@@ -16,15 +16,15 @@ class ExpandedStoriesSection extends ConsumerWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        return isLoading ? const CircularProgressIndicator() : Column(
+        return isLoading ? const CircularProgressIndicator() : const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            const SizedBox(
+            SizedBox(
               height: kIsWeb ? kToolbarHeight : kToolbarHeight + 20,
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              padding: EdgeInsets.symmetric(horizontal: 16.0),
               child: StoriesListWithNames(),
             ),
           ],
