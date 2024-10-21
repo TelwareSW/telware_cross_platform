@@ -16,6 +16,27 @@ String? emailValidator(String? value) {
   return null;
 }
 
+// Password validator to ensure at least 8 characters and contains both letters and digits
+String? passwordValidator(String? value) {
+  if (value == null || value.isEmpty) {
+    return null;
+  } else if (value.length < 8) {
+    return 'Password must be at least 8 characters long';
+  } else if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d._@&-]{8,}$').hasMatch(value)) {
+    return 'Password must contain both letters and digits, and can include . _ @ & -';
+  }
+  return null;
+}
+
+String? passwordValidatorLogIn(String? value) {
+  if (value == null || value.isEmpty) {
+    return null;
+  } else if (value.length < 8) {
+    return 'Password must be at least 8 characters long';
+  }
+  return null;
+}
+
 // todo(ahmed): update this function to handle more cases
 String? confirmPasswordValidation(String? password, String? confirmedPassword) {
   if (password!.isEmpty || confirmedPassword!.isEmpty) return null;

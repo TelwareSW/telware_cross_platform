@@ -178,7 +178,7 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
                             right: Dimensions.inputPaddingLeft,
                           ),
                           obscure: true,
-                          // todo: add validator for the password
+                          validator: passwordValidatorLogIn,
                         ),
                         _forgetPasswordButton(),
                         const SizedBox(height: 50),

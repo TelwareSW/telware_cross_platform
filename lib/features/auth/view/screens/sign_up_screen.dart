@@ -4,10 +4,12 @@ import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/responsive.dart';
+import 'package:telware_cross_platform/features/auth/repository/sign_up_email_provider.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/log_in_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/verification_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/shake_my_auth_input.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_phone_number.dart';
+import 'package:telware_cross_platform/features/auth/view/widget/social_log_in.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
@@ -99,6 +101,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           phone: phoneController.value.international,
           password: passwordController.text,
         );
+    ref.read(signUpEmailProvider.notifier).update((_) => emailController.text);
     Navigator.of(context).pop(); // to close the dialog
     Navigator.pushNamed(context, VerificationScreen.route);
   }
@@ -149,7 +152,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       body: Responsive(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.only(bottom: 100),
+            padding: const EdgeInsets.only(bottom: 60),
             child: Form(
               key: formKey,
               child: Column(
@@ -192,6 +195,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     focusNode: passwordFocusNode,
                     controller: passwordController,
                     obscure: true,
+                    validator: passwordValidator,
                   ),
                   ShakeMyAuthInput(
                     name: 'Confirm Password',
@@ -211,13 +215,13 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           fontSize: Sizes.infoText),
                       AuthSubTextButton(
                         onPressed: () {
-                          Navigator.pushReplacementNamed(
-                              context, LogInScreen.route);
+                          Navigator.pop(context);
                         },
                         label: 'Log in',
                       ),
                     ],
                   ),
+                  const SocialLogIn(),
                 ],
               ),
             ),

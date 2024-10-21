@@ -3,6 +3,7 @@ import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/view/widget/responsive.dart';
+import 'package:telware_cross_platform/features/auth/repository/sign_up_email_provider.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_sub_text_button.dart';
@@ -99,6 +100,7 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final String email = ref.watch(signUpEmailProvider);
     return Scaffold(
       backgroundColor: Palette.background,
       appBar: AppBar(
@@ -126,12 +128,12 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
                   fontSize: Sizes.secondaryText + 1,
                   padding: EdgeInsets.only(bottom: 5),
                 ),
-                const TitleElement(
-                  name: 'marwan2232004@gmail.com',
+                TitleElement(
+                  name: email,
                   color: Colors.white,
                   fontSize: Sizes.secondaryText,
                   fontWeight: FontWeight.bold,
-                  padding: EdgeInsets.only(bottom: 30),
+                  padding: const EdgeInsets.only(bottom: 30),
                   width: 250.0,
                 ),
                 ShakeMe(
