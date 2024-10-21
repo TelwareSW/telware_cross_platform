@@ -10,9 +10,11 @@ class AuthSubTextButton extends StatelessWidget {
     required this.label,
     this.padding = const EdgeInsets.all(0),
     this.fontSize = Sizes.infoText,
+    this.buttonKey,
   });
 
   final VoidCallback onPressed;
+  final GlobalKey<State>? buttonKey;
   final String label;
   final EdgeInsetsGeometry padding;
   final double fontSize;
@@ -20,6 +22,7 @@ class AuthSubTextButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextButton(
+      key: buttonKey,
       onPressed: onPressed,
       style: TextButton.styleFrom(
         minimumSize: Size.zero,
