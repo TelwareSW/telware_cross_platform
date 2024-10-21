@@ -6,4 +6,5 @@ class Dimensions {
   static const double inputBorderRadius = 10;
   static const double inputBorderWidth = 1;
   static const double inputFocusBorderWidth = 2;
+  static const double splashIconSize = 170.0;
 }
