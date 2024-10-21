@@ -13,6 +13,7 @@ class CircularButton extends StatelessWidget {
     required this.radius,
     this.formKey,
     this.handelClick,
+    this.buttonKey,
   });
 
   final IconData icon;
@@ -24,38 +25,43 @@ class CircularButton extends StatelessWidget {
   final double radius;
   final GlobalKey<FormState>? formKey;
   final Function? handelClick;
+  final GlobalKey<State>? buttonKey;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(right: paddingRight, top: paddingTop),
-      child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-        ElevatedButton(
-          onPressed: () {
-            if (formKey != null) {
-              if (!(formKey!.currentState?.validate() ?? false)) {
-                // handle the case when the form is invalid
-                debugPrint('Form is invalid!');
-                return;
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          ElevatedButton(
+            key: buttonKey,
+            onPressed: () {
+              if (formKey != null) {
+                if (!(formKey!.currentState?.validate() ?? false)) {
+                  // handle the case when the form is invalid
+                  debugPrint('Form is invalid!');
+                  return;
+                }
               }
-            }
-            // As a general widget if we passed a handelClick function
-            // we will call it only if no formKey is passed or
-            // when a formKey is passed and the form is valid
-            handelClick != null ? handelClick!() : null;
-          },
-          style: ElevatedButton.styleFrom(
-            shape: const CircleBorder(),
-            padding: EdgeInsets.all(radius),
-            backgroundColor: Palette.primary, // Button color
-          ),
-          child: Icon(
-            icon,
-            color: Palette.icons,
-            size: iconSize, // Icon size
-          ),
-        )
-      ]),
+              // As a general widget if we passed a handelClick function
+              // we will call it only if no formKey is passed or
+              // when a formKey is passed and the form is valid
+              handelClick != null ? handelClick!() : null;
+            },
+            style: ElevatedButton.styleFrom(
+              shape: const CircleBorder(),
+              padding: EdgeInsets.all(radius),
+              backgroundColor: Palette.primary, // Button color
+            ),
+            child: Icon(
+              icon,
+              color: Palette.icons,
+              size: iconSize, // Icon size
+            ),
+          )
+        ],
+      ),
     );
   }
 }
