@@ -49,7 +49,7 @@ class _TelWareState extends ConsumerState<TelWare> {
         SignUpScreen.route: (context) => const SignUpScreen(),
         VerificationScreen.route: (context) => const VerificationScreen(),
       },
-      initialRoute: LogInScreen.route,
+      initialRoute: SplashScreen.route,
     );
   }
 }
