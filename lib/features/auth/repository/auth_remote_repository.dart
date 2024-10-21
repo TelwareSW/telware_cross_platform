@@ -46,7 +46,7 @@ class AuthRemoteRepository {
       // you can check the api documentation here:
       // https://app.clickup.com/9012337468/v/dc/8cjuptw-2832/8cjuptw-4012
       final message = response.data['message'];
-      if (response.statusCode != 201) {
+      if (response.statusCode! > 200 || response.statusCode! < 200) {
         return Left(AppError(message));
       }
 
@@ -69,6 +69,11 @@ class AuthRemoteRepository {
         ),
       );
 
+      if (response.statusCode! > 200 || response.statusCode! < 200) {
+        final message = response.data['message'];
+        return AppError(message);
+      }
+
       final user = UserModel.fromMap(response.data['data']['user']);
       _ref.read(authLocalRepositoryProvider).setUser(user);
     } on DioException catch (dioException) {
@@ -86,14 +91,14 @@ class AuthRemoteRepository {
   }) async {
     try {
       final response = await _dio.post(
-        '/auth/log-in',
+        '/auth/login',
         data: {
           "email": email,
           "password": password,
         },
       );
 
-      if (response.statusCode != 200 && response.statusCode != 204) {
+      if (response.statusCode! > 200 || response.statusCode! < 200) {
         final String message = response.data?['message'] ?? 'Unexpected Error';
         if (response.statusCode == 403) {
           return AppError(message, code: 403);
@@ -121,7 +126,7 @@ class AuthRemoteRepository {
       final response =
           await _dio.post('/auth/forgot-password', data: {email: email});
 
-      if (response.statusCode != 200) {
+      if (response.statusCode! > 200 || response.statusCode! < 200) {
         final String message = response.data?['message'] ?? 'Unexpected Error';
         return AppError(message);
       }
