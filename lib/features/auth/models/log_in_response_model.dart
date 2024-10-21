@@ -12,7 +12,7 @@ class LogInResponseModel {
   factory LogInResponseModel.fromMap(Map<String, dynamic> map) {
     return LogInResponseModel(
       user: UserModel.fromMap(map['user'] as Map<String,dynamic>),
-      token: map['token'] as String,
+      token: map['accessToken'] as String,
     );
   }
 
