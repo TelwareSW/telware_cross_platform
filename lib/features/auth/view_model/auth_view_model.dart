@@ -15,6 +15,8 @@ class AuthViewModel extends _$AuthViewModel {
   }
 
   void init() async {
+    await Future.delayed(const Duration(seconds: 1, microseconds: 50));
+
     String? token = ref.read(authLocalRepositoryProvider).getToken();
 
     if (token == null) {
