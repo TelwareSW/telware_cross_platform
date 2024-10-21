@@ -12,7 +12,7 @@ Future<void> main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(UserModelAdapter()); // Make sure to register your adapter
   Hive.registerAdapter(StoryModelAdapter()); // Register the StoryModel adapter
-  await Hive.openBox<UserModel>('users'); // Open the box// Replace 'stories' with your actual box name
+  await Hive.openBox<UserModel>('contacts'); // Open the box// Replace 'stories' with your actual box name
 
   runApp(
     const ProviderScope(

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/features/user_profile/view/widget/colapsed_story_section.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import '../../view_model/user_view_model.dart';
+import '../../view_model/contact_view_model.dart';
 import '../widget/chats_list.dart';
 import '../widget/expanded_stories_section.dart';
 
@@ -42,7 +42,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
   }
 
   Future<void> _refreshPage() async {
-    await ref.read(usersViewModelProvider.notifier).fetchUsers();
+    await ref.read(usersViewModelProvider.notifier).fetchContacts();
     await Future.delayed(const Duration(seconds: 2));
   }
 

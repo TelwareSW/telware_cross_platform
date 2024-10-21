@@ -3,14 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/features/user_profile/view/widget/stories_list_with_names.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
-import '../../view_model/user_view_model.dart';
+import '../../view_model/contact_view_model.dart';
 
 class ExpandedStoriesSection extends ConsumerWidget {
   const ExpandedStoriesSection({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.read(usersViewModelProvider.notifier).fetchUsers();
+    ref.read(usersViewModelProvider.notifier).fetchContacts();
     final isLoading = ref.watch(usersViewModelProvider.select((state) => state.isLoading));
     debugPrint('Building ExpandedStoriesSection...');
 

@@ -4,12 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
 import '../models/story_model.dart';
 
-class UsersRepository {
+class ContactsRepository {
   final Box<UserModel> _userBox;
 
-  UsersRepository(this._userBox);
+  ContactsRepository(this._userBox);
 
-  Future<List<UserModel>> fetchUsersFromBackend() async {
+  Future<List<UserModel>> fetchContactsFromBackend() async {
     await Future.delayed(const Duration(seconds: 2));
     List<UserModel> users = [
       UserModel(
@@ -241,10 +241,10 @@ class UsersRepository {
     return users;
   }
 
-  Future<void> saveUsersToHive(List<UserModel> users) async {
-    for (var user in users) {
+  Future<void> saveContactsToHive(List<UserModel> contacts) async {
+    for (var contact in contacts) {
       try{
-        await _userBox.put(user.userId,user);
+        await _userBox.put(contact.userId,contact);
       }catch(e){
         if (kDebugMode) {
           print(e);
@@ -253,36 +253,36 @@ class UsersRepository {
     }
   }
 
-  Future<List<StoryModel>> fetchUserStoriesFromHive(String userId) async {
-    final user = _userBox.get(userId);
-    return user?.stories ?? []; // Return user's stories
+  Future<List<StoryModel>> fetchContactStoriesFromHive(String userId) async {
+    final contact = _userBox.get(userId);
+    return contact?.stories ?? [];
   }
 
-  Future<UserModel?> fetchUserFromHive(String userId) async {
-    return _userBox.get(userId); // Return user by userId
+  Future<UserModel?> fetchContactFromHive(String userId) async {
+    return _userBox.get(userId);
   }
 
-  List<UserModel> getAllUsersFromHive() {
+  List<UserModel> getAllContactsFromHive() {
     return _userBox.values.toList();
   }
 
-  Future<List<UserModel>> fetchAndSaveUsers() async {
-    final usersFromBackend = await fetchUsersFromBackend();
-    await saveUsersToHive(usersFromBackend);
-    return getAllUsersFromHive();
+  Future<List<UserModel>> fetchAndSaveContacts() async {
+    final contactsFromBackend = await fetchContactsFromBackend();
+    await saveContactsToHive(contactsFromBackend);
+    return getAllContactsFromHive();
   }
 
-  Future<void> deleteUserFromHive(String userId) async {
-    final box = await Hive.openBox<UserModel>('users');
+  Future<void> deleteContactsFromHive(String userId) async {
+    final box = await Hive.openBox<UserModel>('contacts');
     await box.delete(userId);
   }
 
-  Future<void> updateUserInHive(UserModel updatedUser) async {
+  Future<void> updateContactsInHive(UserModel updatedContact) async {
     try {
-      final existingUser = _userBox.get(updatedUser.userId);
+      final existingContact = _userBox.get(updatedContact.userId);
 
-      if (existingUser != null) {
-        await _userBox.put(updatedUser.userId, updatedUser);
+      if (existingContact != null) {
+        await _userBox.put(updatedContact.userId, updatedContact);
       } else {
         if (kDebugMode) {
           print('User not found');
@@ -297,7 +297,7 @@ class UsersRepository {
   }
 }
 
-final usersRepositoryProvider  = Provider((ref) {
-  final userBox = Hive.box<UserModel>('users');
-  return UsersRepository(userBox);
+final contactsRepositoryProvider  = Provider((ref) {
+  final userBox = Hive.box<UserModel>('contacts');
+  return ContactsRepository(userBox);
 });

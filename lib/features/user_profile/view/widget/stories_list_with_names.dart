@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
 import 'package:telware_cross_platform/features/user_profile/view/widget/story_with_user_name.dart';
-import 'package:telware_cross_platform/features/user_profile/view_model/user_view_model.dart';
+import 'package:telware_cross_platform/features/user_profile/view_model/contact_view_model.dart';
 
 import 'add_my_story.dart';
 
@@ -14,7 +14,7 @@ class StoriesListWithNames extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final viewModelState = ref.watch(usersViewModelProvider);
 
-    final users = viewModelState.users;
+    final users = viewModelState.contacts;
 
     if (users.isEmpty) {
       return const Center(child: CircularProgressIndicator());

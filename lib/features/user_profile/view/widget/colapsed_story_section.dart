@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/features/user_profile/view/widget/stacked_overlapped_images.dart';
 import '../../models/user_model.dart';
-import '../../view_model/user_view_model.dart';
+import '../../view_model/contact_view_model.dart';
 
 class ColapsedStorySection extends ConsumerWidget {
   final TextDirection direction = TextDirection.ltr;
@@ -14,7 +14,7 @@ class ColapsedStorySection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(usersViewModelProvider);
-    final users = state.users;
+    final users = state.contacts;
     final reorderedUsers = reorderUsers(users);
 
     debugPrint('Building ColapsedStorySection...');
