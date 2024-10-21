@@ -50,7 +50,7 @@ class AuthLocalRepository {
     _ref.read(userProvider.notifier).update((_) => user);
   }
 
-  UserModel? getUser() {
+  UserModel? getMe() {
     UserModel? user = _userBox.get('user');
     _ref.read(userProvider.notifier).update((_) => user);
     return user;

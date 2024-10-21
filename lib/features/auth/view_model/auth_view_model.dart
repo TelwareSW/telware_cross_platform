@@ -27,12 +27,12 @@ class AuthViewModel extends _$AuthViewModel {
 
     // try getting updated user data
     final AppError? response =
-        await ref.read(authRemoteRepositoryProvider).getUser();
+        await ref.read(authRemoteRepositoryProvider).getMe();
 
     if (response != null) {
       state = AuthState.fail(response.error);
       // getting user data from remote failed
-      final user = ref.read(authLocalRepositoryProvider).getUser();
+      final user = ref.read(authLocalRepositoryProvider).getMe();
       if (user == null) {
         state = AuthState.unauthorized;
         return;
@@ -112,7 +112,7 @@ class AuthViewModel extends _$AuthViewModel {
     // delete the stored user data
     await ref.read(authLocalRepositoryProvider).deleteToken();
     await ref.read(authLocalRepositoryProvider).deleteUser();
-    
+
     state = AuthState.init;
   }
 }

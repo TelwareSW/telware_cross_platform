@@ -59,7 +59,7 @@ class AuthRemoteRepository {
     }
   }
 
-  Future<AppError?> getUser() async {
+  Future<AppError?> getMe() async {
     final token = _ref.read(tokenProvider);
     try {
       final response = await _dio.get(
