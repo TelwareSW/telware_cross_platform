@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/responsive.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/sign_up_screen.dart';
+import 'package:telware_cross_platform/features/auth/view/screens/verification_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_floating_action_button.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_sub_text_button.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/shake_my_auth_input.dart';
@@ -117,9 +118,12 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
     ref.listen<AuthState>(authViewModelProvider, (_, state) {
       if (state.type == AuthStateType.fail ||
           state.type == AuthStateType.success) {
+        // the success state is in case of asking for reset password
         showToastMessage(state.message!);
       } else if (state.type == AuthStateType.authorized) {
         // todo(ahmed): navigate to the home screen
+      } else if (state.type == AuthStateType.unauthenticated) {
+        Navigator.pushNamed(context, VerificationScreen.route);
       }
     });
 

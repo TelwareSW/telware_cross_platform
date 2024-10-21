@@ -78,7 +78,11 @@ class AuthViewModel extends _$AuthViewModel {
         .logIn(email: email, password: password);
 
     if (appError != null) {
-      state = AuthState.fail(appError.error);
+      if (appError.code == 403) {
+        state = AuthState.unauthenticated;
+      } else {
+        state = AuthState.fail(appError.error);
+      }
     } else {
       state = AuthState.authorized;
     }
@@ -86,7 +90,8 @@ class AuthViewModel extends _$AuthViewModel {
 
   void forgotPassword(String email) async {
     state = AuthState.loading;
-    final appError = await ref.read(authRemoteRepositoryProvider).forgotPassword(email);
+    final appError =
+        await ref.read(authRemoteRepositoryProvider).forgotPassword(email);
     if (appError != null) {
       state = AuthState.fail(appError.error);
     } else {
