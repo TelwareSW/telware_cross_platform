@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
+import 'package:telware_cross_platform/features/user_profile/view/screens/story_screen.dart';
 import 'package:telware_cross_platform/features/user_profile/view/widget/story_avatar.dart';
 import '../../../../core/theme/palette.dart';
 import '../screens/add_my_story_screen.dart';
 
 class AddMyStory extends StatelessWidget {
+  final UserModel myUser;
+
   const AddMyStory({
     super.key,
     required this.myUser,
   });
-
-  final UserModel myUser;
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +24,18 @@ class AddMyStory extends StatelessWidget {
             children: [
               StoryAvatar(
                 user: myUser,
-                screenType: CameraApp,
+                screenType: myUser.stories.isEmpty ? 'CameraApp' : 'myStoryScreen', onTap: () async {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => myUser.stories.isEmpty ?  const CameraApp() : StoryScreen(
+                        user: myUser, showSeens: true,
+                      ),
+                  ),
+                );
+              },
               ),
-              Positioned(
+              myUser.stories.isEmpty ? Positioned(
                 bottom: 2,
                 right: 2,
                 child: Container(
@@ -42,7 +52,7 @@ class AddMyStory extends StatelessWidget {
                     color: Palette.secondary,
                   ),
                 ),
-              ),
+              ):const SizedBox(),
             ],
           ),
         ),

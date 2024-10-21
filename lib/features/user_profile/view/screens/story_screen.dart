@@ -6,13 +6,18 @@ import 'package:story/story_image.dart';
 import 'package:story/story_page_view.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
+import 'package:telware_cross_platform/features/user_profile/view/widget/stacked_overlapped_images.dart';
 import 'package:telware_cross_platform/features/user_profile/view_model/user_view_model.dart';
 import '../../models/story_model.dart';
 
-
 class StoryScreen extends ConsumerStatefulWidget {
   final UserModel user;
-  const StoryScreen({super.key, required this.user});
+  final bool showSeens;
+  const StoryScreen({
+    super.key,
+    required this.user,
+    required this.showSeens,
+  });
 
   @override
   _StoryScreenState createState() => _StoryScreenState();
@@ -51,8 +56,10 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
       body: StoryPageView(
         itemBuilder: (context, pageIndex, storyIndex) {
           final story = widget.user.stories[storyIndex];
-          if(!story.isSeen){
-            ref.read(usersViewModelProvider.notifier).markStoryAsSeen(widget.user.userId, story.storyId);
+          if (!story.isSeen) {
+            ref
+                .read(usersViewModelProvider.notifier)
+                .markStoryAsSeen(widget.user.userId, story.storyId);
           }
           return Stack(
             children: [
@@ -61,55 +68,69 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
               ),
               Positioned.fill(
                 child: StoryImage(
-                  key: ValueKey(widget.user.imageUrl),
-                  imageProvider: NetworkImage(widget.user.imageUrl),
+                  key: ValueKey(story.storyContent),
+                  imageProvider: NetworkImage(story.storyContent),
                   fit: BoxFit.fitWidth,
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 44, left: 8),
-                child: Row(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.center,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      height: 32,
-                      width: 32,
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: NetworkImage(widget.user.imageUrl),
-                          fit: BoxFit.cover,
-                        ),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 8,
-                    ),
-                    Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize
-                          .min,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          widget.user.userId,
-                          style: const TextStyle(
-                            fontSize: 17,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                        Container(
+                          height: 32,
+                          width: 32,
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: NetworkImage(widget.user.imageUrl),
+                              fit: BoxFit.cover,
+                            ),
+                            shape: BoxShape.circle,
                           ),
                         ),
-                        Text(
-                          DateFormat('dd-MM-yyyy').format(widget.user.stories[storyIndex].createdAt),
-                          style: const TextStyle(
-                            fontSize: 17,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        const SizedBox(
+                          width: 8,
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              widget.user.userId,
+                              style: const TextStyle(
+                                fontSize: 17,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              DateFormat('dd-MM-yyyy').format(story.createdAt),
+                              style: const TextStyle(
+                                fontSize: 17,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
+                    Column(
+                      children: [
+                        Text(
+                          story.storyCaption,
+                          style: const TextStyle(color: Colors.white, fontSize: 17),
+                        ),
+                        const SizedBox(
+                          height: 64,
+                        ),
+                      ],
+                    )
                   ],
                 ),
               ),
@@ -117,79 +138,113 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
           );
         },
         gestureItemBuilder: (context, pageIndex, storyIndex) {
-          return Stack(children: [
-            Align(
-              alignment: Alignment.topRight,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 32),
-                    child: IconButton(
-                      padding: EdgeInsets.zero,
-                      color: Colors.white,
-                      icon: const Icon(Icons.close),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 32),
-                    child: IconButton(
-                      padding: EdgeInsets.zero,
-                      color: Colors.white,
-                      icon: const Icon(Icons.list),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Align(
-              alignment: Alignment.bottomLeft,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+          return Stack(
+            children: [
+              Align(
+                alignment: Alignment.topRight,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Expanded(
-                      child: TextField(
-                        onTap: () {
-                          _focusNode.requestFocus();
-                          indicatorAnimationController.value =
-                              IndicatorAnimationCommand.pause;
+                    Padding(
+                      padding: const EdgeInsets.only(top: 32),
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        color: Colors.white,
+                        icon: const Icon(Icons.close),
+                        onPressed: () {
+                          Navigator.pop(context);
                         },
-                        focusNode: _focusNode,
-                        decoration: InputDecoration(
-                          hintStyle: const TextStyle(color: Palette.accentText),
-                          hintText: 'Reply privately...',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20),
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                        ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      icon: const FaIcon(FontAwesomeIcons.share),
-                      onPressed: () {
-                      },
-                    ),
-                    IconButton(
-                      icon: const FaIcon(FontAwesomeIcons.heart),
-                      onPressed: () {
-                      },
+                    Padding(
+                      padding: const EdgeInsets.only(top: 32),
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        color: Colors.white,
+                        icon: const Icon(Icons.list),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                      ),
                     ),
                   ],
                 ),
               ),
-            ),
-          ]);
+              Align(
+                alignment: Alignment.bottomLeft,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: widget.showSeens == false
+                            ? TextField(
+                                onTap: () {
+                                  _focusNode.requestFocus();
+                                  indicatorAnimationController.value =
+                                      IndicatorAnimationCommand.pause;
+                                },
+                                focusNode: _focusNode,
+                                decoration: InputDecoration(
+                                  hintStyle: const TextStyle(
+                                      color: Palette.accentText),
+                                  hintText: 'Reply privately...',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
+                                ),
+                              )
+                            : Row(
+                                children: [
+                                  widget.user.stories[storyIndex].seens.isEmpty
+                                      ? const Text(
+                                          'No views yet',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 17,
+                                          ),
+                                        )
+                                      : Row(
+                                          children: [
+                                            StackedOverlappedImages(
+                                              users: widget.user
+                                                  .stories[storyIndex].seens,
+                                              showBorder: false,
+                                            ),
+                                            const SizedBox(
+                                              width: 5,
+                                            ),
+                                            Text(
+                                              '${widget.user.stories[storyIndex].seens.length} views',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 17,
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                ],
+                              ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const FaIcon(FontAwesomeIcons.share),
+                        onPressed: () {},
+                      ),
+                      widget.showSeens == false ? IconButton(
+                        icon: const FaIcon(FontAwesomeIcons.heart),
+                        onPressed: () {},
+                      ):const SizedBox(),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
         },
         indicatorAnimationController: indicatorAnimationController,
         initialStoryIndex: (pageIndex) {

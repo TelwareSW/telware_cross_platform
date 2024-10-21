@@ -4,50 +4,31 @@ import 'package:telware_cross_platform/features/user_profile/models/user_model.d
 import 'package:telware_cross_platform/features/user_profile/view/widget/story_with_user_name.dart';
 import 'package:telware_cross_platform/features/user_profile/view_model/user_view_model.dart';
 
-import '../../models/story_model.dart';
 import 'add_my_story.dart';
 
 class StoriesListWithNames extends ConsumerWidget {
-  final UserModel myUser = UserModel(
-    userName: 'game of thrones',
-    imageUrl:
-        'https://st2.depositphotos.com/2703645/7304/v/450/depositphotos_73040253-stock-illustration-male-avatar-icon.jpg',
-    stories: [
-      StoryModel(
-        storyId: 'idd11',
-        createdAt: DateTime.now(),
-        storyContent:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
-        isSeen: false,
-      ),
-      StoryModel(
-        storyId: 'idd12',
-        createdAt: DateTime.now().subtract(const Duration(hours: 1)),
-        storyContent:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
-        isSeen: false,
-      ),
-      StoryModel(
-        storyId: 'idd13',
-        createdAt: DateTime.now(),
-        storyContent:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
-        isSeen: false,
-      ),
-    ],
-    userId: 'idd1',
-  );
 
-  StoriesListWithNames({super.key});
+  const StoriesListWithNames({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final viewModelState = ref.watch(usersViewModelProvider);
 
     final users = viewModelState.users;
-    List<UserModel> reorderedUsers = reorderUsers(users);
-    debugPrint('Building StoriesListWithNames...');
 
+    if (users.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final UserModel myUser = users.firstWhere(
+          (user) => user.userId == 'myUser',
+      orElse: () {
+        throw StateError('myUser not found'); // or handle accordingly
+      },
+    );
+
+    List<UserModel> reorderedUsers = reorderUsers(users.where((user) => user.userId != 'myUser').toList());
+    debugPrint('Building StoriesListWithNames...');
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(children: [

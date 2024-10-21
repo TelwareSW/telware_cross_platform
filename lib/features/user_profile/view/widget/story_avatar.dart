@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
-import 'package:telware_cross_platform/features/user_profile/view/screens/add_my_story_screen.dart';
-import 'package:telware_cross_platform/features/user_profile/view/screens/story_screen.dart';
 import '../../../../core/theme/palette.dart';
 import '../../models/story_model.dart';
 
 class StoryAvatar extends StatelessWidget {
   final UserModel user;
-  final Type screenType;
+  final String screenType;
+  final VoidCallback onTap;
+  final bool showBorder;
 
   const StoryAvatar({
     super.key,
     required this.user,
     required this.screenType,
+    required this.onTap,
+    this.showBorder = true,
   });
 
   @override
@@ -20,23 +22,14 @@ class StoryAvatar extends StatelessWidget {
     debugPrint('Building StoryAvatar...');
 
     return GestureDetector(
-      onTap: () async {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => screenType == StoryScreen ? StoryScreen(
-                user: user,
-              ) : const CameraApp()
-          ),
-        );
-      },
+      onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         child: SizedBox(
           width: 45,
           height: 45,
           child: CustomPaint(
-            painter: StoryBorderPainter(user.stories),
+            painter: showBorder ? StoryBorderPainter(user.stories) : null, // Conditionally apply painter
             child: Container(
               padding: const EdgeInsets.all(2),
               decoration: const BoxDecoration(
@@ -76,7 +69,8 @@ class StoryBorderPainter extends CustomPainter {
       paint.color = story.isSeen ? Colors.grey : Colors.greenAccent;
 
       canvas.drawArc(
-        Rect.fromCircle(center: size.center(Offset.zero), radius: size.width / 2),
+        Rect.fromCircle(
+            center: size.center(Offset.zero), radius: size.width / 2),
         radians(startAngle),
         radians(sweepAngle - gapAngle),
         false,
@@ -95,4 +89,3 @@ class StoryBorderPainter extends CustomPainter {
     return degrees * (3.1415926535897932 / 180);
   }
 }
-

@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 class StoryWithUserName extends StatelessWidget {
   final UserModel user;
   const StoryWithUserName({
-    super.key, required this.user,
+    super.key,
+    required this.user,
   });
 
   @override
@@ -18,7 +19,19 @@ class StoryWithUserName extends StatelessWidget {
           padding: const EdgeInsets.only(right: 10),
           child: StoryAvatar(
             user: user,
-            screenType: StoryScreen,
+            screenType: 'othersStoryScreen',
+            onTap: () async {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => StoryScreen(
+                    user: user,
+                    showSeens: false,
+
+                  ),
+                ),
+              );
+            },
           ),
         ),
         Padding(
