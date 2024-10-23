@@ -61,6 +61,18 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
     if (user == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
+
+    Future<List<UserModel>> generateSeensList(List<String> userIds) async {
+      List<UserModel> seenUsers = [];
+      for (String id in userIds) {
+        UserModel? user = await ref
+            .read(usersViewModelProvider.notifier)
+            .getContactById(id); // Ensure 'id' is a String
+        if (user != null) seenUsers.add(user);
+      }
+      return seenUsers;
+    }
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: StoryPageView(
@@ -71,7 +83,6 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
                 ? downloadImage(story.storyContentUrl)
                 : Future.value(story.storyContent),
             builder: (context, snapshot) {
-              print(story.storyContent);
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               }
@@ -80,9 +91,6 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
               }
 
               final imageData = snapshot.data!;
-              // Save the image only if it was downloaded
-              print(widget.userId);
-              print(story.storyId);
               if (story.storyContent == null) {
                 ref
                     .read(usersViewModelProvider.notifier)
@@ -102,7 +110,7 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
                     child: StoryImage(
                       key: ValueKey(imageData),
                       imageProvider: MemoryImage(imageData),
-                      fit: BoxFit.fitWidth,
+                      fit: BoxFit.contain,
                     ),
                   ),
                   Padding(
@@ -174,114 +182,132 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
           );
         },
         gestureItemBuilder: (context, pageIndex, storyIndex) {
-          return Stack(
-            children: [
-              Align(
-                alignment: Alignment.topRight,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 32),
-                      child: IconButton(
-                        padding: EdgeInsets.zero,
-                        color: Colors.white,
-                        icon: const Icon(Icons.close),
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                      ),
+          final story = user!.stories[storyIndex];
+
+          return FutureBuilder<List<UserModel>>(
+            future: generateSeensList(story.seenIds),
+            builder: (context, seenSnapshot) {
+              if (seenSnapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+              if (seenSnapshot.hasError || !seenSnapshot.hasData) {
+                return Center(
+                  child: Text(seenSnapshot.error.toString()),
+                );
+              }
+              final seensUsers = seenSnapshot.data!;
+              return Stack(
+                children: [
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 32),
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            color: Colors.white,
+                            icon: const Icon(Icons.close),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 32),
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            color: Colors.white,
+                            icon: const Icon(Icons.list),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 32),
-                      child: IconButton(
-                        padding: EdgeInsets.zero,
-                        color: Colors.white,
-                        icon: const Icon(Icons.list),
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Align(
-                alignment: Alignment.bottomLeft,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: widget.showSeens == false
-                            ? TextField(
-                                onTap: () {
-                                  _focusNode.requestFocus();
-                                  indicatorAnimationController.value =
-                                      IndicatorAnimationCommand.pause;
-                                },
-                                focusNode: _focusNode,
-                                decoration: InputDecoration(
-                                  hintStyle: const TextStyle(
-                                      color: Palette.accentText),
-                                  hintText: 'Reply privately...',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16),
-                                ),
-                              )
-                            : Row(
-                                children: [
-                                  user!.stories[storyIndex].seens.isEmpty
-                                      ? const Text(
-                                          'No views yet',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 17,
-                                          ),
-                                        )
-                                      : Row(
-                                          children: [
-                                            StackedOverlappedImages(
-                                              users: user!
-                                                  .stories[storyIndex].seens,
-                                              showBorder: false,
-                                            ),
-                                            const SizedBox(
-                                              width: 5,
-                                            ),
-                                            Text(
-                                              '${user!.stories[storyIndex].seens.length} views',
-                                              style: const TextStyle(
+                  ),
+                  Align(
+                    alignment: Alignment.bottomLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: widget.showSeens == false
+                                ? TextField(
+                                    onTap: () {
+                                      _focusNode.requestFocus();
+                                      indicatorAnimationController.value =
+                                          IndicatorAnimationCommand.pause;
+                                    },
+                                    focusNode: _focusNode,
+                                    decoration: InputDecoration(
+                                      hintStyle: const TextStyle(
+                                          color: Palette.accentText),
+                                      hintText: 'Reply privately...',
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 16),
+                                    ),
+                                  )
+                                : Row(
+                                    children: [
+                                      user!.stories[storyIndex].seenIds.isEmpty
+                                          ? const Text(
+                                              'No views yet',
+                                              style: TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 17,
                                               ),
                                             )
-                                          ],
-                                        ),
-                                ],
-                              ),
+                                          : Row(
+                                              children: [
+                                                StackedOverlappedImages(
+                                                  users: seensUsers,
+                                                  showBorder: false,
+                                                ),
+                                                const SizedBox(
+                                                  width: 5,
+                                                ),
+                                                Text(
+                                                  '${user!.stories[storyIndex].seenIds.length} views',
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 17,
+                                                  ),
+                                                )
+                                              ],
+                                            ),
+                                    ],
+                                  ),
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            icon: const FaIcon(FontAwesomeIcons.share),
+                            onPressed: () {},
+                          ),
+                          widget.showSeens == false
+                              ? IconButton(
+                                  icon: const FaIcon(FontAwesomeIcons.heart),
+                                  onPressed: () {},
+                                )
+                              : const SizedBox(),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        icon: const FaIcon(FontAwesomeIcons.share),
-                        onPressed: () {},
-                      ),
-                      widget.showSeens == false
-                          ? IconButton(
-                              icon: const FaIcon(FontAwesomeIcons.heart),
-                              onPressed: () {},
-                            )
-                          : const SizedBox(),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            ],
+                ],
+              );
+            },
           );
         },
         indicatorAnimationController: indicatorAnimationController,

@@ -1,10 +1,12 @@
 import 'dart:io';
 
-import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import '../screens/show_taken_story_screen.dart';
+
+
 class PickFromGallery extends StatefulWidget {
   const PickFromGallery({super.key});
 
@@ -20,12 +22,10 @@ class _PickFromGalleryState extends State<PickFromGallery> {
     final XFile? pickedImage =
     await _picker.pickImage(source: ImageSource.gallery);
     if (pickedImage != null) {
-      if (kDebugMode) {
-        print(pickedImage);
-      }
       setState(() {
         _image = File(pickedImage.path);
       });
+
     } else {
       if (kDebugMode) {
         print("No image selected.");
@@ -33,24 +33,7 @@ class _PickFromGalleryState extends State<PickFromGallery> {
     }
   }
 
-  Future<void> _uploadImage(File imageFile) async {
-    String uploadUrl = "http://192.168.1.6:3000/upload";
-    var uri = Uri.parse(uploadUrl);
-    var request = http.MultipartRequest('POST', uri);
-    var multipartFile = await http.MultipartFile.fromPath(
-      'image',
-      imageFile.path,
-      contentType: MediaType('image', 'jpeg'),
-    );
-    request.files.add(multipartFile);
-    try {
-      await request.send();
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error occurred: $e');
-      }
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +45,12 @@ class _PickFromGalleryState extends State<PickFromGallery> {
             onTap: () async {
               await _pickImage();
               if (_image != null) {
-                await _uploadImage(_image!);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ShowTakenStoryScreen(image: _image!),
+                  ),
+                );
               }
             },
             child: const Icon(

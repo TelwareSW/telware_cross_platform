@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
-import 'package:telware_cross_platform/features/user_profile/view/widget/add_my_story.dart';
 import 'package:telware_cross_platform/features/user_profile/view/widget/colapsed_story_section.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../view_model/contact_view_model.dart';
 import '../widget/chats_list.dart';
 import '../widget/expanded_stories_section.dart';
+import '../widget/pick_from_gallery.dart';
 import 'add_my_story_screen.dart';
 
 class InboxScreen extends ConsumerStatefulWidget {
@@ -55,12 +55,21 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
         return Scaffold(
           floatingActionButton: FloatingActionButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddMyStoryScreen(),
-                ),
-              );
+              if(kIsWeb){
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PickFromGallery(),
+                  ),
+                );
+              }else{
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AddMyStoryScreen(),
+                  ),
+                );
+              }
             },
             shape: const CircleBorder(),
             backgroundColor: Palette.accent,

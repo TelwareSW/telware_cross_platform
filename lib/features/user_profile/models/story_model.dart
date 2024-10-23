@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 import 'package:hive/hive.dart';
-import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
 import 'package:collection/collection.dart';
 
 part 'story_model.g.dart';
@@ -25,7 +24,7 @@ class StoryModel {
   String storyCaption;
 
   @HiveField(6)
-  List<UserModel> seens;
+  List<String> seenIds;
 
   @HiveField(7)
   Uint8List? storyContent;
@@ -35,7 +34,7 @@ class StoryModel {
     required this.storyId,
     required this.isSeen,
     required this.createdAt,
-    required this.seens,
+    required this.seenIds,
     this.storyContentType = 'image',
     this.storyContentUrl = 'placeholder for content',
     this.storyCaption = '',
@@ -49,7 +48,7 @@ class StoryModel {
     String? storyContentUrl,
     DateTime? createdAt,
     String? storyCaption,
-    List<UserModel>? seens,
+    List<String>? seenIds,
     Uint8List? storyContent,
   }) {
     return StoryModel(
@@ -59,14 +58,14 @@ class StoryModel {
       storyContentUrl: storyContentUrl ?? this.storyContentUrl,
       createdAt: createdAt ?? this.createdAt,
       storyCaption: storyCaption ?? this.storyCaption,
-      seens: seens ?? this.seens,
+      seenIds: seenIds ?? this.seenIds,
       storyContent: storyContent ?? this.storyContent,
     );
   }
 
   @override
   String toString() {
-    return 'StoryModel(storyId: $storyId, isSeen: $isSeen, storyContentType: $storyContentType, storyContentUrl: $storyContentUrl, createdAt: $createdAt, storyCaption: $storyCaption, storyContent: $storyContent)';
+    return 'StoryModel(storyId: $storyId, isSeen: $isSeen, storyContentType: $storyContentType, storyContentUrl: $storyContentUrl, createdAt: $createdAt, storyCaption: $storyCaption, seenIds: $seenIds, storyContent: $storyContent)';
   }
 
   @override
@@ -83,7 +82,7 @@ class StoryModel {
         createdAt == other.createdAt &&
         storyCaption == other.storyCaption &&
         storyContent == other.storyContent &&
-        const ListEquality().equals(seens, other.seens);
+        const ListEquality().equals(seenIds, other.seenIds);
   }
 
   @override
@@ -93,6 +92,6 @@ class StoryModel {
       isSeen.hashCode ^
       createdAt.hashCode ^
       storyCaption.hashCode ^
-      const ListEquality().hash(seens) ^
+      const ListEquality().hash(seenIds) ^
       (storyContent?.hashCode ?? 0);
 }

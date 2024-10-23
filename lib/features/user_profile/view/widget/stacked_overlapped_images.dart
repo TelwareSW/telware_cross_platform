@@ -40,13 +40,13 @@ class StackedOverlappedImages extends StatelessWidget {
     return items
         .asMap()
         .map((index, item) {
-          final left = size - xShift;
-          final value = Container(
-            margin: EdgeInsets.only(left: left * index),
-            child: item,
-          );
-          return MapEntry(index, value);
-        })
+      final left = size - xShift;
+      final value = Container(
+        margin: EdgeInsets.only(left: left * index),
+        child: item,
+      );
+      return MapEntry(index, value);
+    })
         .values
         .toList();
   }

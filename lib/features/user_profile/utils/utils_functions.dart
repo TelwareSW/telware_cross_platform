@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 Future<Uint8List?> downloadImage(String url) async {
   try {
@@ -17,5 +20,26 @@ Future<Uint8List?> downloadImage(String url) async {
       print('Error downloading image: $e');
     }
     return null;
+  }
+}
+
+Future<bool> uploadImage(File imageFile) async {
+  String uploadUrl = "http://192.168.1.2:3000/upload";
+  var uri = Uri.parse(uploadUrl);
+  var request = http.MultipartRequest('POST', uri);
+  var multipartFile = await http.MultipartFile.fromPath(
+    'image',
+    imageFile.path,
+    contentType: MediaType('image', 'jpeg'),
+  );
+  request.files.add(multipartFile);
+  try {
+    await request.send();
+    return true;
+  } catch (e) {
+    if (kDebugMode) {
+      print('Error occurred: $e');
+    }
+    return false;
   }
 }

@@ -66,10 +66,10 @@ class UserModel {
   @override
   int get hashCode {
     return userId.hashCode ^
-        userName.hashCode ^
-        userImageUrl.hashCode ^
-        _listHashCode(stories) ^
-        (userImage?.hashCode ?? 0);
+    userName.hashCode ^
+    userImageUrl.hashCode ^
+    _listHashCode(stories) ^
+    (userImage?.hashCode ?? 0);
   }
 
   bool _listEquals(List<StoryModel> list1, List<StoryModel> list2) {

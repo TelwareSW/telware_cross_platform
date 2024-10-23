@@ -15,7 +15,7 @@ class AddMyStory extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('Building add_my_Story...');
+    debugPrint('Building AddMyStory...');
     return Column(
       children: [
         Padding(

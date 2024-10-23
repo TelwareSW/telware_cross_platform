@@ -10,9 +10,9 @@ import 'features/user_profile/models/story_model.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-  Hive.registerAdapter(UserModelAdapter()); // Make sure to register your adapter
-  Hive.registerAdapter(StoryModelAdapter()); // Register the StoryModel adapter
-  await Hive.openBox<UserModel>('contacts'); // Open the box// Replace 'stories' with your actual box name
+  Hive.registerAdapter(UserModelAdapter());
+  Hive.registerAdapter(StoryModelAdapter());
+  await Hive.openBox<UserModel>('contacts');
 
   runApp(
     const ProviderScope(

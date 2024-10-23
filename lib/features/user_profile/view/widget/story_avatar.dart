@@ -41,9 +41,9 @@ class StoryAvatar extends StatelessWidget {
               child: ClipOval(
                 child: user.userImage != null
                     ? Image.memory(
-                        user.userImage!,
-                        fit: BoxFit.cover,
-                      )
+                  user.userImage!,
+                  fit: BoxFit.cover,
+                )
                     : const Icon(Icons.person),
               ),
             ),

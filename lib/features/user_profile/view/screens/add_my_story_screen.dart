@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:http_parser/http_parser.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:telware_cross_platform/features/user_profile/view/screens/show_taken_story_screen.dart';
 import '../widget/choice_mode_in_camera_container.dart';
 import '../widget/take_photo_row.dart';
 
@@ -23,18 +25,39 @@ class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
   @override
   void initState() {
     super.initState();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     _initializeCamera();
   }
 
   Future<void> _initializeCamera() async {
-    final cameras = await availableCameras();
-    if (cameras.isEmpty) {
-      if (kDebugMode) {
-        print('No cameras available');
+    try {
+      final cameras = await availableCameras();
+      if (cameras.isEmpty) {
+        if (kDebugMode) {
+          print('No cameras available');
+        }
+        return;
       }
-      return;
+      _initializeController(cameras[_currentCameraIndex]);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error initializing camera: $e');
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to access camera. Please check permissions.')),
+      );
     }
-    _initializeController(cameras[_currentCameraIndex]);
+  }
+
+  Future<File> _saveImageBytesToFile(Uint8List imageBytes) async {
+    final directory = await getTemporaryDirectory();
+    final filePath = '${directory.path}/taken_story.png';
+    final file = File(filePath);
+    await file.writeAsBytes(imageBytes);
+    return file; // Return the created file
   }
 
   Future<void> _initializeController(CameraDescription camera) async {
@@ -69,43 +92,16 @@ class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
       await _initializeControllerFuture;
       final image = await _controller!.takePicture();
       Uint8List imageBytes = await image.readAsBytes();
-      await _uploadImage(imageBytes);
+      File savedFile = await _saveImageBytesToFile(imageBytes);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ShowTakenStoryScreen(image: savedFile),
+        ),
+      );
     } catch (e) {
       if (kDebugMode) {
         print('Error capturing image: $e');
-      }
-    }
-  }
-
-  Future<void> _uploadImage(Uint8List imageBytes) async {
-    String uploadUrl = "http://192.168.1.6:3000/upload";
-    var uri = Uri.parse(uploadUrl);
-    var request = http.MultipartRequest('POST', uri);
-
-    // Create a multipart file from the byte data
-    var multipartFile = http.MultipartFile.fromBytes(
-      'image',
-      imageBytes,
-      filename: 'image.jpeg', // Optional: Specify a filename
-      contentType: MediaType('image', 'jpeg'),
-    );
-
-    request.files.add(multipartFile);
-
-    try {
-      var response = await request.send();
-      if (response.statusCode == 200) {
-        if (kDebugMode) {
-          print('Image uploaded successfully');
-        }
-      } else {
-        if (kDebugMode) {
-          print('Server responded with status: ${response.statusCode}');
-        }
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error occurred during upload: $e');
       }
     }
   }

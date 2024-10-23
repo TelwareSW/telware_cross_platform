@@ -14,174 +14,61 @@ class ContactsRepository {
     await Future.delayed(const Duration(seconds: 2));
     List<UserModel> users = [
       UserModel(
-      userName: 'game of thrones',
-      userImageUrl:
-      'https://st2.depositphotos.com/2703645/7304/v/450/depositphotos_73040253-stock-illustration-male-avatar-icon.jpg',
-      stories: [
-        StoryModel(
-          storyId: 'idd11',
-          createdAt: DateTime(2024, 10, 21, 12, 0),
-          storyContentUrl:
-          'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
-          isSeen: false,
-          storyCaption: 'very good caption', seens: [UserModel(
-          stories: [
-            StoryModel(
-              storyId: 'id11',
+        userName: 'game of thrones',
+        userImageUrl:
+            'https://st2.depositphotos.com/2703645/7304/v/450/depositphotos_73040253-stock-illustration-male-avatar-icon.jpg',
+        stories: [
+          StoryModel(
+              storyId: 'idd11',
               createdAt: DateTime(2024, 10, 21, 12, 0),
               storyContentUrl:
-              'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',isSeen: false, seens: [],
-            ),
-            StoryModel(
-              storyId: 'id12',
-              createdAt: DateTime(2024, 10, 21, 12, 0),
-              storyContentUrl:
-              'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',isSeen: false,
-              storyCaption: 'very good  good  good caption', seens: [],
-
-            ),
-          ],
-          userName: 'game of thrones',
-          userImageUrl:
-          'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
-          userId: 'id1',
-        ),UserModel(
-          stories: [
-            StoryModel(
-              storyId: 'id21',
-              createdAt: DateTime(2024, 10, 21, 12, 0),
-              storyContentUrl:
-              'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg', isSeen: false, seens: [],
-            ),
-            StoryModel(
-              storyId: 'id22',
-              createdAt: DateTime(2024, 10, 21, 12, 0),
-              storyContentUrl:
-              'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',isSeen: false, seens: [],
-            ),
-            StoryModel(
-              storyId: 'id23',
-              createdAt: DateTime(2024, 10, 21, 12, 0),
-              storyContentUrl:
-              'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',isSeen: false, seens: [],
-            ),
-          ],
-          userName: 'rings of power',
-          userImageUrl:
-          'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
-          userId: 'id2',
-        ),],
-        ),
-        StoryModel(
-          storyId: 'idd12',
-          createdAt: DateTime(2024, 10, 21, 12, 0),
-          storyContentUrl:
-          'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
-          isSeen: false,
-          storyCaption: 'very good  good  good caption', seens: [UserModel(
-          stories: [
-            StoryModel(
-              storyId: 'id21',
-              createdAt: DateTime(2024, 10, 21, 12, 0),
-              storyContentUrl:
-              'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg', isSeen: false, seens: [],
-            ),
-            StoryModel(
-              storyId: 'id22',
-              createdAt: DateTime(2024, 10, 21, 12, 0),
-              storyContentUrl:
-              'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',isSeen: false, seens: [],
-            ),
-            StoryModel(
-              storyId: 'id23',
-              createdAt: DateTime(2024, 10, 21, 12, 0),
-              storyContentUrl:
-              'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',isSeen: false, seens: [],
-            ),
-          ],
-          userName: 'rings of power',
-          userImageUrl:
-          'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
-          userId: 'id2',
-        ),],
-
-        ),
-        StoryModel(
-          storyId: 'idd13',
-          createdAt: DateTime(2024, 10, 21, 12, 0),
-          storyContentUrl:
-          'https://www.e3lam.com/images/large/2015/01/unnamed-14.jpg',
-          isSeen: false, seens: [UserModel(
-          stories: [
-            StoryModel(
-              storyId: 'id11',
-              createdAt: DateTime(2024, 10, 21, 12, 0),
-              storyContentUrl:
-              'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',isSeen: false, seens: [],
-            ),
-            StoryModel(
-              storyId: 'id12',
-              createdAt: DateTime(2024, 10, 21, 12, 0),
-              storyContentUrl:
-              'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',isSeen: false,
-              storyCaption: 'very good  good  good caption', seens: [],
-
-            ),
-          ],
-          userName: 'game of thrones',
-          userImageUrl:
-          'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
-          userId: 'id1',
-        ),UserModel(
-          stories: [
-            StoryModel(
-              storyId: 'id21',
-              createdAt: DateTime(2024, 10, 21, 12, 0),
-              storyContentUrl:
-              'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg', isSeen: false, seens: [],
-            ),
-            StoryModel(
-              storyId: 'id22',
-              createdAt: DateTime(2024, 10, 21, 12, 0),
-              storyContentUrl:
-              'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',isSeen: false, seens: [],
-            ),
-            StoryModel(
-              storyId: 'id23',
-              createdAt: DateTime(2024, 10, 21, 12, 0),
-              storyContentUrl:
-              'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',isSeen: false, seens: [],
-            ),
-          ],
-          userName: 'rings of power',
-          userImageUrl:
-          'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
-          userId: 'id2',
-        ),],
-        ),
-      ],
-      userId: 'myUser',
-    ),
+                  'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+              isSeen: false,
+              storyCaption: 'very good caption',
+              seenIds: ['id1', 'id2']),
+          StoryModel(
+            storyId: 'idd12',
+            createdAt: DateTime(2024, 10, 21, 12, 0),
+            storyContentUrl:
+                'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
+            isSeen: false,
+            storyCaption: 'very good  good  good caption',
+            seenIds: ['id2'],
+          ),
+          StoryModel(
+            storyId: 'idd13',
+            createdAt: DateTime(2024, 10, 21, 12, 0),
+            storyContentUrl:
+                'https://www.e3lam.com/images/large/2015/01/unnamed-14.jpg',
+            isSeen: false,
+            seenIds: ['id1', 'id2'],
+          ),
+        ],
+        userId: 'myUser',
+      ),
       UserModel(
         stories: [
           StoryModel(
             storyId: 'id11',
             createdAt: DateTime(2024, 10, 21, 12, 0),
             storyContentUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',isSeen: false, seens: [],
+                'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+            isSeen: false,
+            seenIds: [],
           ),
           StoryModel(
             storyId: 'id12',
             createdAt: DateTime(2024, 10, 21, 12, 0),
             storyContentUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',isSeen: false,
-            storyCaption: 'very good  good  good caption', seens: [],
-
+                'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
+            isSeen: false,
+            storyCaption: 'very good  good  good caption',
+            seenIds: [],
           ),
         ],
         userName: 'game of thrones',
         userImageUrl:
-        'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
+            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
         userId: 'id1',
       ),
       UserModel(
@@ -190,24 +77,30 @@ class ContactsRepository {
             storyId: 'id21',
             createdAt: DateTime(2024, 10, 21, 12, 0),
             storyContentUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg', isSeen: false, seens: [],
+                'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+            isSeen: false,
+            seenIds: [],
           ),
           StoryModel(
             storyId: 'id22',
             createdAt: DateTime(2024, 10, 21, 12, 0),
             storyContentUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',isSeen: false, seens: [],
+                'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
+            isSeen: false,
+            seenIds: [],
           ),
           StoryModel(
             storyId: 'id23',
             createdAt: DateTime(2024, 10, 21, 12, 0),
             storyContentUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',isSeen: false, seens: [],
+                'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+            isSeen: false,
+            seenIds: [],
           ),
         ],
         userName: 'rings of power',
         userImageUrl:
-        'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
         userId: 'id2',
       ),
       UserModel(
@@ -216,26 +109,31 @@ class ContactsRepository {
             storyId: 'id31',
             createdAt: DateTime(2024, 10, 21, 12, 0),
             storyContentUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',isSeen: false,
-            storyCaption: 'very good  good  good caption', seens: [],
-
+                'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+            isSeen: false,
+            storyCaption: 'very good  good  good caption',
+            seenIds: [],
           ),
           StoryModel(
             storyId: 'id32',
             createdAt: DateTime(2024, 10, 21, 12, 0),
             storyContentUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',isSeen: false, seens: [],
+                'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
+            isSeen: false,
+            seenIds: [],
           ),
           StoryModel(
             storyId: 'id33',
             createdAt: DateTime(2024, 10, 21, 12, 0),
             storyContentUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',isSeen: false, seens: [],
+                'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+            isSeen: false,
+            seenIds: [],
           ),
         ],
         userName: 'rings of power',
         userImageUrl:
-        'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
         userId: 'id3',
       ),
     ];
@@ -245,8 +143,12 @@ class ContactsRepository {
   Future<void> saveContactsToHive(List<UserModel> contacts) async {
     for (UserModel contact in contacts) {
       final existingContact = _userBox.get(contact.userId);
-      if (existingContact == null || contact != existingContact || existingContact.userImage == null) {
-        if(contact.userImage == null && existingContact?.userImage !=null) return;
+      if (existingContact == null ||
+          contact != existingContact ||
+          existingContact.userImage == null) {
+        if (contact.userImage == null && existingContact?.userImage != null) {
+          return;
+        }
         await _updateContactInHive(contact);
       }
     }
@@ -263,7 +165,6 @@ class ContactsRepository {
       }
     }
   }
-
 
   Future<List<StoryModel>> fetchContactStoriesFromHive(String userId) async {
     final contact = _userBox.get(userId);
@@ -291,7 +192,6 @@ class ContactsRepository {
 
   Future<void> updateContactsInHive(UserModel updatedContact) async {
     try {
-      print('helllllllo ${updatedContact}');
       final existingContact = _userBox.get(updatedContact.userId);
 
       if (existingContact != null) {
@@ -309,26 +209,18 @@ class ContactsRepository {
     }
   }
 
-  Future<void> saveStoryImageLocally(String userId, String storyId, Uint8List imageData) async {
+  Future<void> saveStoryImageLocally(
+      String userId, String storyId, Uint8List imageData) async {
     try {
-      print('the image $imageData');
       final user = await fetchContactFromHive(userId);
-      print('the user before $user');
-
       if (user != null) {
         for (var story in user.stories) {
           if (story.storyId == storyId) {
-            print('the story before $story');
-            // Update the story content directly
             story.storyContent = imageData;
-            print('the story after $story');
             break; // Exit loop since we've found the matching story
           }
         }
-
-        // Update the user data in Hive
         await updateContactsInHive(user);
-        print('the user after $user');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -336,10 +228,9 @@ class ContactsRepository {
       }
     }
   }
-
 }
 
-final contactsRepositoryProvider  = Provider((ref) {
+final contactsRepositoryProvider = Provider((ref) {
   final userBox = Hive.box<UserModel>('contacts');
   return ContactsRepository(userBox);
 });
