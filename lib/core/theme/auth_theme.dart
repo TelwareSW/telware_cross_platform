@@ -4,6 +4,7 @@ import 'package:telware_cross_platform/core/theme/dimensions.dart';
 
 final authTheme = ThemeData.dark().copyWith(
   scaffoldBackgroundColor: Palette.background,
+  appBarTheme: const AppBarTheme(color: Palette.secondary, elevation: 0),
   iconTheme: const IconThemeData(color: Palette.icons),
   listTileTheme: const ListTileThemeData(
     textColor: Palette.primaryText,
