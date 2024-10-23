@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_local_repository.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_remote_repository.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
@@ -109,10 +110,46 @@ class AuthViewModel extends _$AuthViewModel {
 
   Future<void> logOut() async {
     state = AuthState.loading;
-    // delete the stored user data
-    await ref.read(authLocalRepositoryProvider).deleteToken();
-    await ref.read(authLocalRepositoryProvider).deleteUser();
+    final token = ref.read(tokenProvider);
 
-    state = AuthState.init;
+    final appError = await ref
+        .read(authRemoteRepositoryProvider)
+        .logOut(token: token!, route: 'auth/logout');
+
+    await _handleLogOutState(appError);
+  }
+
+  Future<void> logOutAllOthers() async {
+    final token = ref.read(tokenProvider);
+
+    final appError = await ref
+        .read(authRemoteRepositoryProvider)
+        .logOut(token: token!, route: 'auth/logout-others');
+
+    if (appError != null) {
+      state = AuthState.fail(appError.error);
+    }
+  }
+
+  Future<void> logOutAll() async {
+    state = AuthState.loading;
+    final token = ref.read(tokenProvider);
+
+    final appError = await ref
+        .read(authRemoteRepositoryProvider)
+        .logOut(token: token!, route: 'auth/logout-all');
+        
+    await _handleLogOutState(appError);
+  }
+
+  Future<void> _handleLogOutState(AppError? appError) async {
+    if (appError == null) {
+      // successful log out operation
+      await ref.read(authLocalRepositoryProvider).deleteToken();
+      await ref.read(authLocalRepositoryProvider).deleteUser();
+      state = AuthState.unauthorized;
+    } else {
+      state = AuthState.fail(appError.error);
+    }
   }
 }

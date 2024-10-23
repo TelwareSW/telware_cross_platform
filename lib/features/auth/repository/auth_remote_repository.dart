@@ -121,6 +121,28 @@ class AuthRemoteRepository {
     return null;
   }
 
+  Future<AppError?> logOut({required String token, required String route}) async {
+    try {
+      final response = await _dio.post(
+        route,
+        options: Options(
+          headers: {HttpHeaders.authorizationHeader: 'Bearer $token'},
+        ),
+      );
+
+      if (response.statusCode! > 200 || response.statusCode! < 200) {
+        final message = response.data['message'];
+        return AppError(message);
+      }
+    } on DioException catch (dioException) {
+      return handleDioException(dioException);
+    } catch (e) {
+      debugPrint('Log out error:\n${e.toString()}');
+      return AppError('Couldn\'t perform action now. Please, try again later.');
+    }
+    return null;
+  }
+
   Future<AppError?> forgotPassword(String email) async {
     try {
       final response =
