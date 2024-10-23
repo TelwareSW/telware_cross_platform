@@ -25,7 +25,7 @@ class StoryWithUserName extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => StoryScreen(
-                    user: user,
+                    userId: user.userId,
                     showSeens: false,
 
                   ),

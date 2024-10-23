@@ -28,8 +28,8 @@ class AddMyStory extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => myUser.stories.isEmpty ?  const CameraApp() : StoryScreen(
-                        user: myUser, showSeens: true,
+                      builder: (context) => myUser.stories.isEmpty ?  const AddMyStoryScreen() : StoryScreen(
+                        userId: myUser.userId, showSeens: true,
                       ),
                   ),
                 );

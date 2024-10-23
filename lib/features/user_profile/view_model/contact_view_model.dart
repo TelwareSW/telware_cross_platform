@@ -95,6 +95,16 @@ class ContactViewModel extends StateNotifier<ContactViewModelState> {
     }
   }
 
+  Future<void> saveStoryImage(String userId, String storyId, Uint8List imageData) async {
+    try {
+      await _contactsRepository.saveStoryImageLocally(userId, storyId, imageData);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error saving story image: $e');
+      }
+    }
+  }
+
 }
 
 final usersViewModelProvider = StateNotifierProvider<ContactViewModel, ContactViewModelState>((ref) {

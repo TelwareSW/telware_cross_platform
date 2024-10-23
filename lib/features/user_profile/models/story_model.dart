@@ -66,7 +66,7 @@ class StoryModel {
 
   @override
   String toString() {
-    return 'StoryModel(storyId: $storyId, isSeen: $isSeen, storyContentType: $storyContentType, storyContentUrl: $storyContentUrl, createdAt: $createdAt, storyContent: $storyContent)';
+    return 'StoryModel(storyId: $storyId, isSeen: $isSeen, storyContentType: $storyContentType, storyContentUrl: $storyContentUrl, createdAt: $createdAt, storyCaption: $storyCaption, storyContent: $storyContent)';
   }
 
   @override

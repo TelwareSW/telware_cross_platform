@@ -7,14 +7,14 @@ import 'package:http/http.dart' as http;
 import '../widget/choice_mode_in_camera_container.dart';
 import '../widget/take_photo_row.dart';
 
-class CameraApp extends StatefulWidget {
-  const CameraApp({super.key});
+class AddMyStoryScreen extends StatefulWidget {
+  const AddMyStoryScreen({super.key});
 
   @override
-  _CameraAppState createState() => _CameraAppState();
+  _AddMyStoryScreenState createState() => _AddMyStoryScreenState();
 }
 
-class _CameraAppState extends State<CameraApp> {
+class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
   CameraController? _controller;
   Future<void>? _initializeControllerFuture;
   String _selectedMode = 'Photo';

@@ -246,7 +246,7 @@ class ContactsRepository {
     for (UserModel contact in contacts) {
       final existingContact = _userBox.get(contact.userId);
       if (existingContact == null || contact != existingContact || existingContact.userImage == null) {
-        if(contact.userImage == null && existingContact !=null) return;
+        if(contact.userImage == null && existingContact?.userImage !=null) return;
         await _updateContactInHive(contact);
       }
     }
@@ -291,6 +291,7 @@ class ContactsRepository {
 
   Future<void> updateContactsInHive(UserModel updatedContact) async {
     try {
+      print('helllllllo ${updatedContact}');
       final existingContact = _userBox.get(updatedContact.userId);
 
       if (existingContact != null) {
@@ -307,6 +308,35 @@ class ContactsRepository {
       throw Exception('Error updating user in Hive');
     }
   }
+
+  Future<void> saveStoryImageLocally(String userId, String storyId, Uint8List imageData) async {
+    try {
+      print('the image $imageData');
+      final user = await fetchContactFromHive(userId);
+      print('the user before $user');
+
+      if (user != null) {
+        for (var story in user.stories) {
+          if (story.storyId == storyId) {
+            print('the story before $story');
+            // Update the story content directly
+            story.storyContent = imageData;
+            print('the story after $story');
+            break; // Exit loop since we've found the matching story
+          }
+        }
+
+        // Update the user data in Hive
+        await updateContactsInHive(user);
+        print('the user after $user');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error saving story image to Hive: $e');
+      }
+    }
+  }
+
 }
 
 final contactsRepositoryProvider  = Provider((ref) {

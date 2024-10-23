@@ -6,16 +6,18 @@ import 'package:story/story_image.dart';
 import 'package:story/story_page_view.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
+import 'package:telware_cross_platform/features/user_profile/utils/utils_functions.dart';
 import 'package:telware_cross_platform/features/user_profile/view/widget/stacked_overlapped_images.dart';
 import 'package:telware_cross_platform/features/user_profile/view_model/contact_view_model.dart';
 import '../../models/story_model.dart';
+import 'dart:typed_data';
 
 class StoryScreen extends ConsumerStatefulWidget {
-  final UserModel user;
+  final String userId;
   final bool showSeens;
   const StoryScreen({
     super.key,
-    required this.user,
+    required this.userId,
     required this.showSeens,
   });
 
@@ -25,19 +27,24 @@ class StoryScreen extends ConsumerStatefulWidget {
 
 class _StoryScreenState extends ConsumerState<StoryScreen> {
   late ValueNotifier<IndicatorAnimationCommand> indicatorAnimationController;
+  UserModel? user;
   List<StoryModel> storiesList = [];
 
   @override
   void initState() {
     super.initState();
-    loadStories();
     indicatorAnimationController = ValueNotifier<IndicatorAnimationCommand>(
         IndicatorAnimationCommand.resume);
+    loadStories();
   }
 
   Future<void> loadStories() async {
-    storiesList = widget.user.stories;
-    setState(() {});
+    user = await ref
+        .read(usersViewModelProvider.notifier)
+        .getContactById(widget.userId);
+    setState(() {
+      storiesList = user?.stories ?? []; // Set storiesList from fetched user
+    });
   }
 
   final FocusNode _focusNode = FocusNode();
@@ -51,90 +58,119 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (user == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: StoryPageView(
         itemBuilder: (context, pageIndex, storyIndex) {
-          final story = widget.user.stories[storyIndex];
-          if (!story.isSeen) {
-            ref
-                .read(usersViewModelProvider.notifier)
-                .markStoryAsSeen(widget.user.userId, story.storyId);
-          }
-          return Stack(
-            children: [
-              Positioned.fill(
-                child: Container(color: Colors.black),
-              ),
-              Positioned.fill(
-                child: StoryImage(
-                  key: ValueKey(story.storyContentUrl),
-                  imageProvider: NetworkImage(story.storyContentUrl),
-                  fit: BoxFit.fitWidth,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 44, left: 8),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+          final story = user!.stories[storyIndex];
+          return FutureBuilder<Uint8List?>(
+            future: story.storyContent == null
+                ? downloadImage(story.storyContentUrl)
+                : Future.value(story.storyContent),
+            builder: (context, snapshot) {
+              print(story.storyContent);
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (snapshot.hasError || snapshot.data == null) {
+                return const Center(child: Text('Error loading image'));
+              }
+
+              final imageData = snapshot.data!;
+              // Save the image only if it was downloaded
+              print(widget.userId);
+              print(story.storyId);
+              if (story.storyContent == null) {
+                ref
+                    .read(usersViewModelProvider.notifier)
+                    .saveStoryImage(widget.userId, story.storyId, imageData);
+                if (!story.isSeen) {
+                  ref
+                      .read(usersViewModelProvider.notifier)
+                      .markStoryAsSeen(user!.userId, story.storyId);
+                }
+              }
+              return Stack(
+                children: [
+                  Positioned.fill(
+                    child: Container(color: Colors.black),
+                  ),
+                  Positioned.fill(
+                    child: StoryImage(
+                      key: ValueKey(imageData),
+                      imageProvider: MemoryImage(imageData),
+                      fit: BoxFit.fitWidth,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 44, left: 8),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          height: 32,
-                          width: 32,
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                              image: MemoryImage(widget.user.userImage!),
-                              fit: BoxFit.cover,
-                            ),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 8,
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Text(
-                              widget.user.userId,
-                              style: const TextStyle(
-                                fontSize: 17,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                            Container(
+                              height: 32,
+                              width: 32,
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: MemoryImage(user!.userImage!),
+                                  fit: BoxFit.cover,
+                                ),
+                                shape: BoxShape.circle,
                               ),
                             ),
-                            Text(
-                              DateFormat('dd-MM-yyyy').format(story.createdAt),
-                              style: const TextStyle(
-                                fontSize: 17,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  user!.userId,
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  DateFormat('dd-MM-yyyy')
+                                      .format(story.createdAt),
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
+                        Column(
+                          children: [
+                            Text(
+                              story.storyCaption,
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 17),
+                            ),
+                            const SizedBox(
+                              height: 64,
+                            ),
+                          ],
+                        )
                       ],
                     ),
-                    Column(
-                      children: [
-                        Text(
-                          story.storyCaption,
-                          style: const TextStyle(color: Colors.white, fontSize: 17),
-                        ),
-                        const SizedBox(
-                          height: 64,
-                        ),
-                      ],
-                    )
-                  ],
-                ),
-              ),
-            ],
+                  ),
+                ],
+              );
+            },
           );
         },
         gestureItemBuilder: (context, pageIndex, storyIndex) {
@@ -200,7 +236,7 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
                               )
                             : Row(
                                 children: [
-                                  widget.user.stories[storyIndex].seens.isEmpty
+                                  user!.stories[storyIndex].seens.isEmpty
                                       ? const Text(
                                           'No views yet',
                                           style: TextStyle(
@@ -211,7 +247,7 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
                                       : Row(
                                           children: [
                                             StackedOverlappedImages(
-                                              users: widget.user
+                                              users: user!
                                                   .stories[storyIndex].seens,
                                               showBorder: false,
                                             ),
@@ -219,7 +255,7 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
                                               width: 5,
                                             ),
                                             Text(
-                                              '${widget.user.stories[storyIndex].seens.length} views',
+                                              '${user!.stories[storyIndex].seens.length} views',
                                               style: const TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 17,
@@ -235,10 +271,12 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
                         icon: const FaIcon(FontAwesomeIcons.share),
                         onPressed: () {},
                       ),
-                      widget.showSeens == false ? IconButton(
-                        icon: const FaIcon(FontAwesomeIcons.heart),
-                        onPressed: () {},
-                      ):const SizedBox(),
+                      widget.showSeens == false
+                          ? IconButton(
+                              icon: const FaIcon(FontAwesomeIcons.heart),
+                              onPressed: () {},
+                            )
+                          : const SizedBox(),
                     ],
                   ),
                 ),
@@ -252,7 +290,7 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
         },
         pageLength: 1,
         storyLength: (int pageIndex) {
-          return widget.user.stories.length;
+          return user!.stories.length;
         },
         onPageLimitReached: () {
           Navigator.pop(context);
