@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'core/theme/auth_theme.dart';
+import 'features/auth/view/screens/user_profile_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:telware_cross_platform/core/view/screen/splash_screen.dart';
