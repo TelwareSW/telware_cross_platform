@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/settings_input_widget.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/settings_section.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/toolbar_widget.dart';
+import 'package:vibration/vibration.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ProfileInfoScreen extends StatefulWidget {
   static const String route = '/bio';
@@ -13,15 +16,20 @@ class ProfileInfoScreen extends StatefulWidget {
   State<ProfileInfoScreen> createState() => _ProfileInfoScreen();
 }
 
-class _ProfileInfoScreen extends State<ProfileInfoScreen> {
+class _ProfileInfoScreen extends State<ProfileInfoScreen> with SingleTickerProviderStateMixin {
   static const user = {
     "firstName": "Moamen",
-    "lastName": "Hefny"
+    "lastName": "Hefny",
+    "bio": "",
   };
   final TextEditingController _firstNameController = TextEditingController(text: user["firstName"]);
   final TextEditingController _secondNameController = TextEditingController(text: user["lastName"]);
-  final TextEditingController _bioController = TextEditingController();
+  final TextEditingController _bioController = TextEditingController(text: user["bio"]);
 
+  final firstNameShakeKey = GlobalKey<ShakeWidgetState>();
+  final lastNameShakeKey = GlobalKey<ShakeWidgetState>();
+
+  bool _showSaveButton = false;
 
   static List<Map<String, dynamic>> profileSections = [
     const {"title": "Your channel", "options": [
@@ -37,10 +45,45 @@ class _ProfileInfoScreen extends State<ProfileInfoScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+
+    // Add listeners to each TextEditingController
+    _firstNameController.addListener(_checkForChanges);
+    _secondNameController.addListener(_checkForChanges);
+    _bioController.addListener(_checkForChanges);
+  }
+
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _secondNameController.dispose();
+    _bioController.dispose();
+    super.dispose();
+  }
+
+  void _checkForChanges() {
+    bool hasChanged = _firstNameController.text != user["firstName"] ||
+        _secondNameController.text !=  user["lastName"] ||
+        _bioController.text != user["bio"];
+
+    if (hasChanged != _showSaveButton) {
+      setState(() {
+        _showSaveButton = hasChanged;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const ToolbarWidget(
+      appBar: ToolbarWidget(
         title: "Profile Info",
+        actions: [
+          if (_showSaveButton)
+            IconButton(onPressed: _updateUserData,
+                icon: const Icon(Icons.check))
+        ],
       ),
       body: SingleChildScrollView(
           child: Column(
@@ -48,9 +91,16 @@ class _ProfileInfoScreen extends State<ProfileInfoScreen> {
               SettingsSection(title: "Your Name",
                 settingsOptions: const [],
                 actions: [
-                  SettingsInputWidget(controller:_firstNameController),
-                  SettingsInputWidget(controller:_secondNameController),
-                ],),
+                  SettingsInputWidget(controller:_firstNameController,
+                    placeholder: "First Name",
+                    shakeKey: firstNameShakeKey,
+                  ),
+                  SettingsInputWidget(controller:_secondNameController,
+                    placeholder: "Last Name",
+                    shakeKey: lastNameShakeKey,
+                  ),
+                ],
+              ),
               const SizedBox(height: Dimensions.sectionGaps),
               const SettingsSection(title: "Your channel",
                 settingsOptions: [{"text": "Personal channel", "trailing": "Add"}],
@@ -72,5 +122,26 @@ class _ProfileInfoScreen extends State<ProfileInfoScreen> {
           )
       ),
     );
+  }
+
+  void _updateUserData() {
+    if (_firstNameController.text == "") {
+      return _shakeAndVibrate(firstNameShakeKey);
+    }
+    if (_secondNameController.text == "") {
+      return _shakeAndVibrate(lastNameShakeKey);
+    }
+
+    Navigator.pop(context);
+  }
+
+  void _shakeAndVibrate(shakeKey) {
+    shakeKey.currentState?.shake();
+    Vibration.hasVibrator().then((hasVibrator) {
+      if (hasVibrator ?? false) {
+        print("YESSSSSSSSSSss");
+        Vibration.vibrate(duration: 100);
+      }
+    });
   }
 }
