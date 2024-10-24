@@ -60,6 +60,7 @@ void showSnackBarMessage(BuildContext context, String message) {
     );
 }
 
-void showToastMessage(String message) {
+void showToastMessage(String message) async {
+  await Fluttertoast.cancel();
   Fluttertoast.showToast(msg: message);
 }
