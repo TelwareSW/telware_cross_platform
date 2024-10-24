@@ -3,6 +3,7 @@ import 'package:telware_cross_platform/features/user_profile/models/user_model.d
 import 'package:telware_cross_platform/features/user_profile/view/screens/story_screen.dart';
 import 'package:telware_cross_platform/features/user_profile/view/widget/story_avatar.dart';
 import '../../../../core/theme/palette.dart';
+import '../../../../core/theme/sizes.dart';
 import '../screens/add_my_story_screen.dart';
 
 class AddMyStory extends StatelessWidget {
@@ -60,7 +61,7 @@ class AddMyStory extends StatelessWidget {
           padding: EdgeInsets.only(right: 10),
           child: Text(
             "My Story",
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: Colors.white,fontSize: Sizes.secondaryText),
           ),
         ),
       ],

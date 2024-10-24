@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/features/user_profile/view/widget/colapsed_story_section.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import '../../../../core/theme/sizes.dart';
 import '../../view_model/contact_view_model.dart';
 import '../widget/chats_list.dart';
 import '../widget/expanded_stories_section.dart';
-import '../widget/pick_from_gallery.dart';
 import 'add_my_story_screen.dart';
 
 class InboxScreen extends ConsumerStatefulWidget {
@@ -45,7 +45,6 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
 
   Future<void> _refreshPage() async {
     await ref.read(usersViewModelProvider.notifier).fetchContacts();
-    await Future.delayed(const Duration(seconds: 2));
   }
 
   @override
@@ -53,27 +52,21 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         return Scaffold(
-          floatingActionButton: FloatingActionButton(
+          floatingActionButton: kIsWeb
+              ? const SizedBox()
+              : FloatingActionButton(
             onPressed: () {
-              if(kIsWeb){
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const PickFromGallery(),
-                  ),
-                );
-              }else{
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AddMyStoryScreen(),
-                  ),
-                );
-              }
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AddMyStoryScreen(),
+                ),
+              );
             },
             shape: const CircleBorder(),
             backgroundColor: Palette.accent,
-            child: const Icon(Icons.camera_alt_rounded),
+            child: const Icon(Icons.camera_alt_rounded,
+                size: Sizes.iconSize),
           ),
           body: RefreshIndicator(
             onRefresh: _refreshPage,
@@ -86,21 +79,21 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
                   expandedHeight: kIsWeb
                       ? 150
                       : constraints.maxWidth > 600
-                          ? 150
-                          : 140,
+                      ? 150
+                      : 140,
                   floating: false,
                   snap: false,
                   pinned: true,
-                  leading: const Icon(Icons.menu),
+                  leading: const Icon(Icons.menu, size: Sizes.iconSize),
                   title: isAppBarCollapsed
                       ? const ColapsedStorySection()
                       : const Text(
-                          'TelWare',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                    'TelWare',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Palette.primaryText,
+                        fontSize: Sizes.primaryText),
+                  ),
                   flexibleSpace: FlexibleSpaceBar(
                     background: !isAppBarCollapsed
                         ? const ExpandedStoriesSection()
@@ -111,7 +104,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
                       padding: EdgeInsets.all(16),
                       child: Icon(
                         Icons.search_rounded,
-                        size: 30,
+                        size: Sizes.iconSize,
                       ),
                     )
                   ],
@@ -121,7 +114,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
             ),
           ),
         );
-      },
+      }
     );
   }
 }

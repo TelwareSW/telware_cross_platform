@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/features/user_profile/view/widget/stacked_overlapped_images.dart';
+import '../../../../core/theme/sizes.dart';
 import '../../models/user_model.dart';
 import '../../view_model/contact_view_model.dart';
 
@@ -25,7 +26,7 @@ class ColapsedStorySection extends ConsumerWidget {
           padding: const EdgeInsets.all(16.0),
           child: Text(
             '${users.length} Story',
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: Sizes.primaryText, fontWeight: FontWeight.bold),
           ),
         )
       ],

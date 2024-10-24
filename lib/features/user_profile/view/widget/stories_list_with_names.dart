@@ -6,14 +6,33 @@ import 'package:telware_cross_platform/features/user_profile/view_model/contact_
 
 import 'add_my_story.dart';
 
-class StoriesListWithNames extends ConsumerWidget {
-
+class StoriesListWithNames extends ConsumerStatefulWidget {
   const StoriesListWithNames({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final viewModelState = ref.watch(usersViewModelProvider);
+  _StoriesListWithNamesState createState() => _StoriesListWithNamesState();
+}
 
+class _StoriesListWithNamesState extends ConsumerState<StoriesListWithNames> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void scrollToEnd() {
+    _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent,
+      duration: const Duration(seconds: 1),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final viewModelState = ref.watch(usersViewModelProvider);
     final users = viewModelState.contacts;
 
     if (users.isEmpty) {
@@ -23,22 +42,25 @@ class StoriesListWithNames extends ConsumerWidget {
     final UserModel myUser = users.firstWhere(
           (user) => user.userId == 'myUser',
       orElse: () {
-        throw StateError('myUser not found'); // or handle accordingly
+        throw StateError('myUser not found');
       },
     );
 
-    List<UserModel> reorderedUsers = reorderUsers(users.where((user) => user.userId != 'myUser').toList());
-    debugPrint('Building StoriesListWithNames...');
+    List<UserModel> reorderedUsers = reorderUsers(
+      users.where((user) => user.userId != 'myUser').toList(),
+    );
+
     return SingleChildScrollView(
+      controller: _scrollController,
       scrollDirection: Axis.horizontal,
-      child: Row(children: [
-        AddMyStory(myUser: myUser),
-        ...reorderedUsers.map((user) {
-          return StoryWithUserName(
-            user: user,
-          );
-        }),
-      ]),
+      child: Row(
+        children: [
+          AddMyStory(myUser: myUser),
+          ...reorderedUsers.map((user) {
+            return StoryWithUserName(user: user);
+          }),
+        ],
+      ),
     );
   }
 

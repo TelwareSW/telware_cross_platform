@@ -12,6 +12,8 @@ import 'package:telware_cross_platform/features/user_profile/view_model/contact_
 import '../../models/story_model.dart';
 import 'dart:typed_data';
 
+import '../widget/delete_popup_menu.dart';
+
 class StoryScreen extends ConsumerStatefulWidget {
   final String userId;
   final bool showSeens;
@@ -216,17 +218,12 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
                             },
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 32),
-                          child: IconButton(
-                            padding: EdgeInsets.zero,
-                            color: Colors.white,
-                            icon: const Icon(Icons.list),
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                          ),
-                        ),
+                        widget.showSeens == true
+                            ? const Padding(
+                                padding: EdgeInsets.only(top: 32),
+                                child: DeletePopUpMenu(),
+                              )
+                            : const SizedBox(),
                       ],
                     ),
                   ),
@@ -325,3 +322,4 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
     );
   }
 }
+

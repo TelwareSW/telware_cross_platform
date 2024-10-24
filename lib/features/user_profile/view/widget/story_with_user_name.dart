@@ -3,6 +3,8 @@ import 'package:telware_cross_platform/features/user_profile/view/screens/story_
 import 'package:telware_cross_platform/features/user_profile/view/widget/story_avatar.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/sizes.dart';
+
 class StoryWithUserName extends StatelessWidget {
   final UserModel user;
   const StoryWithUserName({
@@ -42,7 +44,7 @@ class StoryWithUserName extends StatelessWidget {
             ),
             child: Text(
               user.userName,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white,fontSize: Sizes.secondaryText),
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
             ),
