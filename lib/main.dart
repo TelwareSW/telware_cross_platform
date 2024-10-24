@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:telware_cross_platform/features/auth/view/screens/change_number_form_screen.dart';
+import 'package:telware_cross_platform/features/auth/view/screens/change_number_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/privacy_and_security_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/profile_info_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/settings_screen.dart';
@@ -56,6 +58,8 @@ class _TelWareState extends ConsumerState<TelWare> {
         SettingsScreen.route: (context) => const SettingsScreen(),
         PrivacySettingsScreen.route: (context) => const PrivacySettingsScreen(),
         ProfileInfoScreen.route: (context) => const ProfileInfoScreen(),
+        ChangeNumberScreen.route: (context) => const ChangeNumberScreen(),
+        ChangeNumberFormScreen.route: (context) => const ChangeNumberFormScreen(),
       },
       initialRoute: SettingsScreen.route,
     );

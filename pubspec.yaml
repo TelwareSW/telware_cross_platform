@@ -46,6 +46,7 @@ dependencies:
   fluttertoast: ^8.2.8
   flutter_verification_code: ^1.1.7
   phone_form_field: ^9.2.8
+  gif: ^2.3.0
 
 dev_dependencies:
   flutter_test:
@@ -89,6 +90,7 @@ flutter:
   assets:
     - assets/imgs/
     - assets/icon/
+    - assets/gifs/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

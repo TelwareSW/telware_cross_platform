@@ -8,9 +8,12 @@ import 'auth_sub_text_button.dart';
 
 void showConfirmationDialog(
     BuildContext context,
-    TextEditingController emailController,
+    String title,
+    String subtitle,
+    String confirmText,
+    String cancelText,
     VoidCallback onConfirm,
-    VoidCallback onEdit) {
+    VoidCallback onCancel) {
   showDialog(
     context: context,
     barrierDismissible: true,
@@ -27,23 +30,25 @@ void showConfirmationDialog(
           contentPadding: const EdgeInsets.only(top: 16),
           content: SizedBox(
             width: 1000, // 90% of screen width
-            height: 60,
+            height: 80,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const TitleElement(
-                  name: 'Is this the correct email address?',
+                TitleElement(
+                  name: title,
                   color: Palette.accentText,
                   fontSize: Sizes.secondaryText,
-                  padding: EdgeInsets.only(right: 70, bottom: 10),
+                  textAlign: TextAlign.left,
                 ),
                 TitleElement(
-                  name: emailController.text,
+                  name: subtitle,
                   color: Palette.primaryText,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
+                  textAlign: TextAlign.left,
                 ),
+                const SizedBox(height: 10),
               ],
             ),
           ),
@@ -52,14 +57,14 @@ void showConfirmationDialog(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 AuthSubTextButton(
-                  onPressed: onEdit,
+                  onPressed: onCancel,
                   fontSize: Sizes.secondaryText,
-                  label: 'Edit',
+                  label: cancelText,
                 ),
                 AuthSubTextButton(
                   onPressed: onConfirm,
                   fontSize: Sizes.secondaryText,
-                  label: 'Yes',
+                  label: confirmText,
                 ),
               ],
             )

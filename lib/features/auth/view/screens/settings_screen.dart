@@ -24,7 +24,7 @@ class _SettingsScreen extends State<SettingsScreen> {
 
   static List<Map<String, dynamic>> profileSections = [
     {"title": "Account", "options": [
-      {"text": user["phoneNumber"], "subtext": "Tap to change phone number"},
+      {"text": user["phoneNumber"], "subtext": "Tap to change phone number", "routes": "/change-number"},
       {"text": user["username"], "subtext": "Username"},
       {"text": "Bio", "subtext": "Add a few words about yourself", "routes": "/bio"}
     ]},
