@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:telware_cross_platform/core/view/screen/splash_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/log_in_screen.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
+import 'package:telware_cross_platform/features/home/view/screen/home_screen.dart';
 import 'core/models/user_model.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/view/screens/sign_up_screen.dart';
@@ -48,6 +49,7 @@ class _TelWareState extends ConsumerState<TelWare> {
         LogInScreen.route: (context) => const LogInScreen(),
         SignUpScreen.route: (context) => const SignUpScreen(),
         VerificationScreen.route: (context) => const VerificationScreen(),
+        HomeScreen.route: (context) => const HomeScreen(),
       },
       initialRoute: SplashScreen.route,
     );
