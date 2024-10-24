@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script async defer src="https://www.google.com/recaptcha/api.js"></script>
+    <link href="captcha.css" rel="stylesheet">
+    <title>captcha</title>
+</head>
+<body>
+<div class="g-recaptcha" data-action="SIGNUP" data-callback="onSubmit"
+     data-sitekey="SITE_KEY"></div>
+<script>
+    function onSubmit(token) {
+        if (typeof onCaptchaCompleted !== "undefined") {
+            onCaptchaCompleted.postMessage(token);
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+.g-recaptcha {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: fit-content;
+    height: auto;
+    margin-top: 20px;
+    margin-left: 10.5rem;
+    transform: scale(1.5);
+}
