@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:telware_cross_platform/core/view/screen/splash_screen.dart';
@@ -20,6 +21,7 @@ Future<void> init() async {
   await Hive.initFlutter();
   await Hive.openBox<String>('auth-token');
   await Hive.openBox<UserModel>('auth-user');
+  await dotenv.load(fileName: "lib/.env");
 }
 
 class TelWare extends ConsumerStatefulWidget {
@@ -51,7 +53,7 @@ class _TelWareState extends ConsumerState<TelWare> {
         VerificationScreen.route: (context) => const VerificationScreen(),
         HomeScreen.route: (context) => const HomeScreen(),
       },
-      initialRoute: SplashScreen.route,
+      initialRoute: SignUpScreen.route,
     );
   }
 }

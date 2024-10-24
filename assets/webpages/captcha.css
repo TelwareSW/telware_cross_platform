@@ -1,0 +1,8 @@
+.g-recaptcha {
+    margin-left: 11rem;
+    margin-top: 7rem;
+    width: 350px;
+    height: 200px;
+    transform: scale(2);
+    overflow: hidden;
+}
