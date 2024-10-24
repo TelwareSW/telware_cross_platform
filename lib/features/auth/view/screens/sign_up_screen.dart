@@ -91,15 +91,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       })
       ..loadFlutterAssetServer('assets/webpages/captcha.html')
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0x00000000))
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (url) {
-            _controllerPlus.runJavaScript(
-                "document.querySelector('.g-recaptcha').setAttribute('data-sitekey', '$siteKey');");
-          },
-        ),
-      );
+      ..setBackgroundColor(const Color(0x00000000));
   }
 
   @override
@@ -116,8 +108,20 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     super.dispose();
   }
 
+  void vibrate() {
+    Vibration.hasVibrator().then((hasVibrator) {
+      if (hasVibrator ?? false) {
+        Vibration.vibrate(duration: 100);
+      }
+    });
+  }
+
   void signUp() async {
     // todo check which field make the error if found to tell the user.
+    if (captchaToken == null || captchaToken!.isEmpty) {
+      vibrate();
+      return;
+    }
     // phoneController.value.international gives the phone number in international format eg. +20123456789
     AuthState signUpState =
         await ref.read(authViewModelProvider.notifier).signUp(
@@ -152,9 +156,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     bool someNotFilled = emailController.text.isEmpty ||
         phoneController.value.nsn.isEmpty ||
         passwordController.text.isEmpty ||
-        confirmPasswordController.text.isEmpty ||
-        captchaToken == null ||
-        captchaToken!.isEmpty;
+        confirmPasswordController.text.isEmpty;
 
     if (emailController.text.isEmpty) {
       emailShakeKey.currentState?.shake();
@@ -167,13 +169,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     }
 
     if (someNotFilled) {
-      Vibration.hasVibrator().then((hasVibrator) {
-        if (hasVibrator ?? false) {
-          Vibration.vibrate(duration: 100);
-        }
-      });
+      vibrate();
     } else {
-      showConfirmationDialog(context, emailController, signUp, onEdit);
+      showConfirmationDialog(
+          context, emailController, _controllerPlus, signUp, onEdit);
     }
   }
 
@@ -245,12 +244,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     controller: confirmPasswordController,
                     obscure: true,
                     validator: customValidation,
-                  ),
-                  SizedBox(
-                    height: _height,
-                    child: WebViewWidget(
-                      controller: _controllerPlus,
-                    ),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,

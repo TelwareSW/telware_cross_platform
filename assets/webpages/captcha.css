@@ -1,10 +1,8 @@
 .g-recaptcha {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width: fit-content;
-    height: auto;
-    margin-top: 20px;
-    margin-left: 10.5rem;
-    transform: scale(1.5);
+    margin-left: 11rem;
+    margin-top: 7rem;
+    width: 350px;
+    height: 200px;
+    transform: scale(2);
+    overflow: hidden;
 }

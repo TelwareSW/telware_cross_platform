@@ -7,13 +7,18 @@
 </head>
 <body>
 <div class="g-recaptcha" data-action="SIGNUP" data-callback="onSubmit"
-     data-sitekey="SITE_KEY"></div>
+     data-sitekey="6Ld11mkqAAAAAEjQde2g2jaIH2Bf3fDfQzFR1_JE"></div>
 <script>
     function onSubmit(token) {
         if (typeof onCaptchaCompleted !== "undefined") {
             onCaptchaCompleted.postMessage(token);
+
+            setTimeout(() => {
+                onCaptchaCompleted.postMessage('');
+            }, 120000); // 120000 milliseconds = 120 seconds
         }
     }
+
 </script>
 </body>
 </html>
