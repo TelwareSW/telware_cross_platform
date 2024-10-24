@@ -4,19 +4,20 @@ import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/settings_input_widget.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/settings_section.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/toolbar_widget.dart';
+import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ProfileInfoScreen extends StatefulWidget {
+class ProfileInfoScreen extends ConsumerStatefulWidget {
   static const String route = '/bio';
 
   const ProfileInfoScreen({super.key});
 
   @override
-  State<ProfileInfoScreen> createState() => _ProfileInfoScreen();
+  ConsumerState<ProfileInfoScreen> createState() => _ProfileInfoScreen();
 }
 
-class _ProfileInfoScreen extends State<ProfileInfoScreen> with SingleTickerProviderStateMixin {
+class _ProfileInfoScreen extends ConsumerState<ProfileInfoScreen> with SingleTickerProviderStateMixin {
   static const user = {
     "firstName": "Moamen",
     "lastName": "Hefny",
@@ -133,6 +134,7 @@ class _ProfileInfoScreen extends State<ProfileInfoScreen> with SingleTickerProvi
     }
 
     Navigator.pop(context);
+    // ref.listen<AuthState>(userViewModelProvider, (_, state) {})
   }
 
   void _shakeAndVibrate(shakeKey) {
