@@ -4,11 +4,10 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:dio/dio.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
-import 'package:fpdart/fpdart.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
 import 'package:flutter/foundation.dart';
-import 'package:telware_cross_platform/features/auth/models/log_in_response_model.dart';
+import 'package:telware_cross_platform/features/auth/models/auth_response_model.dart';
 
 import 'package:telware_cross_platform/features/auth/repository/auth_local_repository.dart';
 
@@ -29,34 +28,77 @@ class AuthRemoteRepository {
   })  : _ref = ref,
         _dio = dio;
 
-  Future<Either<AppError, String>> signUp({
+  Future<AppError?> signUp({
     required String email,
     required String phone,
     required String password,
-    // todo(marwan): add the confirm password field
+    required String confirmPassword,
+    required String reCaptchaResponse,
   }) async {
     try {
       final response = await _dio.post('/auth/sign-up', data: {
         'email': email,
         'phone': phone,
         'password': password,
+        'confirmPassword': confirmPassword,
+        'reCaptchaResponse': reCaptchaResponse,
       });
 
-      // todo(marwan): this is not how the response look
-      // you can check the api documentation here:
-      // https://app.clickup.com/9012337468/v/dc/8cjuptw-2832/8cjuptw-4012
-      final message = response.data['message'];
-      if (response.statusCode! > 200 || response.statusCode! < 200) {
-        return Left(AppError(message));
+      if (response.statusCode! >= 400) {
+        final String message = response.data?['message'] ?? 'Unexpected Error';
+        return AppError(message);
       }
-
-      return Right(message);
     } on DioException catch (dioException) {
-      return left(handleDioException(dioException));
+      return handleDioException(dioException);
     } catch (error) {
       debugPrint('Sign Up error:\n${error.toString()}');
-      return Left(AppError("Couldn't sign up now. Please, try again later."));
+      return AppError("Couldn't sign up now. Please, try again later.");
     }
+    return null;
+  }
+
+  Future<AppError?> verifyEmail(
+      {required String email, required String code}) async {
+    try {
+      final response = await _dio.post('/auth/verify',
+          data: {'email': email, 'verificationCode': code});
+
+      if (response.statusCode! >= 400) {
+        final String message = response.data?['message'] ?? 'Unexpected Error';
+        return AppError(message);
+      }
+      final AuthResponseModel verificationResponse = AuthResponseModel.fromMap(
+          (response.data['data']) as Map<String, dynamic>);
+
+      _ref.read(authLocalRepositoryProvider).setUser(verificationResponse.user);
+      _ref
+          .read(authLocalRepositoryProvider)
+          .setToken(verificationResponse.token);
+    } on DioException catch (dioException) {
+      return handleDioException(dioException);
+    } catch (error) {
+      debugPrint('Verify Email error:\n${error.toString()}');
+      return AppError("Couldn't verify email now. Please, try again later.");
+    }
+    return null;
+  }
+
+  Future<AppError?> sendConfirmationCode({required String email}) async {
+    try {
+      final response =
+          await _dio.post('/auth/send-confirmation', data: {'email': email});
+
+      if (response.statusCode! >= 400) {
+        final String message = response.data?['message'] ?? 'Unexpected Error';
+        return AppError(message);
+      }
+    } on DioException catch (dioException) {
+      return handleDioException(dioException);
+    } catch (error) {
+      debugPrint('Verify Email error:\n${error.toString()}');
+      return AppError("Couldn't verify email now. Please, try again later.");
+    }
+    return null;
   }
 
   Future<AppError?> getMe() async {
@@ -107,7 +149,7 @@ class AuthRemoteRepository {
       }
 
       // todo(ahmed): check response body from the back side
-      final LogInResponseModel logInResponse = LogInResponseModel.fromMap(
+      final AuthResponseModel logInResponse = AuthResponseModel.fromMap(
           (response.data['data']) as Map<String, dynamic>);
 
       _ref.read(authLocalRepositoryProvider).setUser(logInResponse.user);
@@ -121,7 +163,8 @@ class AuthRemoteRepository {
     return null;
   }
 
-  Future<AppError?> logOut({required String token, required String route}) async {
+  Future<AppError?> logOut(
+      {required String token, required String route}) async {
     try {
       final response = await _dio.post(
         route,

@@ -1,22 +1,25 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:phone_form_field/phone_form_field.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/responsive.dart';
-import 'package:telware_cross_platform/features/auth/repository/sign_up_email_provider.dart';
+import 'package:telware_cross_platform/core/providers/sign_up_email_provider.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/verification_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/shake_my_auth_input.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_phone_number.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/social_log_in.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
+import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_sub_text_button.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_floating_action_button.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/confirmation_dialog.dart';
+import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
   static const String route = '/sign-up';
@@ -50,6 +53,13 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final passwordShakeKey = GlobalKey<ShakeWidgetState>();
   final confirmPasswordShakeKey = GlobalKey<ShakeWidgetState>();
 
+  final String siteKey = dotenv.env['RECAPTCHA_SITE_KEY'] ?? '';
+
+  String? captchaToken;
+
+  late WebViewControllerPlus _controllerPlus;
+  final double _height = 70;
+
   @override
   void initState() {
     super.initState();
@@ -73,6 +83,23 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         isConfirmPasswordFocused = confirmPasswordFocusNode.hasFocus;
       });
     });
+    _controllerPlus = WebViewControllerPlus()
+      ..addJavaScriptChannel('onCaptchaCompleted',
+          onMessageReceived: (JavaScriptMessage message) {
+        captchaToken = message.message;
+        debugPrint('Captcha token: $captchaToken');
+      })
+      ..loadFlutterAssetServer('assets/webpages/captcha.html')
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0x00000000))
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (url) {
+            _controllerPlus.runJavaScript(
+                "document.querySelector('.g-recaptcha').setAttribute('data-sitekey', '$siteKey');");
+          },
+        ),
+      );
   }
 
   @override
@@ -85,24 +112,36 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     phoneController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
+    _controllerPlus.server.close();
     super.dispose();
   }
 
-  bool isKeyboardOpen(BuildContext context) {
-    return MediaQuery.of(context).viewInsets.bottom != 0;
-  }
-
-  void signUp() {
-    // todo add logic if email is not valid to return to sign up screen again.
+  void signUp() async {
+    // todo check which field make the error if found to tell the user.
     // phoneController.value.international gives the phone number in international format eg. +20123456789
-    ref.read(authViewModelProvider.notifier).signUp(
-          email: emailController.text,
-          phone: phoneController.value.international,
-          password: passwordController.text,
-        );
-    ref.read(signUpEmailProvider.notifier).update((_) => emailController.text);
+    AuthState signUpState =
+        await ref.read(authViewModelProvider.notifier).signUp(
+              email: emailController.text,
+              phone: phoneController.value.international,
+              password: passwordController.text,
+              confirmPassword: confirmPasswordController.text,
+              reCaptchaResponse: captchaToken!,
+            );
+
     Navigator.of(context).pop(); // to close the dialog
-    Navigator.pushNamed(context, VerificationScreen.route);
+    if (signUpState.type == AuthStateType.success) {
+      ref
+          .read(signUpEmailProvider.notifier)
+          .update((_) => emailController.text);
+      AuthState sendCodeState = await ref
+          .read(authViewModelProvider.notifier)
+          .sendConfirmationCode(email: emailController.text);
+      if (sendCodeState.type == AuthStateType.success) {
+        Navigator.pushNamed(context, VerificationScreen.route);
+      }
+    } else {
+      //todo show error message to the user eg. email already exists / email not valid
+    }
   }
 
   void onEdit() {
@@ -113,7 +152,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     bool someNotFilled = emailController.text.isEmpty ||
         phoneController.value.nsn.isEmpty ||
         passwordController.text.isEmpty ||
-        confirmPasswordController.text.isEmpty;
+        confirmPasswordController.text.isEmpty ||
+        captchaToken == null ||
+        captchaToken!.isEmpty;
 
     if (emailController.text.isEmpty) {
       emailShakeKey.currentState?.shake();
@@ -204,6 +245,12 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     controller: confirmPasswordController,
                     obscure: true,
                     validator: customValidation,
+                  ),
+                  SizedBox(
+                    height: _height,
+                    child: WebViewWidget(
+                      controller: _controllerPlus,
+                    ),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,

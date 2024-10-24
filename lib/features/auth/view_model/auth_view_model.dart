@@ -3,7 +3,6 @@ import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_local_repository.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_remote_repository.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
-import 'package:fpdart/fpdart.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
 
 part 'auth_view_model.g.dart';
@@ -45,33 +44,61 @@ class AuthViewModel extends _$AuthViewModel {
     }
   }
 
-  void signUp({
+  Future<AuthState> signUp({
     required String email,
     required String phone,
     required String password,
-    // todo(marwan): add the confirm password field
+    required String confirmPassword,
+    required String reCaptchaResponse,
   }) async {
     state = AuthState.loading;
-
-    final Either<AppError, String> response = await ref
-        // ignore: avoid_manual_providers_as_generated_provider_dependency
+    final AppError? response = await ref
         .read(authRemoteRepositoryProvider)
-        .signUp(email: email, phone: phone, password: password);
-    response.match(
-      (l) {
-        state = AuthState.unauthorized;
-        return;
-      },
-      (r) {
-        state = AuthState.authorized;
-        return;
-      },
-    );
+        .signUp(
+            email: email,
+            phone: phone,
+            password: password,
+            confirmPassword: confirmPassword,
+            reCaptchaResponse: reCaptchaResponse);
+    if (response != null) {
+      state = AuthState.fail(response.error);
+    } else {
+      state = AuthState
+          .unauthenticated; // user is not authenticated yet, he needs to verify his email
+    }
+    return state;
   }
 
-  // todo(marwan): resend verification code function
+  Future<AuthState> verifyEmail(
+      {required String email, required String code}) async {
+    state = AuthState.loading;
 
-  // todo(marwan): send the verification code to the back-end to verify it
+    final AppError? response = await ref
+        .read(authRemoteRepositoryProvider)
+        .verifyEmail(email: email, code: code);
+
+    if (response != null) {
+      state = AuthState.unauthenticated;
+    } else {
+      state = AuthState.authenticated;
+    }
+    return state;
+  }
+
+  Future<AuthState> sendConfirmationCode({required String email}) async {
+    state = AuthState.loading;
+
+    final AppError? response = await ref
+        .read(authRemoteRepositoryProvider)
+        .sendConfirmationCode(email: email);
+
+    if (response != null) {
+      state = AuthState.fail(response.error);
+    } else {
+      state = AuthState.success('Code sent successfully');
+    }
+    return state;
+  }
 
   void login({required String email, required String password}) async {
     state = AuthState.loading;
@@ -138,7 +165,7 @@ class AuthViewModel extends _$AuthViewModel {
     final appError = await ref
         .read(authRemoteRepositoryProvider)
         .logOut(token: token!, route: 'auth/logout-all');
-        
+
     await _handleLogOutState(appError);
   }
 
