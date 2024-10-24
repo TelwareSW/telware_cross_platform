@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'core/theme/auth_theme.dart';
+import 'package:telware_cross_platform/features/auth/view/screens/privacy_and_security_screen.dart';
+import 'package:telware_cross_platform/features/auth/view/screens/profile_info_screen.dart';
+import 'package:telware_cross_platform/features/auth/view/screens/settings_screen.dart';
 import 'features/auth/view/screens/user_profile_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -50,8 +52,12 @@ class _TelWareState extends ConsumerState<TelWare> {
         LogInScreen.route: (context) => const LogInScreen(),
         SignUpScreen.route: (context) => const SignUpScreen(),
         VerificationScreen.route: (context) => const VerificationScreen(),
+        UserProfileScreen.route: (context) => const UserProfileScreen(),
+        SettingsScreen.route: (context) => const SettingsScreen(),
+        PrivacySettingsScreen.route: (context) => const PrivacySettingsScreen(),
+        ProfileInfoScreen.route: (context) => const ProfileInfoScreen(),
       },
-      initialRoute: SplashScreen.route,
+      initialRoute: SettingsScreen.route,
     );
   }
 }
