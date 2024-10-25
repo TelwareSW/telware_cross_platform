@@ -95,8 +95,8 @@ class AuthRemoteRepository {
     } on DioException catch (dioException) {
       return handleDioException(dioException);
     } catch (error) {
-      debugPrint('Verify Email error:\n${error.toString()}');
-      return AppError("Couldn't verify email now. Please, try again later.");
+      debugPrint('Resend Confirmation Code error:\n${error.toString()}');
+      return AppError("Couldn't request resend now. Please, try again later.");
     }
     return null;
   }
