@@ -25,7 +25,7 @@ Future<void> init() async {
   Hive.registerAdapter(ContactModelAdapter());
   Hive.registerAdapter(StoryModelAdapter());
   await Hive.initFlutter();
-  await Hive.openBox<UserModel>('contacts');
+  await Hive.openBox<ContactModel>('contacts');
   await Hive.openBox<String>('auth-token');
   await Hive.openBox<UserModel>('auth-user');
   await dotenv.load(fileName: "lib/.env");
