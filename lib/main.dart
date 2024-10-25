@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'core/theme/auth_theme.dart';
+import 'features/user_profile/models/story_model.dart';
+import 'features/user_profile/view/screens/home_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:telware_cross_platform/core/view/screen/splash_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/log_in_screen.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
@@ -11,14 +16,17 @@ import 'core/theme/app_theme.dart';
 import 'features/auth/view/screens/sign_up_screen.dart';
 import 'features/auth/view/screens/verification_screen.dart';
 
-void main() async {
+Future<void> main() async {
   await init();
   runApp(const ProviderScope(child: TelWare()));
 }
 
 Future<void> init() async {
+  WidgetsFlutterBinding.ensureInitialized();
   Hive.registerAdapter(UserModelAdapter());
+  Hive.registerAdapter(StoryModelAdapter());
   await Hive.initFlutter();
+  await Hive.openBox<UserModel>('contacts');
   await Hive.openBox<String>('auth-token');
   await Hive.openBox<UserModel>('auth-user');
   await dotenv.load(fileName: "lib/.env");
