@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
+import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
 import '../models/story_model.dart';
 import '../repository/contacts_repository_provider.dart';
 
 class ContactViewModelState {
-  final List<UserModel> contacts;
+  final List<ContactModel> contacts;
   final bool isLoading;
 
   ContactViewModelState({
@@ -18,7 +18,7 @@ class ContactViewModelState {
   }
 
   ContactViewModelState copyWith({
-    List<UserModel>? contacts,
+    List<ContactModel>? contacts,
     bool? isLoading,
   }) {
     return ContactViewModelState(
@@ -31,14 +31,14 @@ class ContactViewModelState {
 class ContactViewModel extends StateNotifier<ContactViewModelState> {
   final ContactsRepository _contactsRepository;
 
-
-  ContactViewModel(this._contactsRepository) : super(ContactViewModelState.initial());
-
+  ContactViewModel(this._contactsRepository)
+      : super(ContactViewModelState.initial());
 
   Future<void> fetchContacts() async {
     try {
       final fetchedContacts = await _contactsRepository.fetchAndSaveContacts();
-      state = state.copyWith(contacts: List.from(fetchedContacts), isLoading: false);
+      state = state.copyWith(
+          contacts: List.from(fetchedContacts), isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false);
     }
@@ -48,7 +48,7 @@ class ContactViewModel extends StateNotifier<ContactViewModelState> {
     return await _contactsRepository.fetchContactStoriesFromHive(userId);
   }
 
-  Future<UserModel?> getContactById(String contactId) async {
+  Future<ContactModel?> getContactById(String contactId) async {
     return await _contactsRepository.fetchContactFromHive(contactId);
   }
 
@@ -56,7 +56,9 @@ class ContactViewModel extends StateNotifier<ContactViewModelState> {
     try {
       await _contactsRepository.deleteContactsFromHive(contactId);
 
-      final updatedContacts = state.contacts.where((contact) => contact.userId != contactId).toList();
+      final updatedContacts = state.contacts
+          .where((contact) => contact.userId != contactId)
+          .toList();
       state = state.copyWith(contacts: updatedContacts);
     } catch (e) {
       if (kDebugMode) {
@@ -95,19 +97,21 @@ class ContactViewModel extends StateNotifier<ContactViewModelState> {
     }
   }
 
-  Future<void> saveStoryImage(String userId, String storyId, Uint8List imageData) async {
+  Future<void> saveStoryImage(
+      String userId, String storyId, Uint8List imageData) async {
     try {
-      await _contactsRepository.saveStoryImageLocally(userId, storyId, imageData);
+      await _contactsRepository.saveStoryImageLocally(
+          userId, storyId, imageData);
     } catch (e) {
       if (kDebugMode) {
         print('Error saving story image: $e');
       }
     }
   }
-
 }
 
-final usersViewModelProvider = StateNotifierProvider<ContactViewModel, ContactViewModelState>((ref) {
+final usersViewModelProvider =
+    StateNotifierProvider<ContactViewModel, ContactViewModelState>((ref) {
   final contactsRepository = ref.watch(contactsRepositoryProvider);
   return ContactViewModel(contactsRepository);
 });

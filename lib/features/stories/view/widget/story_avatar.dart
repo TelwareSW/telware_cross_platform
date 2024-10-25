@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
+import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
 import '../../../../core/theme/palette.dart';
 import '../../models/story_model.dart';
 
 class StoryAvatar extends StatelessWidget {
-  final UserModel user;
+  final ContactModel user;
   final String screenType;
   final VoidCallback onTap;
   final bool showBorder;
@@ -41,9 +41,9 @@ class StoryAvatar extends StatelessWidget {
               child: ClipOval(
                 child: user.userImage != null
                     ? Image.memory(
-                  user.userImage!,
-                  fit: BoxFit.cover,
-                )
+                        user.userImage!,
+                        fit: BoxFit.cover,
+                      )
                     : const Icon(Icons.person),
               ),
             ),

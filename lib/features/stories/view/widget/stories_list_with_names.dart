@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
-import 'package:telware_cross_platform/features/user_profile/view/widget/story_with_user_name.dart';
-import 'package:telware_cross_platform/features/user_profile/view_model/contact_view_model.dart';
+import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
+import 'package:telware_cross_platform/features/stories/view/widget/story_with_user_name.dart';
+import 'package:telware_cross_platform/features/stories/view_model/contact_view_model.dart';
 
 import 'add_my_story.dart';
 
@@ -39,14 +39,14 @@ class _StoriesListWithNamesState extends ConsumerState<StoriesListWithNames> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final UserModel myUser = users.firstWhere(
-          (user) => user.userId == 'myUser',
+    final ContactModel myUser = users.firstWhere(
+      (user) => user.userId == 'myUser',
       orElse: () {
         throw StateError('myUser not found');
       },
     );
 
-    List<UserModel> reorderedUsers = reorderUsers(
+    List<ContactModel> reorderedUsers = reorderUsers(
       users.where((user) => user.userId != 'myUser').toList(),
     );
 
@@ -64,9 +64,9 @@ class _StoriesListWithNamesState extends ConsumerState<StoriesListWithNames> {
     );
   }
 
-  List<UserModel> reorderUsers(List<UserModel> users) {
-    List<UserModel> unseenStoriesUsers = [];
-    List<UserModel> seenStoriesUsers = [];
+  List<ContactModel> reorderUsers(List<ContactModel> users) {
+    List<ContactModel> unseenStoriesUsers = [];
+    List<ContactModel> seenStoriesUsers = [];
     for (var user in users) {
       bool allSeen = user.stories.every((story) => story.isSeen);
       allSeen ? seenStoriesUsers.add(user) : unseenStoriesUsers.add(user);

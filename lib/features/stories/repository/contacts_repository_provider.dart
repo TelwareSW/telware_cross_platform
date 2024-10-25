@@ -1,19 +1,19 @@
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
+import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
 import '../models/story_model.dart';
 import '../utils/utils_functions.dart';
 
 class ContactsRepository {
-  final Box<UserModel> _userBox;
+  final Box<ContactModel> _userBox;
 
   ContactsRepository(this._userBox);
 
-  Future<List<UserModel>> fetchContactsFromBackend() async {
+  Future<List<ContactModel>> fetchContactsFromBackend() async {
     await Future.delayed(const Duration(seconds: 2));
-    List<UserModel> users = [
-      UserModel(
+    List<ContactModel> users = [
+      ContactModel(
         userName: 'game of thrones',
         userImageUrl:
             'https://st2.depositphotos.com/2703645/7304/v/450/depositphotos_73040253-stock-illustration-male-avatar-icon.jpg',
@@ -46,7 +46,7 @@ class ContactsRepository {
         ],
         userId: 'myUser',
       ),
-      UserModel(
+      ContactModel(
         stories: [
           StoryModel(
             storyId: 'id11',
@@ -71,7 +71,7 @@ class ContactsRepository {
             'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
         userId: 'id1',
       ),
-      UserModel(
+      ContactModel(
         stories: [
           StoryModel(
             storyId: 'id21',
@@ -103,7 +103,7 @@ class ContactsRepository {
             'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
         userId: 'id2',
       ),
-      UserModel(
+      ContactModel(
         stories: [
           StoryModel(
             storyId: 'id31',
@@ -140,8 +140,8 @@ class ContactsRepository {
     return users;
   }
 
-  Future<void> saveContactsToHive(List<UserModel> contacts) async {
-    for (UserModel contact in contacts) {
+  Future<void> saveContactsToHive(List<ContactModel> contacts) async {
+    for (ContactModel contact in contacts) {
       final existingContact = _userBox.get(contact.userId);
       if (existingContact == null ||
           contact != existingContact ||
@@ -154,7 +154,7 @@ class ContactsRepository {
     }
   }
 
-  Future<void> _updateContactInHive(UserModel contact) async {
+  Future<void> _updateContactInHive(ContactModel contact) async {
     try {
       Uint8List? imageBytes = await downloadImage(contact.userImageUrl);
       final contactWithImage = contact.copyWith(userImage: imageBytes);
@@ -171,26 +171,26 @@ class ContactsRepository {
     return contact?.stories ?? [];
   }
 
-  Future<UserModel?> fetchContactFromHive(String userId) async {
+  Future<ContactModel?> fetchContactFromHive(String userId) async {
     return _userBox.get(userId);
   }
 
-  List<UserModel> getAllContactsFromHive() {
+  List<ContactModel> getAllContactsFromHive() {
     return _userBox.values.toList();
   }
 
-  Future<List<UserModel>> fetchAndSaveContacts() async {
+  Future<List<ContactModel>> fetchAndSaveContacts() async {
     final contactsFromBackend = await fetchContactsFromBackend();
     await saveContactsToHive(contactsFromBackend);
     return getAllContactsFromHive();
   }
 
   Future<void> deleteContactsFromHive(String userId) async {
-    final box = await Hive.openBox<UserModel>('contacts');
+    final box = await Hive.openBox<ContactModel>('contacts');
     await box.delete(userId);
   }
 
-  Future<void> updateContactsInHive(UserModel updatedContact) async {
+  Future<void> updateContactsInHive(ContactModel updatedContact) async {
     try {
       final existingContact = _userBox.get(updatedContact.userId);
 
@@ -231,6 +231,6 @@ class ContactsRepository {
 }
 
 final contactsRepositoryProvider = Provider((ref) {
-  final userBox = Hive.box<UserModel>('contacts');
+  final userBox = Hive.box<ContactModel>('contacts');
   return ContactsRepository(userBox);
 });

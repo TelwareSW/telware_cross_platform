@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:telware_cross_platform/features/user_profile/view/screens/show_taken_story_screen.dart';
+import 'package:telware_cross_platform/features/stories/view/screens/show_taken_story_screen.dart';
 import '../widget/choice_mode_in_camera_container.dart';
 import '../widget/take_photo_row.dart';
 

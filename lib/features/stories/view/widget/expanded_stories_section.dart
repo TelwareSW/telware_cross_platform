@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:telware_cross_platform/features/user_profile/view/widget/stories_list_with_names.dart';
+import 'package:telware_cross_platform/features/stories/view/widget/stories_list_with_names.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../../view_model/contact_view_model.dart';
