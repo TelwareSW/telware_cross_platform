@@ -69,7 +69,8 @@ class _BlockedUsersScreen extends State<BlockedUsersScreen> {
             "imageRadius": 0.0,
             "color": Palette.primary,
             "fontSize": 15.5,
-            "text": 'Block user'
+            "text": 'Block user',
+            "routes": "/block-user",
           }
         ],
         "trailing":
@@ -80,52 +81,28 @@ class _BlockedUsersScreen extends State<BlockedUsersScreen> {
         "titleFontSize": 15.0,
         "options": [
           {
-            "iconKey": GlobalKey(),
-            "trailingIcon": Icons.more_vert_rounded,
-            "trailingColor": Palette.accentText,
-            "color": Palette.primaryText,
-            "fontSize": 18.0,
-            "subtextFontSize": 14.0,
-            "fontWeight": FontWeight.w500,
             "text": 'Marwan Mohammed',
             "imagePath": 'assets/imgs/marwan.jpg',
             "subtext": "+201093401932",
+            "dummy": 0.0,
           },
           {
-            "iconKey": GlobalKey(),
-            "trailingIcon": Icons.more_vert_rounded,
-            "trailingColor": Palette.accentText,
-            "color": Palette.primaryText,
-            "fontSize": 18.0,
-            "subtextFontSize": 14.0,
-            "fontWeight": FontWeight.w500,
             "text": 'Ahmed Alaa',
             "imagePath": 'assets/imgs/ahmed.jpeg',
             "subtext": "+201093401932",
+            "dummy": 0.0,
           },
           {
-            "iconKey": GlobalKey(),
-            "trailingIcon": Icons.more_vert_rounded,
-            "trailingColor": Palette.accentText,
-            "color": Palette.primaryText,
-            "fontSize": 18.0,
-            "subtextFontSize": 14.0,
-            "fontWeight": FontWeight.w500,
             "text": 'Bishoy Wadea ',
             "imagePath": 'assets/imgs/bishoy.jpeg',
             "subtext": "+201093401932",
+            "dummy": 0.0,
           },
           {
-            "iconKey": GlobalKey(),
-            "trailingIcon": Icons.more_vert_rounded,
-            "trailingColor": Palette.accentText,
-            "color": Palette.primaryText,
-            "fontSize": 18.0,
-            "subtextFontSize": 14.0,
-            "fontWeight": FontWeight.w500,
             "text": 'Moamen Hefny',
             "imagePath": 'assets/imgs/moamen.jpeg',
             "subtext": "+201093401932",
+            "dummy": 0.0,
           },
         ],
       },
@@ -133,9 +110,14 @@ class _BlockedUsersScreen extends State<BlockedUsersScreen> {
     // Loop through each section and set the trailingIconAction
 
     for (var option in blockSections[1]["options"]) {
-      if (option["iconKey"] != null) {
-        option["trailingIconAction"] = () => unblockMenu(option["iconKey"]);
-      }
+      option["iconKey"] = GlobalKey();
+      option["trailingIcon"] = Icons.more_vert_rounded;
+      option["trailingColor"] = Palette.accentText;
+      option["color"] = Palette.primaryText;
+      option["fontSize"] = 18.0;
+      option["subtextFontSize"] = 14.0;
+      option["fontWeight"] = FontWeight.w500;
+      option["trailingIconAction"] = () => unblockMenu(option["iconKey"]);
       option["subtext"] = formatPhoneNumber(option["subtext"]);
     }
 
@@ -153,30 +135,33 @@ class _BlockedUsersScreen extends State<BlockedUsersScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            ...List.generate(blockSections.length, (index) {
-              final section = blockSections[index];
-              final title = section["title"] ?? "";
-              final trailingFontSize = section["trailingFontSize"];
-              final lineHeight = section["lineHeight"];
-              final padding = section["padding"];
-              final options = section["options"];
-              final trailing = section["trailing"] ?? "";
-              final titleFontSize = section["titleFontSize"];
-              return Column(
-                children: [
-                  SettingsSection(
-                    titleFontSize: titleFontSize,
-                    title: title,
-                    padding: padding,
-                    trailingFontSize: trailingFontSize,
-                    trailingLineHeight: lineHeight,
-                    settingsOptions: options,
-                    trailing: trailing,
-                  ),
-                  const SizedBox(height: Dimensions.sectionGaps),
-                ],
-              );
-            }),
+            ...List.generate(
+              blockSections.length,
+              (index) {
+                final section = blockSections[index];
+                final title = section["title"] ?? "";
+                final trailingFontSize = section["trailingFontSize"];
+                final lineHeight = section["lineHeight"];
+                final padding = section["padding"];
+                final options = section["options"];
+                final trailing = section["trailing"] ?? "";
+                final titleFontSize = section["titleFontSize"];
+                return Column(
+                  children: [
+                    SettingsSection(
+                      titleFontSize: titleFontSize,
+                      title: title,
+                      padding: padding,
+                      trailingFontSize: trailingFontSize,
+                      trailingLineHeight: lineHeight,
+                      settingsOptions: options,
+                      trailing: trailing,
+                    ),
+                    const SizedBox(height: Dimensions.sectionGaps),
+                  ],
+                );
+              },
+            ),
           ],
         ),
       ),
