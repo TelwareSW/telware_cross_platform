@@ -22,7 +22,8 @@ String? passwordValidator(String? value) {
     return null;
   } else if (value.length < 8) {
     return 'Password must be at least 8 characters long';
-  } else if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d._@&-]{8,}$').hasMatch(value)) {
+  } else if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d._@&-]{8,}$')
+      .hasMatch(value)) {
     return 'Password must contain both letters and digits, and can include . _ @ & -';
   }
   return null;
@@ -62,4 +63,14 @@ void showSnackBarMessage(BuildContext context, String message) {
 
 void showToastMessage(String message) {
   Fluttertoast.showToast(msg: message);
+}
+
+String formatPhoneNumber(String phoneNumber) {
+  // Ensure the input has the right length and starts with the correct prefix.
+  if (phoneNumber.length == 13 && phoneNumber.startsWith("+20")) {
+    return "${phoneNumber.substring(0, 3)} " // +20
+        "${phoneNumber.substring(3, 6)} " // 109
+        "${phoneNumber.substring(6)}"; // 3401932
+  }
+  return phoneNumber; // Return the original if it doesn't match the format.
 }
