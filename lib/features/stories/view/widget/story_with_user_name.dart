@@ -1,12 +1,12 @@
-import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
-import 'package:telware_cross_platform/features/user_profile/view/screens/story_screen.dart';
-import 'package:telware_cross_platform/features/user_profile/view/widget/story_avatar.dart';
+import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
+import 'package:telware_cross_platform/features/stories/view/screens/story_screen.dart';
+import 'package:telware_cross_platform/features/stories/view/widget/story_avatar.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/sizes.dart';
 
 class StoryWithUserName extends StatelessWidget {
-  final UserModel user;
+  final ContactModel user;
   const StoryWithUserName({
     super.key,
     required this.user,
@@ -29,7 +29,6 @@ class StoryWithUserName extends StatelessWidget {
                   builder: (context) => StoryScreen(
                     userId: user.userId,
                     showSeens: false,
-
                   ),
                 ),
               );
@@ -44,7 +43,8 @@ class StoryWithUserName extends StatelessWidget {
             ),
             child: Text(
               user.userName,
-              style: const TextStyle(color: Colors.white,fontSize: Sizes.secondaryText),
+              style: const TextStyle(
+                  color: Colors.white, fontSize: Sizes.secondaryText),
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
             ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:telware_cross_platform/features/user_profile/view/widget/pick_from_gallery.dart';
+import 'package:telware_cross_platform/features/stories/view/widget/pick_from_gallery.dart';
 
 class TakePhotoRow extends StatelessWidget {
   const TakePhotoRow({

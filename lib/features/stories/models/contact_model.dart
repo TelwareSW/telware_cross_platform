@@ -1,11 +1,12 @@
 import 'dart:typed_data';
 
-import 'package:telware_cross_platform/features/user_profile/models/story_model.dart';
+import 'package:telware_cross_platform/features/stories/models/story_model.dart';
 import 'package:hive/hive.dart';
 
-part 'user_model.g.dart';
-@HiveType(typeId: 0)
-class UserModel {
+part 'contact_model.g.dart';
+
+@HiveType(typeId: 2)
+class ContactModel {
   @HiveField(0)
   List<StoryModel> stories;
 
@@ -21,7 +22,7 @@ class UserModel {
   @HiveField(4)
   Uint8List? userImage;
 
-  UserModel({
+  ContactModel({
     required this.stories,
     required this.userName,
     required this.userId,
@@ -29,14 +30,14 @@ class UserModel {
     this.userImage,
   });
 
-  UserModel copyWith({
+  ContactModel copyWith({
     String? userId,
     String? userName,
     String? userImageUrl,
     List<StoryModel>? stories,
     Uint8List? userImage,
   }) {
-    return UserModel(
+    return ContactModel(
       userId: userId ?? this.userId,
       userName: userName ?? this.userName,
       userImageUrl: userImageUrl ?? this.userImageUrl,
@@ -47,14 +48,14 @@ class UserModel {
 
   @override
   String toString() {
-    return 'UserModel(userId: $userId, userName: $userName, imageUrl: $userImageUrl, stories: $stories, userImage: $userImage)';
+    return 'ContactModel(userId: $userId, userName: $userName, imageUrl: $userImageUrl, stories: $stories, userImage: $userImage)';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    if (other is! UserModel) return false;
+    if (other is! ContactModel) return false;
 
     return userId == other.userId &&
         userName == other.userName &&
@@ -66,10 +67,10 @@ class UserModel {
   @override
   int get hashCode {
     return userId.hashCode ^
-    userName.hashCode ^
-    userImageUrl.hashCode ^
-    _listHashCode(stories) ^
-    (userImage?.hashCode ?? 0);
+        userName.hashCode ^
+        userImageUrl.hashCode ^
+        _listHashCode(stories) ^
+        (userImage?.hashCode ?? 0);
   }
 
   bool _listEquals(List<StoryModel> list1, List<StoryModel> list2) {

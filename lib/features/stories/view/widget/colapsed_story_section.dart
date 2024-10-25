@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:telware_cross_platform/features/user_profile/view/widget/stacked_overlapped_images.dart';
+import 'package:telware_cross_platform/features/stories/view/widget/stacked_overlapped_images.dart';
 import '../../../../core/theme/sizes.dart';
-import '../../models/user_model.dart';
+import '../../models/contact_model.dart';
 import '../../view_model/contact_view_model.dart';
 
 class ColapsedStorySection extends ConsumerWidget {
@@ -26,17 +26,17 @@ class ColapsedStorySection extends ConsumerWidget {
           padding: const EdgeInsets.all(16.0),
           child: Text(
             '${users.length} Story',
-            style: const TextStyle(fontSize: Sizes.primaryText, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+                fontSize: Sizes.primaryText, fontWeight: FontWeight.bold),
           ),
         )
       ],
     );
   }
 
-
-  List<UserModel> reorderUsers(List<UserModel> users) {
-    List<UserModel> unseenStoriesUsers = [];
-    List<UserModel> seenStoriesUsers = [];
+  List<ContactModel> reorderUsers(List<ContactModel> users) {
+    List<ContactModel> unseenStoriesUsers = [];
+    List<ContactModel> seenStoriesUsers = [];
     for (var user in users) {
       bool allSeen = user.stories.every((story) => story.isSeen);
       allSeen ? seenStoriesUsers.add(user) : unseenStoriesUsers.add(user);

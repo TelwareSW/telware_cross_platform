@@ -1,10 +1,10 @@
-import 'package:telware_cross_platform/features/user_profile/view/widget/story_avatar.dart';
+import 'package:telware_cross_platform/features/stories/view/widget/story_avatar.dart';
 
-import '../../models/user_model.dart';
+import '../../models/contact_model.dart';
 import 'package:flutter/material.dart';
 
 class StackedOverlappedImages extends StatelessWidget {
-  final List<UserModel> users;
+  final List<ContactModel> users;
   final double size;
   final double xShift;
   final bool showBorder;
@@ -27,7 +27,7 @@ class StackedOverlappedImages extends StatelessWidget {
   }
 
   List<Container> _buildStackedStories(
-      List<UserModel> users, BuildContext context) {
+      List<ContactModel> users, BuildContext context) {
     final items = users.take(3).map((user) {
       return StoryAvatar(
         user: user,
@@ -40,13 +40,13 @@ class StackedOverlappedImages extends StatelessWidget {
     return items
         .asMap()
         .map((index, item) {
-      final left = size - xShift;
-      final value = Container(
-        margin: EdgeInsets.only(left: left * index),
-        child: item,
-      );
-      return MapEntry(index, value);
-    })
+          final left = size - xShift;
+          final value = Container(
+            margin: EdgeInsets.only(left: left * index),
+            child: item,
+          );
+          return MapEntry(index, value);
+        })
         .values
         .toList();
   }

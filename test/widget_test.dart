@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:telware_cross_platform/features/user_profile/view/screens/inbox_screen.dart';
+import 'package:telware_cross_platform/main.dart';
 
 
 void main() {

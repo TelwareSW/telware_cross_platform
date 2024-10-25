@@ -5,10 +5,10 @@ import 'package:intl/intl.dart';
 import 'package:story/story_image.dart';
 import 'package:story/story_page_view.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
-import 'package:telware_cross_platform/features/user_profile/models/user_model.dart';
-import 'package:telware_cross_platform/features/user_profile/utils/utils_functions.dart';
-import 'package:telware_cross_platform/features/user_profile/view/widget/stacked_overlapped_images.dart';
-import 'package:telware_cross_platform/features/user_profile/view_model/contact_view_model.dart';
+import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
+import 'package:telware_cross_platform/features/stories/utils/utils_functions.dart';
+import 'package:telware_cross_platform/features/stories/view/widget/stacked_overlapped_images.dart';
+import 'package:telware_cross_platform/features/stories/view_model/contact_view_model.dart';
 import '../../models/story_model.dart';
 import 'dart:typed_data';
 
@@ -29,7 +29,7 @@ class StoryScreen extends ConsumerStatefulWidget {
 
 class _StoryScreenState extends ConsumerState<StoryScreen> {
   late ValueNotifier<IndicatorAnimationCommand> indicatorAnimationController;
-  UserModel? user;
+  ContactModel? user;
   List<StoryModel> storiesList = [];
 
   @override
@@ -64,10 +64,10 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    Future<List<UserModel>> generateSeensList(List<String> userIds) async {
-      List<UserModel> seenUsers = [];
+    Future<List<ContactModel>> generateSeensList(List<String> userIds) async {
+      List<ContactModel> seenUsers = [];
       for (String id in userIds) {
-        UserModel? user = await ref
+        ContactModel? user = await ref
             .read(usersViewModelProvider.notifier)
             .getContactById(id); // Ensure 'id' is a String
         if (user != null) seenUsers.add(user);
@@ -186,7 +186,7 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
         gestureItemBuilder: (context, pageIndex, storyIndex) {
           final story = user!.stories[storyIndex];
 
-          return FutureBuilder<List<UserModel>>(
+          return FutureBuilder<List<ContactModel>>(
             future: generateSeensList(story.seenIds),
             builder: (context, seenSnapshot) {
               if (seenSnapshot.connectionState == ConnectionState.waiting) {
@@ -322,4 +322,3 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
     );
   }
 }
-

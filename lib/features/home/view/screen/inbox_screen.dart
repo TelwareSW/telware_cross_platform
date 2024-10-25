@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
-import 'package:telware_cross_platform/features/user_profile/view/widget/colapsed_story_section.dart';
+import 'package:telware_cross_platform/features/home/view/widget/drawer.dart';
+import 'package:telware_cross_platform/features/stories/view/widget/colapsed_story_section.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../../../core/theme/sizes.dart';
-import '../../view_model/contact_view_model.dart';
-import '../widget/chats_list.dart';
-import '../widget/expanded_stories_section.dart';
-import 'add_my_story_screen.dart';
+import '../../../stories/view_model/contact_view_model.dart';
+import '../../../stories/view/widget/chats_list.dart';
+import '../../../stories/view/widget/expanded_stories_section.dart';
+import '../../../stories/view/screens/add_my_story_screen.dart';
 
 class InboxScreen extends ConsumerStatefulWidget {
   static const String route = '/profile';
@@ -52,6 +53,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         return Scaffold(
+          drawer: const AppDrawer(),
           floatingActionButton: kIsWeb
               ? const SizedBox()
               : FloatingActionButton(
@@ -84,7 +86,9 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
                   floating: false,
                   snap: false,
                   pinned: true,
-                  leading: const Icon(Icons.menu, size: Sizes.iconSize),
+                  leading: IconButton(onPressed: () {
+                    Scaffold.of(context).openDrawer();
+                  }, icon: const Icon(Icons.menu, size: Sizes.iconSize)),
                   title: isAppBarCollapsed
                       ? const ColapsedStorySection()
                       : const Text(
