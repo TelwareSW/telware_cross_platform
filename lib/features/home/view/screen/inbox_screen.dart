@@ -86,9 +86,6 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
                   floating: false,
                   snap: false,
                   pinned: true,
-                  leading: IconButton(onPressed: () {
-                    Scaffold.of(context).openDrawer();
-                  }, icon: const Icon(Icons.menu, size: Sizes.iconSize)),
                   title: isAppBarCollapsed
                       ? const ColapsedStorySection()
                       : const Text(
