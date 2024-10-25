@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:telware_cross_platform/features/auth/view/screens/blocked_users.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/change_number_form_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/change_number_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/privacy_and_security_screen.dart';
@@ -59,9 +60,11 @@ class _TelWareState extends ConsumerState<TelWare> {
         PrivacySettingsScreen.route: (context) => const PrivacySettingsScreen(),
         ProfileInfoScreen.route: (context) => const ProfileInfoScreen(),
         ChangeNumberScreen.route: (context) => const ChangeNumberScreen(),
-        ChangeNumberFormScreen.route: (context) => const ChangeNumberFormScreen(),
+        ChangeNumberFormScreen.route: (context) =>
+            const ChangeNumberFormScreen(),
+        BlockedUsersScreen.route: (context) => const BlockedUsersScreen(),
       },
-      initialRoute: SettingsScreen.route,
+      initialRoute: BlockedUsersScreen.route,
     );
   }
 }
