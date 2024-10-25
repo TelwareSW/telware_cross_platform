@@ -3,29 +3,45 @@ import 'package:telware_cross_platform/core/theme/palette.dart';
 
 class SettingsOptionWidget extends StatelessWidget {
   final IconData? icon;
+  final GlobalKey? iconKey;
+  final String? imagePath;
+  final double imageWidth;
+  final double imageHeight;
+  final double imageRadius;
   final String text;
   final String subtext;
   final String trailing;
+  final IconData? trailingIcon;
+  final VoidCallback? trailingIconAction;
   final double fontSize;
+  final FontWeight? fontWeight;
   final double? subtextFontSize;
   final double? trailingFontSize;
   final Color iconColor;
   final Color color;
-  final Color trailingColor;
+  final Color? trailingColor;
   final bool showDivider;
   final VoidCallback? onTap;
 
   const SettingsOptionWidget({
     super.key,
-    required this.icon,
+    this.iconKey,
+    this.icon,
     required this.text,
+    this.imagePath,
+    this.imageWidth = 45,
+    this.imageHeight = 45,
+    this.imageRadius = 25,
     this.subtext = "",
     this.fontSize = 14,
+    this.fontWeight = FontWeight.normal,
     this.subtextFontSize,
     this.trailingFontSize,
     this.iconColor = Palette.accentText,
     this.color = Palette.primaryText,
     this.trailing = "",
+    this.trailingIcon,
+    this.trailingIconAction,
     this.trailingColor = Palette.primary,
     this.showDivider = true,
     this.onTap,
@@ -40,6 +56,19 @@ class SettingsOptionWidget extends StatelessWidget {
             if (icon != null) ...[
               Icon(icon, color: iconColor),
               const SizedBox(width: 16),
+            ] else if (imagePath != null) ...[
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(imageRadius),
+                  child: Image.asset(
+                    imagePath!,
+                    width: imageWidth,
+                    height: imageHeight,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
             ],
             Expanded(
               child: Column(
@@ -50,7 +79,10 @@ class SettingsOptionWidget extends StatelessWidget {
                         children: [
                           Text(
                             text,
-                            style: TextStyle(color: color, fontSize: fontSize),
+                            style: TextStyle(
+                                color: color,
+                                fontSize: fontSize,
+                                fontWeight: fontWeight ?? FontWeight.normal),
                           ),
                           if (subtext != "") ...[
                             Text(subtext,
@@ -64,8 +96,15 @@ class SettingsOptionWidget extends StatelessWidget {
                         ? Text(trailing,
                             style: TextStyle(
                                 fontSize: trailingFontSize ?? fontSize * 0.9,
-                                color: trailingColor))
-                        : null,
+                                color: trailingColor ?? Palette.primary))
+                        : trailingIcon != null
+                            ? IconButton(
+                                key: iconKey,
+                                icon: Icon(trailingIcon,
+                                    color: trailingColor ?? Palette.primary),
+                                onPressed: trailingIconAction,
+                              )
+                            : null,
                     onTap: onTap,
                   ),
                   if (showDivider) const Divider(),

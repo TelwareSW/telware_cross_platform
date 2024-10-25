@@ -5,9 +5,10 @@ import 'package:telware_cross_platform/features/auth/view/widget/section_title_w
 import 'package:telware_cross_platform/features/auth/view/widget/settings_option_widget.dart';
 
 class SettingsSection extends StatelessWidget {
-  final double fontSize;
+  final double? trailingFontSize;
   final double? trailingLineHeight;
-  final EdgeInsetsGeometry padding;
+  final double? titleFontSize;
+  final EdgeInsetsGeometry? padding;
   final String title;
   final List<Map<String, dynamic>> settingsOptions;
   final String trailing;
@@ -15,9 +16,10 @@ class SettingsSection extends StatelessWidget {
 
   const SettingsSection(
       {super.key,
-      this.padding = const EdgeInsets.fromLTRB(11, 16, 11, 7),
-      this.fontSize = 14,
+      this.padding,
+      this.trailingFontSize,
       this.trailingLineHeight,
+      this.titleFontSize,
       this.title = "",
       required this.settingsOptions,
       this.trailing = "",
@@ -35,7 +37,11 @@ class SettingsSection extends StatelessWidget {
             color: Palette.secondary,
             child: Column(
               children: [
-                if (title != "") SectionTitleWidget(title: title),
+                if (title != "")
+                  SectionTitleWidget(
+                    title: title,
+                    fontSize: titleFontSize ?? 14,
+                  ),
                 Consumer(
                   builder: (context, ref, _) {
                     return Column(children: [
@@ -50,10 +56,19 @@ class SettingsSection extends StatelessWidget {
                               : null;
                           return SettingsOptionWidget(
                             icon: option["icon"],
+                            iconKey: option["iconKey"],
+                            imagePath: option["imagePath"],
+                            imageHeight: option["imageHeight"] ?? 45,
+                            imageWidth: option["imageWidth"] ?? 45,
+                            imageRadius: option["imageRadius"] ?? 25,
+                            trailingIcon: option["trailingIcon"],
+                            trailingColor: option["trailingColor"],
+                            trailingIconAction: option["trailingIconAction"],
                             text: option["text"],
                             subtext: option["subtext"] ?? "",
                             trailing: option["trailing"] ?? "",
                             fontSize: option["fontSize"] ?? 14,
+                            fontWeight: option["fontWeight"],
                             subtextFontSize: option["subtextFontSize"],
                             trailingFontSize: option["trailingFontSize"],
                             iconColor:
@@ -72,13 +87,13 @@ class SettingsSection extends StatelessWidget {
             )),
         if (trailing != "")
           Padding(
-            padding: padding,
+            padding: padding ?? const EdgeInsets.fromLTRB(11, 16, 11, 7),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(trailing,
                   style: TextStyle(
                       height: trailingLineHeight,
-                      fontSize: fontSize,
+                      fontSize: trailingFontSize ?? 14,
                       color: Palette.accentText)),
             ),
           )
