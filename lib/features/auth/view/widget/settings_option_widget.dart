@@ -7,6 +7,8 @@ class SettingsOptionWidget extends StatelessWidget {
   final String subtext;
   final String trailing;
   final double fontSize;
+  final double? subtextFontSize;
+  final double? trailingFontSize;
   final Color iconColor;
   final Color color;
   final Color trailingColor;
@@ -19,6 +21,8 @@ class SettingsOptionWidget extends StatelessWidget {
     required this.text,
     this.subtext = "",
     this.fontSize = 14,
+    this.subtextFontSize,
+    this.trailingFontSize,
     this.iconColor = Palette.accentText,
     this.color = Palette.primaryText,
     this.trailing = "",
@@ -29,40 +33,46 @@ class SettingsOptionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding (
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-      child: Row(
-        children: [
-          if (icon != null) ...[
-            Icon(icon, color: iconColor),
-            const SizedBox(width: 16),
+    return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+        child: Row(
+          children: [
+            if (icon != null) ...[
+              Icon(icon, color: iconColor),
+              const SizedBox(width: 16),
+            ],
+            Expanded(
+              child: Column(
+                children: [
+                  ListTile(
+                    title: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            text,
+                            style: TextStyle(color: color, fontSize: fontSize),
+                          ),
+                          if (subtext != "") ...[
+                            Text(subtext,
+                                style: TextStyle(
+                                    color: Palette.accentText,
+                                    fontSize:
+                                        subtextFontSize ?? fontSize * 0.8))
+                          ]
+                        ]),
+                    trailing: trailing != ""
+                        ? Text(trailing,
+                            style: TextStyle(
+                                fontSize: trailingFontSize ?? fontSize * 0.9,
+                                color: trailingColor))
+                        : null,
+                    onTap: onTap,
+                  ),
+                  if (showDivider) const Divider(),
+                ],
+              ),
+            )
           ],
-          Expanded(
-            child: Column(
-              children: [
-                ListTile(
-                  title: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(text, style: TextStyle(color: color, fontSize: fontSize),),
-                      if (subtext != "") ...[
-                        Text(subtext, style: TextStyle(color: Palette.accentText, fontSize: fontSize*0.8))
-                      ]
-                    ]
-                  ),
-                  trailing: trailing != ""
-                      ? Text(trailing, style: TextStyle(fontSize: fontSize*0.9, color: trailingColor))
-                      : null,
-                  onTap: onTap,
-                ),
-                if (showDivider)
-                  const Divider(
-                  ),
-              ],
-            ),
-          )
-        ],
-      )
-    );
+        ));
   }
 }
