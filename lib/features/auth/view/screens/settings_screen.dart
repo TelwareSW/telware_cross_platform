@@ -23,32 +23,84 @@ class _SettingsScreen extends State<SettingsScreen> {
   };
 
   static List<Map<String, dynamic>> profileSections = [
-    {"title": "Account", "options": [
-      {"text": user["phoneNumber"], "subtext": "Tap to change phone number", "routes": "/change-number"},
-      {"text": user["username"], "subtext": "Username"},
-      {"text": "Bio", "subtext": "Add a few words about yourself", "routes": "/bio"}
-    ]},
-    const {"title": "Settings", "options": [
-      {"icon": Icons.chat_bubble_outline, "text": 'Chat Settings', "route": '/chat-settings'},
-      {"icon": Icons.lock_outline_rounded, "text": 'Privacy and Security', "routes": '/privacy'},
-      {"icon": Icons.notifications_none, "text": 'Notifications and Sounds', "routes": '/notifications'},
-      {"icon": Icons.pie_chart_outline, "text": 'Data and Storage', "routes": '/data-storage'},
-      {"icon": Icons.battery_saver_outlined, "text": 'Power Saving', "routes": '/power-saving'},
-      {"icon": Icons.folder_outlined, "text": 'Chat Folders', "routes": '/chat-folders'},
-      {"icon": Icons.devices, "text": 'Devices', "routes": '/devices'},
-      {"icon": Icons.language_rounded, "text": 'Language', "trailing": 'English', "routes": '/language'},
-    ]},
-    const {"options": [
-      {"icon": Icons.star_border_purple500_rounded, "text": 'TelWare Premium'},
-      {"icon": Icons.star_border_rounded, "text": 'My Stars'},
-      {"icon": Icons.storefront, "text": 'TelWare Business'},
-      {"icon": Icons.card_giftcard, "text": 'Send a Gift'},
-    ]},
-    const {"title": "Help", "options": [
-      {"icon": Icons.chat, "text": 'Ask a Question'},
-      {"icon": Icons.question_mark, "text": 'TelWare FAQ'},
-      {"icon": Icons.verified_user_outlined, "text": 'Privacy Policy'},
-    ], "trailing": "TalWare for Android v11.2.0 (5299) store bundled arm64-v8a"}
+    {
+      "title": "Account",
+      "options": [
+        {
+          "text": user["phoneNumber"],
+          "subtext": "Tap to change phone number",
+          "routes": "/change-number"
+        },
+        {"text": user["username"], "subtext": "Username"},
+        {
+          "text": "Bio",
+          "subtext": "Add a few words about yourself",
+          "routes": "/bio"
+        }
+      ]
+    },
+    const {
+      "title": "Settings",
+      "options": [
+        {
+          "icon": Icons.chat_bubble_outline,
+          "text": 'Chat Settings',
+          "routes": '/chat-settings'
+        },
+        {
+          "icon": Icons.lock_outline_rounded,
+          "text": 'Privacy and Security',
+          "routes": '/privacy'
+        },
+        {
+          "icon": Icons.notifications_none,
+          "text": 'Notifications and Sounds',
+          "routes": '/notifications'
+        },
+        {
+          "icon": Icons.pie_chart_outline,
+          "text": 'Data and Storage',
+          "routes": '/data-storage'
+        },
+        {
+          "icon": Icons.battery_saver_outlined,
+          "text": 'Power Saving',
+          "routes": '/power-saving'
+        },
+        {
+          "icon": Icons.folder_outlined,
+          "text": 'Chat Folders',
+          "routes": '/chat-folders'
+        },
+        {"icon": Icons.devices, "text": 'Devices', "routes": '/devices'},
+        {
+          "icon": Icons.language_rounded,
+          "text": 'Language',
+          "trailing": 'English',
+          "routes": '/language'
+        },
+      ]
+    },
+    const {
+      "options": [
+        {
+          "icon": Icons.star_border_purple500_rounded,
+          "text": 'TelWare Premium'
+        },
+        {"icon": Icons.star_border_rounded, "text": 'My Stars'},
+        {"icon": Icons.storefront, "text": 'TelWare Business'},
+        {"icon": Icons.card_giftcard, "text": 'Send a Gift'},
+      ]
+    },
+    const {
+      "title": "Help",
+      "options": [
+        {"icon": Icons.chat, "text": 'Ask a Question'},
+        {"icon": Icons.question_mark, "text": 'TelWare FAQ'},
+        {"icon": Icons.verified_user_outlined, "text": 'Privacy Policy'},
+      ],
+      "trailing": "TalWare for Android v11.2.0 (5299) store bundled arm64-v8a"
+    }
   ];
 
   @override
@@ -61,7 +113,8 @@ class _SettingsScreen extends State<SettingsScreen> {
             toolbarHeight: 80,
             floating: false,
             pinned: true,
-            leading: IconButton(icon: const Icon(Icons.arrow_back),
+            leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
                 onPressed: () => Navigator.pushNamed(context, "/profile")),
             actions: const [
               Icon(Icons.search),
@@ -84,25 +137,25 @@ class _SettingsScreen extends State<SettingsScreen> {
             ),
           ),
           const SliverToBoxAdapter(
-            child: Column(
-              children: [
-                SettingsSection(
-                  settingsOptions: [],
-                  actions: [SettingsOptionWidget(
+              child: Column(
+            children: [
+              SettingsSection(
+                settingsOptions: [],
+                actions: [
+                  SettingsOptionWidget(
                     icon: Icons.camera_alt_outlined,
                     iconColor: Palette.primary,
                     text: "Set Profile Photo",
                     color: Palette.primary,
                     showDivider: false,
                   )
-                  ],
-                ),
-              ],
-            )
-          ),
+                ],
+              ),
+            ],
+          )),
           SliverList(
             delegate: SliverChildBuilderDelegate(
-                  (context, index) {
+              (context, index) {
                 final section = profileSections[index];
                 final title = section["title"] ?? "";
                 final options = section["options"];
@@ -132,7 +185,8 @@ class _SettingsScreen extends State<SettingsScreen> {
   double _calculateFactor(BoxConstraints constraints) {
     double maxExtent = 130.0;
     double scrollOffset = constraints.maxHeight - kToolbarHeight;
-    double factor = scrollOffset > 0 ? (maxExtent - scrollOffset) / maxExtent * 90.0 : 60.0;
+    double factor =
+        scrollOffset > 0 ? (maxExtent - scrollOffset) / maxExtent * 90.0 : 60.0;
     return factor.clamp(0, 90.0);
   }
 }
