@@ -10,6 +10,7 @@ flutter_*.png
 .vscode/
 
 # Miscellaneous
+.env
 *.log
 *.lock
 *.pyc
