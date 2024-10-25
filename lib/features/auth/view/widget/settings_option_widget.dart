@@ -17,6 +17,7 @@ class SettingsOptionWidget extends StatelessWidget {
   final FontWeight? fontWeight;
   final double? subtextFontSize;
   final double? trailingFontSize;
+  final double? trailingHeight;
   final Color iconColor;
   final Color color;
   final Color? trailingColor;
@@ -31,7 +32,7 @@ class SettingsOptionWidget extends StatelessWidget {
     this.imagePath,
     this.imageWidth = 45,
     this.imageHeight = 45,
-    this.imageRadius = 25,
+    this.imageRadius = 50,
     this.subtext = "",
     this.fontSize = 14,
     this.fontWeight = FontWeight.normal,
@@ -42,6 +43,7 @@ class SettingsOptionWidget extends StatelessWidget {
     this.trailing = "",
     this.trailingIcon,
     this.trailingIconAction,
+    this.trailingHeight,
     this.trailingColor = Palette.primary,
     this.showDivider = true,
     this.onTap,
@@ -75,33 +77,49 @@ class SettingsOptionWidget extends StatelessWidget {
                 children: [
                   ListTile(
                     title: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            text,
-                            style: TextStyle(
-                                color: color,
-                                fontSize: fontSize,
-                                fontWeight: fontWeight ?? FontWeight.normal),
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          text,
+                          style: TextStyle(
+                            color: color,
+                            fontSize: fontSize,
+                            fontWeight: fontWeight ?? FontWeight.normal,
                           ),
-                          if (subtext != "") ...[
-                            Text(subtext,
-                                style: TextStyle(
-                                    color: Palette.accentText,
-                                    fontSize:
-                                        subtextFontSize ?? fontSize * 0.8))
-                          ]
-                        ]),
-                    trailing: trailing != ""
-                        ? Text(trailing,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                        if (subtext != "") ...[
+                          Text(
+                            subtext,
                             style: TextStyle(
+                              color: Palette.accentText,
+                              fontSize: subtextFontSize ?? fontSize * 0.8,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          )
+                        ]
+                      ],
+                    ),
+                    trailing: trailing != ""
+                        ? SizedBox(
+                            height: trailingHeight,
+                            child: Text(
+                              trailing,
+                              style: TextStyle(
                                 fontSize: trailingFontSize ?? fontSize * 0.9,
-                                color: trailingColor ?? Palette.primary))
+                                color: trailingColor ?? Palette.primary,
+                              ),
+                            ),
+                          )
                         : trailingIcon != null
                             ? IconButton(
                                 key: iconKey,
-                                icon: Icon(trailingIcon,
-                                    color: trailingColor ?? Palette.primary),
+                                icon: Icon(
+                                  trailingIcon,
+                                  color: trailingColor ?? Palette.primary,
+                                ),
                                 onPressed: trailingIconAction,
                               )
                             : null,

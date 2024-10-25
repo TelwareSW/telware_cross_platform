@@ -71,6 +71,7 @@ class SettingsSection extends StatelessWidget {
                             fontWeight: option["fontWeight"],
                             subtextFontSize: option["subtextFontSize"],
                             trailingFontSize: option["trailingFontSize"],
+                            trailingHeight: option["trailingHeight"],
                             iconColor:
                                 option["iconColor"] ?? Palette.accentText,
                             color: option["color"] ?? Palette.primaryText,
