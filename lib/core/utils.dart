@@ -24,7 +24,7 @@ String? passwordValidator(String? value) {
     return 'Password must be at least 8 characters long';
   } else if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d._@&-]{8,}$')
       .hasMatch(value)) {
-    return 'Password must contain letters and digits';
+    return 'Must contain letters and digits and can contain . _ @ & -';
   }
   return null;
 }
