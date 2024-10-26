@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 
 class SettingsInputWidget extends StatefulWidget {
@@ -9,6 +10,7 @@ class SettingsInputWidget extends StatefulWidget {
   final Color color;
   final bool showDivider;
   final int lettersCap;
+  final shakeKey;
 
   const SettingsInputWidget({
     super.key,
@@ -18,6 +20,7 @@ class SettingsInputWidget extends StatefulWidget {
     this.color = Palette.primaryText,
     this.lettersCap = -1,
     this.showDivider = true,
+    this.shakeKey,
   });
 
   @override
@@ -48,7 +51,7 @@ class _SettingsInputWidgetState extends State<SettingsInputWidget> {
         : -1;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 4.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start, // Aligns children to the start
         children: [
@@ -57,20 +60,26 @@ class _SettingsInputWidgetState extends State<SettingsInputWidget> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween, // Distribute space evenly
             children: [
               Expanded( // Allows TextField to take remaining space
-                child: TextField(
-                  controller: widget.controller,
-                  decoration: InputDecoration(
-                    hintText: widget.placeholder,
-                    hintStyle: TextStyle(color: Palette.accentText, fontSize: widget.fontSize), // Placeholder color
-                    border: InputBorder.none, // Makes the border invisible
-                    focusedBorder: InputBorder.none, // Also remove border when focused
-                    enabledBorder: InputBorder.none, // Remove border when enabled
+                child: ShakeMe(
+                  key: widget.shakeKey,
+                  shakeCount: 1,
+                  shakeOffset: 8,
+                  shakeDuration: const Duration(milliseconds: 300),
+                  child: TextField(
+                    controller: widget.controller,
+                    decoration: InputDecoration(
+                      hintText: widget.placeholder,
+                      hintStyle: TextStyle(color: Palette.accentText, fontSize: widget.fontSize), // Placeholder color
+                      border: InputBorder.none, // Makes the border invisible
+                      focusedBorder: InputBorder.none, // Also remove border when focused
+                      enabledBorder: InputBorder.none, // Remove border when enabled
+                    ),
+                    inputFormatters: [
+                      // Limit the number of characters if lettersCap is greater than 0
+                      if (widget.lettersCap > 0)
+                        LengthLimitingTextInputFormatter(widget.lettersCap),
+                    ],
                   ),
-                  inputFormatters: [
-                    // Limit the number of characters if lettersCap is greater than 0
-                    if (widget.lettersCap > 0)
-                      LengthLimitingTextInputFormatter(widget.lettersCap),
-                  ],
                 ),
               ),
               if (widget.lettersCap > 0)
