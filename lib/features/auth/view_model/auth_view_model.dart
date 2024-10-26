@@ -1,7 +1,12 @@
+// ignore_for_file: avoid_manual_providers_as_generated_provider_dependency
+import 'package:flutter/foundation.dart';
+import 'package:fpdart/src/either.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:telware_cross_platform/core/providers/log_in_type_provider.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_local_repository.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_remote_repository.dart';
+import 'package:telware_cross_platform/features/auth/repository/google_repository.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
 
@@ -115,6 +120,7 @@ class AuthViewModel extends _$AuthViewModel {
       }
     } else {
       state = AuthState.authorized;
+      ref.read(logInTypeProvider.notifier).update((_) => LogInType.email);
     }
   }
 
@@ -129,7 +135,43 @@ class AuthViewModel extends _$AuthViewModel {
     }
   }
 
-  void loginWithGoogle() {}
+  void googleLogIn() async {
+    final googleResponse = await ref.read(googleRepositoryProvider).logIn();
+    _handleProviderResponse(googleResponse, LogInType.google);
+  }
+
+  void githubLogIn() async {}
+
+  void facebookLogIn() async {}
+
+  void _handleProviderResponse(
+      Either<AppError, String> providerResponse, LogInType provider) {
+    providerResponse.match(
+      (appError) {
+        state = AuthState.fail(appError.error);
+        return;
+      },
+      (idToken) async {
+        debugPrint('idToken: $idToken');
+        final response = await ref
+            .read(authRemoteRepositoryProvider)
+            .socialLogIn(idToken: idToken, provider: provider);
+
+        response.match(
+          (appError) {
+            state = AuthState.fail(appError.error);
+          },
+          (logInResponse) {
+            ref.read(authLocalRepositoryProvider).setUser(logInResponse.user);
+            ref.read(authLocalRepositoryProvider).setToken(logInResponse.token);
+            ref.read(logInTypeProvider.notifier).update((_) => provider);
+            state = AuthState.authorized;
+          },
+        );
+        return;
+      },
+    );
+  }
 
   void loginWithFacebook() {}
 
@@ -144,6 +186,7 @@ class AuthViewModel extends _$AuthViewModel {
         .logOut(token: token!, route: 'auth/logout');
 
     await _handleLogOutState(appError);
+    await _handleSocialLogOut();
   }
 
   Future<void> logOutAllOthers() async {
@@ -156,6 +199,7 @@ class AuthViewModel extends _$AuthViewModel {
     if (appError != null) {
       state = AuthState.fail(appError.error);
     }
+    await _handleSocialLogOut();
   }
 
   Future<void> logOutAll() async {
@@ -167,6 +211,7 @@ class AuthViewModel extends _$AuthViewModel {
         .logOut(token: token!, route: 'auth/logout-all');
 
     await _handleLogOutState(appError);
+    await _handleSocialLogOut();
   }
 
   Future<void> _handleLogOutState(AppError? appError) async {
@@ -177,6 +222,19 @@ class AuthViewModel extends _$AuthViewModel {
       state = AuthState.unauthorized;
     } else {
       state = AuthState.fail(appError.error);
+    }
+  }
+
+  Future<void> _handleSocialLogOut() async {
+    final provider = ref.read(logInTypeProvider);
+    switch (provider) {
+      case LogInType.google:
+        await ref.read(googleRepositoryProvider).logIn();
+      case LogInType.facebook:
+      // todo(ahmed): Handle this case.
+      case LogInType.github:
+      // todo(ahmed): Handle this case.
+      default:
     }
   }
 }

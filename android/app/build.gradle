@@ -30,6 +30,15 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        debug {
+            keyAlias 'telwareKeyStore'
+            keyPassword 'telwareSW'
+            storeFile file('telwareKeyStore.jks')
+            storePassword 'telwareSW'
+        }
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.

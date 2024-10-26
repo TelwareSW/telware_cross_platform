@@ -1,8 +1,10 @@
 import 'dart:io';
 
+import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:dio/dio.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
+import 'package:telware_cross_platform/core/providers/log_in_type_provider.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
@@ -161,6 +163,29 @@ class AuthRemoteRepository {
       return AppError('Couldn\'t log in now. Please, try again later.');
     }
     return null;
+  }
+
+  Future<Either<AppError, AuthResponseModel>> socialLogIn({
+    required String idToken,
+    required LogInType provider,
+  }) async {
+    try {
+      final response = await _dio.get('/auth/oauth/${provider.name}/$idToken');
+      if (response.statusCode! > 200 || response.statusCode! < 200) {
+        final String message = response.data?['message'] ?? 'Unexpected Error';
+        return Left(AppError(message));
+      }
+
+      final AuthResponseModel logInResponse = AuthResponseModel.fromMap(
+          (response.data['data']) as Map<String, dynamic>);
+
+      return Right(logInResponse);
+    } on DioException catch (dioException) {
+      return Left(handleDioException(dioException));
+    } catch (e) {
+      debugPrint('Log in error:\n${e.toString()}');
+      return Left(AppError('Couldn\'t log in now. Please, try again later.'));
+    }
   }
 
   Future<AppError?> logOut(
