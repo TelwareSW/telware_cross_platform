@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/utils.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/settings_section.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/toolbar_widget.dart';
+import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
+import 'package:telware_cross_platform/features/user/view/widget/toolbar_widget.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 
 class BlockedUsersScreen extends StatefulWidget {
@@ -74,7 +74,9 @@ class _BlockedUsersScreen extends State<BlockedUsersScreen> {
           }
         ],
         "trailing":
-            "Blocked users can't send you messages or add you to groups. They will not see your profile photos, stories, online and last    seen status."
+            "Blocked users can't send you messages or add you to groups. "
+            "They will not see your profile photos, stories, online and last"
+            " seen status."
       },
       {
         "title": "blocked users",

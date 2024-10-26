@@ -51,7 +51,7 @@ class _SettingsInputWidgetState extends State<SettingsInputWidget> {
         : -1;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start, // Aligns children to the start
         children: [
@@ -66,6 +66,7 @@ class _SettingsInputWidgetState extends State<SettingsInputWidget> {
                   shakeOffset: 8,
                   shakeDuration: const Duration(milliseconds: 300),
                   child: TextField(
+                    key: widget.key,
                     controller: widget.controller,
                     decoration: InputDecoration(
                       hintText: widget.placeholder,

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/section_title_widget.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/settings_option_widget.dart';
+import 'package:telware_cross_platform/core/utils.dart';
+import 'package:telware_cross_platform/features/user/view/widget/section_title_widget.dart';
+import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
 
 class SettingsSection extends StatelessWidget {
   final double? trailingFontSize;
@@ -39,6 +40,7 @@ class SettingsSection extends StatelessWidget {
               children: [
                 if (title != "")
                   SectionTitleWidget(
+                    key: ValueKey("${toSnakeCase(title)}-section"),
                     title: title,
                     fontSize: titleFontSize ?? 14,
                   ),
@@ -50,11 +52,14 @@ class SettingsSection extends StatelessWidget {
                         (index) {
                           final option = settingsOptions[index];
                           final type = option["type"] ?? "";
-                          final route = option["routes"] ?? "";
-                          final onTap = route != ""
-                              ? () => _navigateTo(context, route)
+                          final key = option["key"] != null ? Key(option["key"]) : null;
+                          final String route = option["routes"] ?? "";
+                          final bool lockedRoute = route == 'locked';
+                          final onTap = lockedRoute ? () => showToastMessage("Coming Soon...") :
+                              route != "" ? () => _navigateTo(context, route)
                               : null;
                           return SettingsOptionWidget(
+                            key: key,
                             icon: option["icon"],
                             iconKey: option["iconKey"],
                             imagePath: option["imagePath"],

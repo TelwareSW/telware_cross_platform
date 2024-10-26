@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:phone_form_field/phone_form_field.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
@@ -81,9 +82,13 @@ class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
         }
       });
     } else {
-      showConfirmationDialog(context,
-          "Is this the correct number?", phoneNumber,
-          "Yes", "Edit", _updatePhoneNumber, _onEdit);
+      // TODO (Ahmed): make it like the sign up if it needs captcha.
+      // showConfirmationDialog(context,
+      //     "Is this the correct number?", phoneNumber,
+      //     "Yes", "Edit", _updatePhoneNumber, _onEdit);
+      if (kDebugMode) {
+        print("Success");
+      }
     }
   }
 

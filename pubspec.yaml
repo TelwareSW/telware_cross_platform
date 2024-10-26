@@ -64,8 +64,8 @@ dependencies:
   phone_form_field: ^9.2.8
   webview_flutter_plus: ^0.4.7
   flutter_dotenv: ^5.2.1
-
-
+  gif: ^2.3.0
+  lottie: ^3.0.0
 
 dev_dependencies:
   flutter_test:
@@ -110,6 +110,7 @@ flutter:
   assets:
     - assets/imgs/
     - assets/icon/
+    - assets/gifs/
     - assets/webpages/
     - lib/.env
   #   - images/a_dot_ham.jpeg

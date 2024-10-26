@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/settings_section.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/toolbar_widget.dart';
+import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
+import 'package:telware_cross_platform/features/user/view/widget/toolbar_widget.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 
 class BlockUserScreen extends StatefulWidget {
@@ -15,8 +15,6 @@ class BlockUserScreen extends StatefulWidget {
 }
 
 class _BlockUserScreen extends State<BlockUserScreen> {
-  // Define a GlobalKey for the IconButton
-
   late List<Map<String, dynamic>> blockSections;
 
   @override
@@ -67,7 +65,7 @@ class _BlockUserScreen extends State<BlockUserScreen> {
     return Scaffold(
       backgroundColor: Palette.secondary,
       appBar: const ToolbarWidget(
-        title: "Blocked Users",
+        title: "Block User",
       ),
       body: SingleChildScrollView(
         child: Column(
