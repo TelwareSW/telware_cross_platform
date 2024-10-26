@@ -17,7 +17,7 @@ class SettingsOptionWidget extends StatelessWidget {
   final FontWeight? fontWeight;
   final double? subtextFontSize;
   final double? trailingFontSize;
-  final double? trailingHeight;
+  final EdgeInsets? trailingPadding;
   final Color iconColor;
   final Color color;
   final Color? trailingColor;
@@ -43,7 +43,7 @@ class SettingsOptionWidget extends StatelessWidget {
     this.trailing = "",
     this.trailingIcon,
     this.trailingIconAction,
-    this.trailingHeight,
+    this.trailingPadding,
     this.trailingColor = Palette.primary,
     this.showDivider = true,
     this.onTap,
@@ -103,8 +103,8 @@ class SettingsOptionWidget extends StatelessWidget {
                       ],
                     ),
                     trailing: trailing != ""
-                        ? SizedBox(
-                            height: trailingHeight,
+                        ? Padding(
+                            padding: trailingPadding ?? const EdgeInsets.all(0),
                             child: Text(
                               trailing,
                               style: TextStyle(
