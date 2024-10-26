@@ -51,7 +51,7 @@ class _SettingsInputWidgetState extends State<SettingsInputWidget> {
         : -1;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start, // Aligns children to the start
         children: [

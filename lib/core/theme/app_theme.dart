@@ -4,7 +4,7 @@ import 'package:telware_cross_platform/core/theme/dimensions.dart';
 
 final appTheme = ThemeData.dark().copyWith(
   scaffoldBackgroundColor: Palette.background,
-  appBarTheme: const AppBarTheme(color: Palette.background),
+  appBarTheme: const AppBarTheme(color: Palette.trinary, elevation: 0),
   inputDecorationTheme: InputDecorationTheme(
     floatingLabelBehavior: FloatingLabelBehavior.always,
     contentPadding: const EdgeInsets.all(Dimensions.inputContentPadding),
@@ -36,5 +36,23 @@ final appTheme = ThemeData.dark().copyWith(
       color: Palette.error,
       fontWeight: FontWeight.bold,
     ),
+  ),
+  iconTheme: const IconThemeData(color: Palette.icons),
+  listTileTheme: const ListTileThemeData(
+    textColor: Palette.primaryText,
+    iconColor: Palette.accentText,
+    contentPadding: EdgeInsets.zero,
+    dense: true,
+  ),
+  textTheme: const TextTheme(
+    bodyMedium: TextStyle(fontSize: Dimensions.fontSizeP, color: Palette.accentText),
+    bodySmall: TextStyle(fontSize: Dimensions.fontSizeSmall, color: Palette.accentText),
+    labelMedium: TextStyle(fontSize: Dimensions.fontSizeSmall, color: Palette.primary),
+    titleLarge: TextStyle(fontSize: Dimensions.fontSizeTitle, color: Palette.primary),
+  ),
+  dividerTheme: const DividerThemeData(
+    thickness: 0.8,
+    color: Palette.background,
+    space: 0,
   ),
 );
