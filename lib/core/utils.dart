@@ -76,13 +76,13 @@ String formatPhoneNumber(String phoneNumber) {
   return phoneNumber; // Return the original if it doesn't match the format.
 }
 
-String toSnakeCase(String input) {
-  // Convert to lowercase and replace spaces with underscores
-  String snakeCased = input.toLowerCase().replaceAll(RegExp(r'[\s]+'), '_');
+String toKebabCase(String input) {
+  // Convert to lowercase and replace spaces with hyphens
+  String kebabCased = input.toLowerCase().replaceAll(RegExp(r'[\s]+'), '-');
 
-  // Replace any non-alphanumeric characters with underscores
-  snakeCased = snakeCased.replaceAll(RegExp(r'[^a-z0-9_]+'), '_');
+  // Replace any non-alphanumeric characters with hyphens
+  kebabCased = kebabCased.replaceAll(RegExp(r'[^a-z0-9-]+'), '-');
 
-  // Remove leading or trailing underscores
-  return snakeCased.replaceAll(RegExp(r'^_+|_+$'), '');
+  // Remove leading or trailing hyphens
+  return kebabCased.replaceAll(RegExp(r'^-+|-+$'), '');
 }

@@ -66,6 +66,7 @@ dependencies:
   flutter_dotenv: ^5.2.1
   gif: ^2.3.0
   lottie: ^3.0.0
+  mockito: ^5.0.0
 
 dev_dependencies:
   flutter_test:

@@ -3,7 +3,7 @@ import 'package:telware_cross_platform/core/theme/palette.dart';
 
 class SettingsOptionWidget extends StatelessWidget {
   final IconData? icon;
-  final GlobalKey? iconKey;
+  final GlobalKey? trailingIconKey;
   final String? imagePath;
   final double imageWidth;
   final double imageHeight;
@@ -26,7 +26,7 @@ class SettingsOptionWidget extends StatelessWidget {
 
   const SettingsOptionWidget({
     super.key,
-    this.iconKey,
+    this.trailingIconKey,
     this.icon,
     required this.text,
     this.imagePath,
@@ -51,13 +51,14 @@ class SettingsOptionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       child: Row(
-        key: key,  // Only assign key if it exists
         children: [
           if (icon != null) ...[
-            Icon(icon, key: key != null ? ValueKey("$key-icon") : null, color: iconColor),
+            Icon(icon, key: key != null ? ValueKey("${(key as ValueKey).value}-icon")
+                : null, color: iconColor),
             const SizedBox(width: 16),
           ] else if (imagePath != null) ...[
             Padding(
@@ -116,7 +117,7 @@ class SettingsOptionWidget extends StatelessWidget {
                     )
                       : trailingIcon != null
                       ? IconButton(
-                        key: iconKey,
+                        key: trailingIconKey,
                         icon: Icon(
                           trailingIcon,
                           color: trailingColor ?? Palette.primary,

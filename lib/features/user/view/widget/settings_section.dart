@@ -32,15 +32,18 @@ class SettingsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('Widget Options: $settingsOptions');
+
     return Column(
       children: [
         Container(
+            key: title != "" ? ValueKey("${toKebabCase(title)}-section") : null,
             color: Palette.secondary,
             child: Column(
               children: [
                 if (title != "")
                   SectionTitleWidget(
-                    key: ValueKey("${toSnakeCase(title)}-section"),
+                    key: title != "" ? ValueKey("${toKebabCase(title)}-section-title") : null,
                     title: title,
                     fontSize: titleFontSize ?? 14,
                   ),
@@ -52,7 +55,7 @@ class SettingsSection extends StatelessWidget {
                         (index) {
                           final option = settingsOptions[index];
                           final type = option["type"] ?? "";
-                          final key = option["key"] != null ? Key(option["key"]) : null;
+                          final key = option["key"] != null ? ValueKey("${option["key"]}") : null;
                           final String route = option["routes"] ?? "";
                           final bool lockedRoute = route == 'locked';
                           final onTap = lockedRoute ? () => showToastMessage("Coming Soon...") :
@@ -61,7 +64,7 @@ class SettingsSection extends StatelessWidget {
                           return SettingsOptionWidget(
                             key: key,
                             icon: option["icon"],
-                            iconKey: option["iconKey"],
+                            trailingIconKey: option["iconKey"],
                             imagePath: option["imagePath"],
                             imageHeight: option["imageHeight"] ?? 45,
                             imageWidth: option["imageWidth"] ?? 45,
