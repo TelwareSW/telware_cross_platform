@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:telware_cross_platform/features/auth/view/screens/block_user.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/blocked_users.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/change_number_form_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/change_number_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/privacy_and_security_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/profile_info_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/settings_screen.dart';
+import 'core/models/contact_model.dart';
 import 'features/auth/view/screens/user_profile_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -23,9 +25,11 @@ void main() async {
 
 Future<void> init() async {
   Hive.registerAdapter(UserModelAdapter());
+  Hive.registerAdapter(ContactModelAdapter());
   await Hive.initFlutter();
   await Hive.openBox<String>('auth-token');
   await Hive.openBox<UserModel>('auth-user');
+  await Hive.openBox<ContactModel>('contacts');
 }
 
 class TelWare extends ConsumerStatefulWidget {
@@ -63,8 +67,9 @@ class _TelWareState extends ConsumerState<TelWare> {
         ChangeNumberFormScreen.route: (context) =>
             const ChangeNumberFormScreen(),
         BlockedUsersScreen.route: (context) => const BlockedUsersScreen(),
+        BlockUserScreen.route: (context) => const BlockUserScreen(),
       },
-      initialRoute: SettingsScreen.route,
+      initialRoute: BlockUserScreen.route,
     );
   }
 }
