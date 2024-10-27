@@ -65,3 +65,24 @@ void showToastMessage(String message) async {
   await Fluttertoast.cancel();
   Fluttertoast.showToast(msg: message);
 }
+
+String formatPhoneNumber(String phoneNumber) {
+  // Ensure the input has the right length and starts with the correct prefix.
+  if (phoneNumber.length == 13 && phoneNumber.startsWith("+20")) {
+    return "${phoneNumber.substring(0, 3)} " // +20
+        "${phoneNumber.substring(3, 6)} " // 109
+        "${phoneNumber.substring(6)}"; // 3401932
+  }
+  return phoneNumber; // Return the original if it doesn't match the format.
+}
+
+String toKebabCase(String input) {
+  // Convert to lowercase and replace spaces with hyphens
+  String kebabCased = input.toLowerCase().replaceAll(RegExp(r'[\s]+'), '-');
+
+  // Replace any non-alphanumeric characters with hyphens
+  kebabCased = kebabCased.replaceAll(RegExp(r'[^a-z0-9-]+'), '-');
+
+  // Remove leading or trailing hyphens
+  return kebabCased.replaceAll(RegExp(r'^-+|-+$'), '');
+}

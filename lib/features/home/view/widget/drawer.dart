@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/core/utils.dart';
+import 'package:telware_cross_platform/features/user/view/screens/profile_info_screen.dart';
+import 'package:telware_cross_platform/features/user/view/screens/settings_screen.dart';
+import 'package:telware_cross_platform/features/user/view/screens/user_profile_screen.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -76,13 +79,13 @@ class AppDrawer extends StatelessWidget {
     return Wrap(
       children: <Widget>[
         // todo(ahmed): add routes to the drawer items when available
-        _drawerItem(context, Icons.account_circle_outlined, 'My Profile', verticalPadding: 5),
+        _drawerItem(context, Icons.account_circle_outlined, 'My Profile', verticalPadding: 5, route: UserProfileScreen.route),
         const Divider(thickness: 0.3, color: Palette.black, height: 0),
         _drawerItem(context, Icons.people_alt_outlined, 'New Group'),
         _drawerItem(context, Icons.person_outline_rounded, 'Contacts'),
         _drawerItem(context, Icons.call_outlined, 'Calls'),
         _drawerItem(context, Icons.bookmark_outline_rounded, 'Saved Messages'),
-        _drawerItem(context, Icons.settings_outlined, 'Settings'),
+        _drawerItem(context, Icons.settings_outlined, 'Settings', route: SettingsScreen.route),
         const Divider(thickness: 0.3, color: Palette.black, height: 0),
         _drawerItem(context, Icons.person_add_outlined, 'Invite Friends'),
         _drawerItem(context, Icons.info_outlined, 'TelWare Features'),

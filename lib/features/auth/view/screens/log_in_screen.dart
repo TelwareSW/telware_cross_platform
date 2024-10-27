@@ -15,7 +15,7 @@ import 'package:telware_cross_platform/features/auth/view/widget/title_element.d
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
-import 'package:telware_cross_platform/features/home/view/screen/home_screen.dart';
+import 'package:telware_cross_platform/features/home/view/screens/home_screen.dart';
 import 'package:vibration/vibration.dart';
 
 class LogInScreen extends ConsumerStatefulWidget {
