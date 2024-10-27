@@ -58,6 +58,8 @@ class SettingsSection extends StatelessWidget {
                             icon: option["icon"],
                             iconKey: option["iconKey"],
                             imagePath: option["imagePath"],
+                            imageMemory: option["imageMemory"],
+                            avatar: option["avatar"],
                             imageHeight: option["imageHeight"] ?? 45,
                             imageWidth: option["imageWidth"] ?? 45,
                             imageRadius: option["imageRadius"] ?? 25,

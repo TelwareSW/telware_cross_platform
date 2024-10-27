@@ -1,10 +1,16 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
+
+import 'package:telware_cross_platform/core/utils.dart';
+import 'avatar_generator.dart';
 
 class SettingsOptionWidget extends StatelessWidget {
   final IconData? icon;
   final GlobalKey? iconKey;
   final String? imagePath;
+  final Uint8List? imageMemory;
   final double imageWidth;
   final double imageHeight;
   final double imageRadius;
@@ -22,6 +28,7 @@ class SettingsOptionWidget extends StatelessWidget {
   final Color color;
   final Color? trailingColor;
   final bool showDivider;
+  final bool? avatar;
   final VoidCallback? onTap;
 
   const SettingsOptionWidget({
@@ -30,6 +37,8 @@ class SettingsOptionWidget extends StatelessWidget {
     this.icon,
     required this.text,
     this.imagePath,
+    this.imageMemory,
+    this.avatar,
     this.imageWidth = 45,
     this.imageHeight = 45,
     this.imageRadius = 50,
@@ -69,6 +78,28 @@ class SettingsOptionWidget extends StatelessWidget {
                     height: imageHeight,
                     fit: BoxFit.cover,
                   ),
+                ),
+              ),
+            ] else if (imageMemory != null) ...[
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(imageRadius),
+                  child: Image.memory(
+                    imageMemory!,
+                    width: imageWidth,
+                    height: imageHeight,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+            ] else if (avatar != null) ...[
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: AvatarGenerator(
+                  name: text,
+                  backgroundColor: getRandomColor(),
+                  size: imageWidth,
                 ),
               ),
             ],
