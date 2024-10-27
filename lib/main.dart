@@ -75,7 +75,7 @@ class _TelWareState extends ConsumerState<TelWare> {
         UserProfileScreen.route: (context) => const UserProfileScreen(),
         PrivacySettingsScreen.route: (context) => const PrivacySettingsScreen(),
       },
-      initialRoute: HomeScreen.route,
+      initialRoute: SplashScreen.route,
     );
   }
 }

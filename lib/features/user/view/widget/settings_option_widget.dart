@@ -109,6 +109,8 @@ class SettingsOptionWidget extends StatelessWidget {
                         height: trailingHeight,
                         child: Text(
                           trailing,
+                          key: key != null ?
+                            ValueKey("${(key as ValueKey).value}-trailing") : null,
                           style: TextStyle(
                           fontSize: trailingFontSize ?? fontSize * 0.9,
                           color: trailingColor ?? Palette.primary,
