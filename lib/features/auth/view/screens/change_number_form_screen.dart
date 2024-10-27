@@ -8,11 +8,9 @@ import 'package:telware_cross_platform/features/auth/view/screens/verification_s
 import 'package:telware_cross_platform/features/auth/view/widget/auth_phone_number.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
-import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_floating_action_button.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/confirmation_dialog.dart';
 
 class ChangeNumberFormScreen extends ConsumerStatefulWidget {
   static const String route = '/change-number-form';

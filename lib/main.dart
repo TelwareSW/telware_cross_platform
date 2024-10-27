@@ -20,6 +20,7 @@ import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'features/auth/view/screens/sign_up_screen.dart';
 import 'features/auth/view/screens/verification_screen.dart';
+import 'features/user/view/screens/devices_screen.dart';
 
 Future<void> main() async {
   await init();
@@ -74,6 +75,7 @@ class _TelWareState extends ConsumerState<TelWare> {
         BlockedUsersScreen.route: (context) => const BlockedUsersScreen(),
         UserProfileScreen.route: (context) => const UserProfileScreen(),
         PrivacySettingsScreen.route: (context) => const PrivacySettingsScreen(),
+        DevicesScreen.route: (context) => const DevicesScreen(),
       },
       initialRoute: HomeScreen.route,
     );
