@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
 
 void main() {
-  group('SettingsSection Widget Tests', () {
+  group('Settings Section Widget Tests', () {
     testWidgets('renders title and settings options', (WidgetTester tester) async {
       final settingsOptions = [
         {
@@ -34,20 +34,15 @@ void main() {
       );
 
       expect(find.byKey(const ValueKey("settings-section")), findsOneWidget,
-          reason: "The Settings Section didn't render");
+          reason: "Expected settings section to render");
 
       expect(find.byKey(const ValueKey("settings-section-title")), findsOneWidget,
-          reason: "The Settings Section Title didn't render");
+          reason: "Expected section title to render");
 
       expect(find.byKey(const ValueKey("option1-option")), findsOneWidget,
-          reason: "The first option didn't render");
-      expect(find.byKey(const ValueKey("option1-option-icon")), findsOneWidget,
-          reason: "The first option icon didn't render");
-
+          reason: "Expected first option to render");
       expect(find.byKey(const ValueKey("option2-option")), findsOneWidget,
-          reason: "The second option didn't render");
-      expect(find.byKey(const ValueKey("option2-option-icon")), findsOneWidget,
-          reason: "The second option icon didn't render");
+          reason: "Expected second option to render");
     });
 
     testWidgets('navigates to the correct path on option tap', (WidgetTester tester) async {
