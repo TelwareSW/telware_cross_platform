@@ -112,7 +112,12 @@ class _BlockUserScreen extends State<BlockUserScreen>
         confirmPadding: const EdgeInsets.only(left: 40.0),
         cancelText: 'Cancel',
         cancelColor: const Color.fromRGBO(100, 181, 239, 1),
-        onConfirm: () => {},
+        onConfirm: () => {
+          Navigator.of(context).pop(),
+          // Close the dialog
+          Navigator.of(context).pop(),
+          // Return to Blocked Users screen which is the previous screen.
+        },
         onCancel: () => {Navigator.of(context).pop()},
         actionsAlignment: MainAxisAlignment.end,
       );
@@ -190,7 +195,7 @@ class _BlockUserScreen extends State<BlockUserScreen>
             ),
           ),
           indicatorWeight: 0,
-          indicatorPadding: const EdgeInsets.only(top: 42),
+          indicatorPadding: const EdgeInsets.only(top: 44),
           labelStyle: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 15,

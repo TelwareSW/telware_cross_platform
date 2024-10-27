@@ -69,7 +69,7 @@ class _TelWareState extends ConsumerState<TelWare> {
         BlockedUsersScreen.route: (context) => const BlockedUsersScreen(),
         BlockUserScreen.route: (context) => const BlockUserScreen(),
       },
-      initialRoute: BlockUserScreen.route,
+      initialRoute: BlockedUsersScreen.route,
     );
   }
 }

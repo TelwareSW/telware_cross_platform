@@ -49,6 +49,9 @@ class _BlockedUsersScreen extends State<BlockedUsersScreen> {
     ).then((int? result) {
       if (result == 0) {
         //todo Handle unblock action
+        if (mounted) {
+          Navigator.pushNamed(context, '/block-user');
+        }
       }
     });
   }
