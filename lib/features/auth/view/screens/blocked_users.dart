@@ -79,30 +79,26 @@ class _BlockedUsersScreen extends State<BlockedUsersScreen> {
       {
         "title": "blocked users",
         "titleFontSize": 15.0,
-        "options": [
+        "options": <Map<String, dynamic>>[
           {
             "text": 'Marwan Mohammed',
             "imagePath": 'assets/imgs/marwan.jpg',
             "subtext": "+201093401932",
-            "dummy": 0.0,
           },
           {
             "text": 'Ahmed Alaa',
             "imagePath": 'assets/imgs/ahmed.jpeg',
             "subtext": "+201093401932",
-            "dummy": 0.0,
           },
           {
             "text": 'Bishoy Wadea ',
             "imagePath": 'assets/imgs/bishoy.jpeg',
             "subtext": "+201093401932",
-            "dummy": 0.0,
           },
           {
             "text": 'Moamen Hefny',
             "imagePath": 'assets/imgs/moamen.jpeg',
             "subtext": "+201093401932",
-            "dummy": 0.0,
           },
         ],
       },
