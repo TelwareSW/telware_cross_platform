@@ -1,5 +1,7 @@
 // common utility functions are added here
 
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -66,11 +68,27 @@ void showToastMessage(String message) {
 }
 
 String formatPhoneNumber(String phoneNumber) {
-  // Ensure the input has the right length and starts with the correct prefix.
-  if (phoneNumber.length == 13 && phoneNumber.startsWith("+20")) {
+  // remove all spaces
+  phoneNumber = phoneNumber.replaceAll(" ", "");
+
+  if (!phoneNumber.startsWith("+20")) {
+    phoneNumber = "+20${phoneNumber.substring(1)}";
+  }
+  if (phoneNumber.length == 13) {
     return "${phoneNumber.substring(0, 3)} " // +20
         "${phoneNumber.substring(3, 6)} " // 109
         "${phoneNumber.substring(6)}"; // 3401932
   }
   return phoneNumber; // Return the original if it doesn't match the format.
+}
+
+// Helper function to generate random pastel-like colors
+Color getRandomColor() {
+  final Random random = Random();
+  return Color.fromARGB(
+    255,
+    50 + random.nextInt(100), // Red (200-255)
+    50 + random.nextInt(100), // Green (200-255)
+    50 + random.nextInt(100), // Blue (200-255)
+  );
 }
