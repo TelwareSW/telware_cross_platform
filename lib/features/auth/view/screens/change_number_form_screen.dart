@@ -19,7 +19,8 @@ class ChangeNumberFormScreen extends ConsumerStatefulWidget {
   const ChangeNumberFormScreen({super.key});
 
   @override
-  ConsumerState<ChangeNumberFormScreen> createState() => _ChangeNumberFormScreen();
+  ConsumerState<ChangeNumberFormScreen> createState() =>
+      _ChangeNumberFormScreen();
 }
 
 class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
@@ -81,9 +82,14 @@ class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
         }
       });
     } else {
-      showConfirmationDialog(context,
-          "Is this the correct number?", phoneNumber,
-          "Yes", "Edit", _updatePhoneNumber, _onEdit);
+      showConfirmationDialog(
+          context: context,
+          title: "Is this the correct number?",
+          subtitle: phoneNumber,
+          confirmText: "Yes",
+          cancelText: "Edit",
+          onConfirm: _updatePhoneNumber,
+          onCancel: _onEdit);
     }
   }
 
@@ -114,7 +120,7 @@ class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
                   ),
                   const TitleElement(
                       name:
-                      'Your new number will receive a confirmation code via SMS.',
+                          'Your new number will receive a confirmation code via SMS.',
                       color: Palette.accentText,
                       fontSize: Sizes.secondaryText,
                       padding: EdgeInsets.only(bottom: 30),

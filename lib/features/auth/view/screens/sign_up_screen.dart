@@ -133,10 +133,14 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         }
       });
     } else {
-      showConfirmationDialog(context,
-          'Is this the correct email address?',
-          emailController.text,
-          "Yes", "Edit", signUp, onEdit);
+      showConfirmationDialog(
+          context: context,
+          title: 'Is this the correct email address?',
+          subtitle: emailController.text,
+          confirmText: "Yes",
+          cancelText: "Edit",
+          onConfirm: signUp,
+          onCancel: onEdit);
     }
   }
 

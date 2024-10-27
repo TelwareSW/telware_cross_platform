@@ -7,6 +7,8 @@ import 'package:hive/hive.dart';
 import 'package:telware_cross_platform/core/models/contact_model.dart';
 import 'package:flexible_scrollbar/flexible_scrollbar.dart';
 
+import 'package:telware_cross_platform/features/auth/view/widget/confirmation_dialog.dart';
+
 class BlockUserScreen extends StatefulWidget {
   static const String route = '/block-user';
 
@@ -42,24 +44,24 @@ class _BlockUserScreen extends State<BlockUserScreen>
     userChats = <Map<String, dynamic>>[
       {
         "options": <Map<String, dynamic>>[
-          // {
-          //   "trailing": "1:22 AM",
-          //   "text": 'Marwan Mohammed',
-          //   "imagePath": 'assets/imgs/marwan.jpg',
-          //   "subtext": ".",
-          // },
-          // {
-          //   "trailing": "12:21 AM",
-          //   "text": 'Ahmed Alaa',
-          //   "imagePath": 'assets/imgs/ahmed.jpeg',
-          //   "subtext": "Check out my new project for watching movies",
-          // },
-          // {
-          //   "trailing": "12:02 AM",
-          //   "text": 'Bishoy Wadea',
-          //   "imagePath": 'assets/imgs/bishoy.jpeg',
-          //   "subtext": "Find stickers in the catalog ⬇️",
-          // },
+          {
+            "trailing": "1:22 AM",
+            "text": 'Marwan Mohammed',
+            "imagePath": 'assets/imgs/marwan.jpg',
+            "subtext": ".",
+          },
+          {
+            "trailing": "12:21 AM",
+            "text": 'Ahmed Alaa',
+            "imagePath": 'assets/imgs/ahmed.jpeg',
+            "subtext": "Check out my new project for watching movies",
+          },
+          {
+            "trailing": "12:02 AM",
+            "text": 'Bishoy Wadea',
+            "imagePath": 'assets/imgs/bishoy.jpeg',
+            "subtext": "Find stickers in the catalog ⬇️",
+          },
         ],
       },
     ];
@@ -94,6 +96,28 @@ class _BlockUserScreen extends State<BlockUserScreen>
       });
     }
 
+    void blockConfirmationDialog(String user) {
+      showConfirmationDialog(
+        context: context,
+        title: 'Block user',
+        titleFontWeight: FontWeight.bold,
+        titleColor: Palette.primaryText,
+        titleFontSize: 18.0,
+        subtitle: 'Are you sure you want to block $user?',
+        subtitleFontWeight: FontWeight.normal,
+        subtitleFontSize: 16.0,
+        contentGap: 20.0,
+        confirmText: 'Block user',
+        confirmColor: const Color.fromRGBO(238, 104, 111, 1),
+        confirmPadding: const EdgeInsets.only(left: 40.0),
+        cancelText: 'Cancel',
+        cancelColor: const Color.fromRGBO(100, 181, 239, 1),
+        onConfirm: () => {},
+        onCancel: () => {Navigator.of(context).pop()},
+        actionsAlignment: MainAxisAlignment.end,
+      );
+    }
+
     for (var option in userChats[0]["options"]) {
       option["trailingFontSize"] = 13.0;
       option["trailingPadding"] = const EdgeInsets.only(bottom: 20.0);
@@ -104,6 +128,7 @@ class _BlockUserScreen extends State<BlockUserScreen>
       option["fontWeight"] = FontWeight.w500;
       option["imageWidth"] = 55.0;
       option["imageHeight"] = 55.0;
+      option["onTap"] = () => blockConfirmationDialog(option["text"]);
     }
     for (var option in userContacts[0]["options"]) {
       option["color"] = Palette.primaryText;
@@ -113,6 +138,7 @@ class _BlockUserScreen extends State<BlockUserScreen>
       option["subtextFontSize"] = 14.0;
       option["imageWidth"] = 47.0;
       option["imageHeight"] = 47.0;
+      option["onTap"] = () => blockConfirmationDialog(option["text"]);
     }
   }
 

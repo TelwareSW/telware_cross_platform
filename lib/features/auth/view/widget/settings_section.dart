@@ -53,7 +53,7 @@ class SettingsSection extends StatelessWidget {
                           final route = option["routes"] ?? "";
                           final onTap = route != ""
                               ? () => _navigateTo(context, route)
-                              : null;
+                              : option["onTap"];
                           return SettingsOptionWidget(
                             icon: option["icon"],
                             iconKey: option["iconKey"],
