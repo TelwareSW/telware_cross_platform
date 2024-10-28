@@ -5,8 +5,8 @@ import 'package:hive/hive.dart';
 
 part 'contact_model.g.dart';
 
-@HiveType(typeId: 2)
-class ContactModel {
+@HiveType(typeId: 3)
+class ContactModelBlock {
   @HiveField(0)
   final String name;
   @HiveField(1)
@@ -19,8 +19,7 @@ class ContactModel {
   final String lastSeen;
 
 //<editor-fold desc="Data Methods">
-
-  const ContactModel({
+  const ContactModelBlock({
     required this.name,
     this.email,
     this.photo,
@@ -28,10 +27,10 @@ class ContactModel {
     required this.lastSeen,
   });
 
-//<ed@override
+  @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is ContactModel &&
+      (other is ContactModelBlock &&
           runtimeType == other.runtimeType &&
           name == other.name &&
           email == other.email &&
@@ -49,17 +48,17 @@ class ContactModel {
 
   @override
   String toString() {
-    return 'ContactModel{ name: $name, email: $email, photo: $photo, phone: $phone, lastSeen: $lastSeen,}';
+    return 'ContactModelBlock{ name: $name, email: $email, photo: $photo, phone: $phone, lastSeen: $lastSeen,}';
   }
 
-  ContactModel copyWith({
+  ContactModelBlock copyWith({
     String? name,
     String? email,
     Uint8List? photo,
     String? phone,
     String? lastSeen,
   }) {
-    return ContactModel(
+    return ContactModelBlock(
       name: name ?? this.name,
       email: email ?? this.email,
       photo: photo ?? this.photo,
@@ -78,8 +77,8 @@ class ContactModel {
     };
   }
 
-  factory ContactModel.fromMap(Map<String, dynamic> map) {
-    return ContactModel(
+  factory ContactModelBlock.fromMap(Map<String, dynamic> map) {
+    return ContactModelBlock(
       name: map['name'] as String,
       email: map['email'] as String,
       photo: map['photo'] as Uint8List,

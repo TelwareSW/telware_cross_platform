@@ -31,16 +31,16 @@ class _SettingsInputWidgetState extends State<SettingsInputWidget> {
   @override
   void initState() {
     super.initState();
-    // Listen to changes in the TextEditingController
-    widget.controller.addListener(() {
-      setState(() {}); // Update the UI when the text changes
-    });
+    widget.controller.addListener(_onTextChanged);
+  }
+
+  void _onTextChanged() {
+    setState(() {});
   }
 
   @override
   void dispose() {
-    // Remove the listener when the widget is disposed
-    widget.controller.removeListener(() {});
+    widget.controller.removeListener(_onTextChanged);
     super.dispose();
   }
 
@@ -51,7 +51,7 @@ class _SettingsInputWidgetState extends State<SettingsInputWidget> {
         : -1;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start, // Aligns children to the start
         children: [
@@ -66,6 +66,7 @@ class _SettingsInputWidgetState extends State<SettingsInputWidget> {
                   shakeOffset: 8,
                   shakeDuration: const Duration(milliseconds: 300),
                   child: TextField(
+                    key: widget.key != null ? ValueKey("${(widget.key as ValueKey).value}-input") : null,
                     controller: widget.controller,
                     decoration: InputDecoration(
                       hintText: widget.placeholder,
@@ -86,6 +87,7 @@ class _SettingsInputWidgetState extends State<SettingsInputWidget> {
                 Padding(
                   padding: const EdgeInsets.only(left: 8.0), // Add some spacing
                   child: Text(
+                    key: widget.key != null ? ValueKey("${(widget.key as ValueKey).value}-letters-cap") : null,
                     remainingChars >= 0 ? '$remainingChars' : '',
                     style: TextStyle(color: Palette.accentText, fontSize: widget.fontSize * 0.8),
                   ),

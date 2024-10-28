@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/contact_service.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/empty_chats.dart';
+import 'package:telware_cross_platform/features/user/view/widget/empty_chats.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/user_chats.dart';
+import 'package:telware_cross_platform/features/user/view/widget/user_chats.dart';
 import 'package:hive/hive.dart';
 import 'package:telware_cross_platform/core/models/contact_model.dart';
 import 'package:flexible_scrollbar/flexible_scrollbar.dart';
@@ -27,13 +27,63 @@ class _BlockUserScreen extends State<BlockUserScreen>
   late TabController _tabController;
   final ScrollController scrollController = ScrollController();
 
+  void blockConfirmationDialog(String user) {
+    showConfirmationDialog(
+      context: context,
+      title: 'Block user',
+      titleFontWeight: FontWeight.bold,
+      titleColor: Palette.primaryText,
+      titleFontSize: 18.0,
+      subtitle: 'Are you sure you want to block $user?',
+      subtitleFontWeight: FontWeight.normal,
+      subtitleFontSize: 16.0,
+      contentGap: 20.0,
+      confirmText: 'Block user',
+      confirmColor: const Color.fromRGBO(238, 104, 111, 1),
+      confirmPadding: const EdgeInsets.only(left: 40.0),
+      cancelText: 'Cancel',
+      cancelColor: const Color.fromRGBO(100, 181, 239, 1),
+      onConfirm: () => {
+        Navigator.of(context).pop(),
+        // Close the dialog
+        Navigator.of(context).pop(),
+        // Return to Blocked Users screen which is the previous screen.
+      },
+      onCancel: () => {Navigator.of(context).pop()},
+      actionsAlignment: MainAxisAlignment.end,
+    );
+  }
+
+  Future<void> _initializeContacts() async {
+    try {
+      await _contactService.fetchAndStoreContacts();
+      var box = Hive.box<ContactModelBlock>('contacts-block');
+      for (var contact in box.values) {
+        userContacts[0]["options"].add({
+          "text": contact.name,
+          "imageMemory": contact.photo,
+          "subtext": contact.phone,
+        });
+      }
+      for (var option in userContacts[0]["options"]) {
+        option["color"] = Palette.primaryText;
+        option["fontSize"] = 15.0;
+        option["fontWeight"] = FontWeight.w500;
+        option["avatar"] = true;
+        option["subtextFontSize"] = 14.0;
+        option["imageWidth"] = 47.0;
+        option["imageHeight"] = 47.0;
+        option["onTap"] = () => blockConfirmationDialog(option["text"]);
+      }
+    } catch (error) {
+      debugPrint('Error fetching contacts: $error');
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-
-    _contactService.fetchAndStoreContacts();
-    var box = Hive.box<ContactModel>('contacts');
-
+    _initializeContacts();
     _duckController = AnimationController(vsync: this);
     _duckController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
@@ -88,41 +138,6 @@ class _BlockUserScreen extends State<BlockUserScreen>
       },
     ];
 
-    for (var contact in box.values) {
-      userContacts[0]["options"].add({
-        "text": contact.name,
-        "imageMemory": contact.photo,
-        "subtext": contact.phone,
-      });
-    }
-
-    void blockConfirmationDialog(String user) {
-      showConfirmationDialog(
-        context: context,
-        title: 'Block user',
-        titleFontWeight: FontWeight.bold,
-        titleColor: Palette.primaryText,
-        titleFontSize: 18.0,
-        subtitle: 'Are you sure you want to block $user?',
-        subtitleFontWeight: FontWeight.normal,
-        subtitleFontSize: 16.0,
-        contentGap: 20.0,
-        confirmText: 'Block user',
-        confirmColor: const Color.fromRGBO(238, 104, 111, 1),
-        confirmPadding: const EdgeInsets.only(left: 40.0),
-        cancelText: 'Cancel',
-        cancelColor: const Color.fromRGBO(100, 181, 239, 1),
-        onConfirm: () => {
-          Navigator.of(context).pop(),
-          // Close the dialog
-          Navigator.of(context).pop(),
-          // Return to Blocked Users screen which is the previous screen.
-        },
-        onCancel: () => {Navigator.of(context).pop()},
-        actionsAlignment: MainAxisAlignment.end,
-      );
-    }
-
     for (var option in userChats[0]["options"]) {
       option["trailingFontSize"] = 13.0;
       option["trailingPadding"] = const EdgeInsets.only(bottom: 20.0);
@@ -133,16 +148,6 @@ class _BlockUserScreen extends State<BlockUserScreen>
       option["fontWeight"] = FontWeight.w500;
       option["imageWidth"] = 55.0;
       option["imageHeight"] = 55.0;
-      option["onTap"] = () => blockConfirmationDialog(option["text"]);
-    }
-    for (var option in userContacts[0]["options"]) {
-      option["color"] = Palette.primaryText;
-      option["fontSize"] = 15.0;
-      option["fontWeight"] = FontWeight.w500;
-      option["avatar"] = true;
-      option["subtextFontSize"] = 14.0;
-      option["imageWidth"] = 47.0;
-      option["imageHeight"] = 47.0;
       option["onTap"] = () => blockConfirmationDialog(option["text"]);
     }
   }

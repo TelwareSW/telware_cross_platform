@@ -3,7 +3,7 @@ import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/view/widget/responsive.dart';
-import 'package:telware_cross_platform/features/auth/repository/sign_up_email_provider.dart';
+import 'package:telware_cross_platform/core/providers/sign_up_email_provider.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_sub_text_button.dart';
@@ -12,6 +12,8 @@ import 'package:vibration/vibration.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_verification_code/flutter_verification_code.dart';
 import 'package:telware_cross_platform/core/constants/constant.dart';
+import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
+import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
 
 class VerificationScreen extends ConsumerStatefulWidget {
   static const String route = '/verify';
@@ -25,9 +27,11 @@ class VerificationScreen extends ConsumerStatefulWidget {
 class _VerificationScreen extends ConsumerState<VerificationScreen> {
   String _code = '';
   bool _onEditing = true;
+  bool codeNotMatched = false;
   int remainingTime = 60; // Total seconds for countdown
   Timer? _timer;
   final shakeKey = GlobalKey<ShakeWidgetState>();
+  late String email;
 
   final TextStyle digitStyle = const TextStyle(
     fontSize: 20.0,
@@ -38,6 +42,7 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
   @override
   void initState() {
     super.initState();
+    email = ref.read(signUpEmailProvider);
     startTimer(); // Start the countdown timer
   }
 
@@ -47,11 +52,16 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
     super.dispose();
   }
 
-  void resendCode() {
-    setState(() {
-      remainingTime = 60;
-    });
-    startTimer();
+  void resendCode() async {
+    AuthState sendCodeState = await ref
+        .read(authViewModelProvider.notifier)
+        .sendConfirmationCode(email: email);
+    if (sendCodeState.type == AuthStateType.success) {
+      setState(() {
+        remainingTime = 60;
+      });
+      startTimer();
+    }
   }
 
   void startTimer() {
@@ -81,13 +91,31 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
   void onEditing(bool value) {
     setState(() {
       _onEditing = value;
+      codeNotMatched = false;
     });
-    if (!_onEditing) FocusScope.of(context).unfocus();
+    if (value) {
+      setState(() {
+        _code = '';
+      });
+    }
+    if (!value) FocusScope.of(context).unfocus();
   }
 
-  void onSubmit() {
+  void onSubmit() async {
     if (_code.length == VERIFICATION_LENGTH) {
-      // todo handle logic for successful submit
+      AuthState state =
+          await ref.read(authViewModelProvider.notifier).verifyEmail(
+                email: email,
+                code: _code,
+              );
+      if (state.type == AuthStateType.authenticated) {
+        // todo: Navigate to the home screen
+      } else {
+        setState(() {
+          codeNotMatched = true;
+          remainingTime = 0;
+        });
+      }
     } else {
       shakeKey.currentState?.shake();
       Vibration.hasVibrator().then((hasVibrator) {
@@ -100,7 +128,6 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final String email = ref.watch(signUpEmailProvider);
     return Scaffold(
       backgroundColor: Palette.background,
       appBar: AppBar(
@@ -136,6 +163,16 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
                   padding: const EdgeInsets.only(bottom: 30),
                   width: 250.0,
                 ),
+                codeNotMatched
+                    ? const TitleElement(
+                        name:
+                            'Verification failed. Try again or request a new one.',
+                        color: Colors.white,
+                        fontSize: Sizes.secondaryText,
+                        padding: EdgeInsets.only(bottom: 30),
+                        width: 350.0,
+                      )
+                    : const SizedBox(),
                 ShakeMe(
                   key: shakeKey,
                   shakeCount: 3,
@@ -150,7 +187,6 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
                     digitsOnly: true,
                     underlineWidth: 2.0,
                     length: VERIFICATION_LENGTH,
-                    // Assume verification length is 6
                     cursorColor: Palette.accentText,
                     onCompleted: onCompleted,
                     onEditing: onEditing,

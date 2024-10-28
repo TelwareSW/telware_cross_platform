@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/settings_section.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/toolbar_widget.dart';
+import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
+import 'package:telware_cross_platform/features/user/view/widget/toolbar_widget.dart';
 
 class PrivacySettingsScreen extends StatefulWidget {
   static const String route = '/privacy';
@@ -38,6 +38,7 @@ class _PrivacySettingsScreen extends State<PrivacySettingsScreen> {
           "trailing": "moamen.hefny@TelWare.com"
         },
         {
+          "key": "blocked-users-option",
           "icon": Icons.front_hand_outlined,
           "text": 'Blocked Users',
           "routes": '/blocked-users',

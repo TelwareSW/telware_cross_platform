@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/settings_input_widget.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/settings_section.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/toolbar_widget.dart';
+import 'package:telware_cross_platform/features/user/view/widget/settings_input_widget.dart';
+import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
+import 'package:telware_cross_platform/features/user/view/widget/toolbar_widget.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,24 +32,10 @@ class _ProfileInfoScreen extends ConsumerState<ProfileInfoScreen> with SingleTic
 
   bool _showSaveButton = false;
 
-  static List<Map<String, dynamic>> profileSections = [
-    const {"title": "Your channel", "options": [
-      {"text": 'Personal channel', "trailing": "Add"},
-    ]},
-    const {"title": "Your bio", "options": [
-      {"placeholder": 'Write about yourself...', "lettersCap": 70, "type": "input"},
-    ], "trailing": "You can add a few lines about yourself. "
-        "Choose who can see your bio in Settings."},
-    const {"title": "Your birthday", "options": [
-      {"text": 'Date of Birth', "trailing": "Add"},
-    ], "trailing": "Only your contacts can see your birthday.\nChange>"}
-  ];
-
   @override
   void initState() {
     super.initState();
 
-    // Add listeners to each TextEditingController
     _firstNameController.addListener(_checkForChanges);
     _secondNameController.addListener(_checkForChanges);
     _bioController.addListener(_checkForChanges);
@@ -92,11 +78,13 @@ class _ProfileInfoScreen extends ConsumerState<ProfileInfoScreen> with SingleTic
               SettingsSection(title: "Your Name",
                 settingsOptions: const [],
                 actions: [
-                  SettingsInputWidget(controller:_firstNameController,
+                  SettingsInputWidget(key: const ValueKey("first-name-input"),
+                    controller:_firstNameController,
                     placeholder: "First Name",
                     shakeKey: firstNameShakeKey,
                   ),
-                  SettingsInputWidget(controller:_secondNameController,
+                  SettingsInputWidget(key: const ValueKey("last-name-input"),
+                    controller:_secondNameController,
                     placeholder: "Last Name",
                     shakeKey: lastNameShakeKey,
                   ),
@@ -110,8 +98,9 @@ class _ProfileInfoScreen extends ConsumerState<ProfileInfoScreen> with SingleTic
               SettingsSection(title: "Your bio",
                 settingsOptions: const [],
                 actions: [
-                  SettingsInputWidget(controller:_bioController,
-                      placeholder: "Write about yourself...", lettersCap: 70,)
+                  SettingsInputWidget(key: const ValueKey("bio-input"),
+                    controller:_bioController,
+                    placeholder: "Write about yourself...", lettersCap: 70,)
                 ],
                 trailing: "You can add a few lines about yourself. Choose who can "
                     "see your bio in Settings",),

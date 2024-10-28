@@ -15,6 +15,7 @@ import 'package:telware_cross_platform/features/auth/view/widget/title_element.d
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
+import 'package:telware_cross_platform/features/home/view/screens/home_screen.dart';
 import 'package:vibration/vibration.dart';
 
 class LogInScreen extends ConsumerStatefulWidget {
@@ -89,8 +90,11 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
     if (someNotFilled) {
       vibrate();
     } else {
-      ref.read(authViewModelProvider.notifier).login(
-          email: emailController.text, password: passwordController.text);
+      // ref.read(authViewModelProvider.notifier).login(
+      //     email: emailController.text, password: passwordController.text);
+
+      // todo(ahmed): navigate to home screen
+      Navigator.pushNamedAndRemoveUntil(context, HomeScreen.route, (_) => false);
     }
   }
 

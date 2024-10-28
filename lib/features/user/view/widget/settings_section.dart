@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/section_title_widget.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/settings_option_widget.dart';
+import 'package:telware_cross_platform/core/utils.dart';
+import 'package:telware_cross_platform/features/user/view/widget/section_title_widget.dart';
+import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
 
 class SettingsSection extends StatelessWidget {
   final double? trailingFontSize;
@@ -31,14 +32,20 @@ class SettingsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('Widget Options: $settingsOptions');
+
     return Column(
       children: [
         Container(
+            key: title != "" ? ValueKey("${toKebabCase(title)}-section") : null,
             color: Palette.secondary,
             child: Column(
               children: [
                 if (title != "")
                   SectionTitleWidget(
+                    key: title != ""
+                        ? ValueKey("${toKebabCase(title)}-section-title")
+                        : null,
                     title: title,
                     fontSize: titleFontSize ?? 14,
                   ),
@@ -56,7 +63,7 @@ class SettingsSection extends StatelessWidget {
                               : option["onTap"];
                           return SettingsOptionWidget(
                             icon: option["icon"],
-                            iconKey: option["iconKey"],
+                            trailingIconKey: option["iconKey"],
                             imagePath: option["imagePath"],
                             imageMemory: option["imageMemory"],
                             avatar: option["avatar"],

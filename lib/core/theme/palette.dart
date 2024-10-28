@@ -13,4 +13,6 @@ class Palette {
   static const Color accentText = Color.fromRGBO(125, 139, 153, 1);
   static const Color icons = Colors.white;
   static const Color error = Color.fromRGBO(220, 20, 60, 1);
+  static const Color black = Color.fromRGBO(0, 0, 0, 1);
+  static const Color drawerHeader = Color.fromRGBO(34, 45, 58, 1);
 }

@@ -20,7 +20,7 @@ class ContactService {
       //   });
       // }
 
-      var box = await Hive.openBox<ContactModel>("contacts");
+      var box = await Hive.openBox<ContactModelBlock>("contacts-block");
       await box.clear();
       // Store contacts in Hive
       for (var contact in contacts) {
@@ -31,7 +31,7 @@ class ContactService {
         final phone = formatPhoneNumber(contact.phones[0].number);
         box.put(
           contact.id,
-          ContactModel(
+          ContactModelBlock(
               name: contact.displayName,
               email: email,
               phone: phone,

@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 
 import 'package:telware_cross_platform/core/utils.dart';
-import 'avatar_generator.dart';
+import '../../../user/view/widget/avatar_generator.dart';
 
 class SettingsOptionWidget extends StatelessWidget {
   final IconData? icon;
-  final GlobalKey? iconKey;
+  final GlobalKey? trailingIconKey;
   final String? imagePath;
   final Uint8List? imageMemory;
   final double imageWidth;
@@ -33,7 +33,7 @@ class SettingsOptionWidget extends StatelessWidget {
 
   const SettingsOptionWidget({
     super.key,
-    this.iconKey,
+    this.trailingIconKey,
     this.icon,
     required this.text,
     this.imagePath,
@@ -146,7 +146,7 @@ class SettingsOptionWidget extends StatelessWidget {
                           )
                         : trailingIcon != null
                             ? IconButton(
-                                key: iconKey,
+                                key: trailingIconKey,
                                 icon: Icon(
                                   trailingIcon,
                                   color: trailingColor ?? Palette.primary,

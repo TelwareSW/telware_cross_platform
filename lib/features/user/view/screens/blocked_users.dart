@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/utils.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/settings_section.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/toolbar_widget.dart';
+import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
+import 'package:telware_cross_platform/features/user/view/widget/toolbar_widget.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 
 class BlockedUsersScreen extends StatefulWidget {

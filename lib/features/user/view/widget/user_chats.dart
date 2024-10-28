@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/settings_section.dart';
-import 'package:telware_cross_platform/core/theme/palette.dart';
+import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
 
 class UserChats extends StatelessWidget {
   final List<Map<String, dynamic>> chatSections;

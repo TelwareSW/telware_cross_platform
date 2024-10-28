@@ -6,17 +6,17 @@ part of 'contact_model.dart';
 // TypeAdapterGenerator
 // **************************************************************************
 
-class ContactModelAdapter extends TypeAdapter<ContactModel> {
+class ContactModelBlockAdapter extends TypeAdapter<ContactModelBlock> {
   @override
-  final int typeId = 2;
+  final int typeId = 3;
 
   @override
-  ContactModel read(BinaryReader reader) {
+  ContactModelBlock read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return ContactModel(
+    return ContactModelBlock(
       name: fields[0] as String,
       email: fields[1] as String?,
       photo: fields[2] as Uint8List?,
@@ -26,7 +26,7 @@ class ContactModelAdapter extends TypeAdapter<ContactModel> {
   }
 
   @override
-  void write(BinaryWriter writer, ContactModel obj) {
+  void write(BinaryWriter writer, ContactModelBlock obj) {
     writer
       ..writeByte(5)
       ..writeByte(0)
@@ -47,7 +47,7 @@ class ContactModelAdapter extends TypeAdapter<ContactModel> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ContactModelAdapter &&
+      other is ContactModelBlockAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

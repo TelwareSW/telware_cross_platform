@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/profile_header_widget.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/settings_option_widget.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/settings_section.dart';
+import 'package:telware_cross_platform/features/user/view/widget/profile_header_widget.dart';
+import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
+import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
 
 class UserProfileScreen extends StatefulWidget {
   static const String route = '/profile';
@@ -19,16 +19,9 @@ class _UserProfileScreen extends State<UserProfileScreen> {
 
   static var user = {
     "phoneNumber": "+20 110 5035588",
-    "username": "Moamen"
+    "username": "Moamen",
+    "bio": "test",
   };
-
-  static List<Map<String, dynamic>> profileSections = [
-    {"title": "Info", "options": [
-      {"text": user["phoneNumber"], "subtext": "Tap to change phone number"},
-      {"text": user["username"], "subtext": "Username"},
-      {"text": "Bio", "subtext": "Add a few words about yourself", "routes": "/bio"}
-    ]}
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +33,10 @@ class _UserProfileScreen extends State<UserProfileScreen> {
             toolbarHeight: 80,
             floating: false,
             pinned: true,
-            leading: const Icon(Icons.arrow_back),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => Navigator.pop(context),
+            ),
             actions: [
               IconButton(icon: const Icon(Icons.edit),
                   onPressed: () => Navigator.pushNamed(context, "/bio")),

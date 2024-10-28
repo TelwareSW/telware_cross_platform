@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:gif/gif.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/change_number_form_screen.dart';
-import 'package:telware_cross_platform/features/auth/view/screens/settings_screen.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/toolbar_widget.dart';
+import 'package:telware_cross_platform/features/user/view/screens/settings_screen.dart';
+import 'package:telware_cross_platform/features/user/view/widget/toolbar_widget.dart';
 
 class ChangeNumberScreen extends StatefulWidget {
   static const String route = '/change-number';

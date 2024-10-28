@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:phone_form_field/phone_form_field.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
@@ -19,8 +20,7 @@ class ChangeNumberFormScreen extends ConsumerStatefulWidget {
   const ChangeNumberFormScreen({super.key});
 
   @override
-  ConsumerState<ChangeNumberFormScreen> createState() =>
-      _ChangeNumberFormScreen();
+  ConsumerState<ChangeNumberFormScreen> createState() => _ChangeNumberFormScreen();
 }
 
 class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
@@ -82,14 +82,13 @@ class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
         }
       });
     } else {
-      showConfirmationDialog(
-          context: context,
-          title: "Is this the correct number?",
-          subtitle: phoneNumber,
-          confirmText: "Yes",
-          cancelText: "Edit",
-          onConfirm: _updatePhoneNumber,
-          onCancel: _onEdit);
+      // TODO (Ahmed): make it like the sign up if it needs captcha.
+      // showConfirmationDialog(context,
+      //     "Is this the correct number?", phoneNumber,
+      //     "Yes", "Edit", _updatePhoneNumber, _onEdit);
+      if (kDebugMode) {
+        print("Success");
+      }
     }
   }
 
@@ -120,7 +119,7 @@ class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
                   ),
                   const TitleElement(
                       name:
-                          'Your new number will receive a confirmation code via SMS.',
+                      'Your new number will receive a confirmation code via SMS.',
                       color: Palette.accentText,
                       fontSize: Sizes.secondaryText,
                       padding: EdgeInsets.only(bottom: 30),

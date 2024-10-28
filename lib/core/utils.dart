@@ -1,7 +1,5 @@
 // common utility functions are added here
-
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -26,7 +24,7 @@ String? passwordValidator(String? value) {
     return 'Password must be at least 8 characters long';
   } else if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d._@&-]{8,}$')
       .hasMatch(value)) {
-    return 'Password must contain both letters and digits, and can include . _ @ & -';
+    return 'Must contain letters and digits and can contain . _ @ & -';
   }
   return null;
 }
@@ -63,7 +61,8 @@ void showSnackBarMessage(BuildContext context, String message) {
     );
 }
 
-void showToastMessage(String message) {
+void showToastMessage(String message) async {
+  await Fluttertoast.cancel();
   Fluttertoast.showToast(msg: message);
 }
 
@@ -91,4 +90,15 @@ Color getRandomColor() {
     50 + random.nextInt(100), // Green (200-255)
     50 + random.nextInt(100), // Blue (200-255)
   );
+}
+
+String toKebabCase(String input) {
+  // Convert to lowercase and replace spaces with hyphens
+  String kebabCased = input.toLowerCase().replaceAll(RegExp(r'[\s]+'), '-');
+
+  // Replace any non-alphanumeric characters with hyphens
+  kebabCased = kebabCased.replaceAll(RegExp(r'[^a-z0-9-]+'), '-');
+
+  // Remove leading or trailing hyphens
+  return kebabCased.replaceAll(RegExp(r'^-+|-+$'), '');
 }
