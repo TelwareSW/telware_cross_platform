@@ -1,10 +1,12 @@
 // ignore_for_file: avoid_manual_providers_as_generated_provider_dependency
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_local_repository.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_remote_repository.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 part 'auth_view_model.g.dart';
 
@@ -135,11 +137,24 @@ class AuthViewModel extends _$AuthViewModel {
     }
   }
 
-  void loginWithGoogle() {}
+  void googleLogIn() => _launchSocialAuth(GOOGLE_AUTH_URL);
 
-  void loginWithFacebook() {}
+  void facebookLogIn() => _launchSocialAuth(FACEBOOK_AUTH_URL);
 
-  void loginWithGitHub() {}
+  void gitHubLogIn() => _launchSocialAuth(GITHUB_AUTH_URL);
+
+  Future<void> _launchSocialAuth(String authUrl) async {
+    final Uri authUri = Uri.parse(authUrl);
+    try {
+      if (await canLaunchUrl(authUri)) {
+        await launchUrl(authUri);
+      } else {
+        state = AuthState.fail('Couldn\'t launch authentication page');
+      }
+    } catch (e) {
+      state = AuthState.fail('Couldn\'t launch authentication page');
+    }
+  }
 
   Future<void> logOut() async {
     state = AuthState.loading;
