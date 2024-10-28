@@ -75,6 +75,7 @@ class _BlockUserScreen extends State<BlockUserScreen>
         option["imageHeight"] = 47.0;
         option["onTap"] = () => blockConfirmationDialog(option["text"]);
       }
+      setState(() {});
     } catch (error) {
       debugPrint('Error fetching contacts: $error');
     }

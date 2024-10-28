@@ -57,11 +57,18 @@ class SettingsSection extends StatelessWidget {
                         (index) {
                           final option = settingsOptions[index];
                           final type = option["type"] ?? "";
-                          final route = option["routes"] ?? "";
-                          final onTap = route != ""
-                              ? () => _navigateTo(context, route)
-                              : option["onTap"];
+                          final key = option["key"] != null
+                              ? ValueKey("${option["key"]}")
+                              : null;
+                          final String route = option["routes"] ?? "";
+                          final bool lockedRoute = route == 'locked';
+                          final onTap = lockedRoute
+                              ? () => showToastMessage("Coming Soon...")
+                              : route != ""
+                                  ? () => _navigateTo(context, route)
+                                  : option["onTap"];
                           return SettingsOptionWidget(
+                            key: key,
                             icon: option["icon"],
                             trailingIconKey: option["iconKey"],
                             imagePath: option["imagePath"],
