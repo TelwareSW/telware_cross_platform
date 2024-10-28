@@ -65,7 +65,11 @@ class SettingsOptionWidget extends StatelessWidget {
         child: Row(
           children: [
             if (icon != null) ...[
-              Icon(icon, color: iconColor),
+              Icon(icon,
+                  key: key != null
+                      ? ValueKey("${(key as ValueKey).value}-icon")
+                      : null,
+                  color: iconColor),
               const SizedBox(width: 16),
             ] else if (imagePath != null) ...[
               Padding(
@@ -133,11 +137,15 @@ class SettingsOptionWidget extends StatelessWidget {
                         ]
                       ],
                     ),
-                    trailing: trailing != ""
+                    trailing: trailing.isNotEmpty
                         ? Padding(
                             padding: trailingPadding ?? const EdgeInsets.all(0),
                             child: Text(
                               trailing,
+                              key: key != null
+                                  ? ValueKey(
+                                      "${(key as ValueKey).value}-trailing")
+                                  : null,
                               style: TextStyle(
                                 fontSize: trailingFontSize ?? fontSize * 0.9,
                                 color: trailingColor ?? Palette.primary,
