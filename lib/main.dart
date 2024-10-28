@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-// import 'core/theme/auth_theme.dart';
 import 'features/stories/models/story_model.dart';
-import 'features/home/view/screen/home_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:telware_cross_platform/core/view/screen/splash_screen.dart';
-import 'package:telware_cross_platform/features/auth/view/screens/log_in_screen.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
 import 'core/models/user_model.dart';
 import 'core/theme/app_theme.dart';
-import 'features/auth/view/screens/sign_up_screen.dart';
-import 'features/auth/view/screens/verification_screen.dart';
 
 Future<void> main() async {
   await init();
@@ -49,18 +44,14 @@ class _TelWareState extends ConsumerState<TelWare> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    final isAuthenticated = ref.watch(authViewModelProvider.notifier).isAuthenticated();
+    final router = Routes.appRouter(isAuthenticated);
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'TelWare',
       theme: appTheme,
-      routes: {
-        SplashScreen.route: (context) => const SplashScreen(),
-        LogInScreen.route: (context) => const LogInScreen(),
-        SignUpScreen.route: (context) => const SignUpScreen(),
-        VerificationScreen.route: (context) => const VerificationScreen(),
-        HomeScreen.route: (context) => const HomeScreen(),
-      },
-      initialRoute: SplashScreen.route,
+      routerDelegate: router.routerDelegate,
+      routeInformationParser: router.routeInformationParser,
     );
   }
 }

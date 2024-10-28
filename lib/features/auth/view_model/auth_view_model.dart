@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_manual_providers_as_generated_provider_dependency
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_local_repository.dart';
@@ -42,6 +43,11 @@ class AuthViewModel extends _$AuthViewModel {
       // getting user data from remote succeeded
       state = AuthState.authorized;
     }
+  }
+
+  bool isAuthenticated() {
+    String? token = ref.read(tokenProvider);
+    return token != null && token.isNotEmpty;
   }
 
   Future<AuthState> signUp({
