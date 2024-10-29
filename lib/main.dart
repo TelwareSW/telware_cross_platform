@@ -18,6 +18,7 @@ import 'package:telware_cross_platform/core/view/screen/splash_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/log_in_screen.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
+import 'core/models/contact_model.dart';
 import 'features/auth/view/screens/sign_up_screen.dart';
 import 'features/auth/view/screens/verification_screen.dart';
 
@@ -31,8 +32,10 @@ Future<void> init() async {
   Hive.registerAdapter(UserModelAdapter());
   Hive.registerAdapter(ContactModelAdapter());
   Hive.registerAdapter(StoryModelAdapter());
+  Hive.registerAdapter(ContactModelBlockAdapter());
   await Hive.initFlutter();
   await Hive.openBox<ContactModel>('contacts');
+  await Hive.openBox<ContactModelBlock>('contacts-block');
   await Hive.openBox<String>('auth-token');
   await Hive.openBox<UserModel>('auth-user');
   await dotenv.load(fileName: "lib/.env");
@@ -67,8 +70,9 @@ class _TelWareState extends ConsumerState<TelWare> {
         VerificationScreen.route: (context) => const VerificationScreen(),
         HomeScreen.route: (context) => const HomeScreen(),
         SettingsScreen.route: (context) => const SettingsScreen(),
-        ChangeNumberScreen.route : (context) => const ChangeNumberScreen(),
-        ChangeNumberFormScreen.route: (context) => const ChangeNumberFormScreen(),
+        ChangeNumberScreen.route: (context) => const ChangeNumberScreen(),
+        ChangeNumberFormScreen.route: (context) =>
+            const ChangeNumberFormScreen(),
         ProfileInfoScreen.route: (context) => const ProfileInfoScreen(),
         BlockUserScreen.route: (context) => const BlockUserScreen(),
         BlockedUsersScreen.route: (context) => const BlockedUsersScreen(),

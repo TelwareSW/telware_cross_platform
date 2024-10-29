@@ -43,7 +43,9 @@ class SettingsSection extends StatelessWidget {
               children: [
                 if (title != "")
                   SectionTitleWidget(
-                    key: title != "" ? ValueKey("${toKebabCase(title)}-section-title") : null,
+                    key: title != ""
+                        ? ValueKey("${toKebabCase(title)}-section-title")
+                        : null,
                     title: title,
                     fontSize: titleFontSize ?? 14,
                   ),
@@ -55,17 +57,23 @@ class SettingsSection extends StatelessWidget {
                         (index) {
                           final option = settingsOptions[index];
                           final type = option["type"] ?? "";
-                          final key = option["key"] != null ? ValueKey("${option["key"]}") : null;
+                          final key = option["key"] != null
+                              ? ValueKey("${option["key"]}")
+                              : null;
                           final String route = option["routes"] ?? "";
                           final bool lockedRoute = route == 'locked';
-                          final onTap = lockedRoute ? () => showToastMessage("Coming Soon...") :
-                              route != "" ? () => _navigateTo(context, route)
-                              : null;
+                          final onTap = lockedRoute
+                              ? () => showToastMessage("Coming Soon...")
+                              : route != ""
+                                  ? () => _navigateTo(context, route)
+                                  : option["onTap"];
                           return SettingsOptionWidget(
                             key: key,
                             icon: option["icon"],
                             trailingIconKey: option["iconKey"],
                             imagePath: option["imagePath"],
+                            imageMemory: option["imageMemory"],
+                            avatar: option["avatar"],
                             imageHeight: option["imageHeight"] ?? 45,
                             imageWidth: option["imageWidth"] ?? 45,
                             imageRadius: option["imageRadius"] ?? 25,
@@ -79,7 +87,7 @@ class SettingsSection extends StatelessWidget {
                             fontWeight: option["fontWeight"],
                             subtextFontSize: option["subtextFontSize"],
                             trailingFontSize: option["trailingFontSize"],
-                            trailingHeight: option["trailingHeight"],
+                            trailingPadding: option["trailingPadding"],
                             iconColor:
                                 option["iconColor"] ?? Palette.accentText,
                             color: option["color"] ?? Palette.primaryText,
