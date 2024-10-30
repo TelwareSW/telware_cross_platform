@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/features/user/view/widget/profile_header_widget.dart';
@@ -119,7 +120,7 @@ class _SettingsScreen extends State<SettingsScreen> {
             pinned: true,
             leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
-                onPressed: () => Navigator.pop(context)),
+                onPressed: () => context.pop()),
             actions: const [
               Icon(Icons.search),
               SizedBox(width: 16),

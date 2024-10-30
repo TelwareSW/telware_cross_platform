@@ -27,6 +27,7 @@ class SettingsSection extends StatelessWidget {
       this.actions});
 
   void _navigateTo(BuildContext context, String route) {
+    // todo(moamen): use GoRouter instead of Navigator
     Navigator.pushNamed(context, route);
   }
 

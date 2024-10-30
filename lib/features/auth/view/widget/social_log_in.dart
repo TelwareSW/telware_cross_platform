@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
+import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
 
-class SocialLogIn extends StatelessWidget {
+class SocialLogIn extends ConsumerWidget {
   const SocialLogIn({
     super.key,
   });
@@ -9,7 +11,7 @@ class SocialLogIn extends StatelessWidget {
   static const double _size = 35;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       children: <Widget>[
         Padding(
@@ -24,21 +26,32 @@ class SocialLogIn extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            _socialButton(img: 'google-g-white.png', onTap: () {}),
-            _socialButton(img: 'facebook-f-white.png', onTap: () {}),
-            _socialButton(img: 'github-icon-white.png', onTap: () {}),
+            _socialButton(
+              img: 'google-g-white.png',
+              onTap: ref.read(authViewModelProvider.notifier).googleLogIn,
+              key: const Key('google-log-in'),
+            ),
+            _socialButton(
+              img: 'github-icon-white.png',
+              onTap: ref.read(authViewModelProvider.notifier).githubLogIn,
+              key: const Key('github-log-in'),
+            ),
           ],
         )
       ],
     );
   }
 
-  Widget _socialButton({required VoidCallback onTap, required String img}) =>
+  Widget _socialButton(
+          {required VoidCallback onTap,
+          required String img,
+          required Key key}) =>
       Container(
         margin: const EdgeInsets.symmetric(horizontal: 18),
         width: _size,
         height: _size,
         child: InkWell(
+          key: key,
           onTap: onTap,
           child: Image.asset('assets/imgs/$img'),
         ),

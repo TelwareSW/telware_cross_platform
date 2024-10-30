@@ -4,16 +4,19 @@ import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:telware_cross_platform/features/stories/view/screens/show_taken_story_screen.dart';
-import '../widget/choice_mode_in_camera_container.dart';
-import '../widget/take_photo_row.dart';
+
+import 'package:telware_cross_platform/core/routes/routes.dart';
+import 'package:telware_cross_platform/features/stories/view/widget/choice_mode_in_camera_container.dart';
+import 'package:telware_cross_platform/features/stories/view/widget/take_photo_row.dart';
 
 class AddMyStoryScreen extends StatefulWidget {
   const AddMyStoryScreen({super.key});
+  static const String route = '/add-my-story';
 
   @override
-  _AddMyStoryScreenState createState() => _AddMyStoryScreenState();
+  State<AddMyStoryScreen> createState() => _AddMyStoryScreenState();
 }
 
 class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
@@ -93,12 +96,7 @@ class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
       final image = await _controller!.takePicture();
       Uint8List imageBytes = await image.readAsBytes();
       File savedFile = await _saveImageBytesToFile(imageBytes);
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ShowTakenStoryScreen(image: savedFile),
-        ),
-      );
+      context.push(Routes.showTakenStory, extra: savedFile);
     } catch (e) {
       if (kDebugMode) {
         print('Error capturing image: $e');
@@ -139,7 +137,7 @@ class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
                     leading: IconButton(
                       icon: const Icon(Icons.arrow_back, color: Colors.white),
                       onPressed: () {
-                        Navigator.pop(context);
+                        context.pop();
                       },
                     ),
                   ),

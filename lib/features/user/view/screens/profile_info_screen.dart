@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
+import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_input_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
 import 'package:telware_cross_platform/features/user/view/widget/toolbar_widget.dart';
-import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -122,7 +122,7 @@ class _ProfileInfoScreen extends ConsumerState<ProfileInfoScreen> with SingleTic
       return _shakeAndVibrate(lastNameShakeKey);
     }
 
-    Navigator.pop(context);
+    context.pop();
     // ref.listen<AuthState>(userViewModelProvider, (_, state) {})
   }
 

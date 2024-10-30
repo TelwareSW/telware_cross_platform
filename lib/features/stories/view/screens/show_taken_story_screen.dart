@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:signature/signature.dart';
@@ -12,6 +13,7 @@ import '../../utils/utils_functions.dart';
 
 class ShowTakenStoryScreen extends StatefulWidget {
   final File image;
+  static const String route = '/show-taken-story';
 
   const ShowTakenStoryScreen({super.key, required this.image});
 
@@ -134,7 +136,7 @@ class _ShowTakenStoryScreenState extends State<ShowTakenStoryScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            Navigator.of(context).pop(); // Pop the screen
+            context.pop(); // Pop the screen
           },
         ),
       ),
@@ -188,7 +190,7 @@ class _ShowTakenStoryScreenState extends State<ShowTakenStoryScreen> {
 
                       if (uploadResult) {
                         Future.delayed(const Duration(seconds: 2), () {
-                          Navigator.of(context).pop();
+                          context.pop();
                         });
                       }
                     },

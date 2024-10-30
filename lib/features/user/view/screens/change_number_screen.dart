@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gif/gif.dart';
+import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/change_number_form_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/settings_screen.dart';
@@ -102,7 +103,7 @@ class _ChangeNumberScreenState extends State<ChangeNumberScreen>
                         padding: const EdgeInsets.symmetric(vertical: 12.0), // Internal padding
                       ),
                       onPressed: () {
-                        Navigator.pop(context); // Go back on button press
+                        context.pop(); // Go back on button press
                       },
                       child: Text(
                         "Keep ${user["phoneNumber"]}", // Example number
@@ -125,6 +126,7 @@ class _ChangeNumberScreenState extends State<ChangeNumberScreen>
                         padding: const EdgeInsets.symmetric(vertical: 12.0), // Add internal padding
                       ),
                       onPressed: () {
+                        // todo(moamen): use go_router instead of navigator
                         Navigator.pushNamedAndRemoveUntil(
                           context,
                           ChangeNumberFormScreen.route,

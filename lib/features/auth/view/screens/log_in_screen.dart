@@ -1,22 +1,22 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
+import 'package:go_router/go_router.dart';
+import 'package:vibration/vibration.dart';
+
+import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
-import 'package:flutter/material.dart';
+import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/responsive.dart';
-import 'package:telware_cross_platform/features/auth/view/screens/sign_up_screen.dart';
-import 'package:telware_cross_platform/features/auth/view/screens/verification_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_floating_action_button.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_sub_text_button.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/shake_my_auth_input.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/social_log_in.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
-import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
-import 'package:telware_cross_platform/features/home/view/screens/home_screen.dart';
-import 'package:vibration/vibration.dart';
 
 class LogInScreen extends ConsumerStatefulWidget {
   static const String route = '/log-in';
@@ -24,7 +24,7 @@ class LogInScreen extends ConsumerStatefulWidget {
   const LogInScreen({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _LogInScreenState();
+  ConsumerState<LogInScreen> createState() => _LogInScreenState();
 }
 
 class _LogInScreenState extends ConsumerState<LogInScreen> {
@@ -94,7 +94,7 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
       //     email: emailController.text, password: passwordController.text);
 
       // todo(ahmed): navigate to home screen
-      Navigator.pushNamedAndRemoveUntil(context, HomeScreen.route, (_) => false);
+      context.go(Routes.home);
     }
   }
 
@@ -107,9 +107,13 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
 
     if (emailKey.currentState != null &&
         (emailKey.currentState?.validate() ?? false)) {
+      debugPrint('forgot password called');
       ref
           .read(authViewModelProvider.notifier)
           .forgotPassword(emailController.text);
+    } else {
+      debugPrint('forgot password not called');
+      debugPrint('emailKey.currentState: ${emailKey.currentState}');
     }
   }
 
@@ -124,93 +128,94 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
           state.type == AuthStateType.success) {
         // the success state is in case of asking for reset password
         showToastMessage(state.message!);
-      } else if (state.type == AuthStateType.authorized) {
-        // todo(ahmed): navigate to the home screen
-      } else if (state.type == AuthStateType.unauthenticated) {
-        Navigator.pushNamed(context, VerificationScreen.route);
+      } else if (state.type == AuthStateType.authenticated) {
+        context.go(Routes.home);
+      } else if (state.type == AuthStateType.unauthorized) {
+        context.push(Routes.verification);
       }
     });
 
     bool isLoading =
         ref.watch(authViewModelProvider).type == AuthStateType.loading;
+    debugPrint('isLoading: $isLoading');
 
     return Scaffold(
       backgroundColor: Palette.background,
       body: isLoading
           ? const Center(child: CircularProgressIndicator.adaptive())
-          : Responsive(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 0),
-                  child: Form(
-                    key: formKey,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        const TitleElement(
-                          name: 'Log In',
-                          color: Palette.primaryText,
-                          fontSize: Sizes.headingText,
-                          fontWeight: FontWeight.bold,
-                          padding: EdgeInsets.only(bottom: 10),
+          : Center(
+            child: SingleChildScrollView(
+              child: Responsive(
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      const TitleElement(
+                        name: 'Log In',
+                        color: Palette.primaryText,
+                        fontSize: Sizes.headingText,
+                        fontWeight: FontWeight.bold,
+                        padding: EdgeInsets.only(bottom: 10),
+                      ),
+                      const TitleElement(
+                        name: 'Enter your credentials',
+                        color: Palette.accentText,
+                        fontSize: Sizes.secondaryText,
+                        padding: EdgeInsets.only(bottom: 30),
+                        width: 250.0,
+                      ),
+                      ShakeMyAuthInput(
+                        name: 'Email',
+                        formKey: emailKey,
+                        shakeKey: emailShakeKey,
+                        isFocused: isEmailFocused,
+                        focusNode: emailFocusNode,
+                        controller: emailController,
+                        validator: emailValidator,
+                      ),
+                      ShakeMyAuthInput(
+                        name: 'Password',
+                        formKey: passwordKey,
+                        shakeKey: passwordShakeKey,
+                        isFocused: isPasswordFocused,
+                        focusNode: passwordFocusNode,
+                        controller: passwordController,
+                        padding: const EdgeInsets.only(
+                          left: Dimensions.inputPaddingRight,
+                          right: Dimensions.inputPaddingLeft,
                         ),
-                        const TitleElement(
-                          name: 'Enter your credentials',
-                          color: Palette.accentText,
-                          fontSize: Sizes.secondaryText,
-                          padding: EdgeInsets.only(bottom: 30),
-                          width: 250.0,
-                        ),
-                        ShakeMyAuthInput(
-                          name: 'Email',
-                          shakeKey: emailShakeKey,
-                          isFocused: isEmailFocused,
-                          focusNode: emailFocusNode,
-                          controller: emailController,
-                          validator: emailValidator,
-                        ),
-                        ShakeMyAuthInput(
-                          name: 'Password',
-                          formKey: passwordKey,
-                          shakeKey: passwordShakeKey,
-                          isFocused: isPasswordFocused,
-                          focusNode: passwordFocusNode,
-                          controller: passwordController,
-                          padding: const EdgeInsets.only(
-                            left: Dimensions.inputPaddingRight,
-                            right: Dimensions.inputPaddingLeft,
+                        obscure: true,
+                        validator: passwordValidatorLogIn,
+                        visibilityKey: const Key('login-password-visibility'),
+                      ),
+                      _forgetPasswordButton(),
+                      const SizedBox(height: 50),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          const TitleElement(
+                            name: 'Don\'t have an account? ',
+                            color: Palette.primaryText,
+                            fontSize: Sizes.infoText,
                           ),
-                          obscure: true,
-                          validator: passwordValidatorLogIn,
-                        ),
-                        _forgetPasswordButton(),
-                        const SizedBox(height: 50),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            const TitleElement(
-                              name: 'Don\'t have an account?  ',
-                              color: Palette.primaryText,
-                              fontSize: Sizes.infoText,
-                            ),
-                            AuthSubTextButton(
-                              buttonKey: signUpKey,
-                              onPressed: () {
-                                Navigator.pushNamed(
-                                    context, SignUpScreen.route);
-                              },
-                              label: 'Sign Up',
-                            ),
-                          ],
-                        ),
-                        const SocialLogIn(),
-                      ],
-                    ),
+                          AuthSubTextButton(
+                            buttonKey: signUpKey,
+                            onPressed: () {
+                              context.push(Routes.signUp);
+                            },
+                            label: 'Sign Up',
+                          ),
+                        ],
+                      ),
+                      const SocialLogIn(),
+                    ],
                   ),
                 ),
               ),
             ),
+          ),
       floatingActionButton: AuthFloatingActionButton(
         formKey: formKey,
         buttonKey: logInSubmitKey,

@@ -1,9 +1,13 @@
+// ignore_for_file: avoid_manual_providers_as_generated_provider_dependency
+import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_local_repository.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_remote_repository.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 part 'auth_view_model.g.dart';
 
@@ -26,22 +30,27 @@ class AuthViewModel extends _$AuthViewModel {
     }
 
     // try getting updated user data
-    final AppError? response =
-        await ref.read(authRemoteRepositoryProvider).getMe();
-
-    if (response != null) {
-      state = AuthState.fail(response.error);
-      // getting user data from remote failed
+    final response =
+        await ref.read(authRemoteRepositoryProvider).getMe(token);
+    
+    response.match((appError) {
+      state = AuthState.fail(appError.error);
+      // getting user data from local as remote failed
       final user = ref.read(authLocalRepositoryProvider).getMe();
       if (user == null) {
         state = AuthState.unauthorized;
         return;
       }
       state = AuthState.authorized;
-    } else {
-      // getting user data from remote succeeded
+    }, (user) {
+      ref.read(authLocalRepositoryProvider).setUser(user);
       state = AuthState.authorized;
-    }
+    });
+  }
+
+  bool isAuthenticated() {
+    String? token = ref.read(tokenProvider);
+    return token != null && token.isNotEmpty;
   }
 
   Future<AuthState> signUp({
@@ -109,16 +118,17 @@ class AuthViewModel extends _$AuthViewModel {
 
     if (appError != null) {
       if (appError.code == 403) {
-        state = AuthState.unauthenticated;
+        state = AuthState.unauthorized;
       } else {
         state = AuthState.fail(appError.error);
       }
     } else {
-      state = AuthState.authorized;
+      state = AuthState.authenticated;
     }
   }
 
   void forgotPassword(String email) async {
+    debugPrint('forgot password start');
     state = AuthState.loading;
     final appError =
         await ref.read(authRemoteRepositoryProvider).forgotPassword(email);
@@ -127,13 +137,40 @@ class AuthViewModel extends _$AuthViewModel {
     } else {
       state = AuthState.success('A reset link will be sent to your email');
     }
+    debugPrint('forgot password end');
   }
 
-  void loginWithGoogle() {}
+  void googleLogIn() => _launchSocialAuth(GOOGLE_AUTH_URL);
 
-  void loginWithFacebook() {}
+  void githubLogIn() => _launchSocialAuth(GITHUB_AUTH_URL);
 
-  void loginWithGitHub() {}
+  Future<void> _launchSocialAuth(String authUrl) async {
+    final Uri authUri = Uri.parse(authUrl);
+    try {
+      if (await canLaunchUrl(authUri)) {
+        await launchUrl(authUri);
+      } else {
+        state = AuthState.fail('Couldn\'t launch authentication page');
+      }
+    } catch (e) {
+      state = AuthState.fail('Couldn\'t launch authentication page');
+    }
+  }
+
+  Future<void> authorizeOAuth(String secretSessionId) async {
+    // get the user data
+    final response = await ref
+        .read(authRemoteRepositoryProvider)
+        .getMe(secretSessionId);
+
+    response.match((appError) {
+      state = AuthState.fail(appError.error);
+    }, (user) {
+      ref.read(authLocalRepositoryProvider).setUser(user);
+      ref.read(authLocalRepositoryProvider).setToken(secretSessionId);
+      state = AuthState.authenticated;
+    });
+  }
 
   Future<void> logOut() async {
     state = AuthState.loading;

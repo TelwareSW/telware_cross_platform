@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+import 'package:telware_cross_platform/core/routes/routes.dart';
+import 'package:telware_cross_platform/core/theme/palette.dart';
+import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
-import 'package:telware_cross_platform/features/stories/view/screens/story_screen.dart';
 import 'package:telware_cross_platform/features/stories/view/widget/story_avatar.dart';
-import '../../../../core/theme/palette.dart';
-import '../../../../core/theme/sizes.dart';
-import '../screens/add_my_story_screen.dart';
 
 class AddMyStory extends StatelessWidget {
   final ContactModel myUser;
@@ -28,17 +29,11 @@ class AddMyStory extends StatelessWidget {
                 screenType:
                     myUser.stories.isEmpty ? 'CameraApp' : 'myStoryScreen',
                 onTap: () async {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => myUser.stories.isEmpty
-                          ? const AddMyStoryScreen()
-                          : StoryScreen(
-                              userId: myUser.userId,
-                              showSeens: true,
-                            ),
-                    ),
-                  );
+                  myUser.stories.isEmpty ? context.push(Routes.addMyStory) : 
+                    context.push(
+                      Routes.storyScreen,
+                      extra: {'userId': myUser.userId, 'showSeens': true},
+                    );
                 },
               ),
               myUser.stories.isEmpty

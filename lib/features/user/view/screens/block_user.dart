@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/contact_service.dart';
 import 'package:telware_cross_platform/features/user/view/widget/empty_chats.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
@@ -44,12 +45,12 @@ class _BlockUserScreen extends State<BlockUserScreen>
       cancelText: 'Cancel',
       cancelColor: const Color.fromRGBO(100, 181, 239, 1),
       onConfirm: () => {
-        Navigator.of(context).pop(),
+        context.pop(),
         // Close the dialog
-        Navigator.of(context).pop(),
+        context.pop(),
         // Return to Blocked Users screen which is the previous screen.
       },
-      onCancel: () => {Navigator.of(context).pop()},
+      onCancel: () => {context.pop()},
       actionsAlignment: MainAxisAlignment.end,
     );
   }
@@ -174,7 +175,7 @@ class _BlockUserScreen extends State<BlockUserScreen>
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Navigate back when pressed
+            context.pop(); // Navigate back when pressed
           },
         ),
         title: const Text(

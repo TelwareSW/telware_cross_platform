@@ -1,25 +1,27 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
-import 'package:phone_form_field/phone_form_field.dart';
-import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
+import 'package:go_router/go_router.dart';
+import 'package:phone_form_field/phone_form_field.dart';
+import 'package:vibration/vibration.dart';
+import 'package:webview_flutter_plus/webview_flutter_plus.dart';
+
+import 'package:telware_cross_platform/core/providers/sign_up_email_provider.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
+import 'package:telware_cross_platform/core/theme/palette.dart';
+import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/responsive.dart';
-import 'package:telware_cross_platform/core/providers/sign_up_email_provider.dart';
-import 'package:telware_cross_platform/features/auth/view/screens/verification_screen.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/shake_my_auth_input.dart';
+import 'package:telware_cross_platform/features/auth/view/widget/auth_floating_action_button.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_phone_number.dart';
+import 'package:telware_cross_platform/features/auth/view/widget/auth_sub_text_button.dart';
+import 'package:telware_cross_platform/features/auth/view/widget/confirmation_dialog.dart';
+import 'package:telware_cross_platform/features/auth/view/widget/shake_my_auth_input.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/social_log_in.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
-import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/auth_sub_text_button.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/auth_floating_action_button.dart';
-import 'package:vibration/vibration.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/confirmation_dialog.dart';
-import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
   static const String route = '/sign-up';
@@ -132,7 +134,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               reCaptchaResponse: captchaToken!,
             );
 
-    Navigator.of(context).pop(); // to close the dialog
+    context.pop(); // to close the dialog
     if (signUpState.type == AuthStateType.success) {
       ref
           .read(signUpEmailProvider.notifier)
@@ -141,7 +143,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           .read(authViewModelProvider.notifier)
           .sendConfirmationCode(email: emailController.text);
       if (sendCodeState.type == AuthStateType.success) {
-        Navigator.pushNamed(context, VerificationScreen.route);
+        context.push(Routes.verification);
       }
     } else {
       //todo show error message to the user eg. email already exists / email not valid
@@ -149,7 +151,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   }
 
   void onEdit() {
-    Navigator.of(context).pop();
+    context.pop();
   }
 
   void handelSubmit() {
@@ -185,14 +187,13 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Palette.background,
+        backgroundColor: Colors.transparent,
         elevation: 0,
       ),
       backgroundColor: Palette.background,
-      body: Responsive(
+      body: Center(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 60),
+          child: Responsive(
             child: Form(
               key: formKey,
               child: Column(
@@ -255,7 +256,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           fontSize: Sizes.infoText),
                       AuthSubTextButton(
                         onPressed: () {
-                          Navigator.pop(context);
+                          context.pop();
                         },
                         label: 'Log in',
                       ),
