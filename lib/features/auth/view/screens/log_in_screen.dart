@@ -90,11 +90,8 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
     if (someNotFilled) {
       vibrate();
     } else {
-      // ref.read(authViewModelProvider.notifier).login(
-      //     email: emailController.text, password: passwordController.text);
-
-      // todo(ahmed): navigate to home screen
-      context.go(Routes.home);
+      ref.read(authViewModelProvider.notifier).login(
+          email: emailController.text, password: passwordController.text);
     }
   }
 

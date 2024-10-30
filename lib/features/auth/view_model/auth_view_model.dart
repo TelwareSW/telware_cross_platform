@@ -1,7 +1,9 @@
 // ignore_for_file: avoid_manual_providers_as_generated_provider_dependency
-import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
+import 'package:telware_cross_platform/core/mock/constants_mock.dart';
+import 'package:telware_cross_platform/core/mock/token_mock.dart';
+import 'package:telware_cross_platform/core/mock/user_mock.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_local_repository.dart';
@@ -31,6 +33,12 @@ class AuthViewModel extends _$AuthViewModel {
       return;
     }
 
+    if (USE_MOCK_DATA) {
+      const user = userMock;
+      ref.read(userProvider.notifier).update((_) => user);
+      state = AuthState.authorized;
+      return;
+    }
     // try getting updated user data
     final response = await ref.read(authRemoteRepositoryProvider).getMe(token);
 
@@ -64,6 +72,13 @@ class AuthViewModel extends _$AuthViewModel {
     required String reCaptchaResponse,
   }) async {
     state = AuthState.loading;
+
+    // if we are using mock data, we will not send the request to the server
+    if (USE_MOCK_DATA) {
+      state = AuthState.unauthenticated;
+      return state;
+    }
+
     final AppError? response = await ref
         .read(authRemoteRepositoryProvider)
         .signUp(
@@ -81,9 +96,21 @@ class AuthViewModel extends _$AuthViewModel {
     return state;
   }
 
-  Future<AuthState> verifyEmail(
-      {required String email, required String code}) async {
+  Future<AuthState> verifyEmail({
+    required String email,
+    required String code,
+  }) async {
     state = AuthState.loading;
+
+    if (USE_MOCK_DATA) {
+      state = AuthState.authenticated;
+      ref.read(authLocalRepositoryProvider).setUser(userMock);
+      ref.read(userProvider.notifier).update((_) => userMock);
+
+      ref.read(authLocalRepositoryProvider).setToken(tokenMock);
+      ref.read(tokenProvider.notifier).update((_) => tokenMock);
+      return state;
+    }
 
     final response = await ref
         .read(authRemoteRepositoryProvider)
@@ -98,7 +125,9 @@ class AuthViewModel extends _$AuthViewModel {
       ref
           .read(authLocalRepositoryProvider)
           .setToken(verificationResponse.token);
-      ref.read(tokenProvider.notifier).update((_) => verificationResponse.token);
+      ref
+          .read(tokenProvider.notifier)
+          .update((_) => verificationResponse.token);
       state = AuthState.authenticated;
     });
     return state;
@@ -106,6 +135,11 @@ class AuthViewModel extends _$AuthViewModel {
 
   Future<AuthState> sendConfirmationCode({required String email}) async {
     state = AuthState.loading;
+
+    if (USE_MOCK_DATA) {
+      state = AuthState.success('Code sent successfully');
+      return state;
+    }
 
     final AppError? response = await ref
         .read(authRemoteRepositoryProvider)
@@ -121,6 +155,21 @@ class AuthViewModel extends _$AuthViewModel {
 
   void login({required String email, required String password}) async {
     state = AuthState.loading;
+
+    if (USE_MOCK_DATA) {
+      if (email == userMock.email && password == userMockPassword) {
+        state = AuthState.authenticated;
+        ref.read(authLocalRepositoryProvider).setUser(userMock);
+        ref.read(userProvider.notifier).update((_) => userMock);
+
+        ref.read(authLocalRepositoryProvider).setToken(tokenMock);
+        ref.read(tokenProvider.notifier).update((_) => tokenMock);
+        return;
+      } else {
+        state = AuthState.fail('Invalid email or password');
+        return;
+      }
+    }
 
     final response = await ref
         .read(authRemoteRepositoryProvider)
@@ -143,8 +192,12 @@ class AuthViewModel extends _$AuthViewModel {
   }
 
   void forgotPassword(String email) async {
-    debugPrint('forgot password start');
     state = AuthState.loading;
+    if (USE_MOCK_DATA) {
+      await Future.delayed(const Duration(seconds: 1));
+      state = AuthState.success('A reset link will be sent to your email');
+      return;
+    }
     final appError =
         await ref.read(authRemoteRepositoryProvider).forgotPassword(email);
     if (appError != null) {
@@ -152,7 +205,6 @@ class AuthViewModel extends _$AuthViewModel {
     } else {
       state = AuthState.success('A reset link will be sent to your email');
     }
-    debugPrint('forgot password end');
   }
 
   void googleLogIn() => _launchSocialAuth(GOOGLE_AUTH_URL);
@@ -191,6 +243,18 @@ class AuthViewModel extends _$AuthViewModel {
 
   Future<void> logOut() async {
     state = AuthState.loading;
+
+    if (USE_MOCK_DATA) {
+      await Future.delayed(const Duration(seconds: 1));
+      await ref.read(authLocalRepositoryProvider).deleteToken();
+      ref.read(tokenProvider.notifier).update((_) => null);
+
+      await ref.read(authLocalRepositoryProvider).deleteUser();
+      ref.read(userProvider.notifier).update((_) => null);
+      state = AuthState.unauthorized;
+      return;
+    }
+
     final token = ref.read(tokenProvider);
 
     final appError = await ref
