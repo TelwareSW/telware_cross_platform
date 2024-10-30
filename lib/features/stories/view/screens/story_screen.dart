@@ -32,12 +32,22 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
   ContactModel? user;
   List<StoryModel> storiesList = [];
 
+
   @override
   void initState() {
     super.initState();
     indicatorAnimationController = ValueNotifier<IndicatorAnimationCommand>(
         IndicatorAnimationCommand.resume);
     loadStories();
+    _focusNode.addListener(() {
+      if (!_focusNode.hasFocus) {
+        // Resume the animation when the text field loses focus
+        setState(() {
+          indicatorAnimationController.value =
+              IndicatorAnimationCommand.resume; // Adjust this if necessary
+        });
+      }
+    });
   }
 
   Future<void> loadStories() async {
@@ -51,12 +61,14 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
 
   final FocusNode _focusNode = FocusNode();
 
+
   @override
   void dispose() {
     indicatorAnimationController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -103,6 +115,7 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
                       .markStoryAsSeen(user!.userId, story.storyId);
                 }
               }
+
               return Stack(
                 children: [
                   Positioned.fill(
@@ -219,9 +232,9 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
                           ),
                         ),
                         widget.showSeens == true
-                            ? const Padding(
-                                padding: EdgeInsets.only(top: 32),
-                                child: DeletePopUpMenu(),
+                            ? Padding(
+                                padding: const EdgeInsets.only(top: 32),
+                                child: DeletePopUpMenu(ref:ref, storyId: story.storyId,),
                               )
                             : const SizedBox(),
                       ],
@@ -305,6 +318,7 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
                 ],
               );
             },
+
           );
         },
         indicatorAnimationController: indicatorAnimationController,

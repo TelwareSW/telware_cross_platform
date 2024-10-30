@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/palette.dart';
+import '../../view_model/contact_view_model.dart';
 
 class DeletePopUpMenu extends StatelessWidget {
+  final WidgetRef ref;
+  final String storyId;
   const DeletePopUpMenu({
     super.key,
+    required this.ref,
+    required this.storyId,
   });
 
   @override
@@ -16,8 +22,6 @@ class DeletePopUpMenu extends StatelessWidget {
           Icons.menu), // Icon for the menu
       onSelected: (String result) {
         if (result == 'delete') {
-          // Perform delete action here
-          // You can show a confirmation dialog or execute the delete function
           showDialog(
             context: context,
             builder: (BuildContext context) {
@@ -28,14 +32,16 @@ class DeletePopUpMenu extends StatelessWidget {
                     "Are you sure you want to delete this?"),
                 actions: [
                   TextButton(
-                    onPressed: () => Navigator.pop(
-                        context), // Close dialog
+                    onPressed: (){
+                      Navigator.pop(
+                          context);
+                    }, // Close dialog
                     child: const Text("Cancel"),
                   ),
                   TextButton(
                     onPressed: () {
-                      // Perform the delete action
-                      // Add your delete logic here
+                      final contactViewModel = ref.read(usersViewModelProvider.notifier);
+                      contactViewModel.deleteStory(storyId);
                       Navigator.pop(
                           context); // Close the dialog after deleting
                     },
