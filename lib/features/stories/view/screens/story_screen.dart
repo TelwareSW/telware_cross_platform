@@ -108,13 +108,13 @@ class ActiveContentStoryScreen extends StatelessWidget {
   final FocusNode focusNode;
 
   const ActiveContentStoryScreen({
-    Key? key,
+    super.key,
     required this.storyId,
     required this.seenIds,
     required this.showSeens,
     required this.ref,
     required this.focusNode,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

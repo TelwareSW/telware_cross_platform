@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:telware_cross_platform/features/stories/view/screens/show_taken_story_screen.dart';
-import '../widget/choice_mode_in_camera_container.dart';
 import '../widget/take_photo_row.dart';
+import '../widget/toggleCameraMode.dart';
 
 class AddMyStoryScreen extends StatefulWidget {
   const AddMyStoryScreen({super.key});
@@ -65,7 +65,6 @@ class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
       camera,
       ResolutionPreset.high,
     );
-
     _initializeControllerFuture = _controller?.initialize().then((_) {
       setState(() {});
     });
@@ -102,15 +101,6 @@ class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
       if (kDebugMode) {
         print('Error capturing image: $e');
       }
-    }
-  }
-
-
-  void _toggleMode(String pressedButton) {
-    if (pressedButton != _selectedMode) {
-      setState(() {
-        _selectedMode = _selectedMode == 'Photo' ? 'Video' : 'Photo';
-      });
     }
   }
 
@@ -153,7 +143,7 @@ class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
                           const SizedBox(
                             height: 25,
                           ),
-                          buildCameraModeRow(constraints),
+                          ToggleCameraMode(selectedMode: _selectedMode, constraints: constraints,)
                         ],
                       );
                     },
@@ -161,44 +151,15 @@ class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
                 ),
               ],
             );
-          } else if (snapshot.hasError) {
+          }
+          else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
-          } else {
+          }
+          else {
             return const Center(child: CircularProgressIndicator());
           }
         },
       ),
     );
   }
-
-  Row buildCameraModeRow(BoxConstraints constraints) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: constraints.maxWidth / 2 - 28,
-        ),
-        GestureDetector(
-          child: ChoiceModeInCameraContainer(
-            text: _selectedMode,
-          ),
-          onTap: () {
-            _toggleMode(_selectedMode);
-          },
-        ),
-        const SizedBox(
-          width: 16,
-        ),
-        GestureDetector(
-          child: ChoiceModeInCameraContainer(
-            text: _selectedMode == 'Photo' ? 'Video' : 'Photo',
-          ),
-          onTap: () {
-            _toggleMode(_selectedMode == 'Photo' ? 'Video' : 'Photo');
-          },
-        )
-      ],
-    );
-  }
 }
-
