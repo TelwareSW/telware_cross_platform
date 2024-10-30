@@ -1,17 +1,19 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
+
 import 'package:telware_cross_platform/core/theme/palette.dart';
+import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/features/home/view/widget/drawer.dart';
+import 'package:telware_cross_platform/features/stories/view/widget/chats_list.dart';
 import 'package:telware_cross_platform/features/stories/view/widget/colapsed_story_section.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import '../../../../core/theme/sizes.dart';
-import '../../../stories/view_model/contact_view_model.dart';
-import '../../../stories/view/widget/chats_list.dart';
-import '../../../stories/view/widget/expanded_stories_section.dart';
-import '../../../stories/view/screens/add_my_story_screen.dart';
+import 'package:telware_cross_platform/features/stories/view/widget/expanded_stories_section.dart';
+import 'package:telware_cross_platform/features/stories/view_model/contact_view_model.dart';
 
 class InboxScreen extends ConsumerStatefulWidget {
-  static const String route = '/profile';
+  static const String route = '/inbox-screen';
   const InboxScreen({super.key});
 
   @override
@@ -58,12 +60,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
               ? const SizedBox()
               : FloatingActionButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AddMyStoryScreen(),
-                ),
-              );
+              context.push(Routes.addMyStory);
             },
             shape: const CircleBorder(),
             backgroundColor: Palette.accent,

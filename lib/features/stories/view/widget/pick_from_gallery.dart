@@ -1,17 +1,16 @@
 import 'dart:io';
-
-import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
-import '../screens/show_taken_story_screen.dart';
-
+import 'package:telware_cross_platform/core/routes/routes.dart';
 
 class PickFromGallery extends StatefulWidget {
   const PickFromGallery({super.key});
 
   @override
-  _PickFromGalleryState createState() => _PickFromGalleryState();
+  State<PickFromGallery> createState() => _PickFromGalleryState();
 }
 
 class _PickFromGalleryState extends State<PickFromGallery> {
@@ -45,12 +44,7 @@ class _PickFromGalleryState extends State<PickFromGallery> {
             onTap: () async {
               await _pickImage();
               if (_image != null) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ShowTakenStoryScreen(image: _image!),
-                  ),
-                );
+                context.push(Routes.showTakenStory, extra: _image!);
               }
             },
             child: const Icon(

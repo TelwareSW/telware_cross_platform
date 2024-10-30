@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/core/utils.dart';
@@ -107,8 +108,8 @@ class AppDrawer extends StatelessWidget {
       ),
       onTap: () {
         if (route != null) {
-          Navigator.pop(context);
-          Navigator.pushNamed(context, route);
+          context.pop();
+          context.push(route);
         } else {
           showToastMessage('Coming Soon...');
         }

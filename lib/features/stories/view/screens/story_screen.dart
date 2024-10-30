@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:story/story_image.dart';
 import 'package:story/story_page_view.dart';
@@ -15,6 +16,7 @@ import 'dart:typed_data';
 import '../widget/delete_popup_menu.dart';
 
 class StoryScreen extends ConsumerStatefulWidget {
+  static const String route = '/story-screen';
   final String userId;
   final bool showSeens;
   const StoryScreen({
@@ -214,7 +216,7 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
                             color: Colors.white,
                             icon: const Icon(Icons.close),
                             onPressed: () {
-                              Navigator.pop(context);
+                              context.pop();
                             },
                           ),
                         ),
@@ -316,7 +318,7 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
           return user!.stories.length;
         },
         onPageLimitReached: () {
-          Navigator.pop(context);
+          context.pop();
         },
       ),
     );

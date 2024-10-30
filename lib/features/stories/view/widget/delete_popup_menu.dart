@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/palette.dart';
 
@@ -28,16 +29,14 @@ class DeletePopUpMenu extends StatelessWidget {
                     "Are you sure you want to delete this?"),
                 actions: [
                   TextButton(
-                    onPressed: () => Navigator.pop(
-                        context), // Close dialog
+                    onPressed: () => context.pop(context), // Close dialog
                     child: const Text("Cancel"),
                   ),
                   TextButton(
                     onPressed: () {
                       // Perform the delete action
                       // Add your delete logic here
-                      Navigator.pop(
-                          context); // Close the dialog after deleting
+                      context.pop(); // Close the dialog after deleting
                     },
                     child: const Text(
                       "Delete",

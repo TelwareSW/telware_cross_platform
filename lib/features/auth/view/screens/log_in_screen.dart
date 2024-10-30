@@ -1,23 +1,22 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vibration/vibration.dart';
+
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
-import 'package:flutter/material.dart';
+import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/responsive.dart';
-import 'package:telware_cross_platform/features/auth/view/screens/sign_up_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_floating_action_button.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_sub_text_button.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/shake_my_auth_input.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/social_log_in.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
-import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
-import 'package:telware_cross_platform/features/home/view/screen/home_screen.dart';
-import 'package:vibration/vibration.dart';
 
 class LogInScreen extends ConsumerStatefulWidget {
   static const String route = '/log-in';
@@ -25,7 +24,7 @@ class LogInScreen extends ConsumerStatefulWidget {
   const LogInScreen({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _LogInScreenState();
+  ConsumerState<LogInScreen> createState() => _LogInScreenState();
 }
 
 class _LogInScreenState extends ConsumerState<LogInScreen> {
@@ -95,7 +94,7 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
       //     email: emailController.text, password: passwordController.text);
 
       // todo(ahmed): navigate to home screen
-      Navigator.pushNamedAndRemoveUntil(context, HomeScreen.route, (_) => false);
+      context.go(Routes.home);
     }
   }
 
@@ -191,15 +190,14 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
                             const TitleElement(
-                              name: 'Don\'t have an account?  ',
+                              name: 'Don\'t have an account? ',
                               color: Palette.primaryText,
                               fontSize: Sizes.infoText,
                             ),
                             AuthSubTextButton(
                               buttonKey: signUpKey,
                               onPressed: () {
-                                Navigator.pushNamed(
-                                    context, SignUpScreen.route);
+                                context.push(Routes.signUp);
                               },
                               label: 'Sign Up',
                             ),
