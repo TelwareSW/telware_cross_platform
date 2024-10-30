@@ -19,7 +19,7 @@ class DeletePopUpMenu extends StatelessWidget {
       padding: EdgeInsets.zero,
       color: Palette.secondary,
       icon: const Icon(
-          Icons.menu), // Icon for the menu
+          Icons.menu),
       onSelected: (String result) {
         if (result == 'delete') {
           showDialog(
@@ -35,7 +35,7 @@ class DeletePopUpMenu extends StatelessWidget {
                     onPressed: (){
                       Navigator.pop(
                           context);
-                    }, // Close dialog
+                    },
                     child: const Text("Cancel"),
                   ),
                   TextButton(
@@ -43,7 +43,7 @@ class DeletePopUpMenu extends StatelessWidget {
                       final contactViewModel = ref.read(usersViewModelProvider.notifier);
                       contactViewModel.deleteStory(storyId);
                       Navigator.pop(
-                          context); // Close the dialog after deleting
+                          context);
                     },
                     child: const Text(
                       "Delete",

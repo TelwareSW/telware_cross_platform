@@ -1,9 +1,19 @@
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
 import '../models/story_model.dart';
 import '../utils/utils_functions.dart';
+
+part 'contacts_local_repository.g.dart';
+
+
+@Riverpod(keepAlive: true)
+ContactsLocalRepository contactsLocalRepository(ContactsLocalRepositoryRef ref) {
+  final userBox = Hive.box<ContactModel>('contacts');
+  return ContactsLocalRepository(userBox);
+}
 
 class ContactsLocalRepository {
   final Box<ContactModel> _userBox;
@@ -21,12 +31,12 @@ class ContactsLocalRepository {
         if (contact.userImage == null && existingContact?.userImage != null) {
           return;
         }
-        await _updateContactInHive(contact);
+        await _saveContactImageInHive(contact);
       }
     }
   }
 
-  Future<void> _updateContactInHive(ContactModel contact) async {
+  Future<void> _saveContactImageInHive(ContactModel contact) async {
     try {
       Uint8List? imageBytes = await downloadImage(contact.userImageUrl);
       final contactWithImage = contact.copyWith(userImage: imageBytes);
@@ -56,7 +66,7 @@ class ContactsLocalRepository {
     await box.delete(userId);
   }
 
-  Future<void> updateContactsInHive(ContactModel updatedContact) async {
+  Future<void> updateContactInHive(ContactModel updatedContact) async {
     try {
       final existingContact = _userBox.get(updatedContact.userId);
 
@@ -83,10 +93,10 @@ class ContactsLocalRepository {
         for (var story in user.stories) {
           if (story.storyId == storyId) {
             story.storyContent = imageData;
-            break; // Exit loop since we've found the matching story
+            break; 
           }
         }
-        await updateContactsInHive(user);
+        await updateContactInHive(user);
       }
     } catch (e) {
       if (kDebugMode) {
@@ -96,7 +106,3 @@ class ContactsLocalRepository {
   }
 }
 
-final contactsLocalRepositoryProvider = Provider((ref) {
-  final userBox = Hive.box<ContactModel>('contacts');
-  return ContactsLocalRepository(userBox);
-});

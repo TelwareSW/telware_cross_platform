@@ -41,10 +41,9 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
     loadStories();
     _focusNode.addListener(() {
       if (!_focusNode.hasFocus) {
-        // Resume the animation when the text field loses focus
         setState(() {
           indicatorAnimationController.value =
-              IndicatorAnimationCommand.resume; // Adjust this if necessary
+              IndicatorAnimationCommand.resume;
         });
       }
     });
@@ -55,7 +54,7 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
         .read(usersViewModelProvider.notifier)
         .getContactById(widget.userId);
     setState(() {
-      storiesList = user?.stories ?? []; // Set storiesList from fetched user
+      storiesList = user?.stories ?? [];
     });
   }
 
@@ -81,7 +80,7 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
       for (String id in userIds) {
         ContactModel? user = await ref
             .read(usersViewModelProvider.notifier)
-            .getContactById(id); // Ensure 'id' is a String
+            .getContactById(id);
         if (user != null) seenUsers.add(user);
       }
       return seenUsers;

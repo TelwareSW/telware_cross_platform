@@ -11,7 +11,6 @@ class DevicesScreen extends StatelessWidget {
 
   const DevicesScreen({super.key});
 
-  // Profile sections containing device details
   static const List<Map<String, dynamic>> profileSections = [
     {
       "title": "Current session",
@@ -150,7 +149,7 @@ class LeadingIcon extends StatelessWidget {
       height: 50,
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(30), // Half of the width/height
+        borderRadius: BorderRadius.circular(30),
       ),
       child: Center(
         child: FaIcon(
@@ -241,7 +240,7 @@ class SessionTile extends StatelessWidget {
                         ),
                     ],
                   ),
-                  onTap: () {}, // Add functionality as needed
+                  onTap: () {},
                 ),
                 if (showDivider) const Divider(),
               ],

@@ -25,7 +25,7 @@ class ShowTakenStoryScreen extends ConsumerStatefulWidget {
 class _ShowTakenStoryScreenState extends ConsumerState<ShowTakenStoryScreen> {
   final GlobalKey _signatureBoundaryKey = GlobalKey();
   File? _imageFile;
-  File? _originalImageFile; // Store the original image
+  File? _originalImageFile;
   final SignatureController _controller = SignatureController(
     penStrokeWidth: 5,
     penColor: Colors.red,
@@ -40,7 +40,7 @@ class _ShowTakenStoryScreenState extends ConsumerState<ShowTakenStoryScreen> {
       DeviceOrientation.portraitDown,
     ]);
     _imageFile = widget.image;
-    _originalImageFile = File(widget.image.path); // Save the original image
+    _originalImageFile = File(widget.image.path);
     _requestPermissions();
   }
 
@@ -96,7 +96,6 @@ class _ShowTakenStoryScreenState extends ConsumerState<ShowTakenStoryScreen> {
   }
 
   Future<ui.Image> _captureImage() async {
-    // Find the RenderRepaintBoundary in the context
     final boundary = _signatureBoundaryKey.currentContext!.findRenderObject()
         as RenderRepaintBoundary;
     return await boundary.toImage(pixelRatio: 3.0);

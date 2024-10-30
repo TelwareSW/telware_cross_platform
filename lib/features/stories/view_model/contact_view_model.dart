@@ -50,6 +50,34 @@ class ContactViewModel extends StateNotifier<ContactViewModelState> {
     }
   }
 
+  Future<void> deleteExpired()async {
+    try {
+      final allContacts = state.contacts;
+
+      final currentDateTime = DateTime.now();
+
+      for (final contact in allContacts) {
+        final updatedStories = contact.stories.where((story) {
+          final storyDateTime = story.createdAt;
+          return currentDateTime.isBefore(storyDateTime.add(const Duration(hours: 24)));
+        }).toList();
+        final updatedContact = contact.copyWith(stories: updatedStories);
+        await _contactsLocalRepository.updateContactInHive(updatedContact);
+        final updatedContacts = state.contacts.map((u) {
+          if (u.userId == contact.userId) {
+            return updatedContact;
+          }
+          return u;
+        }).toList();
+        state = state.copyWith(contacts: updatedContacts);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Failed to delete expired stories: $e');
+      }
+    }
+  }
+
   Future<List<StoryModel>> getContactStories(String userId) async {
     return await _contactsLocalRepository.getContactStoriesFromHive(userId);
   }
@@ -86,7 +114,7 @@ class ContactViewModel extends StateNotifier<ContactViewModelState> {
         }).toList();
 
         final updatedUser = user.copyWith(stories: updatedStories);
-        await _contactsLocalRepository.updateContactsInHive(updatedUser);
+        await _contactsLocalRepository.updateContactInHive(updatedUser);
 
         final updatedUsers = state.contacts.map((u) {
           if (u.userId == userId) {

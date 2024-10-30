@@ -57,7 +57,7 @@ class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
     final filePath = '${directory.path}/taken_story.png';
     final file = File(filePath);
     await file.writeAsBytes(imageBytes);
-    return file; // Return the created file
+    return file;
   }
 
   Future<void> _initializeController(CameraDescription camera) async {
@@ -88,7 +88,6 @@ class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
 
   void _captureImage() async {
     try {
-      // Ensure the controller is initialized before capturing an image
       await _initializeControllerFuture;
       final image = await _controller!.takePicture();
       Uint8List imageBytes = await image.readAsBytes();
@@ -128,7 +127,6 @@ class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
                 Positioned.fill(
                   child: CameraPreview(_controller!),
                 ),
-                // Transparent AppBar
                 Positioned(
                   top: 0,
                   left: 0,
