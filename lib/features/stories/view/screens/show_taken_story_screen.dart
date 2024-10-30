@@ -10,8 +10,12 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:signature/signature.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:telware_cross_platform/core/theme/palette.dart';
 import '../../utils/utils_functions.dart';
 import '../../view_model/contact_view_model.dart';
+import '../widget/bottom_action_buttons_edit_taken_image.dart';
+import '../widget/signature_pen.dart';
+import '../widget/story_caption_text_field.dart';
 
 class ShowTakenStoryScreen extends ConsumerStatefulWidget {
   final File image;
@@ -71,7 +75,7 @@ class _ShowTakenStoryScreenState extends ConsumerState<ShowTakenStoryScreen> {
         uiSettings: [
           AndroidUiSettings(
             toolbarTitle: 'Cropper',
-            toolbarColor: Colors.deepOrange,
+            toolbarColor: Palette.secondary,
             toolbarWidgetColor: Colors.white,
             aspectRatioPresets: [
               CropAspectRatioPreset.original,
@@ -97,42 +101,29 @@ class _ShowTakenStoryScreenState extends ConsumerState<ShowTakenStoryScreen> {
 
   Future<ui.Image> _captureImage() async {
     final boundary = _signatureBoundaryKey.currentContext!.findRenderObject()
-        as RenderRepaintBoundary;
+    as RenderRepaintBoundary;
     return await boundary.toImage(pixelRatio: 3.0);
   }
 
-  // Method to save the combined image
   Future<File> _saveCombinedImage() async {
-    // Check if _imageFile is null
     if (_imageFile == null) {
-      throw Exception("No image file found."); // Or handle as needed
+      throw Exception("No image file found.");
     }
-
     ui.Image combinedImage = await _captureImage();
     ByteData? byteData =
-        await combinedImage.toByteData(format: ui.ImageByteFormat.png);
+    await combinedImage.toByteData(format: ui.ImageByteFormat.png);
     Uint8List pngBytes = byteData!.buffer.asUint8List();
-
-    // Get the temporary directory
     final directory = await getTemporaryDirectory();
-    // Create a file to save the image
     final file = File('${directory.path}/combined_image.png');
-    // Write the bytes to the file
     await file.writeAsBytes(pngBytes);
-
-    return file; // Return the saved file
+    return file;
   }
 
-  void _clearDrawing() {
-    _controller.clear();
-  }
-
-  // Reset the image to the original image file
   void _discardChanges() {
     setState(() {
-      _imageFile = _originalImageFile; // Revert to original image
+      _imageFile = _originalImageFile;
     });
-    _clearDrawing(); // Clear any drawings as well
+    _controller.clear();
   }
 
   @override
@@ -140,109 +131,37 @@ class _ShowTakenStoryScreenState extends ConsumerState<ShowTakenStoryScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        elevation: 0, // Remove shadow
+        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.of(context).pop(); // Pop the screen
-          },
+          onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: GestureDetector(
-        onTap: () {
-          FocusScope.of(context).unfocus(); // Remove focus from the TextField
-        },
+        onTap: () => FocusScope.of(context).unfocus(),
         child: Stack(
           children: [
-            // Background Image
-            RepaintBoundary(
-              key: _signatureBoundaryKey,
-              child: Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: FileImage(_imageFile!),
-                    fit: BoxFit.cover, // Use cover to ensure it covers the whole container
-                  ),
-                ),
-                child: Signature(
-                  controller: _controller,
-                  backgroundColor: Colors.transparent,
-                ),
-              ),
+            SignaturePen(
+              signatureBoundaryKey: _signatureBoundaryKey,
+              imageFile: _imageFile,
+              controller: _controller,
             ),
-            // Overlay for TextField and buttons
             Positioned(
               bottom: 20,
               left: 0,
               right: 0,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Wrap(
-                  spacing: 10.0,
-                  alignment: WrapAlignment.center,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Text Field
-                    Padding(
-                      padding: EdgeInsets.only(bottom: 15),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20.0),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-                          child: Container(
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.5),
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
-                            child: TextField(
-                              controller: _captionController,
-                              decoration: InputDecoration(
-                                hintText: "Enter story caption",
-                                filled: false,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10.0),
-                                  borderSide: BorderSide.none,
-                                ),
-                                hintStyle: TextStyle(color: Colors.white54),
-                                contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Action Buttons
-                    ElevatedButton.icon(
-                      onPressed: _cropImage,
-                      icon: const Icon(Icons.crop),
-                      label: const Text("Crop"),
-                    ),
-                    ElevatedButton.icon(
-                      onPressed: _discardChanges,
-                      icon: const Icon(Icons.clear),
-                      label: const Text("Discard"),
-                    ),
-                    ElevatedButton.icon(
-                      onPressed: () async {
-                        FocusScope.of(context).unfocus();
-                        File combinedImageFile = await _saveCombinedImage();
-                        String storyCaption = _captionController.text;
-                        final contactViewModel = ref.read(usersViewModelProvider.notifier);
-                        bool uploadResult = await contactViewModel.postStory(combinedImageFile, storyCaption);
-                        print(uploadResult);
-                        final snackBar = SnackBar(
-                          content: Text(uploadResult ? 'Story Posted Successfully' : 'Failed to post Story'),
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
-
-                        if (uploadResult) {
-                          Future.delayed(const Duration(seconds: 2), () {
-                            Navigator.of(context).pop();
-                          });
-                        }
-                      },
-                      icon: const Icon(Icons.send),
-                      label: const Text("Post"),
+                    StoryCaptionField(controller: _captionController),
+                    BottomActionButtonsEditTakenImage(
+                      cropImage: _cropImage,
+                      discardChanges: _discardChanges,
+                      saveAndPostStory: _saveCombinedImage,
+                      captionController: _captionController,
+                      ref: ref,
                     ),
                   ],
                 ),
