@@ -4,6 +4,7 @@ import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/core/mock/token_mock.dart';
 import 'package:telware_cross_platform/core/mock/user_mock.dart';
+import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_local_repository.dart';
@@ -39,9 +40,11 @@ class AuthViewModel extends _$AuthViewModel {
       state = AuthState.authorized;
       return;
     }
+    
     // try getting updated user data
-    final response = await ref.read(authRemoteRepositoryProvider).getMe(token);
-
+    final response =
+        await ref.read(authRemoteRepositoryProvider).getMe(token);
+    
     response.match((appError) {
       state = AuthState.fail(appError.error);
       // getting user data from local as remote failed
@@ -192,6 +195,7 @@ class AuthViewModel extends _$AuthViewModel {
   }
 
   void forgotPassword(String email) async {
+    debugPrint('forgot password start');
     state = AuthState.loading;
     if (USE_MOCK_DATA) {
       await Future.delayed(const Duration(seconds: 1));
@@ -205,6 +209,7 @@ class AuthViewModel extends _$AuthViewModel {
     } else {
       state = AuthState.success('A reset link will be sent to your email');
     }
+    debugPrint('forgot password end');
   }
 
   void googleLogIn() => _launchSocialAuth(GOOGLE_AUTH_URL);
@@ -237,6 +242,7 @@ class AuthViewModel extends _$AuthViewModel {
 
       ref.read(authLocalRepositoryProvider).setToken(secretSessionId);
       ref.read(tokenProvider.notifier).update((_) => secretSessionId);
+
       state = AuthState.authenticated;
     });
   }
