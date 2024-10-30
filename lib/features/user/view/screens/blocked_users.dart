@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
@@ -50,7 +52,7 @@ class _BlockedUsersScreen extends State<BlockedUsersScreen> {
       if (result == 0) {
         //todo Handle unblock action
         if (mounted) {
-          Navigator.pushNamed(context, '/block-user');
+          context.push(Routes.blockUser);
         }
       }
     });

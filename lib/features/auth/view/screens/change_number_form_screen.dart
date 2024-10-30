@@ -1,18 +1,17 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
+import 'package:go_router/go_router.dart';
 import 'package:phone_form_field/phone_form_field.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/view/widget/responsive.dart';
-import 'package:telware_cross_platform/features/auth/view/screens/verification_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_phone_number.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
-import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_floating_action_button.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/confirmation_dialog.dart';
 
 class ChangeNumberFormScreen extends ConsumerStatefulWidget {
   static const String route = '/change-number-form';
@@ -58,12 +57,12 @@ class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
     // ref.read(authViewModelProvider.notifier).updatePhoneNumber(
     //   phone: phoneController.value.international,
     // );
-    Navigator.of(context).pop(); // to close the dialog
-    Navigator.pushReplacementNamed(context, VerificationScreen.route);
+    context.pop(); // to close the dialog
+    context.pushReplacement(Routes.verification);
   }
 
   void _onEdit() {
-    Navigator.of(context).pop();
+    context.pop();
   }
 
   void _handleSubmit() {

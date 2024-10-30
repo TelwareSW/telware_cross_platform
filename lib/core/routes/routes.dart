@@ -12,7 +12,7 @@ import 'package:telware_cross_platform/features/auth/view/screens/social_auth_lo
 import 'package:telware_cross_platform/features/auth/view/screens/verification_screen.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
 import 'package:telware_cross_platform/features/home/view/screens/home_screen.dart';
-import 'package:telware_cross_platform/features/home/view/screen/inbox_screen.dart';
+import 'package:telware_cross_platform/features/home/view/screens/inbox_screen.dart';
 import 'package:telware_cross_platform/features/stories/view/screens/add_my_story_screen.dart';
 import 'package:telware_cross_platform/features/stories/view/screens/show_taken_story_screen.dart';
 import 'package:telware_cross_platform/features/stories/view/screens/story_screen.dart';
