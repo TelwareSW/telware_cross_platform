@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
+import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_local_repository.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_remote_repository.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
@@ -22,6 +23,7 @@ class AuthViewModel extends _$AuthViewModel {
     await Future.delayed(const Duration(seconds: 1, microseconds: 50));
 
     String? token = ref.read(authLocalRepositoryProvider).getToken();
+    ref.read(tokenProvider.notifier).update((_) => token);
 
     if (token == null) {
       // no previously stored token
@@ -30,13 +32,13 @@ class AuthViewModel extends _$AuthViewModel {
     }
 
     // try getting updated user data
-    final response =
-        await ref.read(authRemoteRepositoryProvider).getMe(token);
-    
+    final response = await ref.read(authRemoteRepositoryProvider).getMe(token);
+
     response.match((appError) {
       state = AuthState.fail(appError.error);
       // getting user data from local as remote failed
       final user = ref.read(authLocalRepositoryProvider).getMe();
+      ref.read(userProvider.notifier).update((_) => user);
       if (user == null) {
         state = AuthState.unauthorized;
         return;
@@ -44,6 +46,7 @@ class AuthViewModel extends _$AuthViewModel {
       state = AuthState.authorized;
     }, (user) {
       ref.read(authLocalRepositoryProvider).setUser(user);
+      ref.read(userProvider.notifier).update((_) => user);
       state = AuthState.authorized;
     });
   }
@@ -82,15 +85,22 @@ class AuthViewModel extends _$AuthViewModel {
       {required String email, required String code}) async {
     state = AuthState.loading;
 
-    final AppError? response = await ref
+    final response = await ref
         .read(authRemoteRepositoryProvider)
         .verifyEmail(email: email, code: code);
 
-    if (response != null) {
+    response.match((appError) {
       state = AuthState.unauthenticated;
-    } else {
+    }, (verificationResponse) {
+      ref.read(authLocalRepositoryProvider).setUser(verificationResponse.user);
+      ref.read(userProvider.notifier).update((_) => verificationResponse.user);
+
+      ref
+          .read(authLocalRepositoryProvider)
+          .setToken(verificationResponse.token);
+      ref.read(tokenProvider.notifier).update((_) => verificationResponse.token);
       state = AuthState.authenticated;
-    }
+    });
     return state;
   }
 
@@ -112,19 +122,24 @@ class AuthViewModel extends _$AuthViewModel {
   void login({required String email, required String password}) async {
     state = AuthState.loading;
 
-    final appError = await ref
+    final response = await ref
         .read(authRemoteRepositoryProvider)
         .logIn(email: email, password: password);
 
-    if (appError != null) {
+    response.match((appError) {
       if (appError.code == 403) {
         state = AuthState.unauthorized;
       } else {
         state = AuthState.fail(appError.error);
       }
-    } else {
+    }, (logInResponse) {
+      ref.read(authLocalRepositoryProvider).setUser(logInResponse.user);
+      ref.read(userProvider.notifier).update((_) => logInResponse.user);
+
+      ref.read(authLocalRepositoryProvider).setToken(logInResponse.token);
+      ref.read(tokenProvider.notifier).update((_) => logInResponse.token);
       state = AuthState.authenticated;
-    }
+    });
   }
 
   void forgotPassword(String email) async {
@@ -159,15 +174,17 @@ class AuthViewModel extends _$AuthViewModel {
 
   Future<void> authorizeOAuth(String secretSessionId) async {
     // get the user data
-    final response = await ref
-        .read(authRemoteRepositoryProvider)
-        .getMe(secretSessionId);
+    final response =
+        await ref.read(authRemoteRepositoryProvider).getMe(secretSessionId);
 
     response.match((appError) {
       state = AuthState.fail(appError.error);
     }, (user) {
       ref.read(authLocalRepositoryProvider).setUser(user);
+      ref.read(userProvider.notifier).update((_) => user);
+
       ref.read(authLocalRepositoryProvider).setToken(secretSessionId);
+      ref.read(tokenProvider.notifier).update((_) => secretSessionId);
       state = AuthState.authenticated;
     });
   }
@@ -210,7 +227,10 @@ class AuthViewModel extends _$AuthViewModel {
     if (appError == null) {
       // successful log out operation
       await ref.read(authLocalRepositoryProvider).deleteToken();
+      ref.read(tokenProvider.notifier).update((_) => null);
+
       await ref.read(authLocalRepositoryProvider).deleteUser();
+      ref.read(userProvider.notifier).update((_) => null);
       state = AuthState.unauthorized;
     } else {
       state = AuthState.fail(appError.error);
