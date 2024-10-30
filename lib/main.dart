@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -34,9 +35,11 @@ class TelWare extends ConsumerStatefulWidget {
 }
 
 class _TelWareState extends ConsumerState<TelWare> {
+  late GoRouter router;
   @override
   void initState() {
     super.initState();
+    router = Routes.appRouter(ref);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(authViewModelProvider.notifier).init();
     });
@@ -44,14 +47,11 @@ class _TelWareState extends ConsumerState<TelWare> {
 
   @override
   Widget build(BuildContext context) {
-    final isAuthenticated = ref.watch(authViewModelProvider.notifier).isAuthenticated();
-    final router = Routes.appRouter(isAuthenticated);
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'TelWare',
       theme: appTheme,
-      routerDelegate: router.routerDelegate,
-      routeInformationParser: router.routeInformationParser,
+      routerConfig: router,
     );
   }
 }

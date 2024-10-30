@@ -107,9 +107,13 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
 
     if (emailKey.currentState != null &&
         (emailKey.currentState?.validate() ?? false)) {
+      debugPrint('forgot password called');
       ref
           .read(authViewModelProvider.notifier)
           .forgotPassword(emailController.text);
+    } else {
+      debugPrint('forgot password not called');
+      debugPrint('emailKey.currentState: ${emailKey.currentState}');
     }
   }
 
@@ -127,89 +131,91 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
       } else if (state.type == AuthStateType.authenticated) {
         context.go(Routes.home);
       } else if (state.type == AuthStateType.unauthorized) {
-        context.pushNamed(Routes.verification);
+        context.push(Routes.verification);
       }
     });
 
     bool isLoading =
         ref.watch(authViewModelProvider).type == AuthStateType.loading;
+    debugPrint('isLoading: $isLoading');
 
     return Scaffold(
       backgroundColor: Palette.background,
       body: isLoading
           ? const Center(child: CircularProgressIndicator.adaptive())
-          : Responsive(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 0),
-                  child: Form(
-                    key: formKey,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        const TitleElement(
-                          name: 'Log In',
-                          color: Palette.primaryText,
-                          fontSize: Sizes.headingText,
-                          fontWeight: FontWeight.bold,
-                          padding: EdgeInsets.only(bottom: 10),
+          : Center(
+            child: SingleChildScrollView(
+              child: Responsive(
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      const TitleElement(
+                        name: 'Log In',
+                        color: Palette.primaryText,
+                        fontSize: Sizes.headingText,
+                        fontWeight: FontWeight.bold,
+                        padding: EdgeInsets.only(bottom: 10),
+                      ),
+                      const TitleElement(
+                        name: 'Enter your credentials',
+                        color: Palette.accentText,
+                        fontSize: Sizes.secondaryText,
+                        padding: EdgeInsets.only(bottom: 30),
+                        width: 250.0,
+                      ),
+                      ShakeMyAuthInput(
+                        name: 'Email',
+                        formKey: emailKey,
+                        shakeKey: emailShakeKey,
+                        isFocused: isEmailFocused,
+                        focusNode: emailFocusNode,
+                        controller: emailController,
+                        validator: emailValidator,
+                      ),
+                      ShakeMyAuthInput(
+                        name: 'Password',
+                        formKey: passwordKey,
+                        shakeKey: passwordShakeKey,
+                        isFocused: isPasswordFocused,
+                        focusNode: passwordFocusNode,
+                        controller: passwordController,
+                        padding: const EdgeInsets.only(
+                          left: Dimensions.inputPaddingRight,
+                          right: Dimensions.inputPaddingLeft,
                         ),
-                        const TitleElement(
-                          name: 'Enter your credentials',
-                          color: Palette.accentText,
-                          fontSize: Sizes.secondaryText,
-                          padding: EdgeInsets.only(bottom: 30),
-                          width: 250.0,
-                        ),
-                        ShakeMyAuthInput(
-                          name: 'Email',
-                          shakeKey: emailShakeKey,
-                          isFocused: isEmailFocused,
-                          focusNode: emailFocusNode,
-                          controller: emailController,
-                          validator: emailValidator,
-                        ),
-                        ShakeMyAuthInput(
-                          name: 'Password',
-                          formKey: passwordKey,
-                          shakeKey: passwordShakeKey,
-                          isFocused: isPasswordFocused,
-                          focusNode: passwordFocusNode,
-                          controller: passwordController,
-                          padding: const EdgeInsets.only(
-                            left: Dimensions.inputPaddingRight,
-                            right: Dimensions.inputPaddingLeft,
+                        obscure: true,
+                        validator: passwordValidatorLogIn,
+                        visibilityKey: const Key('login-password-visibility'),
+                      ),
+                      _forgetPasswordButton(),
+                      const SizedBox(height: 50),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          const TitleElement(
+                            name: 'Don\'t have an account? ',
+                            color: Palette.primaryText,
+                            fontSize: Sizes.infoText,
                           ),
-                          obscure: true,
-                          validator: passwordValidatorLogIn,
-                        ),
-                        _forgetPasswordButton(),
-                        const SizedBox(height: 50),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            const TitleElement(
-                              name: 'Don\'t have an account? ',
-                              color: Palette.primaryText,
-                              fontSize: Sizes.infoText,
-                            ),
-                            AuthSubTextButton(
-                              buttonKey: signUpKey,
-                              onPressed: () {
-                                context.push(Routes.signUp);
-                              },
-                              label: 'Sign Up',
-                            ),
-                          ],
-                        ),
-                        const SocialLogIn(),
-                      ],
-                    ),
+                          AuthSubTextButton(
+                            buttonKey: signUpKey,
+                            onPressed: () {
+                              context.push(Routes.signUp);
+                            },
+                            label: 'Sign Up',
+                          ),
+                        ],
+                      ),
+                      const SocialLogIn(),
+                    ],
                   ),
                 ),
               ),
             ),
+          ),
       floatingActionButton: AuthFloatingActionButton(
         formKey: formKey,
         buttonKey: logInSubmitKey,

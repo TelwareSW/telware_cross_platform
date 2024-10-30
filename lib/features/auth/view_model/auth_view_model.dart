@@ -1,4 +1,5 @@
 // ignore_for_file: avoid_manual_providers_as_generated_provider_dependency
+import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
@@ -127,6 +128,7 @@ class AuthViewModel extends _$AuthViewModel {
   }
 
   void forgotPassword(String email) async {
+    debugPrint('forgot password start');
     state = AuthState.loading;
     final appError =
         await ref.read(authRemoteRepositoryProvider).forgotPassword(email);
@@ -135,6 +137,7 @@ class AuthViewModel extends _$AuthViewModel {
     } else {
       state = AuthState.success('A reset link will be sent to your email');
     }
+    debugPrint('forgot password end');
   }
 
   void googleLogIn() => _launchSocialAuth(GOOGLE_AUTH_URL);

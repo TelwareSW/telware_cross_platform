@@ -186,14 +186,13 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Palette.background,
+        backgroundColor: Colors.transparent,
         elevation: 0,
       ),
       backgroundColor: Palette.background,
-      body: Responsive(
+      body: Center(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 60),
+          child: Responsive(
             child: Form(
               key: formKey,
               child: Column(

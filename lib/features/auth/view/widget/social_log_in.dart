@@ -27,23 +27,31 @@ class SocialLogIn extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             _socialButton(
-                img: 'google-g-white.png',
-                onTap: ref.read(authViewModelProvider.notifier).googleLogIn),
+              img: 'google-g-white.png',
+              onTap: ref.read(authViewModelProvider.notifier).googleLogIn,
+              key: const Key('google-log-in'),
+            ),
             _socialButton(
-                img: 'github-icon-white.png',
-                onTap: ref.read(authViewModelProvider.notifier).githubLogIn),
+              img: 'github-icon-white.png',
+              onTap: ref.read(authViewModelProvider.notifier).githubLogIn,
+              key: const Key('github-log-in'),
+            ),
           ],
         )
       ],
     );
   }
 
-  Widget _socialButton({required VoidCallback onTap, required String img}) =>
+  Widget _socialButton(
+          {required VoidCallback onTap,
+          required String img,
+          required Key key}) =>
       Container(
         margin: const EdgeInsets.symmetric(horizontal: 18),
         width: _size,
         height: _size,
         child: InkWell(
+          key: key,
           onTap: onTap,
           child: Image.asset('assets/imgs/$img'),
         ),

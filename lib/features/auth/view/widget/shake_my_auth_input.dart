@@ -19,6 +19,7 @@ class ShakeMyAuthInput extends StatelessWidget {
     this.obscure = false,
     required this.controller,
     this.validator,
+    this.visibilityKey,
   });
 
   final GlobalKey<ShakeWidgetState> shakeKey;
@@ -30,6 +31,7 @@ class ShakeMyAuthInput extends StatelessWidget {
   final FocusNode focusNode;
   final TextEditingController controller;
   final FormFieldValidator<String>? validator;
+  final Key? visibilityKey;
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +49,7 @@ class ShakeMyAuthInput extends StatelessWidget {
         validator: validator,
         controller: controller,
         obscure: obscure,
+        visibilityKey: visibilityKey,
       ),
     );
   }
