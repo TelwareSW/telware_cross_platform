@@ -5,16 +5,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:telware_cross_platform/core/view/screen/splash_screen.dart';
+import 'package:telware_cross_platform/features/auth/view/screens/change_number_form_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/log_in_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/sign_up_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/social_auth_loading_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/verification_screen.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
-import 'package:telware_cross_platform/features/home/view/screen/home_screen.dart';
+import 'package:telware_cross_platform/features/home/view/screens/home_screen.dart';
 import 'package:telware_cross_platform/features/home/view/screen/inbox_screen.dart';
 import 'package:telware_cross_platform/features/stories/view/screens/add_my_story_screen.dart';
 import 'package:telware_cross_platform/features/stories/view/screens/show_taken_story_screen.dart';
 import 'package:telware_cross_platform/features/stories/view/screens/story_screen.dart';
+import 'package:telware_cross_platform/features/user/view/screens/block_user.dart';
+import 'package:telware_cross_platform/features/user/view/screens/blocked_users.dart';
+import 'package:telware_cross_platform/features/user/view/screens/change_number_screen.dart';
+import 'package:telware_cross_platform/features/user/view/screens/privacy_and_security_screen.dart';
+import 'package:telware_cross_platform/features/user/view/screens/profile_info_screen.dart';
+import 'package:telware_cross_platform/features/user/view/screens/settings_screen.dart';
+import 'package:telware_cross_platform/features/user/view/screens/user_profile_screen.dart';
 
 class Routes {
   static const String home = HomeScreen.route;
@@ -27,6 +35,15 @@ class Routes {
   static const String addMyStory = AddMyStoryScreen.route;
   static const String showTakenStory = ShowTakenStoryScreen.route;
   static const storyScreen = StoryScreen.route;
+  static const String settings = SettingsScreen.route;
+  static const String changeNumber = ChangeNumberScreen.route;
+  static const String changeNumberForm = ChangeNumberFormScreen.route;
+  static const String profileInfo = ProfileInfoScreen.route;
+  static const String blockUser = BlockUserScreen.route;
+  static const String blockedUser = BlockedUsersScreen.route;
+  static const String userProfile = UserProfileScreen.route;
+  static const String privacySettings = PrivacySettingsScreen.route;
+
 
   static GoRouter appRouter(WidgetRef ref) => GoRouter(
         initialLocation: Routes.splash,
@@ -112,6 +129,38 @@ class Routes {
               ),
               transitionsBuilder: _slideRightTransitionBuilder,
             ),
+          ),
+          GoRoute(
+            path: Routes.settings,
+            builder: (context, state) => const SettingsScreen(),
+          ),
+          GoRoute(
+            path: Routes.changeNumber,
+            builder: (context, state) => const ChangeNumberScreen(),
+          ),
+          GoRoute(
+            path: Routes.changeNumberForm,
+            builder: (context, state) => const ChangeNumberFormScreen(),
+          ),
+          GoRoute(
+            path: Routes.profileInfo,
+            builder: (context, state) => const ProfileInfoScreen(),
+          ),
+          GoRoute(
+            path: Routes.blockUser,
+            builder: (context, state) => const BlockUserScreen(),
+          ),
+          GoRoute(
+            path: Routes.blockedUser,
+            builder: (context, state) => const BlockedUsersScreen(),
+          ),
+          GoRoute(
+            path: Routes.userProfile,
+            builder: (context, state) => const UserProfileScreen(),
+          ),
+          GoRoute(
+            path: Routes.privacySettings,
+            builder: (context, state) => const PrivacySettingsScreen(),
           ),
         ],
       );
