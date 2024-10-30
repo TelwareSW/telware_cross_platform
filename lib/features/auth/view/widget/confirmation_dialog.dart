@@ -26,6 +26,7 @@ void showConfirmationDialog({
   required VoidCallback onConfirm,
   required VoidCallback onCancel,
   MainAxisAlignment? actionsAlignment,
+  Widget? trailing,
 }) {
   showDialog(
     context: context,
@@ -33,61 +34,70 @@ void showConfirmationDialog({
     // Allow dismissing the dialog by tapping outside
     builder: (BuildContext context) {
       return BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0), // Blur effect
-        child: AlertDialog(
-          backgroundColor: Palette.trinary,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          actionsAlignment: MainAxisAlignment.spaceBetween,
-          contentPadding: const EdgeInsets.only(top: 16),
-          content: IntrinsicHeight(
-            // width: 1000,
-            // height: 80,
+        filter: ImageFilter.blur(sigmaX: 17.0, sigmaY: 17.0),
+        child: Center(
+          child: SingleChildScrollView(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                TitleElement(
-                  name: title,
-                  color: titleColor ?? Palette.accentText,
-                  fontSize: titleFontSize ?? Sizes.secondaryText,
-                  fontWeight: titleFontWeight,
-                  textAlign: TextAlign.left,
+                AlertDialog(
+                  backgroundColor: Palette.trinary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  actionsAlignment: MainAxisAlignment.spaceBetween,
+                  contentPadding: const EdgeInsets.only(top: 16),
+                  content: IntrinsicHeight(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TitleElement(
+                          name: title,
+                          color: titleColor ?? Palette.accentText,
+                          fontSize: titleFontSize ?? Sizes.secondaryText,
+                          fontWeight: titleFontWeight,
+                          textAlign: TextAlign.left,
+                        ),
+                        TitleElement(
+                          name: subtitle,
+                          color: subtitleColor ?? Palette.primaryText,
+                          fontSize: subtitleFontSize ?? 16,
+                          fontWeight: subtitleFontWeight ?? FontWeight.bold,
+                          textAlign: TextAlign.left,
+                        ),
+                        SizedBox(height: contentGap ?? 10),
+                      ],
+                    ),
+                  ),
+                  actions: <Widget>[
+                    Row(
+                      mainAxisAlignment:
+                          actionsAlignment ?? MainAxisAlignment.spaceBetween,
+                      children: [
+                        AuthSubTextButton(
+                          onPressed: onCancel,
+                          fontSize: Sizes.secondaryText,
+                          label: cancelText,
+                          color: cancelColor,
+                          padding: cancelPadding ?? const EdgeInsets.all(0),
+                        ),
+                        AuthSubTextButton(
+                          onPressed: onConfirm,
+                          fontSize: Sizes.secondaryText,
+                          label: confirmText,
+                          color: confirmColor,
+                          padding: confirmPadding ?? const EdgeInsets.all(0),
+                        ),
+                      ],
+                    )
+                  ],
                 ),
-                TitleElement(
-                  name: subtitle,
-                  color: subtitleColor ?? Palette.primaryText,
-                  fontSize: subtitleFontSize ?? 16,
-                  fontWeight: subtitleFontWeight ?? FontWeight.bold,
-                  textAlign: TextAlign.left,
-                ),
-                SizedBox(height: contentGap ?? 10),
+                trailing ?? Container(),
               ],
             ),
           ),
-          actions: <Widget>[
-            Row(
-              mainAxisAlignment:
-                  actionsAlignment ?? MainAxisAlignment.spaceBetween,
-              children: [
-                AuthSubTextButton(
-                  onPressed: onCancel,
-                  fontSize: Sizes.secondaryText,
-                  label: cancelText,
-                  color: cancelColor,
-                  padding: cancelPadding ?? const EdgeInsets.all(0),
-                ),
-                AuthSubTextButton(
-                  onPressed: onConfirm,
-                  fontSize: Sizes.secondaryText,
-                  label: confirmText,
-                  color: confirmColor,
-                  padding: confirmPadding ?? const EdgeInsets.all(0),
-                ),
-              ],
-            )
-          ],
         ),
       );
     },

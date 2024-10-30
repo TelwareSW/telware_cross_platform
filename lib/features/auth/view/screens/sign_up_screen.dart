@@ -60,7 +60,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   String? captchaToken;
 
   late WebViewControllerPlus _controllerPlus;
-  final double _height = 70;
 
   @override
   void initState() {
@@ -118,6 +117,24 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     });
   }
 
+  Widget reCaptcha() {
+    return Transform.scale(
+      scale: 1.1,
+      child: Padding(
+        padding: const EdgeInsets.only(
+          left: 70,
+        ),
+        child: SizedBox(
+          height: 200,
+          width: 300,
+          child: WebViewWidget(
+            controller: _controllerPlus,
+          ),
+        ),
+      ),
+    );
+  }
+
   void signUp() async {
     // todo check which field make the error if found to tell the user.
     if (captchaToken == null || captchaToken!.isEmpty) {
@@ -134,7 +151,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               reCaptchaResponse: captchaToken!,
             );
 
-    context.pop(); // to close the dialog
+    if (mounted) {
+      context.pop(); // to close the dialog
+    }
     if (signUpState.type == AuthStateType.success) {
       ref
           .read(signUpEmailProvider.notifier)
@@ -143,7 +162,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           .read(authViewModelProvider.notifier)
           .sendConfirmationCode(email: emailController.text);
       if (sendCodeState.type == AuthStateType.success) {
-        context.push(Routes.verification);
+        if (mounted) {
+          context.push(Routes.verification);
+        }
       }
     } else {
       //todo show error message to the user eg. email already exists / email not valid
@@ -174,8 +195,17 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       vibrate();
     } else {
       // todo show the dialog (marwan)
-      // showConfirmationDialog(
-      //     context, emailController, _controllerPlus, signUp, onEdit);
+      showConfirmationDialog(
+        context: context,
+        title: 'is this the correct email?',
+        subtitle: emailController.text,
+        confirmText: 'Yes',
+        cancelText: 'Edit',
+        actionsAlignment: MainAxisAlignment.spaceBetween,
+        onConfirm: signUp,
+        onCancel: onEdit,
+        trailing: reCaptcha(),
+      );
     }
   }
 
