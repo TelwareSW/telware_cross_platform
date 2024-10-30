@@ -29,22 +29,22 @@ class AuthViewModel extends _$AuthViewModel {
     }
 
     // try getting updated user data
-    final AppError? response =
-        await ref.read(authRemoteRepositoryProvider).getMe();
-
-    if (response != null) {
-      state = AuthState.fail(response.error);
-      // getting user data from remote failed
+    final response =
+        await ref.read(authRemoteRepositoryProvider).getMe(token);
+    
+    response.match((appError) {
+      state = AuthState.fail(appError.error);
+      // getting user data from local as remote failed
       final user = ref.read(authLocalRepositoryProvider).getMe();
       if (user == null) {
         state = AuthState.unauthorized;
         return;
       }
       state = AuthState.authorized;
-    } else {
-      // getting user data from remote succeeded
+    }, (user) {
+      ref.read(authLocalRepositoryProvider).setUser(user);
       state = AuthState.authorized;
-    }
+    });
   }
 
   bool isAuthenticated() {
@@ -117,12 +117,12 @@ class AuthViewModel extends _$AuthViewModel {
 
     if (appError != null) {
       if (appError.code == 403) {
-        state = AuthState.unauthenticated;
+        state = AuthState.unauthorized;
       } else {
         state = AuthState.fail(appError.error);
       }
     } else {
-      state = AuthState.authorized;
+      state = AuthState.authenticated;
     }
   }
 
@@ -139,9 +139,7 @@ class AuthViewModel extends _$AuthViewModel {
 
   void googleLogIn() => _launchSocialAuth(GOOGLE_AUTH_URL);
 
-  void facebookLogIn() => _launchSocialAuth(FACEBOOK_AUTH_URL);
-
-  void gitHubLogIn() => _launchSocialAuth(GITHUB_AUTH_URL);
+  void githubLogIn() => _launchSocialAuth(GITHUB_AUTH_URL);
 
   Future<void> _launchSocialAuth(String authUrl) async {
     final Uri authUri = Uri.parse(authUrl);
@@ -154,6 +152,21 @@ class AuthViewModel extends _$AuthViewModel {
     } catch (e) {
       state = AuthState.fail('Couldn\'t launch authentication page');
     }
+  }
+
+  Future<void> authorizeOAuth(String secretSessionId) async {
+    // get the user data
+    final response = await ref
+        .read(authRemoteRepositoryProvider)
+        .getMe(secretSessionId);
+
+    response.match((appError) {
+      state = AuthState.fail(appError.error);
+    }, (user) {
+      ref.read(authLocalRepositoryProvider).setUser(user);
+      ref.read(authLocalRepositoryProvider).setToken(secretSessionId);
+      state = AuthState.authenticated;
+    });
   }
 
   Future<void> logOut() async {

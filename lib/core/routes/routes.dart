@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/view/screen/splash_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/log_in_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/sign_up_screen.dart';
+import 'package:telware_cross_platform/features/auth/view/screens/social_auth_loading_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/verification_screen.dart';
 import 'package:telware_cross_platform/features/home/view/screen/home_screen.dart';
 
@@ -12,6 +13,7 @@ class Routes {
   static const String logIn = LogInScreen.route;
   static const String signUp = SignUpScreen.route;
   static const String verification = VerificationScreen.route;
+  static const String socialAuthLoading = SocialAuthLoadingScreen.route;
 
   static GoRouter appRouter(bool isAuthenticated) => GoRouter(
         initialLocation: Routes.splash,
@@ -29,11 +31,7 @@ class Routes {
         routes: [
           GoRoute(
             path: Routes.splash,
-            pageBuilder: (context, state) => CustomTransitionPage(
-              key: state.pageKey,
-              child: const SplashScreen(),
-              transitionsBuilder: _transitionBuilder,
-            ),
+            builder: (context, state) => const SplashScreen(),
           ),
           GoRoute(
             path: Routes.logIn,
@@ -41,20 +39,39 @@ class Routes {
           ),
           GoRoute(
             path: Routes.signUp,
-            builder: (context, state) => const SignUpScreen(),
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: state.pageKey,
+              child: const SignUpScreen(),
+              transitionsBuilder: _slideRightTransitionBuilder,
+            ),
           ),
           GoRoute(
             path: Routes.verification,
-            builder: (context, state) => const VerificationScreen(),
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: state.pageKey,
+              child: const VerificationScreen(),
+              transitionsBuilder: _slideRightTransitionBuilder,
+            ),
+          ),
+          GoRoute(
+            path: '${Routes.socialAuthLoading}/:secretSessionId',
+            builder: (context, state) {
+              final secretSessionId = state.pathParameters['secretSessionId']!;
+              return SocialAuthLoadingScreen(secretSessionId: secretSessionId);
+            },
           ),
           GoRoute(
             path: Routes.home,
-            builder: (context, state) => const HomeScreen(),
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: state.pageKey,
+              child: const HomeScreen(),
+              transitionsBuilder: _slideRightTransitionBuilder,
+            ),
           ),
         ],
       );
 
-  static Widget _transitionBuilder(
+  static Widget _slideRightTransitionBuilder(
       context, animation, secondaryAnimation, child) {
     const begin = Offset(1.0, 0.0);
     const end = Offset.zero;

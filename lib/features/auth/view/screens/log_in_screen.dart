@@ -1,12 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
+import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/responsive.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/sign_up_screen.dart';
-import 'package:telware_cross_platform/features/auth/view/screens/verification_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_floating_action_button.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_sub_text_button.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/shake_my_auth_input.dart';
@@ -124,10 +125,10 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
           state.type == AuthStateType.success) {
         // the success state is in case of asking for reset password
         showToastMessage(state.message!);
-      } else if (state.type == AuthStateType.authorized) {
-        // todo(ahmed): navigate to the home screen
-      } else if (state.type == AuthStateType.unauthenticated) {
-        Navigator.pushNamed(context, VerificationScreen.route);
+      } else if (state.type == AuthStateType.authenticated) {
+        context.go(Routes.home);
+      } else if (state.type == AuthStateType.unauthorized) {
+        context.pushNamed(Routes.verification);
       }
     });
 

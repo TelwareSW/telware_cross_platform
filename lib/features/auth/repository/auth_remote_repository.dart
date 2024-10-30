@@ -1,9 +1,9 @@
 import 'dart:io';
 
+import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:dio/dio.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
-import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
 import 'package:flutter/foundation.dart';
@@ -101,30 +101,28 @@ class AuthRemoteRepository {
     return null;
   }
 
-  Future<AppError?> getMe() async {
-    final token = _ref.read(tokenProvider);
+  Future<Either<AppError,UserModel>> getMe(String sessionId) async {
     try {
       final response = await _dio.get(
         '/users/me',
         options: Options(
-          headers: {HttpHeaders.authorizationHeader: 'Bearer $token'},
+          headers: {HttpHeaders.authorizationHeader: 'Bearer $sessionId'},
         ),
       );
 
       if (response.statusCode! > 200 || response.statusCode! < 200) {
         final message = response.data['message'];
-        return AppError(message);
+        return Left(AppError(message));
       }
 
       final user = UserModel.fromMap(response.data['data']['user']);
-      _ref.read(authLocalRepositoryProvider).setUser(user);
+      return Right(user);
     } on DioException catch (dioException) {
-      return handleDioException(dioException);
+      return Left(handleDioException(dioException));
     } catch (error) {
       debugPrint('Get user error:\n${error.toString()}');
-      return AppError('Failed to connect, check your internet connection.');
+      return Left(AppError('Failed to connect, check your internet connection.'));
     }
-    return null;
   }
 
   Future<AppError?> logIn({
