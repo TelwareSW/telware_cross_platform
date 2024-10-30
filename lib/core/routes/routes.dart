@@ -53,16 +53,12 @@ class Routes {
           ),
           GoRoute(
             path: Routes.signUp,
-            builder: (context, state) => const SignUpScreen(),
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: state.pageKey,
+              child: const SignUpScreen(),
+              transitionsBuilder: _slideRightTransitionBuilder,
+            ),
           ),
-          // GoRoute(
-          //   path: Routes.signUp,
-          //   pageBuilder: (context, state) => CustomTransitionPage(
-          //     key: state.pageKey,
-          //     child: const SignUpScreen(),
-          //     transitionsBuilder: _slideRightTransitionBuilder,
-          //   ),
-          // ),
           GoRoute(
             path: Routes.verification,
             pageBuilder: (context, state) => CustomTransitionPage(
