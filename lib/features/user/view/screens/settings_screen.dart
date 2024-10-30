@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
+import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
 import 'package:telware_cross_platform/features/user/view/widget/profile_header_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   static const String route = '/settings';
 
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreen();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreen();
 }
 
-class _SettingsScreen extends State<SettingsScreen> {
+class _SettingsScreen extends ConsumerState<SettingsScreen> {
   static const String fullName = "Moamen Hefny";
 
   static var user = {
@@ -37,7 +40,8 @@ class _SettingsScreen extends State<SettingsScreen> {
         {
           "key": "bio-option",
           "text": user["bio"] ?? "Bio",
-          "subtext": user["bio"] != null ? "Bio" : "Add a few words about yourself",
+          "subtext":
+              user["bio"] != null ? "Bio" : "Add a few words about yourself",
           "routes": "/bio"
         }
       ]
@@ -92,17 +96,37 @@ class _SettingsScreen extends State<SettingsScreen> {
           "text": 'TelWare Premium',
           "routes": "locked",
         },
-        {"icon": Icons.star_border_rounded, "text": 'My Stars', "routes": "locked"},
-        {"icon": Icons.storefront, "text": 'TelWare Business', "routes": "locked"},
-        {"icon": Icons.card_giftcard, "text": 'Send a Gift', "routes": "locked"},
+        {
+          "icon": Icons.star_border_rounded,
+          "text": 'My Stars',
+          "routes": "locked"
+        },
+        {
+          "icon": Icons.storefront,
+          "text": 'TelWare Business',
+          "routes": "locked"
+        },
+        {
+          "icon": Icons.card_giftcard,
+          "text": 'Send a Gift',
+          "routes": "locked"
+        },
       ]
     },
     const {
       "title": "Help",
       "options": [
         {"icon": Icons.chat, "text": 'Ask a Question', "routes": "locked"},
-        {"icon": Icons.question_mark, "text": 'TelWare FAQ', "routes": "locked"},
-        {"icon": Icons.verified_user_outlined, "text": 'Privacy Policy', "routes": "locked"},
+        {
+          "icon": Icons.question_mark,
+          "text": 'TelWare FAQ',
+          "routes": "locked"
+        },
+        {
+          "icon": Icons.verified_user_outlined,
+          "text": 'Privacy Policy',
+          "routes": "locked"
+        },
       ],
       "trailing": "TalWare for Android v11.2.0 (5299) store bundled arm64-v8a"
     }
@@ -121,10 +145,13 @@ class _SettingsScreen extends State<SettingsScreen> {
             leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => context.pop()),
-            actions: const [
-              Icon(Icons.search),
-              SizedBox(width: 16),
-              Icon(Icons.more_vert),
+            actions: [
+              const Icon(Icons.search),
+              const SizedBox(width: 16),
+              IconButton(onPressed: () {
+                ref.read(authViewModelProvider.notifier).logOut();
+                context.go(Routes.logIn);
+              }, icon: const Icon(Icons.more_vert)),
             ],
             flexibleSpace: LayoutBuilder(
               builder: (context, constraints) {

@@ -251,7 +251,7 @@ class AuthViewModel extends _$AuthViewModel {
 
       await ref.read(authLocalRepositoryProvider).deleteUser();
       ref.read(userProvider.notifier).update((_) => null);
-      state = AuthState.unauthorized;
+      state = AuthState.unauthenticated;
       return;
     }
 
