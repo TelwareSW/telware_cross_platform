@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:telware_cross_platform/core/routes/routes.dart';
-import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'features/stories/models/story_model.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import 'package:telware_cross_platform/core/models/contact_model.dart';
+import 'package:telware_cross_platform/core/models/user_model.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
+import 'package:telware_cross_platform/core/theme/app_theme.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
-import 'core/models/user_model.dart';
-import 'core/theme/app_theme.dart';
+import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
+import 'package:telware_cross_platform/features/stories/models/story_model.dart';
 
 Future<void> main() async {
   await init();
@@ -20,8 +22,10 @@ Future<void> init() async {
   Hive.registerAdapter(UserModelAdapter());
   Hive.registerAdapter(ContactModelAdapter());
   Hive.registerAdapter(StoryModelAdapter());
+  Hive.registerAdapter(ContactModelBlockAdapter());
   await Hive.initFlutter();
   await Hive.openBox<ContactModel>('contacts');
+  await Hive.openBox<ContactModelBlock>('contacts-block');
   await Hive.openBox<String>('auth-token');
   await Hive.openBox<UserModel>('auth-user');
   await dotenv.load(fileName: "lib/.env");

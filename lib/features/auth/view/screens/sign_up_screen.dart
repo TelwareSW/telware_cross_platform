@@ -173,8 +173,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     if (someNotFilled) {
       vibrate();
     } else {
-      showConfirmationDialog(
-          context, emailController, _controllerPlus, signUp, onEdit);
+      // todo show the dialog (marwan)
+      // showConfirmationDialog(
+      //     context, emailController, _controllerPlus, signUp, onEdit);
     }
   }
 

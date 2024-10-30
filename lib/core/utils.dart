@@ -1,5 +1,5 @@
 // common utility functions are added here
-
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -64,4 +64,41 @@ void showSnackBarMessage(BuildContext context, String message) {
 void showToastMessage(String message) async {
   await Fluttertoast.cancel();
   Fluttertoast.showToast(msg: message);
+}
+
+String formatPhoneNumber(String phoneNumber) {
+  // remove all spaces
+  phoneNumber = phoneNumber.replaceAll(" ", "");
+
+  if (!phoneNumber.startsWith("+20")) {
+    phoneNumber = "+20${phoneNumber.substring(1)}";
+  }
+  if (phoneNumber.length == 13) {
+    return "${phoneNumber.substring(0, 3)} " // +20
+        "${phoneNumber.substring(3, 6)} " // 109
+        "${phoneNumber.substring(6)}"; // 3401932
+  }
+  return phoneNumber; // Return the original if it doesn't match the format.
+}
+
+// Helper function to generate random pastel-like colors
+Color getRandomColor() {
+  final Random random = Random();
+  return Color.fromARGB(
+    255,
+    50 + random.nextInt(100), // Red (200-255)
+    50 + random.nextInt(100), // Green (200-255)
+    50 + random.nextInt(100), // Blue (200-255)
+  );
+}
+
+String toKebabCase(String input) {
+  // Convert to lowercase and replace spaces with hyphens
+  String kebabCased = input.toLowerCase().replaceAll(RegExp(r'[\s]+'), '-');
+
+  // Replace any non-alphanumeric characters with hyphens
+  kebabCased = kebabCased.replaceAll(RegExp(r'[^a-z0-9-]+'), '-');
+
+  // Remove leading or trailing hyphens
+  return kebabCased.replaceAll(RegExp(r'^-+|-+$'), '');
 }

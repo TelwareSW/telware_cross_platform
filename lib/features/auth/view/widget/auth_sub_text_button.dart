@@ -11,6 +11,7 @@ class AuthSubTextButton extends StatelessWidget {
     this.padding = const EdgeInsets.all(0),
     this.fontSize = Sizes.infoText,
     this.buttonKey,
+    this.color,
   });
 
   final VoidCallback onPressed;
@@ -18,6 +19,7 @@ class AuthSubTextButton extends StatelessWidget {
   final String label;
   final EdgeInsetsGeometry padding;
   final double fontSize;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +33,7 @@ class AuthSubTextButton extends StatelessWidget {
       ),
       child: TitleElement(
         name: label,
-        color: Palette.accent,
+        color: color ?? Palette.accent,
         fontSize: fontSize,
         fontWeight: FontWeight.bold,
         padding: padding,
