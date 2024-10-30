@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/features/user/view/widget/section_title_widget.dart';
@@ -27,8 +28,7 @@ class SettingsSection extends StatelessWidget {
       this.actions});
 
   void _navigateTo(BuildContext context, String route) {
-    // todo: use GoRouter instead of Navigator
-    Navigator.pushNamed(context, route);
+    context.push(route);
   }
 
   @override
