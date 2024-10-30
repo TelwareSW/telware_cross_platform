@@ -35,22 +35,23 @@ class ContactViewModel extends StateNotifier<ContactViewModelState> {
   final ContactsLocalRepository _contactsLocalRepository;
   final ContactsRemoteRepository _contactsRemoteRepository;
 
-  ContactViewModel(this._contactsLocalRepository, this._contactsRemoteRepository)
+  ContactViewModel(
+      this._contactsLocalRepository, this._contactsRemoteRepository)
       : super(ContactViewModelState.initial());
 
   Future<void> fetchContacts() async {
     try {
-      List<ContactModel> usersFromBackEnd = await _contactsRemoteRepository.fetchContactsFromBackend();
+      List<ContactModel> usersFromBackEnd =
+          await _contactsRemoteRepository.fetchContactsFromBackend();
       await _contactsLocalRepository.saveContactsToHive(usersFromBackEnd);
       final contacts = _contactsLocalRepository.getAllContactsFromHive();
-      state = state.copyWith(
-          contacts: List.from(contacts), isLoading: false);
+      state = state.copyWith(contacts: List.from(contacts), isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false);
     }
   }
 
-  Future<void> deleteExpired()async {
+  Future<void> deleteExpired() async {
     try {
       final allContacts = state.contacts;
 
@@ -59,7 +60,8 @@ class ContactViewModel extends StateNotifier<ContactViewModelState> {
       for (final contact in allContacts) {
         final updatedStories = contact.stories.where((story) {
           final storyDateTime = story.createdAt;
-          return currentDateTime.isBefore(storyDateTime.add(const Duration(hours: 24)));
+          return currentDateTime
+              .isBefore(storyDateTime.add(const Duration(hours: 24)));
         }).toList();
         final updatedContact = contact.copyWith(stories: updatedStories);
         await _contactsLocalRepository.updateContactInHive(updatedContact);
@@ -151,11 +153,30 @@ class ContactViewModel extends StateNotifier<ContactViewModelState> {
   Future<bool> deleteStory(String storyId) async {
     return _contactsRemoteRepository.deleteStory(storyId);
   }
+
+  Future<void> handleStoryImageAndSeenStatus(
+      StoryModel story, ContactModel contact, Uint8List image) async {
+    if (story.storyContent == null) {
+      saveStoryImage(contact.userId, story.storyId, image);
+    }
+    if (!story.isSeen) {
+      markStoryAsSeen(contact.userId, story.storyId);
+    }
+  }
+
+  Future<List<ContactModel>> getListOfContactsFromHive(List<String> contactIds) async {
+    List<ContactModel> seenUsers = [];
+    for (String id in contactIds) {
+      ContactModel? user = await getContactById(id);
+      if (user != null) seenUsers.add(user);
+    }
+    return seenUsers;
+  }
 }
 
 final usersViewModelProvider =
     StateNotifierProvider<ContactViewModel, ContactViewModelState>((ref) {
   final contactsLocalRepository = ref.watch(contactsLocalRepositoryProvider);
   final contactsRemoteRepository = ref.watch(contactsRemoteRepositoryProvider);
-  return ContactViewModel(contactsLocalRepository,contactsRemoteRepository);
+  return ContactViewModel(contactsLocalRepository, contactsRemoteRepository);
 });
