@@ -1,8 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:hive/hive.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
-import 'package:telware_cross_platform/core/providers/token_provider.dart';
-import 'package:telware_cross_platform/core/providers/user_provider.dart';
 
 part 'auth_local_repository.g.dart';
 
@@ -18,15 +16,13 @@ AuthLocalRepository authLocalRepository(AuthLocalRepositoryRef ref) {
 class AuthLocalRepository {
   final Box<String> _tokenBox;
   final Box<UserModel> _userBox;
-  final ProviderRef<AuthLocalRepository> _ref;
 
   AuthLocalRepository({
     required Box<String> tokenBox,
     required Box<UserModel> userBox,
     required ProviderRef<AuthLocalRepository> ref,
   })  : _tokenBox = tokenBox,
-        _userBox = userBox,
-        _ref = ref;
+        _userBox = userBox;
 
   void setToken(String token) async {
     await _tokenBox.put('token', token);
