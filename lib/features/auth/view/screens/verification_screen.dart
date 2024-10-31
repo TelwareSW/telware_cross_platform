@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/view/widget/responsive.dart';
@@ -30,7 +31,7 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
   bool codeNotMatched = false;
   int remainingTime = 60; // Total seconds for countdown
   Timer? _timer;
-  final shakeKey = GlobalKey<ShakeWidgetState>();
+  
   late String email;
 
   final TextStyle digitStyle = const TextStyle(
@@ -117,7 +118,7 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
         });
       }
     } else {
-      shakeKey.currentState?.shake();
+      Keys.verificationShakeKey.currentState?.shake();
       Vibration.hasVibrator().then((hasVibrator) {
         if (hasVibrator ?? false) {
           Vibration.vibrate(duration: 100);
@@ -174,7 +175,7 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
                       )
                     : const SizedBox(),
                 ShakeMe(
-                  key: shakeKey,
+                  key: Keys.verificationShakeKey,
                   shakeCount: 3,
                   shakeOffset: 10,
                   shakeDuration: const Duration(milliseconds: 500),

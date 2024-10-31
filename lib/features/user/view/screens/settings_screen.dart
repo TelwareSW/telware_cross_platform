@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
@@ -176,7 +177,7 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
                 settingsOptions: [],
                 actions: [
                   SettingsOptionWidget(
-                    key: ValueKey("set-profile-photo-option"),
+                    key: Keys.settingsSetProfilePhotoOptions,
                     icon: Icons.camera_alt_outlined,
                     iconColor: Palette.primary,
                     text: "Set Profile Photo",

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vibration/vibration.dart';
+
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_input_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
 import 'package:telware_cross_platform/features/user/view/widget/toolbar_widget.dart';
-import 'package:vibration/vibration.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ProfileInfoScreen extends ConsumerStatefulWidget {
   static const String route = '/bio';
@@ -26,9 +27,6 @@ class _ProfileInfoScreen extends ConsumerState<ProfileInfoScreen> with SingleTic
   final TextEditingController _firstNameController = TextEditingController(text: user["firstName"]);
   final TextEditingController _secondNameController = TextEditingController(text: user["lastName"]);
   final TextEditingController _bioController = TextEditingController(text: user["bio"]);
-
-  final firstNameShakeKey = GlobalKey<ShakeWidgetState>();
-  final lastNameShakeKey = GlobalKey<ShakeWidgetState>();
 
   bool _showSaveButton = false;
 
@@ -78,15 +76,15 @@ class _ProfileInfoScreen extends ConsumerState<ProfileInfoScreen> with SingleTic
               SettingsSection(title: "Your Name",
                 settingsOptions: const [],
                 actions: [
-                  SettingsInputWidget(key: const ValueKey("first-name-input"),
+                  SettingsInputWidget(key: Keys.profileInfoFirstNameInput,
                     controller:_firstNameController,
                     placeholder: "First Name",
-                    shakeKey: firstNameShakeKey,
+                    shakeKey: Keys.profileInfoFirstNameShakeKey,
                   ),
-                  SettingsInputWidget(key: const ValueKey("last-name-input"),
+                  SettingsInputWidget(key: Keys.profileInfoLastNameInput,
                     controller:_secondNameController,
                     placeholder: "Last Name",
-                    shakeKey: lastNameShakeKey,
+                    shakeKey: Keys.profileInfoLastNameShakeKey,
                   ),
                 ],
               ),
@@ -98,7 +96,7 @@ class _ProfileInfoScreen extends ConsumerState<ProfileInfoScreen> with SingleTic
               SettingsSection(title: "Your bio",
                 settingsOptions: const [],
                 actions: [
-                  SettingsInputWidget(key: const ValueKey("bio-input"),
+                  SettingsInputWidget(key: Keys.profileInfoBioInput,
                     controller:_bioController,
                     placeholder: "Write about yourself...", lettersCap: 70,)
                 ],
@@ -116,10 +114,10 @@ class _ProfileInfoScreen extends ConsumerState<ProfileInfoScreen> with SingleTic
 
   void _updateUserData() {
     if (_firstNameController.text == "") {
-      return _shakeAndVibrate(firstNameShakeKey);
+      return _shakeAndVibrate(Keys.profileInfoFirstNameShakeKey);
     }
     if (_secondNameController.text == "") {
-      return _shakeAndVibrate(lastNameShakeKey);
+      return _shakeAndVibrate(Keys.profileInfoLastNameShakeKey);
     }
 
     context.pop();

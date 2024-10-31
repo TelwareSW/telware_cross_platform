@@ -16,5 +16,32 @@ class Keys {
   static final changeNumberFormKey = GlobalKey<FormState>(debugLabel: 'change_number_form');
   static final changeNumberPhoneShakeKey = GlobalKey<ShakeWidgetState>(debugLabel: 'change_number_phone_shake');
 
+  // SignUpScreen
+  static final signUpformKey = GlobalKey<FormState>(debugLabel: 'signup_form');
+  static final signUpemailShakeKey = GlobalKey<ShakeWidgetState>(debugLabel: 'signup_email_shake');
+  static final signUpphoneShakeKey = GlobalKey<ShakeWidgetState>(debugLabel: 'signup_phone_shake');
+  static final signUppasswordShakeKey = GlobalKey<ShakeWidgetState>(debugLabel: 'signup_password_shake');
+  static final signUpconfirmPasswordShakeKey = GlobalKey<ShakeWidgetState>(debugLabel: 'signup_confirm_password_shake');
+
+  // VerificationScreen
+  static final verificationShakeKey = GlobalKey<ShakeWidgetState>(debugLabel: 'verification_shake');
+
+  // SocialLogIn
+  static const googleLogIn = Key('google_log_in');
+  static const githubLogIn = Key('github_log_in');
+
+  // ShowTakenStoryScreen
+  static final signatureBoundaryKey  = GlobalKey(debugLabel: 'signature_boundary');
+
+  // ProfileInfoScreen
+  static final profileInfoFirstNameShakeKey = GlobalKey<ShakeWidgetState>();
+  static final profileInfoLastNameShakeKey = GlobalKey<ShakeWidgetState>();
+  static const profileInfoFirstNameInput = ValueKey("first-name-input");
+  static const profileInfoLastNameInput = ValueKey("last-name-input");
+  static const profileInfoBioInput = ValueKey("bio-input");
+
+  // SettingsScreen
+  static const settingsSetProfilePhotoOptions = ValueKey("set-profile-photo-option");
+
   Keys._();
 }

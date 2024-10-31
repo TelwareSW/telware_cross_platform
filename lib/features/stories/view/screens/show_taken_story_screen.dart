@@ -1,15 +1,18 @@
 import 'dart:async';
-import 'dart:ui' as ui;
 import 'dart:io';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:signature/signature.dart';
-import 'package:path_provider/path_provider.dart';
-import '../../utils/utils_functions.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
+
+import 'package:telware_cross_platform/features/stories/utils/utils_functions.dart';
 
 class ShowTakenStoryScreen extends StatefulWidget {
   final File image;
@@ -18,11 +21,10 @@ class ShowTakenStoryScreen extends StatefulWidget {
   const ShowTakenStoryScreen({super.key, required this.image});
 
   @override
-  _ShowTakenStoryScreenState createState() => _ShowTakenStoryScreenState();
+  State<ShowTakenStoryScreen> createState() => _ShowTakenStoryScreenState();
 }
 
 class _ShowTakenStoryScreenState extends State<ShowTakenStoryScreen> {
-  final GlobalKey _signatureBoundaryKey  = GlobalKey();
   File? _imageFile;
   File? _originalImageFile; // Store the original image
   final SignatureController _controller = SignatureController(
@@ -89,7 +91,8 @@ class _ShowTakenStoryScreenState extends State<ShowTakenStoryScreen> {
 
   Future<ui.Image> _captureImage() async {
     // Find the RenderRepaintBoundary in the context
-    final boundary = _signatureBoundaryKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+    final boundary = Keys.signatureBoundaryKey.currentContext!
+        .findRenderObject() as RenderRepaintBoundary;
     return await boundary.toImage(pixelRatio: 3.0);
   }
 
@@ -101,7 +104,8 @@ class _ShowTakenStoryScreenState extends State<ShowTakenStoryScreen> {
     }
 
     ui.Image combinedImage = await _captureImage();
-    ByteData? byteData = await combinedImage.toByteData(format: ui.ImageByteFormat.png);
+    ByteData? byteData =
+        await combinedImage.toByteData(format: ui.ImageByteFormat.png);
     Uint8List pngBytes = byteData!.buffer.asUint8List();
 
     // Get the temporary directory
@@ -113,7 +117,6 @@ class _ShowTakenStoryScreenState extends State<ShowTakenStoryScreen> {
 
     return file; // Return the saved file
   }
-
 
   void _clearDrawing() {
     _controller.clear();
@@ -143,7 +146,7 @@ class _ShowTakenStoryScreenState extends State<ShowTakenStoryScreen> {
       body: Stack(
         children: [
           RepaintBoundary(
-            key: _signatureBoundaryKey,
+            key: Keys.signatureBoundaryKey,
             child: Container(
               decoration: BoxDecoration(
                 image: DecorationImage(
