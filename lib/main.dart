@@ -75,7 +75,7 @@ class _TelWareState extends ConsumerState<TelWare> {
         BlockedUsersScreen.route: (context) => const BlockedUsersScreen(),
         UserProfileScreen.route: (context) => const UserProfileScreen(),
         PrivacySettingsScreen.route: (context) => const PrivacySettingsScreen(),
-        DevicesScreen.route: (context) => const DevicesScreen(),
+        DevicesScreen.route: (context) =>  DevicesScreen(),
       },
       initialRoute: HomeScreen.route,
     );

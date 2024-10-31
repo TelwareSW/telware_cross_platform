@@ -1,9 +1,11 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
 import 'package:telware_cross_platform/features/stories/models/story_model.dart';
-
+import 'package:http/http.dart' as http;
 import '../../auth/repository/auth_local_repository.dart';
 
 part 'contacts_remote_repository.g.dart';
@@ -148,35 +150,36 @@ class ContactsRemoteRepository {
   }
 
   Future<bool> postStory(File storyImage, String? caption) async {
-    // String uploadUrl = '\${domain}:\${port}/users/stories';
-    // var uri = Uri.parse(uploadUrl);
-    // var request = http.MultipartRequest('POST', uri);
-    //
-    // var multipartFile = await http.MultipartFile.fromPath(
-    //   'file', // Use 'file' to match your API documentation
-    //   storyImage.path,
-    //   contentType: MediaType('image', 'jpeg'),
-    // );
-    // request.files.add(multipartFile);
-    //
-    // if (caption != null) {
-    //   request.fields['caption'] = caption;
-    // }
-    //
-    // try {
-    //   var response = await request.send();
-    //   return response.statusCode == 201;
-    // } catch (e) {
-    //   if (kDebugMode) {
-    //     print('Error occurred: $e');
-    //   }
-    //   return false;
-    // }
-    return false;
+    print('fdsaib');
+    String uploadUrl = 'http://testing.telware.tech:3000/api/v1/users/stories';
+    var uri = Uri.parse(uploadUrl);
+    var request = http.MultipartRequest('POST', uri);
+    request.headers['X-Session-Token'] = '410b860a-de14-4cbe-b5f2-7cff8518a2f7';
+
+    var multipartFile = await http.MultipartFile.fromPath(
+      'file',
+      storyImage.path,
+      contentType: MediaType('image', 'jpeg'),
+    );
+    request.files.add(multipartFile);
+
+    if (caption != null) {
+      request.fields['caption'] = caption;
+    }
+
+    try {
+      var response = await request.send();
+      return response.statusCode == 201;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error occurred: $e');
+      }
+      return false;
+    }
   }
 
   Future<bool> markStoryAsSeen(String storyId) async {
-    // String uploadUrl = '\${domain}:\${port}/users/${storyId}/views';
+    String uploadUrl = 'http://testing.telware.tech:3000/api/v1/stories/:storyId/views';
     // var uri = Uri.parse(uploadUrl);
     // var request = http.MultipartRequest('POST', uri);
     // String? token = authLocalRepository.getToken();

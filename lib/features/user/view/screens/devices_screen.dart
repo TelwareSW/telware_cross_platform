@@ -3,124 +3,138 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../../core/theme/dimensions.dart';
 import '../../../../core/theme/palette.dart';
+import '../../view_model/devices_view_model.dart';
 import '../widget/section_title_widget.dart';
 import '../widget/toolbar_widget.dart';
 
-class DevicesScreen extends StatelessWidget {
+class DevicesScreen extends ConsumerWidget {
   static const String route = '/devices';
 
   const DevicesScreen({super.key});
 
-  static const List<Map<String, dynamic>> profileSections = [
-    {
-      "title": "Current session",
-      "options": [
-        {
-          "icon": FontAwesomeIcons.android,
-          "phoneName": 'Redmi Redmi Note 8 Pro',
-          "telegramVersion": "Telegram Android 11.2.3",
-          "location": "Cairo, Egypt",
-          "state": "online"
-        },
-        {
-          "icon": FontAwesomeIcons.hand,
-          "phoneName": 'Terminate All Other Sessions',
-          "color": Colors.red
-        },
-      ],
-      "trailing": "Logs out all devices except this one"
-    },
-    {
-      "title": "Active sessions",
-      "options": [
-        {
-          "icon": FontAwesomeIcons.android,
-          "phoneName": 'Redmi Redmi Note 8 Pro',
-          "telegramVersion": "Telegram Android 11.2.3",
-          "location": "Cairo, Egypt",
-          "state": "online"
-        },
-        {
-          "icon": FontAwesomeIcons.edge,
-          "phoneName": 'Microsoft Edge 130',
-          "telegramVersion": "Telegram Web 11.2.3",
-          "location": "Texas, USA",
-          "state": "8:33 PM"
-        },
-        {
-          "icon": FontAwesomeIcons.apple,
-          "phoneName": 'iPhone 15 Pro',
-          "telegramVersion": "Telegram iOS 11.2.3",
-          "location": "Texas, USA",
-          "state": "online"
-        },
-      ],
-      "trailing": "The official Telegram app is available for Android, iPhone, iPad, Windows, macOS and Linux."
-    },
-  ];
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sessionsAsync = ref.watch(devicesViewModelProvider);
+
+    if (sessionsAsync.isLoading) {
+      ref.read(devicesViewModelProvider.notifier).fetchSessions(context);
+    }
+
     return Scaffold(
       appBar: const ToolbarWidget(title: "Devices"),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            ...List.generate(profileSections.length, (index) {
-              final section = profileSections[index];
-              final title = section["title"] ?? "";
-              final options = section["options"];
-              final trailing = section["trailing"] ?? "";
+      body: sessionsAsync.when(
+        loading: () => Center(child: CircularProgressIndicator()),
+        error: (error, stack) => Center(child: Text('Error: $error')),
+        data: (sessions) {
+          if (sessions.isEmpty) {
+            return Center(child: Text('No sessions available'));
+          }
 
-              return Column(
-                children: [
-                  Container(
-                    color: Palette.secondary,
-                    child: Column(
-                      children: [
-                        SectionTitleWidget(title: title),
-                        Consumer(
-                          builder: (context, ref, _) {
-                            return Column(
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                ...sessions.asMap().entries.map((entry) {
+                  int sectionIndex = entry.key;
+                  final section = entry.value;
+                  final title = section.title;
+                  final options = section.options;
+                  final trailing = section.trailing;
+
+                  return Column(
+                    key: Key("section_$sectionIndex"),
+                    children: [
+                      Container(
+                        color: Palette.secondary,
+                        child: Column(
+                          children: [
+                            SectionTitleWidget(
+                              title: title,
+                              key: Key("section_title_$sectionIndex"),
+                            ),
+                            Column(
                               children: List.generate(options.length, (index) {
                                 final option = options[index];
                                 return SessionTile(
-                                  icon: option["icon"],
-                                  text: option["phoneName"],
-                                  telegramPlatform: option["telegramVersion"] ?? "",
-                                  location: option["location"] ?? "",
-                                  color: option["color"] ?? Palette.primaryText,
-                                  iconColor: option["iconColor"] ?? Palette.accentText,
+                                  key: Key("session_tile_${sectionIndex}_$index"),
+                                  icon: option.icon,
+                                  text: option.phoneName,
+                                  telegramPlatform: option.telegramVersion,
+                                  location: option.location,
+                                  color: option.color ?? Palette.primaryText,
+                                  iconColor: option.color ?? Palette.accentText,
                                   showDivider: index != options.length - 1,
-                                  showContainer: option["color"] == null,
+                                  showContainer: option.color == null,
+                                  onTap: option.onTap ?? () {},
                                 );
                               }),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: Dimensions.sectionGaps),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(11, 16, 11, 7),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        trailing,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Palette.accentText,
+                            ),
+                            const SizedBox(height: Dimensions.sectionGaps),
+                          ],
                         ),
                       ),
-                    ),
-                  ),
-                ],
-              );
-            }),
-          ],
-        ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(11, 16, 11, 7),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            trailing,
+                            key: Key("section_trailing_$sectionIndex"),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Palette.accentText,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ],
+            ),
+          );
+        },
       ),
+    );
+  }
+}
+
+class AlertTerminateSessionConformation extends StatelessWidget {
+  final String body;
+  final String title;
+  final String conformationText;
+  final Function functionOnConfirmed;
+  const AlertTerminateSessionConformation({
+    super.key,
+    required this.body,
+    required this.title,
+    required this.conformationText,
+    required this.functionOnConfirmed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: Palette.secondary,
+      title: Text(title),
+      content: Text(body),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () {
+            functionOnConfirmed;
+            Navigator.of(context).pop();
+          },
+          child: Text(
+            conformationText,
+            style: TextStyle(color: Colors.red),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -139,33 +153,34 @@ class LeadingIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color backgroundColor = (icon == FontAwesomeIcons.android || icon == FontAwesomeIcons.apple)
-        ? Colors.green
-        : Colors.pinkAccent;
+    Color backgroundColor =
+        (icon == FontAwesomeIcons.android || icon == FontAwesomeIcons.apple)
+            ? Colors.green
+            : Colors.pinkAccent;
 
     return showContainer
         ? Container(
-      width: 50,
-      height: 50,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Center(
-        child: FaIcon(
-          icon,
-          color: Colors.white,
-          size: 30,
-        ),
-      ),
-    )
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(30),
+            ),
+            child: Center(
+              child: FaIcon(
+                icon,
+                color: Colors.white,
+                size: 30,
+              ),
+            ),
+          )
         : Center(
-      child: FaIcon(
-        icon,
-        color: Colors.red,
-        size: 30,
-      ),
-    );
+            child: FaIcon(
+              icon,
+              color: Colors.red,
+              size: 30,
+            ),
+          );
   }
 }
 
@@ -179,6 +194,7 @@ class SessionTile extends StatelessWidget {
   final Color color;
   final bool showDivider;
   final bool showContainer;
+  final VoidCallback onTap;
 
   const SessionTile({
     super.key,
@@ -191,64 +207,69 @@ class SessionTile extends StatelessWidget {
     this.iconColor = Palette.accentText,
     this.showDivider = true,
     this.showContainer = true,
+    required this.onTap,
   });
+
+  static void _defaultOnTap() {}
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-      child: Row(
-        children: [
-          LeadingIcon(icon: icon!, showContainer: showContainer),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              children: [
-                ListTile(
-                  title: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        text,
-                        style: TextStyle(
-                          color: color,
-                          fontSize: fontSize,
-                          fontWeight: FontWeight.normal,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                      if (telegramPlatform.isNotEmpty)
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+        child: Row(
+          children: [
+            LeadingIcon(icon: icon!, showContainer: showContainer),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                children: [
+                  ListTile(
+                    title: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          telegramPlatform,
+                          text,
                           style: TextStyle(
-                            color: Colors.white,
-                            fontSize: fontSize * 0.8,
+                            color: color,
+                            fontSize: fontSize,
+                            fontWeight: FontWeight.normal,
                           ),
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                         ),
-                      if (location.isNotEmpty)
-                        Text(
-                          location,
-                          style: TextStyle(
-                            color: Palette.accentText,
-                            fontSize: fontSize * 0.8,
+                        if (telegramPlatform.isNotEmpty)
+                          Text(
+                            telegramPlatform,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: fontSize * 0.8,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                    ],
+                        if (location.isNotEmpty)
+                          Text(
+                            location,
+                            style: TextStyle(
+                              color: Palette.accentText,
+                              fontSize: fontSize * 0.8,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                      ],
+                    ),
+                    onTap: () {},
                   ),
-                  onTap: () {},
-                ),
-                if (showDivider) const Divider(),
-              ],
+                  if (showDivider) const Divider(),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
-
