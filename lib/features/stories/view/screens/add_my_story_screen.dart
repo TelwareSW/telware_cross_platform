@@ -5,18 +5,19 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:path_provider/path_provider.dart';
-
 import 'package:telware_cross_platform/core/routes/routes.dart';
-import 'package:telware_cross_platform/features/stories/view/widget/choice_mode_in_camera_container.dart';
-import 'package:telware_cross_platform/features/stories/view/widget/take_photo_row.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:telware_cross_platform/features/stories/view/screens/show_taken_story_screen.dart';
+import '../widget/take_photo_row.dart';
+import '../widget/toggleCameraMode.dart';
 
 class AddMyStoryScreen extends StatefulWidget {
-  const AddMyStoryScreen({super.key});
   static const String route = '/add-my-story';
 
+  const AddMyStoryScreen({super.key});
+
   @override
-  State<AddMyStoryScreen> createState() => _AddMyStoryScreenState();
+  _AddMyStoryScreenState createState() => _AddMyStoryScreenState();
 }
 
 class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
@@ -50,7 +51,9 @@ class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
         print('Error initializing camera: $e');
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to access camera. Please check permissions.')),
+        const SnackBar(
+            content:
+                Text('Unable to access camera. Please check permissions.')),
       );
     }
   }
@@ -60,7 +63,7 @@ class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
     final filePath = '${directory.path}/taken_story.png';
     final file = File(filePath);
     await file.writeAsBytes(imageBytes);
-    return file; // Return the created file
+    return file;
   }
 
   Future<void> _initializeController(CameraDescription camera) async {
@@ -68,7 +71,6 @@ class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
       camera,
       ResolutionPreset.high,
     );
-
     _initializeControllerFuture = _controller?.initialize().then((_) {
       setState(() {});
     });
@@ -91,25 +93,21 @@ class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
 
   void _captureImage() async {
     try {
-      // Ensure the controller is initialized before capturing an image
       await _initializeControllerFuture;
       final image = await _controller!.takePicture();
       Uint8List imageBytes = await image.readAsBytes();
       File savedFile = await _saveImageBytesToFile(imageBytes);
-      context.push(Routes.showTakenStory, extra: savedFile);
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ShowTakenStoryScreen(image: savedFile),
+        ),
+      );
     } catch (e) {
       if (kDebugMode) {
         print('Error capturing image: $e');
       }
-    }
-  }
-
-
-  void _toggleMode(String pressedButton) {
-    if (pressedButton != _selectedMode) {
-      setState(() {
-        _selectedMode = _selectedMode == 'Photo' ? 'Video' : 'Photo';
-      });
     }
   }
 
@@ -126,7 +124,6 @@ class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
                 Positioned.fill(
                   child: CameraPreview(_controller!),
                 ),
-                // Transparent AppBar
                 Positioned(
                   top: 0,
                   left: 0,
@@ -149,11 +146,18 @@ class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
                       return Column(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          TakePhotoRow(selectedMode: _selectedMode, onCapture: _captureImage, onToggle:  _toggleCamera,),
+                          TakePhotoRow(
+                            selectedMode: _selectedMode,
+                            onCapture: _captureImage,
+                            onToggle: _toggleCamera,
+                          ),
                           const SizedBox(
                             height: 25,
                           ),
-                          buildCameraModeRow(constraints),
+                          ToggleCameraMode(
+                            selectedMode: _selectedMode,
+                            constraints: constraints,
+                          )
                         ],
                       );
                     },
@@ -170,35 +174,4 @@ class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
       ),
     );
   }
-
-  Row buildCameraModeRow(BoxConstraints constraints) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: constraints.maxWidth / 2 - 28,
-        ),
-        GestureDetector(
-          child: ChoiceModeInCameraContainer(
-            text: _selectedMode,
-          ),
-          onTap: () {
-            _toggleMode(_selectedMode);
-          },
-        ),
-        const SizedBox(
-          width: 16,
-        ),
-        GestureDetector(
-          child: ChoiceModeInCameraContainer(
-            text: _selectedMode == 'Photo' ? 'Video' : 'Photo',
-          ),
-          onTap: () {
-            _toggleMode(_selectedMode == 'Photo' ? 'Video' : 'Photo');
-          },
-        )
-      ],
-    );
-  }
 }
-

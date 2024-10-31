@@ -81,7 +81,7 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
           "text": 'Chat Folders',
           "routes": 'locked'
         },
-        {"icon": Icons.devices, "text": 'Devices', "routes": 'locked'},
+        {"icon": Icons.devices, "text": 'Devices', "routes": '/devices'},
         {
           "icon": Icons.language_rounded,
           "text": 'Language',
