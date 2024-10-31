@@ -257,19 +257,22 @@ class AuthViewModel extends _$AuthViewModel {
 
       await ref.read(authLocalRepositoryProvider).deleteUser();
       ref.read(userProvider.notifier).update((_) => null);
-      state = AuthState.unauthenticated;
+      state = AuthState.unauthorized;
       return;
     }
 
     final token = ref.read(tokenProvider);
 
     //  started log out operation
-    print('log out operation started');
-    print('token: $token');
+    debugPrint('===============================');
+    debugPrint('log out operation started');
+    debugPrint('token: $token');
     final appError = await ref
         .read(authRemoteRepositoryProvider)
         .logOut(token: token!, route: '/auth/logout');
-    print('log out operation ended');
+    debugPrint('===============================');
+    debugPrint('log out operation ended');
+    debugPrint('Error: ${appError?.error}');
     await _handleLogOutState(appError);
   }
 

@@ -4,7 +4,7 @@ final UserModel userMock = UserModel(
   username: 'mock.user',
   screenName: 'Mocka Mocka',
   email: 'mock@gmail.com',
-  status: 'verified',
+  status: 'online',
   bio: 'I am a mocking user',
   maxFileSize: 30,
   automaticDownloadEnable: true,

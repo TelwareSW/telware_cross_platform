@@ -49,7 +49,7 @@ class _UserProfileScreen extends State<UserProfileScreen> {
               builder: (context, constraints) {
                 double factor = _calculateFactor(constraints);
                 return FlexibleSpaceBar(
-                  title: ProfileHeader(fullName: fullName, factor: factor),
+                  title: ProfileHeader(factor: factor),
                   centerTitle: true,
                   background: Container(
                     alignment: Alignment.topLeft,

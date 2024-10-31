@@ -176,7 +176,7 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
                       double factor = _calculateFactor(constraints);
                       return FlexibleSpaceBar(
                         title:
-                            ProfileHeader(fullName: fullName, factor: factor),
+                            ProfileHeader(factor: factor),
                         centerTitle: true,
                         background: Container(
                           alignment: Alignment.topLeft,
