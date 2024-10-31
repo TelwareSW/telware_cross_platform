@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:telware_cross_platform/main.dart' as app;
@@ -18,7 +19,7 @@ void main() {
       await tester.pumpAndSettle(const Duration(seconds: 2));
       // Enter valid email
       //var emailInput = find.byType(TextFormField).at(0);
-      var emailInput = find.byKey(const ValueKey('Eslam'));
+      var emailInput = find.byKey(Keys.logInEmailKey);
       await tester.enterText(emailInput, 'validuser@example.com');
       await tester.pumpAndSettle(const Duration(seconds: 1));
       //await tester.pumpAndSettle(const Duration(seconds: 1));

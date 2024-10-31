@@ -1,17 +1,18 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phone_form_field/phone_form_field.dart';
+import 'package:vibration/vibration.dart';
+
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
-import 'package:flutter/material.dart';
+import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/core/view/widget/responsive.dart';
+import 'package:telware_cross_platform/features/auth/view/widget/auth_floating_action_button.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_phone_number.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
-import 'package:telware_cross_platform/core/theme/sizes.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/auth_floating_action_button.dart';
-import 'package:vibration/vibration.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ChangeNumberFormScreen extends ConsumerStatefulWidget {
   static const String route = '/change-number-form';
@@ -23,14 +24,13 @@ class ChangeNumberFormScreen extends ConsumerStatefulWidget {
 }
 
 class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
-  final formKey = GlobalKey<FormState>();
+  
   final FocusNode phoneFocusNode = FocusNode();
   bool isPhoneFocused = false;
 
   final PhoneController phoneController = PhoneController(
       initialValue: const PhoneNumber(isoCode: IsoCode.EG, nsn: ''));
 
-  final phoneShakeKey = GlobalKey<ShakeWidgetState>();
 
   @override
   void initState() {
@@ -68,7 +68,7 @@ class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
   void _handleSubmit() {
     bool notFilled = phoneController.value.nsn.isEmpty;
     if (phoneController.value.nsn.isEmpty) {
-      phoneShakeKey.currentState?.shake();
+      Keys.changeNumberPhoneShakeKey.currentState?.shake();
     }
 
     String phoneNumber = "+${phoneController.value.countryCode} "
@@ -104,7 +104,7 @@ class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
           child: Padding(
             padding: const EdgeInsets.only(bottom: 60),
             child: Form(
-              key: formKey,
+              key: Keys.changeNumberFormKey,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -125,7 +125,7 @@ class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
                       width: 250.0),
                   AuthPhoneNumber(
                     name: 'Phone Number',
-                    shakeKey: phoneShakeKey,
+                    shakeKey: Keys.changeNumberPhoneShakeKey,
                     isFocused: isPhoneFocused,
                     focusNode: phoneFocusNode,
                     controller: phoneController,
@@ -137,7 +137,7 @@ class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
         ),
       ),
       floatingActionButton: AuthFloatingActionButton(
-        formKey: formKey,
+        formKey: Keys.changeNumberFormKey,
         onSubmit: _handleSubmit,
       ),
     );
