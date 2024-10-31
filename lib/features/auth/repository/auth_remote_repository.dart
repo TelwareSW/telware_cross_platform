@@ -32,13 +32,15 @@ class AuthRemoteRepository {
     required String reCaptchaResponse,
   }) async {
     try {
-      final response = await _dio.post('/auth/sign-up', data: {
+      final response = await _dio.post('/auth/signup', data: {
         'email': email,
-        'phone': phone,
+        'phoneNumber': phone,
         'password': password,
-        'confirmPassword': confirmPassword,
+        'passwordConfirm': confirmPassword,
         'reCaptchaResponse': reCaptchaResponse,
       });
+      debugPrint(
+          '---------------------------Sign Up response: ${response.data}');
 
       if (response.statusCode! >= 400) {
         final String message = response.data?['message'] ?? 'Unexpected Error';
@@ -59,6 +61,9 @@ class AuthRemoteRepository {
     try {
       final response = await _dio.post('/auth/verify',
           data: {'email': email, 'verificationCode': code});
+
+      debugPrint(
+          '---------------------------Verification response: ${response.data}');
 
       if (response.statusCode! >= 400) {
         final String message = response.data?['message'] ?? 'Unexpected Error';
@@ -202,7 +207,8 @@ class AuthRemoteRepository {
   AppError handleDioException(DioException dioException) {
     String? message;
     if (dioException.response != null) {
-      message = (dioException.response!.data)['data']['message'];
+      message =
+          dioException.response!.data?['message'] ?? 'Unexpected dio Error';
       debugPrint(message);
     } else if (dioException.type == DioExceptionType.connectionTimeout ||
         dioException.type == DioExceptionType.connectionError ||
@@ -212,7 +218,7 @@ class AuthRemoteRepository {
     } else {
       message = 'Something wrong happened. Please, try again later.';
       debugPrint(message);
-      debugPrint('here Unhandled Dio Exception');
+      debugPrint('Unhandled Dio Exception');
     }
     return AppError(message ?? 'Unexpected server error.');
   }
