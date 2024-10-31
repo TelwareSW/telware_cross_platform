@@ -33,7 +33,21 @@ class SignUpScreen extends ConsumerStatefulWidget {
 }
 
 class _SignUpScreenState extends ConsumerState<SignUpScreen> {
-  final formKey = GlobalKey<FormState>();
+  final formKey = GlobalKey<FormState>(debugLabel: 'signup_form');
+  final emailKey = GlobalKey<FormFieldState>(debugLabel: 'signup_email_input');
+  final phoneKey = GlobalKey<FormFieldState>(debugLabel: 'signup_phone_input');
+  final passwordKey =
+      GlobalKey<FormFieldState>(debugLabel: 'signup_password_input');
+  final confirmPasswordKey =
+      GlobalKey<FormFieldState>(debugLabel: 'signup_confirm_password_input');
+  final alreadyHaveAccountKey =
+      GlobalKey<State>(debugLabel: 'signup_already_have_account_button');
+  final signUpSubmitKey = GlobalKey<State>(debugLabel: 'signup_submit_button');
+  final onConfirmationKey =
+      GlobalKey<State>(debugLabel: 'signup_on_confirmation_button');
+  final onCancellationKey =
+      GlobalKey<State>(debugLabel: 'signup_on_cancellation_button');
+
   final FocusNode emailFocusNode = FocusNode();
   final FocusNode phoneFocusNode = FocusNode();
   final FocusNode passwordFocusNode = FocusNode();
@@ -154,17 +168,12 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     if (mounted) {
       context.pop(); // to close the dialog
     }
-    if (signUpState.type == AuthStateType.success) {
+    if (signUpState.type == AuthStateType.unauthenticated) {
       ref
           .read(signUpEmailProvider.notifier)
           .update((_) => emailController.text);
-      AuthState sendCodeState = await ref
-          .read(authViewModelProvider.notifier)
-          .sendConfirmationCode(email: emailController.text);
-      if (sendCodeState.type == AuthStateType.success) {
-        if (mounted) {
-          context.push(Routes.verification);
-        }
+      if (mounted) {
+        context.push(Routes.verification);
       }
     } else {
       //todo show error message to the user eg. email already exists / email not valid
@@ -194,7 +203,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     if (someNotFilled) {
       vibrate();
     } else {
-      // todo show the dialog (marwan)
+      // todo make recaptcha better
       showConfirmationDialog(
         context: context,
         title: 'is this the correct email?',
@@ -205,6 +214,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         onConfirm: signUp,
         onCancel: onEdit,
         trailing: reCaptcha(),
+        onCancelButtonKey: onCancellationKey,
+        onConfirmButtonKey: onConfirmationKey,
       );
     }
   }
@@ -246,6 +257,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       width: 250.0),
                   ShakeMyAuthInput(
                     name: 'Email',
+                    formKey: emailKey,
                     shakeKey: emailShakeKey,
                     isFocused: isEmailFocused,
                     focusNode: emailFocusNode,
@@ -254,6 +266,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   ),
                   AuthPhoneNumber(
                     name: 'Phone Number',
+                    formKey: phoneKey,
                     shakeKey: phoneShakeKey,
                     isFocused: isPhoneFocused,
                     focusNode: phoneFocusNode,
@@ -261,6 +274,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   ),
                   ShakeMyAuthInput(
                     name: 'Password',
+                    formKey: passwordKey,
                     shakeKey: passwordShakeKey,
                     isFocused: isPasswordFocused,
                     focusNode: passwordFocusNode,
@@ -270,6 +284,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   ),
                   ShakeMyAuthInput(
                     name: 'Confirm Password',
+                    formKey: confirmPasswordKey,
                     shakeKey: confirmPasswordShakeKey,
                     isFocused: isConfirmPasswordFocused,
                     focusNode: confirmPasswordFocusNode,
@@ -285,6 +300,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           color: Palette.primaryText,
                           fontSize: Sizes.infoText),
                       AuthSubTextButton(
+                        buttonKey: alreadyHaveAccountKey,
                         onPressed: () {
                           context.pop();
                         },

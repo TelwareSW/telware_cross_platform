@@ -25,6 +25,8 @@ void showConfirmationDialog({
   Color? cancelColor,
   required VoidCallback onConfirm,
   required VoidCallback onCancel,
+  GlobalKey<State>? onConfirmButtonKey,
+  GlobalKey<State>? onCancelButtonKey,
   MainAxisAlignment? actionsAlignment,
   Widget? trailing,
 }) {
@@ -77,6 +79,7 @@ void showConfirmationDialog({
                           actionsAlignment ?? MainAxisAlignment.spaceBetween,
                       children: [
                         AuthSubTextButton(
+                          buttonKey: onCancelButtonKey,
                           onPressed: onCancel,
                           fontSize: Sizes.secondaryText,
                           label: cancelText,
@@ -84,6 +87,7 @@ void showConfirmationDialog({
                           padding: cancelPadding ?? const EdgeInsets.all(0),
                         ),
                         AuthSubTextButton(
+                          buttonKey: onConfirmButtonKey,
                           onPressed: onConfirm,
                           fontSize: Sizes.secondaryText,
                           label: confirmText,
