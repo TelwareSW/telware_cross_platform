@@ -39,16 +39,16 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final emailKey = GlobalKey<FormFieldState>(debugLabel: 'signup_email_input');
   final phoneKey = GlobalKey<FormFieldState>(debugLabel: 'signup_phone_input');
   final passwordKey =
-  GlobalKey<FormFieldState>(debugLabel: 'signup_password_input');
+      GlobalKey<FormFieldState>(debugLabel: 'signup_password_input');
   final confirmPasswordKey =
-  GlobalKey<FormFieldState>(debugLabel: 'signup_confirm_password_input');
+      GlobalKey<FormFieldState>(debugLabel: 'signup_confirm_password_input');
   final alreadyHaveAccountKey =
-  GlobalKey<State>(debugLabel: 'signup_already_have_account_button');
+      GlobalKey<State>(debugLabel: 'signup_already_have_account_button');
   final signUpSubmitKey = GlobalKey<State>(debugLabel: 'signup_submit_button');
   final onConfirmationKey =
-  GlobalKey<State>(debugLabel: 'signup_on_confirmation_button');
+      GlobalKey<State>(debugLabel: 'signup_on_confirmation_button');
   final onCancellationKey =
-  GlobalKey<State>(debugLabel: 'signup_on_cancellation_button');
+      GlobalKey<State>(debugLabel: 'signup_on_cancellation_button');
 
   final emailShakeKey = GlobalKey<ShakeWidgetState>();
   final phoneShakeKey = GlobalKey<ShakeWidgetState>();
@@ -72,9 +72,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       initialValue: const PhoneNumber(isoCode: IsoCode.EG, nsn: ''));
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
-  TextEditingController();
+      TextEditingController();
   late WebViewControllerPlus _controllerPlus;
-  RecaptchaV2Controller recaptchaV2Controller = RecaptchaV2Controller();
 
   //-------------------------------------- Errors -------------------------
   String? emailError;
@@ -114,9 +113,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     _controllerPlus = WebViewControllerPlus()
       ..addJavaScriptChannel('onCaptchaCompleted',
           onMessageReceived: (JavaScriptMessage message) {
-            captchaToken = message.message;
-            debugPrint('Captcha token: $captchaToken');
-          })
+        captchaToken = message.message;
+        debugPrint('Captcha token: $captchaToken');
+      })
       ..loadFlutterAssetServer('assets/webpages/captcha.html')
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000));
@@ -169,13 +168,13 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     }
     // phoneController.value.international gives the phone number in international format eg. +20123456789
     SignupResult signUpResult =
-    await ref.read(authViewModelProvider.notifier).signUp(
-      email: emailController.text,
-      phone: phoneController.value.international,
-      password: passwordController.text,
-      confirmPassword: confirmPasswordController.text,
-      reCaptchaResponse: captchaToken!,
-    );
+        await ref.read(authViewModelProvider.notifier).signUp(
+              email: emailController.text,
+              phone: phoneController.value.international,
+              password: passwordController.text,
+              confirmPassword: confirmPasswordController.text,
+              reCaptchaResponse: captchaToken!,
+            );
 
     if (mounted) {
       context.pop(); // to close the dialog
@@ -272,7 +271,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   ),
                   const TitleElement(
                       name:
-                      'Please confirm your email address and enter your password.',
+                          'Please confirm your email address and enter your password.',
                       color: Palette.accentText,
                       fontSize: Sizes.secondaryText,
                       padding: EdgeInsets.only(bottom: 30),
