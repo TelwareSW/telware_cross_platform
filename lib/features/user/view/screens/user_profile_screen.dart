@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/features/user/view/widget/profile_header_widget.dart';
@@ -35,11 +37,11 @@ class _UserProfileScreen extends State<UserProfileScreen> {
             pinned: true,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => context.pop(),
             ),
             actions: [
               IconButton(icon: const Icon(Icons.edit),
-                  onPressed: () => Navigator.pushNamed(context, "/bio")),
+                  onPressed: () => context.push(Routes.profileInfo)),
               const SizedBox(width: 16),
               const Icon(Icons.more_vert),
             ],

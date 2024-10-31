@@ -1,15 +1,13 @@
 import 'dart:io';
 
+import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:dio/dio.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
-import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
 import 'package:flutter/foundation.dart';
 import 'package:telware_cross_platform/features/auth/models/auth_response_model.dart';
-
-import 'package:telware_cross_platform/features/auth/repository/auth_local_repository.dart';
 
 part 'auth_remote_repository.g.dart';
 
@@ -19,14 +17,12 @@ AuthRemoteRepository authRemoteRepository(AuthRemoteRepositoryRef ref) {
 }
 
 class AuthRemoteRepository {
-  final ProviderRef<AuthRemoteRepository> _ref;
   final Dio _dio;
 
   AuthRemoteRepository({
     required ProviderRef<AuthRemoteRepository> ref,
     required Dio dio,
-  })  : _ref = ref,
-        _dio = dio;
+  }) : _dio = dio;
 
   Future<AppError?> signUp({
     required String email,
@@ -57,7 +53,8 @@ class AuthRemoteRepository {
     return null;
   }
 
-  Future<AppError?> verifyEmail(
+  // todo: make sure of what does get from the back-end
+  Future<Either<AppError, AuthResponseModel>> verifyEmail(
       {required String email, required String code}) async {
     try {
       final response = await _dio.post('/auth/verify',
@@ -65,22 +62,19 @@ class AuthRemoteRepository {
 
       if (response.statusCode! >= 400) {
         final String message = response.data?['message'] ?? 'Unexpected Error';
-        return AppError(message);
+        return Left(AppError(message));
       }
       final AuthResponseModel verificationResponse = AuthResponseModel.fromMap(
           (response.data['data']) as Map<String, dynamic>);
 
-      _ref.read(authLocalRepositoryProvider).setUser(verificationResponse.user);
-      _ref
-          .read(authLocalRepositoryProvider)
-          .setToken(verificationResponse.token);
+      return Right(verificationResponse);
     } on DioException catch (dioException) {
-      return handleDioException(dioException);
+      return Left(handleDioException(dioException));
     } catch (error) {
       debugPrint('Verify Email error:\n${error.toString()}');
-      return AppError("Couldn't verify email now. Please, try again later.");
+      return Left(
+          AppError("Couldn't verify email now. Please, try again later."));
     }
-    return null;
   }
 
   Future<AppError?> sendConfirmationCode({required String email}) async {
@@ -101,33 +95,32 @@ class AuthRemoteRepository {
     return null;
   }
 
-  Future<AppError?> getMe() async {
-    final token = _ref.read(tokenProvider);
+  Future<Either<AppError, UserModel>> getMe(String sessionId) async {
     try {
       final response = await _dio.get(
         '/users/me',
         options: Options(
-          headers: {HttpHeaders.authorizationHeader: 'Bearer $token'},
+          headers: {HttpHeaders.authorizationHeader: 'Bearer $sessionId'},
         ),
       );
 
       if (response.statusCode! > 200 || response.statusCode! < 200) {
         final message = response.data['message'];
-        return AppError(message);
+        return Left(AppError(message));
       }
 
       final user = UserModel.fromMap(response.data['data']['user']);
-      _ref.read(authLocalRepositoryProvider).setUser(user);
+      return Right(user);
     } on DioException catch (dioException) {
-      return handleDioException(dioException);
+      return Left(handleDioException(dioException));
     } catch (error) {
       debugPrint('Get user error:\n${error.toString()}');
-      return AppError('Failed to connect, check your internet connection.');
+      return Left(
+          AppError('Failed to connect, check your internet connection.'));
     }
-    return null;
   }
 
-  Future<AppError?> logIn({
+  Future<Either<AppError, AuthResponseModel>> logIn({
     required String email,
     required String password,
   }) async {
@@ -143,24 +136,22 @@ class AuthRemoteRepository {
       if (response.statusCode! > 200 || response.statusCode! < 200) {
         final String message = response.data?['message'] ?? 'Unexpected Error';
         if (response.statusCode == 403) {
-          return AppError(message, code: 403);
+          return Left(AppError(message, code: 403));
         }
-        return AppError(message);
+        return Left(AppError(message));
       }
 
       // todo(ahmed): check response body from the back side
       final AuthResponseModel logInResponse = AuthResponseModel.fromMap(
           (response.data['data']) as Map<String, dynamic>);
 
-      _ref.read(authLocalRepositoryProvider).setUser(logInResponse.user);
-      _ref.read(authLocalRepositoryProvider).setToken(logInResponse.token);
+      return Right(logInResponse);
     } on DioException catch (dioException) {
-      return handleDioException(dioException);
+      return Left(handleDioException(dioException));
     } catch (e) {
       debugPrint('Log in error:\n${e.toString()}');
-      return AppError('Couldn\'t log in now. Please, try again later.');
+      return Left(AppError('Couldn\'t log in now. Please, try again later.'));
     }
-    return null;
   }
 
   Future<AppError?> logOut(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class ToolbarWidget extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -23,7 +24,7 @@ class ToolbarWidget extends StatelessWidget implements PreferredSizeWidget {
           ? IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
-              Navigator.pop(context); // Navigate back when pressed
+              context.pop(); // Navigate back when pressed
             },
           )
           : null, // If no back button needed, set leading to null

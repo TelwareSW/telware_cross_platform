@@ -4,12 +4,16 @@ import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:telware_cross_platform/features/stories/view/screens/show_taken_story_screen.dart';
 import '../widget/take_photo_row.dart';
 import '../widget/toggleCameraMode.dart';
 
 class AddMyStoryScreen extends StatefulWidget {
+  static const String route = '/add-my-story';
+
   const AddMyStoryScreen({super.key});
 
   @override
@@ -47,7 +51,9 @@ class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
         print('Error initializing camera: $e');
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to access camera. Please check permissions.')),
+        const SnackBar(
+            content:
+                Text('Unable to access camera. Please check permissions.')),
       );
     }
   }
@@ -91,6 +97,7 @@ class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
       final image = await _controller!.takePicture();
       Uint8List imageBytes = await image.readAsBytes();
       File savedFile = await _saveImageBytesToFile(imageBytes);
+
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -127,7 +134,7 @@ class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
                     leading: IconButton(
                       icon: const Icon(Icons.arrow_back, color: Colors.white),
                       onPressed: () {
-                        Navigator.pop(context);
+                        context.pop();
                       },
                     ),
                   ),
@@ -139,11 +146,18 @@ class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
                       return Column(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          TakePhotoRow(selectedMode: _selectedMode, onCapture: _captureImage, onToggle:  _toggleCamera,),
+                          TakePhotoRow(
+                            selectedMode: _selectedMode,
+                            onCapture: _captureImage,
+                            onToggle: _toggleCamera,
+                          ),
                           const SizedBox(
                             height: 25,
                           ),
-                          ToggleCameraMode(selectedMode: _selectedMode, constraints: constraints,)
+                          ToggleCameraMode(
+                            selectedMode: _selectedMode,
+                            constraints: constraints,
+                          )
                         ],
                       );
                     },
@@ -151,11 +165,9 @@ class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
                 ),
               ],
             );
-          }
-          else if (snapshot.hasError) {
+          } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
-          }
-          else {
+          } else {
             return const Center(child: CircularProgressIndicator());
           }
         },

@@ -1,9 +1,10 @@
-import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
-import 'package:telware_cross_platform/features/stories/view/screens/story_screen.dart';
-import 'package:telware_cross_platform/features/stories/view/widget/story_avatar.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../../../core/theme/sizes.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
+import 'package:telware_cross_platform/core/theme/sizes.dart';
+import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
+import 'package:telware_cross_platform/features/stories/view/widget/story_avatar.dart';
 
 class StoryWithUserName extends StatelessWidget {
   final ContactModel user;
@@ -23,14 +24,9 @@ class StoryWithUserName extends StatelessWidget {
             user: user,
             screenType: 'othersStoryScreen',
             onTap: () async {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => StoryScreen(
-                    userId: user.userId,
-                    showSeens: false,
-                  ),
-                ),
+              context.push(
+                Routes.storyScreen,
+                extra: {'userId': user.userId, 'showSeens': false},
               );
             },
           ),

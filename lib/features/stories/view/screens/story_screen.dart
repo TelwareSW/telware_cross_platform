@@ -7,10 +7,14 @@ import '../../models/story_model.dart';
 import '../widget/bottom_actions_story_screen.dart';
 import '../widget/passive_content_story_screen.dart';
 import '../widget/top_actions_story_screen.dart';
+import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
 
 class StoryScreen extends ConsumerStatefulWidget {
+  static const String route = '/story';
   final String userId;
   final bool showSeens;
+
   const StoryScreen({
     super.key,
     required this.userId,
@@ -93,7 +97,7 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
           return user!.stories.length;
         },
         onPageLimitReached: () {
-          Navigator.pop(context);
+          context.pop();
         },
       ),
     );
@@ -153,5 +157,3 @@ class ActiveContentStoryScreen extends StatelessWidget {
     );
   }
 }
-
-

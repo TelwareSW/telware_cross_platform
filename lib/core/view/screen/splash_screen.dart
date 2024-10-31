@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
-import 'package:telware_cross_platform/features/auth/view/screens/log_in_screen.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
 
@@ -18,10 +20,9 @@ class SplashScreen extends ConsumerWidget {
       (_, state) {
         // a callback function that takes the old and current state
         if (state == AuthState.authorized) {
-          // todo(ahmed): navigate to the home screen
+          context.go(Routes.home);
         } else if (state == AuthState.unauthorized) {
-          Navigator.pushNamedAndRemoveUntil(
-              context, LogInScreen.route, (_) => false);
+          context.go(Routes.logIn);
         }
       },
     );

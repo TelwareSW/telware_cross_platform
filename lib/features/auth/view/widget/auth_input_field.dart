@@ -10,6 +10,7 @@ class AuthInputField extends StatefulWidget {
   final FocusNode focusNode;
   final FormFieldValidator<String>? validator;
   final TextEditingController? controller;
+  final Key? visibilityKey;
 
   const AuthInputField({
     super.key,
@@ -21,6 +22,7 @@ class AuthInputField extends StatefulWidget {
     this.obscure = false,
     this.validator,
     this.controller,
+    this.visibilityKey,
   });
 
   @override
@@ -46,6 +48,7 @@ class AuthInputFieldState extends State<AuthInputField> {
   Widget visibilityEyeIcon() {
     if (_allowVisibility) {
       return IconButton(
+        key: widget.visibilityKey,
         icon: Icon(
           _obscure ? Icons.visibility_off : Icons.visibility,
           color: Palette.accent,

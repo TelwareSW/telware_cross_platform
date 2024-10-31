@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
@@ -49,6 +51,9 @@ class _BlockedUsersScreen extends State<BlockedUsersScreen> {
     ).then((int? result) {
       if (result == 0) {
         //todo Handle unblock action
+        if (mounted) {
+          context.push(Routes.blockUser);
+        }
       }
     });
   }
@@ -74,37 +79,31 @@ class _BlockedUsersScreen extends State<BlockedUsersScreen> {
           }
         ],
         "trailing":
-            "Blocked users can't send you messages or add you to groups. "
-            "They will not see your profile photos, stories, online and last"
-            " seen status."
+            "Blocked users can't send you messages or add you to groups. They will not see your profile photos, stories, online and last    seen status."
       },
       {
         "title": "blocked users",
         "titleFontSize": 15.0,
-        "options": [
+        "options": <Map<String, dynamic>>[
           {
             "text": 'Marwan Mohammed',
             "imagePath": 'assets/imgs/marwan.jpg',
             "subtext": "+201093401932",
-            "dummy": 0.0,
           },
           {
             "text": 'Ahmed Alaa',
             "imagePath": 'assets/imgs/ahmed.jpeg',
             "subtext": "+201093401932",
-            "dummy": 0.0,
           },
           {
             "text": 'Bishoy Wadea ',
             "imagePath": 'assets/imgs/bishoy.jpeg',
             "subtext": "+201093401932",
-            "dummy": 0.0,
           },
           {
             "text": 'Moamen Hefny',
             "imagePath": 'assets/imgs/moamen.jpeg',
             "subtext": "+201093401932",
-            "dummy": 0.0,
           },
         ],
       },

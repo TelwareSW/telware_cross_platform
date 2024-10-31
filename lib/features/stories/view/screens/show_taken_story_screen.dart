@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'dart:io';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -11,13 +10,14 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:signature/signature.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
-import '../../utils/utils_functions.dart';
-import '../../view_model/contact_view_model.dart';
+import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
 import '../widget/bottom_action_buttons_edit_taken_image.dart';
 import '../widget/signature_pen.dart';
 import '../widget/story_caption_text_field.dart';
 
 class ShowTakenStoryScreen extends ConsumerStatefulWidget {
+  static const String route = '/show-taken-story';
   final File image;
 
   const ShowTakenStoryScreen({super.key, required this.image});
@@ -101,7 +101,7 @@ class _ShowTakenStoryScreenState extends ConsumerState<ShowTakenStoryScreen> {
 
   Future<ui.Image> _captureImage() async {
     final boundary = _signatureBoundaryKey.currentContext!.findRenderObject()
-    as RenderRepaintBoundary;
+        as RenderRepaintBoundary;
     return await boundary.toImage(pixelRatio: 3.0);
   }
 
@@ -111,7 +111,7 @@ class _ShowTakenStoryScreenState extends ConsumerState<ShowTakenStoryScreen> {
     }
     ui.Image combinedImage = await _captureImage();
     ByteData? byteData =
-    await combinedImage.toByteData(format: ui.ImageByteFormat.png);
+        await combinedImage.toByteData(format: ui.ImageByteFormat.png);
     Uint8List pngBytes = byteData!.buffer.asUint8List();
     final directory = await getTemporaryDirectory();
     final file = File('${directory.path}/combined_image.png');
@@ -134,7 +134,7 @@ class _ShowTakenStoryScreenState extends ConsumerState<ShowTakenStoryScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => context.pop(),
         ),
       ),
       body: GestureDetector(
