@@ -44,11 +44,11 @@ class Routes {
   static const String userProfile = UserProfileScreen.route;
   static const String privacySettings = PrivacySettingsScreen.route;
 
-
   static GoRouter appRouter(WidgetRef ref) => GoRouter(
         initialLocation: Routes.splash,
         redirect: (context, state) {
-          final isAuthenticated = ref.read(authViewModelProvider.notifier).isAuthenticated();
+          final isAuthenticated =
+              ref.read(authViewModelProvider.notifier).isAuthenticated();
           if (!isAuthenticated) {
             if (state.fullPath != Routes.logIn &&
                 state.fullPath != Routes.signUp &&
@@ -124,8 +124,10 @@ class Routes {
             pageBuilder: (context, state) => CustomTransitionPage(
               key: state.pageKey,
               child: StoryScreen(
-                userId: (state.extra as Map<String, dynamic>)['userId'] as String,
-                showSeens: (state.extra as Map<String, dynamic>)['showSeens'] as bool,
+                userId:
+                    (state.extra as Map<String, dynamic>)['userId'] as String,
+                showSeens:
+                    (state.extra as Map<String, dynamic>)['showSeens'] as bool,
               ),
               transitionsBuilder: _slideRightTransitionBuilder,
             ),

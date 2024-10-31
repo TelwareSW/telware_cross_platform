@@ -50,8 +50,7 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
   @override
   void initState() {
     super.initState();
-    // email = ref.read(signUpEmailProvider);
-    email = 'hmmm@gmail.com';
+    email = ref.read(signUpEmailProvider);
     startTimer(); // Start the countdown timer
   }
 
@@ -65,7 +64,6 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
     AuthState sendCodeState = await ref
         .read(authViewModelProvider.notifier)
         .sendConfirmationCode(email: email);
-    debugPrint('sendCodeState: ${sendCodeState.type}');
     if (sendCodeState.type == AuthStateType.success) {
       setState(() {
         remainingTime = VERIFICATION_CODE_EXPIRATION_TIME;
@@ -125,7 +123,7 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
       if (state.type == AuthStateType.authenticated) {
         // todo: Navigate to the home screen
         if (mounted) {
-          context.push(Routes.home);
+          context.push(Routes.logIn);
         }
       } else {
         setState(() {
