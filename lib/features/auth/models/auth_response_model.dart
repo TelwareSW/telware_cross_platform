@@ -10,9 +10,14 @@ class AuthResponseModel {
   });
 
   factory AuthResponseModel.fromMap(Map<String, dynamic> map) {
+    map.forEach(
+      (key, value) {
+        print('key: $key, value: $value, value type: ${value.runtimeType}');
+      },
+    );
     return AuthResponseModel(
       user: UserModel.fromMap(map['user'] as Map<String, dynamic>),
-      token: map['accessToken'] as String,
+      token: map['sessionId'] as String,
     );
   }
 

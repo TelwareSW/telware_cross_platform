@@ -26,7 +26,7 @@ class UserModel {
   @HiveField(8)
   final String lastSeenPrivacy;
   @HiveField(9)
-  final String readReceiptsEnablePrivacy;
+  final bool readReceiptsEnablePrivacy;
   @HiveField(10)
   final String storiesPrivacy;
   @HiveField(11)
@@ -107,7 +107,7 @@ class UserModel {
     int? maxFileSize,
     bool? automaticDownloadEnable,
     String? lastSeenPrivacy,
-    String? readReceiptsEnablePrivacy,
+    bool? readReceiptsEnablePrivacy,
     String? storiesPrivacy,
     String? picturePrivacy,
     String? invitePermissionsPrivacy,
@@ -161,11 +161,11 @@ class UserModel {
       maxFileSize: map['maxFileSize'] as int,
       automaticDownloadEnable: map['automaticDownloadEnable'] as bool,
       lastSeenPrivacy: map['lastSeenPrivacy'] as String,
-      readReceiptsEnablePrivacy: map['readReceiptsEnablePrivacy'] as String,
+      readReceiptsEnablePrivacy: map['readReceiptsEnablePrivacy'] as bool,
       storiesPrivacy: map['storiesPrivacy'] as String,
       picturePrivacy: map['picturePrivacy'] as String,
       invitePermissionsPrivacy: map['invitePermessionsPrivacy'] as String,
-      phone: map['phone'] as String,
+      phone: map['phoneNumber'] as String,
     );
   }
 

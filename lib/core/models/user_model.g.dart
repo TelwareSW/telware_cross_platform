@@ -26,7 +26,7 @@ class UserModelAdapter extends TypeAdapter<UserModel> {
       maxFileSize: fields[6] as int,
       automaticDownloadEnable: fields[7] as bool,
       lastSeenPrivacy: fields[8] as String,
-      readReceiptsEnablePrivacy: fields[9] as String,
+      readReceiptsEnablePrivacy: fields[9] as bool,
       storiesPrivacy: fields[10] as String,
       picturePrivacy: fields[11] as String,
       invitePermissionsPrivacy: fields[12] as String,

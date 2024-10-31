@@ -184,7 +184,6 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
                           right: Dimensions.inputPaddingLeft,
                         ),
                         obscure: true,
-                        validator: passwordValidatorLogIn,
                         visibilityKey: const Key('login-password-visibility'),
                       ),
                       _forgetPasswordButton(),

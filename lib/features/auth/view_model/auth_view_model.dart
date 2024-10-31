@@ -263,10 +263,13 @@ class AuthViewModel extends _$AuthViewModel {
 
     final token = ref.read(tokenProvider);
 
+    //  started log out operation
+    print('log out operation started');
+    print('token: $token');
     final appError = await ref
         .read(authRemoteRepositoryProvider)
-        .logOut(token: token!, route: 'auth/logout');
-
+        .logOut(token: token!, route: '/auth/logout');
+    print('log out operation ended');
     await _handleLogOutState(appError);
   }
 

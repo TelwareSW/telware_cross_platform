@@ -29,15 +29,6 @@ String? passwordValidator(String? value) {
   return null;
 }
 
-String? passwordValidatorLogIn(String? value) {
-  if (value == null || value.isEmpty) {
-    return null;
-  } else if (value.length < 8) {
-    return 'Password must be at least 8 characters long';
-  }
-  return null;
-}
-
 // todo(ahmed): update this function to handle more cases
 String? confirmPasswordValidation(String? password, String? confirmedPassword) {
   if (password!.isEmpty || confirmedPassword!.isEmpty) return null;

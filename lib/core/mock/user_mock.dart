@@ -9,7 +9,7 @@ const UserModel userMock = UserModel(
   maxFileSize: 30,
   automaticDownloadEnable: true,
   lastSeenPrivacy: 'recently',
-  readReceiptsEnablePrivacy: 'enable',
+  readReceiptsEnablePrivacy: true,
   storiesPrivacy: 'private',
   picturePrivacy: 'global',
   invitePermissionsPrivacy: 'enable',
