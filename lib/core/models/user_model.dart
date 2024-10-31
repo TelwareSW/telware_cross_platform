@@ -1,7 +1,9 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
+import 'package:telware_cross_platform/features/stories/utils/utils_functions.dart';
 
 part 'user_model.g.dart';
 
@@ -35,8 +37,10 @@ class UserModel {
   final String invitePermissionsPrivacy;
   @HiveField(13)
   final String phone;
+  @HiveField(14)
+  Uint8List? photoBytes;
 
-  const UserModel({
+  UserModel({
     required this.username,
     required this.screenName,
     required this.email,
@@ -51,45 +55,50 @@ class UserModel {
     required this.picturePrivacy,
     required this.invitePermissionsPrivacy,
     required this.phone,
-  });
+  }) {
+    _setPhotoBytes();
+  }
+
+  _setPhotoBytes() async {
+    photoBytes = await downloadImage(photo);
+  }
 
   @override
   bool operator ==(covariant UserModel other) {
     if (identical(this, other)) return true;
-  
-    return 
-      other.username == username &&
-      other.screenName == screenName &&
-      other.email == email &&
-      other.photo == photo &&
-      other.status == status &&
-      other.bio == bio &&
-      other.maxFileSize == maxFileSize &&
-      other.automaticDownloadEnable == automaticDownloadEnable &&
-      other.lastSeenPrivacy == lastSeenPrivacy &&
-      other.readReceiptsEnablePrivacy == readReceiptsEnablePrivacy &&
-      other.storiesPrivacy == storiesPrivacy &&
-      other.picturePrivacy == picturePrivacy &&
-      other.invitePermissionsPrivacy == invitePermissionsPrivacy &&
-      other.phone == phone;
+
+    return other.username == username &&
+        other.screenName == screenName &&
+        other.email == email &&
+        other.photo == photo &&
+        other.status == status &&
+        other.bio == bio &&
+        other.maxFileSize == maxFileSize &&
+        other.automaticDownloadEnable == automaticDownloadEnable &&
+        other.lastSeenPrivacy == lastSeenPrivacy &&
+        other.readReceiptsEnablePrivacy == readReceiptsEnablePrivacy &&
+        other.storiesPrivacy == storiesPrivacy &&
+        other.picturePrivacy == picturePrivacy &&
+        other.invitePermissionsPrivacy == invitePermissionsPrivacy &&
+        other.phone == phone;
   }
 
   @override
   int get hashCode {
     return username.hashCode ^
-      screenName.hashCode ^
-      email.hashCode ^
-      photo.hashCode ^
-      status.hashCode ^
-      bio.hashCode ^
-      maxFileSize.hashCode ^
-      automaticDownloadEnable.hashCode ^
-      lastSeenPrivacy.hashCode ^
-      readReceiptsEnablePrivacy.hashCode ^
-      storiesPrivacy.hashCode ^
-      picturePrivacy.hashCode ^
-      invitePermissionsPrivacy.hashCode ^
-      phone.hashCode;
+        screenName.hashCode ^
+        email.hashCode ^
+        photo.hashCode ^
+        status.hashCode ^
+        bio.hashCode ^
+        maxFileSize.hashCode ^
+        automaticDownloadEnable.hashCode ^
+        lastSeenPrivacy.hashCode ^
+        readReceiptsEnablePrivacy.hashCode ^
+        storiesPrivacy.hashCode ^
+        picturePrivacy.hashCode ^
+        invitePermissionsPrivacy.hashCode ^
+        phone.hashCode;
   }
 
   @override
@@ -121,12 +130,15 @@ class UserModel {
       status: status ?? this.status,
       bio: bio ?? this.bio,
       maxFileSize: maxFileSize ?? this.maxFileSize,
-      automaticDownloadEnable: automaticDownloadEnable ?? this.automaticDownloadEnable,
+      automaticDownloadEnable:
+          automaticDownloadEnable ?? this.automaticDownloadEnable,
       lastSeenPrivacy: lastSeenPrivacy ?? this.lastSeenPrivacy,
-      readReceiptsEnablePrivacy: readReceiptsEnablePrivacy ?? this.readReceiptsEnablePrivacy,
+      readReceiptsEnablePrivacy:
+          readReceiptsEnablePrivacy ?? this.readReceiptsEnablePrivacy,
       storiesPrivacy: storiesPrivacy ?? this.storiesPrivacy,
       picturePrivacy: picturePrivacy ?? this.picturePrivacy,
-      invitePermissionsPrivacy: invitePermissionsPrivacy ?? this.invitePermissionsPrivacy,
+      invitePermissionsPrivacy:
+          invitePermissionsPrivacy ?? this.invitePermissionsPrivacy,
       phone: phone ?? this.phone,
     );
   }
@@ -171,5 +183,6 @@ class UserModel {
 
   String toJson() => json.encode(toMap());
 
-  factory UserModel.fromJson(String source) => UserModel.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory UserModel.fromJson(String source) =>
+      UserModel.fromMap(json.decode(source) as Map<String, dynamic>);
 }

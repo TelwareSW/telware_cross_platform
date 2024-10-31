@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
+import 'package:telware_cross_platform/core/utils.dart';
 
 
 class ProfileHeader extends StatelessWidget {
@@ -8,18 +9,6 @@ class ProfileHeader extends StatelessWidget {
   final double factor;
 
   const ProfileHeader({super.key, required this.fullName, this.imagePath, this.factor = 0});
-
-  String _getInitials(String name) {
-    List<String> nameParts = name.split(' ');
-    String initials = "";
-    if (nameParts.isNotEmpty) {
-      initials = nameParts[0][0];
-      if (nameParts.length > 1) {
-        initials += nameParts[1][0];
-      }
-    }
-    return initials.toUpperCase();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +26,7 @@ class ProfileHeader extends StatelessWidget {
             backgroundColor: imagePath == null ? Palette.primary : null,
             child: imagePath == null
                 ? Text(
-              _getInitials(fullName),
+              getInitials(fullName),
               style: const TextStyle(
                 fontWeight: FontWeight.w500,
                 color: Palette.primaryText,

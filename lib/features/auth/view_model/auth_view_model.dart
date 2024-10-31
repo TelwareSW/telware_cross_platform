@@ -35,7 +35,7 @@ class AuthViewModel extends _$AuthViewModel {
     }
 
     if (USE_MOCK_DATA) {
-      const user = userMock;
+      final user = userMock;
       ref.read(userProvider.notifier).update((_) => user);
       state = AuthState.authorized;
       return;

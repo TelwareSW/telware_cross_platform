@@ -1,6 +1,6 @@
 import 'package:telware_cross_platform/core/models/user_model.dart';
 
-const UserModel userMock = UserModel(
+final UserModel userMock = UserModel(
   username: 'mock.user',
   screenName: 'Mocka Mocka',
   email: 'mock@gmail.com',

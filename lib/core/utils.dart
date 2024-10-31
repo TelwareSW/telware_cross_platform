@@ -93,3 +93,15 @@ String toKebabCase(String input) {
   // Remove leading or trailing hyphens
   return kebabCased.replaceAll(RegExp(r'^-+|-+$'), '');
 }
+
+String getInitials(String name) {
+  List<String> nameParts = name.split(' ');
+  String initials = "";
+  if (nameParts.isNotEmpty) {
+    initials = nameParts[0][0];
+    if (nameParts.length > 1) {
+      initials += nameParts[1][0];
+    }
+  }
+  return initials.toUpperCase();
+}
