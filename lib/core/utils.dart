@@ -4,12 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/classes/telware_toast.dart';
 
 String? emailValidator(String? value) {
+  
   const String emailPattern =
       r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
   final RegExp regex = RegExp(emailPattern);
 
   if (value == null || value.isEmpty) {
     return null;
+  } else if (value.length > 254) {
+    return 'Email can\'t be longer than 254 characters';
   } else if (!regex.hasMatch(value)) {
     return 'Enter a valid email address';
   }
@@ -22,9 +25,11 @@ String? passwordValidator(String? value) {
     return null;
   } else if (value.length < 8) {
     return 'Password must be at least 8 characters long';
+  } else if (value.length > 128) {
+    return 'Password can\'t be longer than 128 characters';
   } else if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d._@&-]{8,}$')
       .hasMatch(value)) {
-    return 'Must contain letters and digits and can contain . _ @ & -';
+    return 'Password must contain both letters and digits';
   }
   return null;
 }
