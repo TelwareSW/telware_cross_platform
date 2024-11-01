@@ -1,7 +1,7 @@
 // common utility functions are added here
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:telware_cross_platform/core/classes/telware_toast.dart';
 
 String? emailValidator(String? value) {
   const String emailPattern =
@@ -53,8 +53,8 @@ void showSnackBarMessage(BuildContext context, String message) {
 }
 
 void showToastMessage(String message) async {
-  await Fluttertoast.cancel();
-  Fluttertoast.showToast(msg: message);
+  await TelwareToast.cancel();
+  TelwareToast.showToast(msg: message);
 }
 
 String formatPhoneNumber(String phoneNumber) {
@@ -95,6 +95,9 @@ String toKebabCase(String input) {
 }
 
 String getInitials(String name) {
+  if (name.isEmpty) {
+    return "NN";
+  }
   List<String> nameParts = name.split(' ');
   String initials = "";
   if (nameParts.isNotEmpty) {

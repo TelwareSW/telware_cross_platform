@@ -259,7 +259,7 @@ class AuthViewModel extends _$AuthViewModel {
       ref.read(userProvider.notifier).update((_) => null);
       state = AuthState.unauthorized;
       return;
-    }
+    } 
 
     final token = ref.read(tokenProvider);
 

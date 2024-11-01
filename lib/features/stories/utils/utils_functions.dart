@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
 Future<Uint8List?> downloadImage(String? url) async {
-  if (url == null) {
+  if (url == null || url.isEmpty) {
     return null;
   }
   try {
