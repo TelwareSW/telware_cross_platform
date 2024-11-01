@@ -12,6 +12,8 @@ import 'package:telware_cross_platform/features/user/view/widget/profile_header_
 import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
 
+import '../../../stories/view/screens/add_my_image_screen.dart';
+
 class SettingsScreen extends ConsumerStatefulWidget {
   static const String route = '/settings';
 
@@ -83,7 +85,7 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
           "text": 'Chat Folders',
           "routes": 'locked'
         },
-        {"icon": Icons.devices, "text": 'Devices', "routes": 'locked'},
+        {"icon": Icons.devices, "text": 'Devices', "routes": '/devices'},
         {
           "icon": Icons.language_rounded,
           "text": 'Language',
@@ -186,9 +188,45 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
                       );
                     },
                   ),
-                ),
-                const SliverToBoxAdapter(
-                    child: Column(
+                );
+              },
+            ),
+          ),
+          SliverToBoxAdapter(
+              child: Column(
+            children: [
+              SettingsSection(
+                settingsOptions: const [],
+                actions: [
+                  GestureDetector(
+                    onTap: (){
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => AddMyImageScreen(destination: 'profile'),
+                        ),
+                      );
+                    },
+                    child: SettingsOptionWidget(
+                      key: ValueKey("set-profile-photo-option"),
+                      icon: Icons.camera_alt_outlined,
+                      iconColor: Palette.primary,
+                      text: "Set Profile Photo",
+                      color: Palette.primary,
+                      showDivider: false,
+                    ),
+                  )
+                ],
+              ),
+            ],
+          )),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final section = profileSections[index];
+                final title = section["title"] ?? "";
+                final options = section["options"];
+                final trailing = section["trailing"] ?? "";
+                return Column(
                   children: [
                     SettingsSection(
                       settingsOptions: [],

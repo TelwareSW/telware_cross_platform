@@ -31,7 +31,7 @@ class StoryAvatar extends StatelessWidget {
           child: CustomPaint(
             painter: showBorder
                 ? StoryBorderPainter(user.stories)
-                : null, // Conditionally apply painter
+                : null,
             child: Container(
               padding: const EdgeInsets.all(2),
               decoration: const BoxDecoration(

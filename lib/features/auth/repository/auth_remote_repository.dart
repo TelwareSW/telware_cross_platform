@@ -201,7 +201,6 @@ class AuthRemoteRepository {
 
   AppError handleDioException(DioException dioException) {
     String? message;
-    debugPrint('Dio Exception: ${dioException.response?.data.toString()}');
     if (dioException.response != null) {
       message = (dioException.response!.data as Map<String, dynamic>)['message'];
       debugPrint(message);
