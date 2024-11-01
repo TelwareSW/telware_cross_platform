@@ -20,3 +20,4 @@ flutter_*.png
 *.DS_Store
 *.iml
 .flutter-plugins*
+coverage/
