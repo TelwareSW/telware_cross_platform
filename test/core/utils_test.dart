@@ -67,7 +67,6 @@ void main() {
     });
   });
 
-
   group('confirmPasswordValidation', () {
     test('returns null for matching passwords', () {
       expect(confirmPasswordValidation('Password1', 'Password1'), null);
@@ -118,6 +117,14 @@ void main() {
       expect(toKebabCase('Hello World'), 'hello-world');
     });
 
+    test('Single word input', () {
+      expect(toKebabCase('Hello'), 'hello');
+    });
+
+    test('Multi-Word input', () {
+      expect(toKebabCase('I am the king of the world'), 'i-am-the-king-of-the-world');
+    });
+
     test('handles multiple spaces', () {
       expect(toKebabCase('Hello    World'), 'hello-world');
     });
@@ -128,6 +135,37 @@ void main() {
 
     test('removes leading and trailing hyphens', () {
       expect(toKebabCase('-Hello World-'), 'hello-world');
+    });
+  });
+
+  group('getInitials', () {
+    test('returns initials for a single name', () {
+      expect(getInitials('John'), 'J');
+    });
+
+    test('Name with small letters', () {
+      expect(getInitials('john cena'), 'JC');
+    });
+
+    test('returns initials for a full name', () {
+      expect(getInitials('John Doe'), 'JD');
+    });
+
+    test('returns initials for multiple names', () {
+      expect(getInitials('John Michael Doe'), 'JM');
+    });
+
+    test('returns NN for empty name', () {
+      expect(getInitials(''), 'NN');
+    });
+  });
+
+  group('getRandomColor', () {
+    test('returns a color within the expected range', () {
+      final color = getRandomColor();
+      expect(color.red, inInclusiveRange(50, 149));
+      expect(color.green, inInclusiveRange(50, 149));
+      expect(color.blue, inInclusiveRange(50, 149));
     });
   });
 }
