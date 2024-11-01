@@ -1,0 +1,1 @@
+const tokenMock = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjEwZjQwZjYwZjYwZjYwZjYwZjYwZjYwIn0sImlhdCI6MTYzMTQwNjQwN30.7';

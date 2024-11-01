@@ -10,6 +10,7 @@ flutter_*.png
 .vscode/
 
 # Miscellaneous
+.env
 *.log
 *.lock
 *.pyc
@@ -18,3 +19,5 @@ flutter_*.png
 *.swp
 *.DS_Store
 *.iml
+.flutter-plugins*
+coverage/
