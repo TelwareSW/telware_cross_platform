@@ -30,17 +30,28 @@ class AuthRemoteRepository {
     required String reCaptchaResponse,
   }) async {
     try {
-      final response = await _dio.post('/auth/sign-up', data: {
+      final response = await _dio.post('/auth/signup', data: {
         'email': email,
-        'phone': phone,
+        'phoneNumber': phone,
         'password': password,
-        'confirmPassword': confirmPassword,
+        'passwordConfirm': confirmPassword,
         'reCaptchaResponse': reCaptchaResponse,
       });
+      debugPrint(
+          '---------------------------Sign Up response: ${response.data}');
 
       if (response.statusCode! >= 400) {
         final String message = response.data?['message'] ?? 'Unexpected Error';
-        return AppError(message);
+        return AppError(
+          message,
+          emailError: response.data?['error']?['errors']?['email']?['message'],
+          phoneNumberError: response.data?['error']?['errors']?['phoneNumber']
+              ?['message'],
+          passwordError: response.data?['error']?['errors']?['password']
+              ?['message'],
+          confirmPasswordError: response.data?['error']?['errors']
+              ?['passwordConfirm']?['message'],
+        );
       }
     } on DioException catch (dioException) {
       return handleDioException(dioException);
@@ -52,7 +63,7 @@ class AuthRemoteRepository {
   }
 
   // todo: make sure of what does get from the back-end
-  Future<Either<AppError, AuthResponseModel>> verifyEmail(
+  Future<AppError?> verifyEmail(
       {required String email, required String code}) async {
     try {
       final response = await _dio.post('/auth/verify',
@@ -60,19 +71,15 @@ class AuthRemoteRepository {
 
       if (response.statusCode! >= 400) {
         final String message = response.data?['message'] ?? 'Unexpected Error';
-        return Left(AppError(message));
+        return AppError(message);
       }
-      final AuthResponseModel verificationResponse = AuthResponseModel.fromMap(
-          (response.data['data']) as Map<String, dynamic>);
-
-      return Right(verificationResponse);
     } on DioException catch (dioException) {
-      return Left(handleDioException(dioException));
+      return handleDioException(dioException);
     } catch (error) {
       debugPrint('Verify Email error:\n${error.toString()}');
-      return Left(
-          AppError("Couldn't verify email now. Please, try again later."));
+      return AppError("Couldn't verify email now. Please, try again later.");
     }
+    return null;
   }
 
   Future<AppError?> sendConfirmationCode({required String email}) async {
@@ -204,7 +211,8 @@ class AuthRemoteRepository {
   AppError handleDioException(DioException dioException) {
     String? message;
     if (dioException.response != null) {
-      message = (dioException.response!.data as Map<String, dynamic>)['message'];
+      message =
+          dioException.response!.data?['message'] ?? 'Unexpected server Error';
       debugPrint(message);
     } else if (dioException.type == DioExceptionType.connectionTimeout ||
         dioException.type == DioExceptionType.connectionError ||
@@ -214,8 +222,18 @@ class AuthRemoteRepository {
     } else {
       message = 'Something wrong happened. Please, try again later.';
       debugPrint(message);
-      debugPrint('here Unhandled Dio Exception');
+      debugPrint('Unhandled Dio Exception');
     }
-    return AppError(message ?? 'Unexpected server error.');
+    return AppError(
+      message ?? 'Unexpected server error.',
+      emailError: dioException.response?.data?['error']?['errors']?['email']
+          ?['message'],
+      phoneNumberError: dioException.response?.data?['error']?['errors']
+          ?['phoneNumber']?['message'],
+      passwordError: dioException.response?.data?['error']?['errors']
+          ?['password']?['message'],
+      confirmPasswordError: dioException.response?.data?['error']?['errors']
+          ?['passwordConfirm']?['message'],
+    );
   }
 }

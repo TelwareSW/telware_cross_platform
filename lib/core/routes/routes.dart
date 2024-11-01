@@ -48,10 +48,10 @@ class Routes {
   static const String privacySettings = PrivacySettingsScreen.route;
 
   static GoRouter appRouter(WidgetRef ref) => GoRouter(
-        initialLocation: Routes.home,
+        initialLocation: Routes.splash,
         redirect: (context, state) {
           final isAuthenticated =
-          ref.read(authViewModelProvider.notifier).isAuthenticated();
+              ref.read(authViewModelProvider.notifier).isAuthenticated();
           if (!isAuthenticated) {
             if (state.fullPath != Routes.logIn &&
                 state.fullPath != Routes.signUp &&

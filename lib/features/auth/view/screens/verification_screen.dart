@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
+import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/view/widget/responsive.dart';
@@ -14,6 +15,7 @@ import 'package:flutter_verification_code/flutter_verification_code.dart';
 import 'package:telware_cross_platform/core/constants/constant.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
 
 class VerificationScreen extends ConsumerStatefulWidget {
   static const String route = '/verify';
@@ -25,12 +27,18 @@ class VerificationScreen extends ConsumerStatefulWidget {
 }
 
 class _VerificationScreen extends ConsumerState<VerificationScreen> {
-  String _code = '';
-  bool _onEditing = true;
-  bool codeNotMatched = false;
-  int remainingTime = 60; // Total seconds for countdown
-  Timer? _timer;
+  final verificationCodeKey =
+      GlobalKey<State>(debugLabel: 'verificationCode_input');
+  final resendCodeKey =
+      GlobalKey<State>(debugLabel: 'verification_resendCode_button');
+  final submitKey = GlobalKey<State>(debugLabel: 'verification_submit_button');
   final shakeKey = GlobalKey<ShakeWidgetState>();
+
+  String _code = '';
+  bool codeNotMatched = false;
+  int remainingTime =
+      VERIFICATION_CODE_EXPIRATION_TIME; // Total seconds for countdown
+  Timer? _timer;
   late String email;
 
   final TextStyle digitStyle = const TextStyle(
@@ -58,7 +66,7 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
         .sendConfirmationCode(email: email);
     if (sendCodeState.type == AuthStateType.success) {
       setState(() {
-        remainingTime = 60;
+        remainingTime = VERIFICATION_CODE_EXPIRATION_TIME;
       });
       startTimer();
     }
@@ -90,15 +98,19 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
 
   void onEditing(bool value) {
     setState(() {
-      _onEditing = value;
-      codeNotMatched = false;
+      codeNotMatched =
+          false; // waiting for the user to enter the code to show an error message if the code is not correct
     });
     if (value) {
       setState(() {
+        // if the user completed the code then edited it
+        // again but did not complete it, then submit the code will contains the old one,
+        // so we have to set it to empty to avoid this issue
         _code = '';
       });
+    } else {
+      FocusScope.of(context).unfocus();
     }
-    if (!value) FocusScope.of(context).unfocus();
   }
 
   void onSubmit() async {
@@ -110,10 +122,12 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
               );
       if (state.type == AuthStateType.authenticated) {
         // todo: Navigate to the home screen
+        if (mounted) {
+          context.push(Routes.logIn);
+        }
       } else {
         setState(() {
           codeNotMatched = true;
-          remainingTime = 0;
         });
       }
     } else {
@@ -179,6 +193,7 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
                   shakeOffset: 10,
                   shakeDuration: const Duration(milliseconds: 500),
                   child: VerificationCode(
+                    key: verificationCodeKey,
                     textStyle: digitStyle,
                     keyboardType: TextInputType.number,
                     underlineColor: Palette.accentText,
@@ -194,6 +209,7 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
                 ),
                 remainingTime == 0
                     ? AuthSubTextButton(
+                        buttonKey: resendCodeKey,
                         onPressed: resendCode,
                         label: 'Resend code',
                         padding: const EdgeInsets.only(top: 20, right: 5),
@@ -223,6 +239,7 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
         ),
       ),
       floatingActionButton: AuthFloatingActionButton(
+        buttonKey: submitKey,
         onSubmit: onSubmit,
       ),
     );
