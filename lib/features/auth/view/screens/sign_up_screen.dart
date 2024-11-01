@@ -179,7 +179,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     if (mounted) {
       context.pop(); // to close the dialog
     }
-    if (signUpResult.state.type == AuthStateType.unauthenticated) {
+    if (signUpResult.state.type == AuthStateType.unverified) {
       ref
           .read(signUpEmailProvider.notifier)
           .update((_) => emailController.text);
@@ -322,7 +322,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     children: [
                       const TitleElement(
                           padding: EdgeInsets.only(right: 5),
-
                           name: 'Already have an account?',
                           color: Palette.primaryText,
                           fontSize: Sizes.infoText),

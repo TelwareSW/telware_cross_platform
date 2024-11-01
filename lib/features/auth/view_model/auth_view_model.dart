@@ -31,14 +31,14 @@ class AuthViewModel extends _$AuthViewModel {
 
     if (token == null) {
       // no previously stored token
-      state = AuthState.unauthorized;
+      state = AuthState.unauthenticated;
       return;
     }
 
     if (USE_MOCK_DATA) {
       final user = userMock;
       ref.read(userProvider.notifier).update((_) => user);
-      state = AuthState.authorized;
+      state = AuthState.authenticated;
       return;
     }
 
@@ -51,18 +51,18 @@ class AuthViewModel extends _$AuthViewModel {
       final user = ref.read(authLocalRepositoryProvider).getMe();
       ref.read(userProvider.notifier).update((_) => user);
       if (user == null) {
-        state = AuthState.unauthorized;
+        state = AuthState.unauthenticated;
         return;
       }
-      state = AuthState.authorized;
+      state = AuthState.authenticated;
     }, (user) {
       ref.read(authLocalRepositoryProvider).setUser(user);
       ref.read(userProvider.notifier).update((_) => user);
-      state = AuthState.authorized;
+      state = AuthState.authenticated;
     });
   }
 
-  bool isAuthenticated() {
+  bool isAuthorized() {
     String? token = ref.read(tokenProvider);
     return token != null && token.isNotEmpty;
   }
@@ -78,7 +78,7 @@ class AuthViewModel extends _$AuthViewModel {
 
     // if we are using mock data, we will not send the request to the server
     if (USE_MOCK_DATA) {
-      state = AuthState.unauthenticated;
+      state = AuthState.unverified;
       return SignupResult(state: state);
     }
 
@@ -94,7 +94,7 @@ class AuthViewModel extends _$AuthViewModel {
       state = AuthState.fail(response.error);
     } else {
       state = AuthState
-          .unauthenticated; // user is not authenticated yet, he needs to verify his email
+          .unverified; // user is not verified yet, he needs to verify his email
     }
     return SignupResult(state: state, error: response);
   }
@@ -106,7 +106,7 @@ class AuthViewModel extends _$AuthViewModel {
     state = AuthState.loading;
 
     if (USE_MOCK_DATA) {
-      state = AuthState.authenticated;
+      state = AuthState.verified;
       ref.read(authLocalRepositoryProvider).setUser(userMock);
       ref.read(userProvider.notifier).update((_) => userMock);
 
@@ -123,7 +123,7 @@ class AuthViewModel extends _$AuthViewModel {
       state = AuthState.fail(response.error);
       return state;
     } else {
-      state = AuthState.authenticated;
+      state = AuthState.verified;
     }
     return state;
   }
@@ -172,7 +172,7 @@ class AuthViewModel extends _$AuthViewModel {
 
     response.match((appError) {
       if (appError.code == 403) {
-        state = AuthState.unauthorized;
+        state = AuthState.unauthenticated;
       } else {
         state = AuthState.fail(appError.error);
       }
@@ -249,9 +249,9 @@ class AuthViewModel extends _$AuthViewModel {
 
       await ref.read(authLocalRepositoryProvider).deleteUser();
       ref.read(userProvider.notifier).update((_) => null);
-      state = AuthState.unauthorized;
+      state = AuthState.unauthenticated;
       return;
-    } 
+    }
 
     final token = ref.read(tokenProvider);
 
@@ -299,7 +299,7 @@ class AuthViewModel extends _$AuthViewModel {
 
       await ref.read(authLocalRepositoryProvider).deleteUser();
       ref.read(userProvider.notifier).update((_) => null);
-      state = AuthState.unauthorized;
+      state = AuthState.unauthenticated;
     } else {
       state = AuthState.fail(appError.error);
     }

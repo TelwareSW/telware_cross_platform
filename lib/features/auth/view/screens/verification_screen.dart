@@ -120,7 +120,7 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
                 email: email,
                 code: _code,
               );
-      if (state.type == AuthStateType.authenticated) {
+      if (state.type == AuthStateType.verified) {
         // todo: Navigate to the home screen
         if (mounted) {
           context.push(Routes.logIn);

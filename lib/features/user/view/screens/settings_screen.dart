@@ -142,7 +142,7 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
     ref.listen<AuthState>(authViewModelProvider, (_, state) {
       if (state.type == AuthStateType.fail) {
         showToastMessage(state.message!);
-      } else if (state.type == AuthStateType.unauthorized) {
+      } else if (state.type == AuthStateType.unauthenticated) {
         context.push(Routes.home);
       }
     });
@@ -170,6 +170,7 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
                     IconButton(
                         onPressed: () {
                           ref.read(authViewModelProvider.notifier).logOut();
+                          context.go(Routes.logIn);
                         },
                         icon: const Icon(Icons.more_vert)),
                   ],
@@ -216,30 +217,6 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
                     ),
                   ],
                 )),
-                SliverList(
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                  final section = profileSections[index];
-                  final title = section["title"] ?? "";
-                  final options = section["options"];
-                  final trailing = section["trailing"] ?? "";
-                  return const Column(
-                    children: [
-                      SettingsSection(
-                        settingsOptions: [],
-                        actions: [
-                          SettingsOptionWidget(
-                            key: ValueKey("set-profile-photo-option"),
-                            icon: Icons.camera_alt_outlined,
-                            iconColor: Palette.primary,
-                            text: "Set Profile Photo",
-                            color: Palette.primary,
-                            showDivider: false,
-                          )
-                        ],
-                      ),
-                    ],
-                  );
-                })),
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
