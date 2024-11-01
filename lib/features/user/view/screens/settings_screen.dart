@@ -8,11 +8,14 @@ import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
+import 'package:telware_cross_platform/features/stories/view/screens/add_my_image_screen.dart';
+import 'package:telware_cross_platform/features/user/repository/user_local_repository.dart';
+import 'package:telware_cross_platform/features/user/view/screens/change_number_screen.dart';
+import 'package:telware_cross_platform/features/user/view/screens/change_username_screen.dart';
+import 'package:telware_cross_platform/features/user/view/screens/profile_info_screen.dart';
 import 'package:telware_cross_platform/features/user/view/widget/profile_header_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
-
-import '../../../stories/view/screens/add_my_image_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   static const String route = '/settings';
@@ -24,33 +27,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreen extends ConsumerState<SettingsScreen> {
-  static const String fullName = "Moamen Hefny";
-
-  static var user = {
-    "phoneNumber": "+20 110 5035588",
-    "username": "Moamen",
-  };
-
-  static List<Map<String, dynamic>> profileSections = [
-    {
-      "title": "Account",
-      "options": [
-        {
-          "key": "change-number-option",
-          "text": user["phoneNumber"],
-          "subtext": "Tap to change phone number",
-          "routes": "/change-number"
-        },
-        {"text": "@${user["username"]}", "subtext": "Username"},
-        {
-          "key": "bio-option",
-          "text": user["bio"] ?? "Bio",
-          "subtext":
-              user["bio"] != null ? "Bio" : "Add a few words about yourself",
-          "routes": "/bio"
-        }
-      ]
-    },
+  final List<Map<String, dynamic>> profileSections = [
     const {
       "title": "Settings",
       "options": [
@@ -147,6 +124,8 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
       }
     });
 
+    final user = ref.watch(userProvider)!;
+
     bool isLoading =
         ref.watch(authViewModelProvider).type == AuthStateType.loading;
     debugPrint('isLoading: $isLoading');
@@ -189,24 +168,64 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
                     },
                   ),
                 ),
-                const SliverToBoxAdapter(
+                SliverToBoxAdapter(
                     child: Column(
                   children: [
                     SettingsSection(
-                      settingsOptions: [],
+                      settingsOptions: const [],
                       actions: [
-                        SettingsOptionWidget(
-                          key: ValueKey("set-profile-photo-option"),
-                          icon: Icons.camera_alt_outlined,
-                          iconColor: Palette.primary,
-                          text: "Set Profile Photo",
-                          color: Palette.primary,
-                          showDivider: false,
-                        )
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const AddMyImageScreen(
+                                    destination: 'profile'),
+                              ),
+                            );
+                          },
+                          child: const SettingsOptionWidget(
+                            key: ValueKey("set-profile-photo-option"),
+                            icon: Icons.camera_alt_outlined,
+                            iconColor: Palette.primary,
+                            text: "Set Profile Photo",
+                            color: Palette.primary,
+                            showDivider: false,
+                          ),
+                        ),
                       ],
                     ),
                   ],
                 )),
+                SliverToBoxAdapter(
+                  child: Column(
+                    children: [
+                      const SizedBox(height: Dimensions.sectionGaps),
+                      SettingsSection(
+                        title: "Account",
+                        settingsOptions: [
+                          {
+                            "key": "change-number-option",
+                            "text": user.phone,
+                            "subtext": "Tap to change phone number",
+                            "routes": ChangeNumberScreen.route,
+                          },
+                          {
+                            "text": (user.phone != "" ? "@${user.username}" : "None"),
+                            "subtext": "Username",
+                            "routes": ChangeUsernameScreen.route,
+                          },
+                          {
+                            "key": "bio-option",
+                            "text": user.bio != "" ? user.bio : "Bio",
+                            "subtext":
+                            user.bio != "" ? "Bio" : "Add a few words about yourself",
+                            "routes": ProfileInfoScreen.route,
+                          }
+                        ],
+                      ),
+                    ],
+                  )
+                ),
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
