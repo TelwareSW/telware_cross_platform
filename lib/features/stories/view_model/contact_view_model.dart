@@ -150,6 +150,10 @@ class ContactViewModel extends StateNotifier<ContactViewModelState> {
     return _contactsRemoteRepository.postStory(storyImage, storyCaption);
   }
 
+  Future<bool> updateProfilePicture(File storyImage) async {
+    return _contactsRemoteRepository.updateProfilePicture(storyImage);
+  }
+
   Future<bool> deleteStory(String storyId) async {
     return _contactsRemoteRepository.deleteStory(storyId);
   }

@@ -10,6 +10,8 @@ import 'package:telware_cross_platform/features/user/view/widget/profile_header_
 import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
 
+import '../../../stories/view/screens/add_my_image_screen.dart';
+
 class SettingsScreen extends ConsumerStatefulWidget {
   static const String route = '/settings';
 
@@ -169,19 +171,28 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
               },
             ),
           ),
-          const SliverToBoxAdapter(
+          SliverToBoxAdapter(
               child: Column(
             children: [
               SettingsSection(
-                settingsOptions: [],
+                settingsOptions: const [],
                 actions: [
-                  SettingsOptionWidget(
-                    key: ValueKey("set-profile-photo-option"),
-                    icon: Icons.camera_alt_outlined,
-                    iconColor: Palette.primary,
-                    text: "Set Profile Photo",
-                    color: Palette.primary,
-                    showDivider: false,
+                  GestureDetector(
+                    onTap: (){
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => AddMyImageScreen(destination: 'profile'),
+                        ),
+                      );
+                    },
+                    child: SettingsOptionWidget(
+                      key: ValueKey("set-profile-photo-option"),
+                      icon: Icons.camera_alt_outlined,
+                      iconColor: Palette.primary,
+                      text: "Set Profile Photo",
+                      color: Palette.primary,
+                      showDivider: false,
+                    ),
                   )
                 ],
               ),

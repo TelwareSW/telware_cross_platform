@@ -28,10 +28,14 @@ Future<void> init() async {
   Hive.registerAdapter(StoryModelAdapter());
   Hive.registerAdapter(ContactModelBlockAdapter());
   await Hive.initFlutter();
-  await Hive.openBox<ContactModel>('contacts');
-  await Hive.openBox<ContactModelBlock>('contacts-block');
-  await Hive.openBox<String>('auth-token');
-  await Hive.openBox<UserModel>('auth-user');
+  dynamic box = await Hive.openBox<ContactModel>('contacts');
+  await box.clear();
+  box = await Hive.openBox<ContactModelBlock>('contacts-block');
+  await box.clear();
+  box = await Hive.openBox<String>('auth-token');
+  await box.clear();
+  box = await Hive.openBox<UserModel>('auth-user');
+  await box.clear();
   await dotenv.load(fileName: "lib/.env");
 }
 

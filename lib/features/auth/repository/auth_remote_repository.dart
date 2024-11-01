@@ -133,7 +133,7 @@ class AuthRemoteRepository {
         },
       );
 
-      if (response.statusCode! > 200 || response.statusCode! < 200) {
+      if (response.statusCode! >= 300 || response.statusCode! < 200) {
         final String message = response.data?['message'] ?? 'Unexpected Error';
         if (response.statusCode == 403) {
           return Left(AppError(message, code: 403));
@@ -201,8 +201,10 @@ class AuthRemoteRepository {
 
   AppError handleDioException(DioException dioException) {
     String? message;
+    debugPrint('Dio Exception: ${dioException.response?.toString()}');
     if (dioException.response != null) {
-      message = (dioException.response!.data)['data']['message'];
+      message =
+          (dioException.response!.data as Map<String, dynamic>)['message'];
       debugPrint(message);
     } else if (dioException.type == DioExceptionType.connectionTimeout ||
         dioException.type == DioExceptionType.connectionError ||

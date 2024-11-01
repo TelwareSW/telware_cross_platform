@@ -13,8 +13,8 @@ import 'package:telware_cross_platform/features/auth/view/screens/verification_s
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
 import 'package:telware_cross_platform/features/home/view/screens/home_screen.dart';
 import 'package:telware_cross_platform/features/home/view/screens/inbox_screen.dart';
-import 'package:telware_cross_platform/features/stories/view/screens/add_my_story_screen.dart';
-import 'package:telware_cross_platform/features/stories/view/screens/show_taken_story_screen.dart';
+import 'package:telware_cross_platform/features/stories/view/screens/add_my_image_screen.dart';
+import 'package:telware_cross_platform/features/stories/view/screens/show_taken_image_screen.dart';
 import 'package:telware_cross_platform/features/stories/view/screens/story_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/block_user.dart';
 import 'package:telware_cross_platform/features/user/view/screens/blocked_users.dart';
@@ -34,8 +34,8 @@ class Routes {
   static const String verification = VerificationScreen.route;
   static const String socialAuthLoading = SocialAuthLoadingScreen.route;
   static const String inboxScreen = InboxScreen.route;
-  static const String addMyStory = AddMyStoryScreen.route;
-  static const String showTakenStory = ShowTakenStoryScreen.route;
+  static const String addMyStory = AddMyImageScreen.route;
+  static const String showTakenStory = ShowTakenImageScreen.route;
   static const String storyScreen = StoryScreen.route;
   static const String devicesScreen = DevicesScreen.route;
   static const String settings = SettingsScreen.route;
@@ -49,19 +49,19 @@ class Routes {
 
   static GoRouter appRouter(WidgetRef ref) => GoRouter(
         initialLocation: Routes.home,
-        // redirect: (context, state) {
-        //   final isAuthenticated =
-        //   ref.read(authViewModelProvider.notifier).isAuthenticated();
-        //   if (!isAuthenticated) {
-        //     if (state.fullPath != Routes.logIn &&
-        //         state.fullPath != Routes.signUp &&
-        //         state.fullPath != Routes.verification &&
-        //         state.fullPath != Routes.splash) {
-        //       return Routes.logIn;
-        //     }
-        //   }
-        //   return null;
-        // },
+        redirect: (context, state) {
+          final isAuthenticated =
+          ref.read(authViewModelProvider.notifier).isAuthenticated();
+          if (!isAuthenticated) {
+            if (state.fullPath != Routes.logIn &&
+                state.fullPath != Routes.signUp &&
+                state.fullPath != Routes.verification &&
+                state.fullPath != Routes.splash) {
+              return Routes.logIn;
+            }
+          }
+          return null;
+        },
         routes: [
           GoRoute(
             path: Routes.splash,
@@ -110,7 +110,7 @@ class Routes {
             path: Routes.addMyStory,
             pageBuilder: (context, state) => CustomTransitionPage(
               key: state.pageKey,
-              child: const AddMyStoryScreen(),
+              child: const AddMyImageScreen(),
               transitionsBuilder: _slideRightTransitionBuilder,
             ),
           ),
@@ -118,7 +118,7 @@ class Routes {
             path: Routes.showTakenStory,
             pageBuilder: (context, state) => CustomTransitionPage(
               key: state.pageKey,
-              child: ShowTakenStoryScreen(image: state.extra as File),
+              child: ShowTakenImageScreen(image: state.extra as File),
               transitionsBuilder: _slideRightTransitionBuilder,
             ),
           ),
