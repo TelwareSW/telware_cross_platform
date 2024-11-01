@@ -9,7 +9,6 @@ AuthLocalRepository authLocalRepository(AuthLocalRepositoryRef ref) {
   return AuthLocalRepository(
     tokenBox: Hive.box<String>('auth-token'),
     userBox: Hive.box<UserModel>('auth-user'),
-    ref: ref,
   );
 }
 
@@ -20,11 +19,10 @@ class AuthLocalRepository {
   AuthLocalRepository({
     required Box<String> tokenBox,
     required Box<UserModel> userBox,
-    required ProviderRef<AuthLocalRepository> ref,
   })  : _tokenBox = tokenBox,
         _userBox = userBox;
 
-  void setToken(String token) async {
+  Future<void> setToken(String token) async {
     await _tokenBox.put('token', token);
   }
 
@@ -38,7 +36,7 @@ class AuthLocalRepository {
   }
 
   // todo: create the user setting and getting methods
-  void setUser(UserModel user) async {
+  Future<void> setUser(UserModel user) async {
     await _userBox.put('user', user);
   }
 
