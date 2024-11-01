@@ -163,9 +163,13 @@ class UserModel {
   }
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
+    String screenName = map['screenName'] as String;
+    if (screenName.isEmpty) {
+      screenName = 'No Name';
+    }
     return UserModel(
       username: map['username'] as String,
-      screenName: map['screenName'] as String,
+      screenName: screenName,
       email: map['email'] as String,
       photo: map['photo'] != null ? map['photo'] as String : null,
       status: map['status'] as String,
