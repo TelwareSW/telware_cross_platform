@@ -31,7 +31,8 @@ String? passwordValidator(String? value) {
 
 // todo(ahmed): update this function to handle more cases
 String? confirmPasswordValidation(String? password, String? confirmedPassword) {
-  if (password!.isEmpty || confirmedPassword!.isEmpty) return null;
+  if (password == null || confirmedPassword == null) return null;
+  if (password.isEmpty || confirmedPassword.isEmpty) return null;
   if (password != confirmedPassword) return 'Passwords do not match.';
   return null;
 }
