@@ -19,6 +19,7 @@ import 'package:telware_cross_platform/features/stories/view/screens/story_scree
 import 'package:telware_cross_platform/features/user/view/screens/block_user.dart';
 import 'package:telware_cross_platform/features/user/view/screens/blocked_users.dart';
 import 'package:telware_cross_platform/features/user/view/screens/change_number_screen.dart';
+import 'package:telware_cross_platform/features/user/view/screens/change_username_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/privacy_and_security_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/profile_info_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/settings_screen.dart';
@@ -41,6 +42,7 @@ class Routes {
   static const String settings = SettingsScreen.route;
   static const String changeNumber = ChangeNumberScreen.route;
   static const String changeNumberForm = ChangeNumberFormScreen.route;
+  static const String changeUsername = ChangeUsernameScreen.route;
   static const String profileInfo = ProfileInfoScreen.route;
   static const String blockUser = BlockUserScreen.route;
   static const String blockedUser = BlockedUsersScreen.route;
@@ -170,6 +172,10 @@ class Routes {
           GoRoute(
             path: Routes.devicesScreen,
             builder: (context, state) => const DevicesScreen(),
+          ),
+          GoRoute(
+            path: Routes.changeUsername,
+            builder: (context, state) => const ChangeUsernameScreen(),
           ),
         ],
       );

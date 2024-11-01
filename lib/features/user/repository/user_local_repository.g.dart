@@ -1,26 +1,26 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'auth_view_model.dart';
+part of 'user_local_repository.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$authViewModelHash() => r'77e4b3b566b010da512ee798a4e3816af3ff78ac';
+String _$userLocalRepositoryHash() =>
+    r'ed50d83dc1169edf9c578baa349c86b61631ce0c';
 
-/// See also [AuthViewModel].
-@ProviderFor(AuthViewModel)
-final authViewModelProvider =
-    NotifierProvider<AuthViewModel, AuthState>.internal(
-  AuthViewModel.new,
-  name: r'authViewModelProvider',
+/// See also [userLocalRepository].
+@ProviderFor(userLocalRepository)
+final userLocalRepositoryProvider = Provider<UserLocalRepository>.internal(
+  userLocalRepository,
+  name: r'userLocalRepositoryProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$authViewModelHash,
+      : _$userLocalRepositoryHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$AuthViewModel = Notifier<AuthState>;
+typedef UserLocalRepositoryRef = ProviderRef<UserLocalRepository>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
