@@ -170,6 +170,7 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
                     IconButton(
                         onPressed: () {
                           ref.read(authViewModelProvider.notifier).logOut();
+                          context.go(Routes.logIn);
                         },
                         icon: const Icon(Icons.more_vert)),
                   ],
@@ -188,58 +189,24 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
                     },
                   ),
                 ),
-                SliverToBoxAdapter(
+                const SliverToBoxAdapter(
                     child: Column(
                   children: [
                     SettingsSection(
-                      settingsOptions: const [],
+                      settingsOptions: [],
                       actions: [
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => const AddMyImageScreen(
-                                    destination: 'profile'),
-                              ),
-                            );
-                          },
-                          child: const SettingsOptionWidget(
-                            key: ValueKey("set-profile-photo-option"),
-                            icon: Icons.camera_alt_outlined,
-                            iconColor: Palette.primary,
-                            text: "Set Profile Photo",
-                            color: Palette.primary,
-                            showDivider: false,
-                          ),
+                        SettingsOptionWidget(
+                          key: ValueKey("set-profile-photo-option"),
+                          icon: Icons.camera_alt_outlined,
+                          iconColor: Palette.primary,
+                          text: "Set Profile Photo",
+                          color: Palette.primary,
+                          showDivider: false,
                         )
                       ],
                     ),
                   ],
                 )),
-                SliverList(
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                  final section = profileSections[index];
-                  final title = section["title"] ?? "";
-                  final options = section["options"];
-                  final trailing = section["trailing"] ?? "";
-                  return const Column(
-                    children: [
-                      SettingsSection(
-                        settingsOptions: [],
-                        actions: [
-                          SettingsOptionWidget(
-                            key: ValueKey("set-profile-photo-option"),
-                            icon: Icons.camera_alt_outlined,
-                            iconColor: Palette.primary,
-                            text: "Set Profile Photo",
-                            color: Palette.primary,
-                            showDivider: false,
-                          )
-                        ],
-                      ),
-                    ],
-                  );
-                })),
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
