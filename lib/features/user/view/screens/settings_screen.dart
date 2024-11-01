@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:telware_cross_platform/core/models/user_model.dart';
-import 'package:telware_cross_platform/core/providers/user_provider.dart';
 
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
@@ -151,6 +149,7 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
                     IconButton(
                         onPressed: () {
                           ref.read(authViewModelProvider.notifier).logOut();
+                          context.go(Routes.logIn);
                         },
                         icon: const Icon(Icons.more_vert)),
                   ],
