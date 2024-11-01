@@ -166,10 +166,7 @@ class _ProfileInfoScreen extends ConsumerState<ProfileInfoScreen> with SingleTic
     final userViewModel = ref.read(userViewModelProvider.notifier);
     await userViewModel.updateUserInfo(_firstNameController.text, _secondNameController.text, _bioController.text);
 
-    context.go(
-        SettingsScreen.route,
-        extra: ModalRoute.withName(HomeScreen.route)
-    );
+    context.pop();
   }
 
   void _shakeAndVibrate(GlobalKey<ShakeWidgetState> shakeKey) {

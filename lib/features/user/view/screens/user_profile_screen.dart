@@ -53,7 +53,7 @@ class _UserProfileScreen extends ConsumerState<UserProfileScreen> {
               builder: (context, constraints) {
                 double factor = _calculateFactor(constraints);
                 return FlexibleSpaceBar(
-                  title: ProfileHeader(fullName: _user.screenName, factor: factor),
+                  title: ProfileHeader(factor: factor),
                   centerTitle: true,
                   background: Container(
                     alignment: Alignment.topLeft,

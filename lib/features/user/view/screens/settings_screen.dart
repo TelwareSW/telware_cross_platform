@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/models/user_model.dart';
+import 'package:telware_cross_platform/core/providers/user_provider.dart';
 
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
+import 'package:telware_cross_platform/core/utils.dart';
+import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
+import 'package:telware_cross_platform/features/stories/view/screens/add_my_image_screen.dart';
+import 'package:telware_cross_platform/features/user/repository/user_local_repository.dart';
 import 'package:telware_cross_platform/features/user/view/widget/profile_header_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
@@ -20,9 +26,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreen extends ConsumerState<SettingsScreen> {
-  late UserModel _user;
-  late List<Map<String, dynamic>> profileSections = [
-    {},
+  final List<Map<String, dynamic>> profileSections = [
     const {
       "title": "Settings",
       "options": [
@@ -109,51 +113,6 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
     }
   ];
 
-  void _initializeProfileSections() {
-    profileSections[0] =
-    {
-      "title": "Account",
-      "options": [
-        {
-          "key": "change-number-option",
-          "text": _user.phone,
-          "subtext": "Tap to change phone number",
-          "routes": "/change-number"
-        },
-        {
-          "text": (_user.phone != "" ? "@${_user.username}" : "None"),
-          "subtext": "Username"
-        },
-        {
-          "key": "bio-option",
-          "text": _user.bio != "" ? _user.bio : "Bio",
-          "subtext":
-          _user.bio != "" ? "Bio" : "Add a few words about yourself",
-          "routes": "/bio"
-        }
-      ]
-    };
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _user = ref.read(userLocalRepositoryProvider).getUser()!;
-    _initializeProfileSections();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final newUser = ref.read(userLocalRepositoryProvider).getUser();
-    if (newUser != null && newUser != _user) {
-      setState(() {
-        _user = newUser;
-        _initializeProfileSections(); // Re-initialize sections
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     ref.listen<AuthState>(authViewModelProvider, (_, state) {
@@ -163,6 +122,8 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
         context.push(Routes.home);
       }
     });
+
+    final user = ref.watch(userProvider)!;
 
     bool isLoading =
         ref.watch(authViewModelProvider).type == AuthStateType.loading;
@@ -228,35 +189,40 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
                             color: Palette.primary,
                             showDivider: false,
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ],
                 )),
-                SliverList(
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                  final section = profileSections[index];
-                  final title = section["title"] ?? "";
-                  final options = section["options"];
-                  final trailing = section["trailing"] ?? "";
-                  return const Column(
+                SliverToBoxAdapter(
+                  child: Column(
                     children: [
+                      const SizedBox(height: Dimensions.sectionGaps),
                       SettingsSection(
-                        settingsOptions: [],
-                        actions: [
-                          SettingsOptionWidget(
-                            key: ValueKey("set-profile-photo-option"),
-                            icon: Icons.camera_alt_outlined,
-                            iconColor: Palette.primary,
-                            text: "Set Profile Photo",
-                            color: Palette.primary,
-                            showDivider: false,
-                          )
+                        title: "Account",
+                        settingsOptions: [
+                          {
+                            "key": "change-number-option",
+                            "text": user.phone,
+                            "subtext": "Tap to change phone number",
+                            "routes": "/change-number"
+                          },
+                          {
+                            "text": (user.phone != "" ? "@${user.username}" : "None"),
+                            "subtext": "Username"
+                          },
+                          {
+                            "key": "bio-option",
+                            "text": user.bio != "" ? user.bio : "Bio",
+                            "subtext":
+                            user.bio != "" ? "Bio" : "Add a few words about yourself",
+                            "routes": "/bio"
+                          }
                         ],
                       ),
                     ],
-                  );
-                })),
+                  )
+                ),
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
