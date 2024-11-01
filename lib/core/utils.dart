@@ -1,7 +1,7 @@
 // common utility functions are added here
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:telware_cross_platform/core/classes/telware_toast.dart';
 
 String? emailValidator(String? value) {
   const String emailPattern =
@@ -25,15 +25,6 @@ String? passwordValidator(String? value) {
   } else if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d._@&-]{8,}$')
       .hasMatch(value)) {
     return 'Must contain letters and digits and can contain . _ @ & -';
-  }
-  return null;
-}
-
-String? passwordValidatorLogIn(String? value) {
-  if (value == null || value.isEmpty) {
-    return null;
-  } else if (value.length < 8) {
-    return 'Password must be at least 8 characters long';
   }
   return null;
 }
@@ -62,8 +53,8 @@ void showSnackBarMessage(BuildContext context, String message) {
 }
 
 void showToastMessage(String message) async {
-  await Fluttertoast.cancel();
-  Fluttertoast.showToast(msg: message);
+  await TelwareToast.cancel();
+  TelwareToast.showToast(msg: message);
 }
 
 String formatPhoneNumber(String phoneNumber) {
@@ -101,4 +92,19 @@ String toKebabCase(String input) {
 
   // Remove leading or trailing hyphens
   return kebabCased.replaceAll(RegExp(r'^-+|-+$'), '');
+}
+
+String getInitials(String name) {
+  if (name.isEmpty) {
+    return "NN";
+  }
+  List<String> nameParts = name.split(' ');
+  String initials = "";
+  if (nameParts.isNotEmpty) {
+    initials = nameParts[0][0];
+    if (nameParts.length > 1) {
+      initials += nameParts[1][0];
+    }
+  }
+  return initials.toUpperCase();
 }

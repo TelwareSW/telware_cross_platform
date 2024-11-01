@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:dio/dio.dart';
@@ -107,15 +105,17 @@ class AuthRemoteRepository {
       final response = await _dio.get(
         '/users/me',
         options: Options(
-          headers: {HttpHeaders.authorizationHeader: 'Bearer $sessionId'},
+          headers: {'X-Session-Token': sessionId},
         ),
       );
 
-      if (response.statusCode! > 200 || response.statusCode! < 200) {
+      if (response.statusCode! >= 300 || response.statusCode! < 200) {
         final message = response.data['message'];
         return Left(AppError(message));
       }
 
+      debugPrint('=========================================');
+      debugPrint('Get me was successful');
       final user = UserModel.fromMap(response.data['data']['user']);
       return Right(user);
     } on DioException catch (dioException) {
@@ -140,7 +140,7 @@ class AuthRemoteRepository {
         },
       );
 
-      if (response.statusCode! > 200 || response.statusCode! < 200) {
+      if (response.statusCode! >= 300 || response.statusCode! < 200) {
         final String message = response.data?['message'] ?? 'Unexpected Error';
         if (response.statusCode == 403) {
           return Left(AppError(message, code: 403));
@@ -167,11 +167,11 @@ class AuthRemoteRepository {
       final response = await _dio.post(
         route,
         options: Options(
-          headers: {HttpHeaders.authorizationHeader: 'Bearer $token'},
+          headers: {'X-Session-Token': token},
         ),
       );
 
-      if (response.statusCode! > 200 || response.statusCode! < 200) {
+      if (response.statusCode! >= 300 || response.statusCode! < 200) {
         final message = response.data['message'];
         return AppError(message);
       }
@@ -186,10 +186,12 @@ class AuthRemoteRepository {
 
   Future<AppError?> forgotPassword(String email) async {
     try {
+      debugPrint('email: $email');
       final response =
-          await _dio.post('/auth/forgot-password', data: {email: email});
+          await _dio.post('/auth/password/forget', data: {'email': email});
 
-      if (response.statusCode! > 200 || response.statusCode! < 200) {
+      debugPrint('Forgot Password response: ${response.data ?? 'No data'}');
+      if (response.statusCode! >= 300 || response.statusCode! < 200) {
         final String message = response.data?['message'] ?? 'Unexpected Error';
         return AppError(message);
       }
@@ -210,7 +212,7 @@ class AuthRemoteRepository {
     String? message;
     if (dioException.response != null) {
       message =
-          dioException.response!.data?['message'] ?? 'Unexpected dio Error';
+          dioException.response!.data?['message'] ?? 'Unexpected server Error';
       debugPrint(message);
     } else if (dioException.type == DioExceptionType.connectionTimeout ||
         dioException.type == DioExceptionType.connectionError ||

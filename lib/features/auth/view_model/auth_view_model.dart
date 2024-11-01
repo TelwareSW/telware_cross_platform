@@ -36,7 +36,7 @@ class AuthViewModel extends _$AuthViewModel {
     }
 
     if (USE_MOCK_DATA) {
-      const user = userMock;
+      final user = userMock;
       ref.read(userProvider.notifier).update((_) => user);
       state = AuthState.authorized;
       return;
@@ -249,16 +249,22 @@ class AuthViewModel extends _$AuthViewModel {
 
       await ref.read(authLocalRepositoryProvider).deleteUser();
       ref.read(userProvider.notifier).update((_) => null);
-      state = AuthState.unauthenticated;
+      state = AuthState.unauthorized;
       return;
-    }
+    } 
 
     final token = ref.read(tokenProvider);
 
+    //  started log out operation
+    debugPrint('===============================');
+    debugPrint('log out operation started');
+    debugPrint('token: $token');
     final appError = await ref
         .read(authRemoteRepositoryProvider)
-        .logOut(token: token!, route: 'auth/logout');
-
+        .logOut(token: token!, route: '/auth/logout');
+    debugPrint('===============================');
+    debugPrint('log out operation ended');
+    debugPrint('Error: ${appError?.error}');
     await _handleLogOutState(appError);
   }
 

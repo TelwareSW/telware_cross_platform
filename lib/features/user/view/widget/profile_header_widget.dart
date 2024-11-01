@@ -1,28 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
+import 'package:telware_cross_platform/core/utils.dart';
 
 
-class ProfileHeader extends StatelessWidget {
-  final String fullName;
-  final String? imagePath;
+class ProfileHeader extends ConsumerWidget {
   final double factor;
 
-  const ProfileHeader({super.key, required this.fullName, this.imagePath, this.factor = 0});
-
-  String _getInitials(String name) {
-    List<String> nameParts = name.split(' ');
-    String initials = "";
-    if (nameParts.isNotEmpty) {
-      initials = nameParts[0][0];
-      if (nameParts.length > 1) {
-        initials += nameParts[1][0];
-      }
-    }
-    return initials.toUpperCase();
-  }
+  const ProfileHeader({super.key, this.factor = 0});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(userProvider);
+    final userImageBytes = user?.photoBytes;
     return Padding(
       padding: EdgeInsets.fromLTRB(factor, 0, 0, 0),
       child: Row(
@@ -30,28 +21,28 @@ class ProfileHeader extends StatelessWidget {
         children: [
           const SizedBox(width: 8),
           CircleAvatar(
-            radius: 20,
-            backgroundImage: imagePath != null
-                ? AssetImage(imagePath!)
-                : null,
-            backgroundColor: imagePath == null ? Palette.primary : null,
-            child: imagePath == null
-                ? Text(
-              _getInitials(fullName),
-              style: const TextStyle(
-                fontWeight: FontWeight.w500,
-                color: Palette.primaryText,
+                radius: 20,
+                backgroundImage:
+                    userImageBytes != null ? MemoryImage(userImageBytes) : null,
+                backgroundColor:
+                    userImageBytes == null ? Palette.primary : null,
+                child: userImageBytes == null
+                    ? Text(
+                        getInitials(user?.screenName ?? 'Moamen Hefny'),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w500,
+                          color: Palette.primaryText,
+                        ),
+                      )
+                    : null,
               ),
-            )
-                : null,
-          ),
           const SizedBox(width: 10),
           Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                fullName,
+                user?.screenName ?? 'Moamen Hefny',
                 style: TextStyle(
                   fontSize: 14  + 6 * factor / 100,
                   fontWeight: FontWeight.bold,
@@ -59,7 +50,7 @@ class ProfileHeader extends StatelessWidget {
                 ),
               ),
               Text(
-                "online",
+                user?.status ?? 'no status',
                 style: TextStyle(
                   fontSize: 10  + 6 * factor / 100,
                   color: Palette.accentText,

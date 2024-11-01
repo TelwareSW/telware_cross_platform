@@ -22,139 +22,15 @@ class ContactsRemoteRepository {
   Future<List<ContactModel>> fetchContactsFromBackend() async {
     await Future.delayed(const Duration(seconds: 2));
     List<ContactModel> users = [
-      ContactModel(
-        userName: 'game of thrones',
-        userImageUrl:
-        'https://st2.depositphotos.com/2703645/7304/v/450/depositphotos_73040253-stock-illustration-male-avatar-icon.jpg',
-        stories: [
-          StoryModel(
-              storyId: 'idd11',
-              createdAt: DateTime(2024, 10, 21, 12, 0),
-              storyContentUrl:
-              'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
-              isSeen: false,
-              storyCaption: 'very good caption',
-              seenIds: ['id1', 'id2']),
-          StoryModel(
-            storyId: 'idd12',
-            createdAt: DateTime(2024, 10, 21, 12, 0),
-            storyContentUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
-            isSeen: false,
-            storyCaption: 'very good  good  good caption',
-            seenIds: ['id2'],
-          ),
-          StoryModel(
-            storyId: 'idd13',
-            createdAt: DateTime(2024, 10, 21, 12, 0),
-            storyContentUrl:
-            'https://www.e3lam.com/images/large/2015/01/unnamed-14.jpg',
-            isSeen: false,
-            seenIds: ['id1', 'id2'],
-          ),
-        ],
-        userId: 'myUser',
-      ),
-      ContactModel(
-        stories: [
-          StoryModel(
-            storyId: 'id11',
-            createdAt: DateTime(2024, 10, 21, 12, 0),
-            storyContentUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
-            isSeen: false,
-            seenIds: [],
-          ),
-          StoryModel(
-            storyId: 'id12',
-            createdAt: DateTime(2024, 10, 21, 12, 0),
-            storyContentUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
-            isSeen: false,
-            storyCaption: 'very good  good  good caption',
-            seenIds: [],
-          ),
-        ],
-        userName: 'game of thrones',
-        userImageUrl:
-        'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
-        userId: 'id1',
-      ),
-      ContactModel(
-        stories: [
-          StoryModel(
-            storyId: 'id21',
-            createdAt: DateTime(2024, 10, 21, 12, 0),
-            storyContentUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
-            isSeen: false,
-            seenIds: [],
-          ),
-          StoryModel(
-            storyId: 'id22',
-            createdAt: DateTime(2024, 10, 21, 12, 0),
-            storyContentUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
-            isSeen: false,
-            seenIds: [],
-          ),
-          StoryModel(
-            storyId: 'id23',
-            createdAt: DateTime(2024, 10, 21, 12, 0),
-            storyContentUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
-            isSeen: false,
-            seenIds: [],
-          ),
-        ],
-        userName: 'rings of power',
-        userImageUrl:
-        'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
-        userId: 'id2',
-      ),
-      ContactModel(
-        stories: [
-          StoryModel(
-            storyId: 'id31',
-            createdAt: DateTime(2024, 10, 21, 12, 0),
-            storyContentUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
-            isSeen: false,
-            storyCaption: 'very good  good  good caption',
-            seenIds: [],
-          ),
-          StoryModel(
-            storyId: 'id32',
-            createdAt: DateTime(2024, 10, 21, 12, 0),
-            storyContentUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
-            isSeen: false,
-            seenIds: [],
-          ),
-          StoryModel(
-            storyId: 'id33',
-            createdAt: DateTime(2024, 10, 21, 12, 0),
-            storyContentUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
-            isSeen: false,
-            seenIds: [],
-          ),
-        ],
-        userName: 'rings of power',
-        userImageUrl:
-        'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
-        userId: 'id3',
-      ),
     ];
     return users;
   }
 
   Future<bool> postStory(File storyImage, String? caption) async {
-    print('fdsaib');
     String uploadUrl = 'http://testing.telware.tech:3000/api/v1/users/stories';
     var uri = Uri.parse(uploadUrl);
     var request = http.MultipartRequest('POST', uri);
-    request.headers['X-Session-Token'] = '410b860a-de14-4cbe-b5f2-7cff8518a2f7';
+    request.headers['X-Session-Token'] = authLocalRepository.getToken() ?? '';
 
     var multipartFile = await http.MultipartFile.fromPath(
       'file',
@@ -166,6 +42,29 @@ class ContactsRemoteRepository {
     if (caption != null) {
       request.fields['caption'] = caption;
     }
+
+    try {
+      var response = await request.send();
+      return response.statusCode == 201;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error occurred: $e');
+      }
+      return false;
+    }
+  }
+
+  Future<bool> updateProfilePicture(File storyImage) async {
+    String uploadUrl = 'http://testing.telware.tech:3000/api/v1/users/picture';
+    var uri = Uri.parse(uploadUrl);
+    var request = http.MultipartRequest('PATCH', uri);
+    request.headers['X-Session-Token'] = authLocalRepository.getToken() ?? '410b860a-de14-4cbe-b5f2-7cff8518a2f7';
+    var multipartFile = await http.MultipartFile.fromPath(
+      'file',
+      storyImage.path,
+      contentType: MediaType('image', 'jpeg'),
+    );
+    request.files.add(multipartFile);
 
     try {
       var response = await request.send();

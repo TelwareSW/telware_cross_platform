@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:telware_cross_platform/core/models/user_model.dart';
+
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
-import 'package:telware_cross_platform/features/user/repository/user_local_repository.dart';
 import 'package:telware_cross_platform/features/user/view/widget/profile_header_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
@@ -157,90 +156,133 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final updatedUser = ref.watch(userLocalRepositoryProvider).getUser();
-    if (updatedUser != null && updatedUser != _user) {
-      _user = updatedUser;
-      _initializeProfileSections(); // Re-initialize sections
-    }
+    ref.listen<AuthState>(authViewModelProvider, (_, state) {
+      if (state.type == AuthStateType.fail) {
+        showToastMessage(state.message!);
+      } else if (state.type == AuthStateType.unauthorized) {
+        context.push(Routes.home);
+      }
+    });
+
+    bool isLoading =
+        ref.watch(authViewModelProvider).type == AuthStateType.loading;
+    debugPrint('isLoading: $isLoading');
 
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 145.0,
-            toolbarHeight: 80,
-            floating: false,
-            pinned: true,
-            leading: IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () => context.pop()),
-            actions: [
-              const Icon(Icons.search),
-              const SizedBox(width: 16),
-              IconButton(onPressed: () {
-                ref.read(authViewModelProvider.notifier).logOut();
-                context.go(Routes.logIn);
-              }, icon: const Icon(Icons.more_vert)),
-            ],
-            flexibleSpace: LayoutBuilder(
-              builder: (context, constraints) {
-                double factor = _calculateFactor(constraints);
-                return FlexibleSpaceBar(
-                  title: ProfileHeader(fullName: _user.screenName, factor: factor),
-                  centerTitle: true,
-                  background: Container(
-                    alignment: Alignment.topLeft,
-                    color: Palette.trinary,
-                    padding: EdgeInsets.zero,
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator.adaptive())
+          : CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  expandedHeight: 145.0,
+                  toolbarHeight: 80,
+                  floating: false,
+                  pinned: true,
+                  leading: IconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () => context.pop()),
+                  actions: [
+                    const Icon(Icons.search),
+                    const SizedBox(width: 16),
+                    IconButton(
+                        onPressed: () {
+                          ref.read(authViewModelProvider.notifier).logOut();
+                        },
+                        icon: const Icon(Icons.more_vert)),
+                  ],
+                  flexibleSpace: LayoutBuilder(
+                    builder: (context, constraints) {
+                      double factor = _calculateFactor(constraints);
+                      return FlexibleSpaceBar(
+                        title: ProfileHeader(factor: factor),
+                        centerTitle: true,
+                        background: Container(
+                          alignment: Alignment.topLeft,
+                          color: Palette.trinary,
+                          padding: EdgeInsets.zero,
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
-          ),
-          const SliverToBoxAdapter(
-              child: Column(
-            children: [
-              SettingsSection(
-                settingsOptions: [],
-                actions: [
-                  SettingsOptionWidget(
-                    key: ValueKey("set-profile-photo-option"),
-                    icon: Icons.camera_alt_outlined,
-                    iconColor: Palette.primary,
-                    text: "Set Profile Photo",
-                    color: Palette.primary,
-                    showDivider: false,
-                  )
-                ],
-              ),
-            ],
-          )),
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final section = profileSections[index];
-                final title = section["title"] ?? "";
-                final options = section["options"];
-                final trailing = section["trailing"] ?? "";
-                return Column(
+                ),
+                SliverToBoxAdapter(
+                    child: Column(
                   children: [
-                    const SizedBox(height: Dimensions.sectionGaps),
                     SettingsSection(
-                      title: title,
-                      settingsOptions: options,
-                      trailing: trailing,
+                      settingsOptions: const [],
+                      actions: [
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const AddMyImageScreen(
+                                    destination: 'profile'),
+                              ),
+                            );
+                          },
+                          child: const SettingsOptionWidget(
+                            key: ValueKey("set-profile-photo-option"),
+                            icon: Icons.camera_alt_outlined,
+                            iconColor: Palette.primary,
+                            text: "Set Profile Photo",
+                            color: Palette.primary,
+                            showDivider: false,
+                          ),
+                        )
+                      ],
                     ),
                   ],
-                );
-              },
-              childCount: profileSections.length,
+                )),
+                SliverList(
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                  final section = profileSections[index];
+                  final title = section["title"] ?? "";
+                  final options = section["options"];
+                  final trailing = section["trailing"] ?? "";
+                  return const Column(
+                    children: [
+                      SettingsSection(
+                        settingsOptions: [],
+                        actions: [
+                          SettingsOptionWidget(
+                            key: ValueKey("set-profile-photo-option"),
+                            icon: Icons.camera_alt_outlined,
+                            iconColor: Palette.primary,
+                            text: "Set Profile Photo",
+                            color: Palette.primary,
+                            showDivider: false,
+                          )
+                        ],
+                      ),
+                    ],
+                  );
+                })),
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final section = profileSections[index];
+                      final title = section["title"] ?? "";
+                      final options = section["options"];
+                      final trailing = section["trailing"] ?? "";
+                      return Column(
+                        children: [
+                          const SizedBox(height: Dimensions.sectionGaps),
+                          SettingsSection(
+                            title: title,
+                            settingsOptions: options,
+                            trailing: trailing,
+                          ),
+                        ],
+                      );
+                    },
+                    childCount: profileSections.length,
+                  ),
+                ),
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: Dimensions.sectionGaps),
+                ),
+              ],
             ),
-          ),
-          const SliverToBoxAdapter(
-            child: SizedBox(height: Dimensions.sectionGaps),
-          ),
-        ],
-      ),
     );
   }
 

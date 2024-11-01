@@ -7,20 +7,21 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:telware_cross_platform/features/stories/view/screens/show_taken_story_screen.dart';
+import 'package:telware_cross_platform/features/stories/view/screens/show_taken_image_screen.dart';
 import '../widget/take_photo_row.dart';
 import '../widget/toggleCameraMode.dart';
 
-class AddMyStoryScreen extends StatefulWidget {
-  static const String route = '/add-my-story';
-
-  const AddMyStoryScreen({super.key});
+class AddMyImageScreen extends StatefulWidget {
+  static const String route = '/add-my-image';
+  final String destination;
+  const AddMyImageScreen({super.key, this.destination = 'story',});
 
   @override
-  _AddMyStoryScreenState createState() => _AddMyStoryScreenState();
+  _AddMyImageScreenState createState() => _AddMyImageScreenState();
 }
 
-class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
+class _AddMyImageScreenState extends State<AddMyImageScreen> {
+
   CameraController? _controller;
   Future<void>? _initializeControllerFuture;
   String _selectedMode = 'Photo';
@@ -101,7 +102,7 @@ class _AddMyStoryScreenState extends State<AddMyStoryScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ShowTakenStoryScreen(image: savedFile),
+          builder: (context) => ShowTakenImageScreen(image: savedFile, destination:widget.destination),
         ),
       );
     } catch (e) {
