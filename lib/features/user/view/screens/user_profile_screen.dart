@@ -18,8 +18,6 @@ class UserProfileScreen extends StatefulWidget {
 }
 
 class _UserProfileScreen extends State<UserProfileScreen> {
-  static const String fullName = "Moamen Hefny";
-
   static var user = {
     "phoneNumber": "+20 110 5035588",
     "username": "Moamen",
@@ -54,7 +52,7 @@ class _UserProfileScreen extends State<UserProfileScreen> {
                   builder: (context, constraints) {
                     double factor = _calculateFactor(constraints);
                     return FlexibleSpaceBar(
-                      title: ProfileHeader(fullName: fullName, factor: factor),
+                      title: ProfileHeader(factor: factor),
                       centerTitle: true,
                       background: Container(
                         alignment: Alignment.topLeft,
@@ -100,13 +98,14 @@ class _UserProfileScreen extends State<UserProfileScreen> {
             ],
           ),
           Positioned(
-            top:140,
+            top: 140,
             right: 16.0,
             child: FloatingActionButton(
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => AddMyImageScreen(destination: 'profile'),
+                    builder: (context) =>
+                        const AddMyImageScreen(destination: 'profile'),
                   ),
                 );
               },
@@ -120,11 +119,11 @@ class _UserProfileScreen extends State<UserProfileScreen> {
     );
   }
 
-
   double _calculateFactor(BoxConstraints constraints) {
     double maxExtent = 130.0;
     double scrollOffset = constraints.maxHeight - kToolbarHeight;
-    double factor = scrollOffset > 0 ? (maxExtent - scrollOffset) / maxExtent * 90.0 : 60.0;
+    double factor =
+        scrollOffset > 0 ? (maxExtent - scrollOffset) / maxExtent * 90.0 : 60.0;
     return factor.clamp(0, 90.0);
   }
 }

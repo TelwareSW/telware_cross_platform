@@ -177,8 +177,7 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
                     builder: (context, constraints) {
                       double factor = _calculateFactor(constraints);
                       return FlexibleSpaceBar(
-                        title:
-                            ProfileHeader(factor: factor),
+                        title: ProfileHeader(factor: factor),
                         centerTitle: true,
                         background: Container(
                           alignment: Alignment.topLeft,
@@ -188,61 +187,59 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
                       );
                     },
                   ),
-                );
-              },
-            ),
-          ),
-          SliverToBoxAdapter(
-              child: Column(
-            children: [
-              SettingsSection(
-                settingsOptions: const [],
-                actions: [
-                  GestureDetector(
-                    onTap: (){
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => AddMyImageScreen(destination: 'profile'),
-                        ),
-                      );
-                    },
-                    child: SettingsOptionWidget(
-                      key: ValueKey("set-profile-photo-option"),
-                      icon: Icons.camera_alt_outlined,
-                      iconColor: Palette.primary,
-                      text: "Set Profile Photo",
-                      color: Palette.primary,
-                      showDivider: false,
-                    ),
-                  )
-                ],
-              ),
-            ],
-          )),
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final section = profileSections[index];
-                final title = section["title"] ?? "";
-                final options = section["options"];
-                final trailing = section["trailing"] ?? "";
-                return Column(
+                ),
+                SliverToBoxAdapter(
+                    child: Column(
                   children: [
                     SettingsSection(
-                      settingsOptions: [],
+                      settingsOptions: const [],
                       actions: [
-                        SettingsOptionWidget(
-                          key: ValueKey("set-profile-photo-option"),
-                          icon: Icons.camera_alt_outlined,
-                          iconColor: Palette.primary,
-                          text: "Set Profile Photo",
-                          color: Palette.primary,
-                          showDivider: false,
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const AddMyImageScreen(
+                                    destination: 'profile'),
+                              ),
+                            );
+                          },
+                          child: const SettingsOptionWidget(
+                            key: ValueKey("set-profile-photo-option"),
+                            icon: Icons.camera_alt_outlined,
+                            iconColor: Palette.primary,
+                            text: "Set Profile Photo",
+                            color: Palette.primary,
+                            showDivider: false,
+                          ),
                         )
                       ],
                     ),
                   ],
                 )),
+                SliverList(
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                  final section = profileSections[index];
+                  final title = section["title"] ?? "";
+                  final options = section["options"];
+                  final trailing = section["trailing"] ?? "";
+                  return const Column(
+                    children: [
+                      SettingsSection(
+                        settingsOptions: [],
+                        actions: [
+                          SettingsOptionWidget(
+                            key: ValueKey("set-profile-photo-option"),
+                            icon: Icons.camera_alt_outlined,
+                            iconColor: Palette.primary,
+                            text: "Set Profile Photo",
+                            color: Palette.primary,
+                            showDivider: false,
+                          )
+                        ],
+                      ),
+                    ],
+                  );
+                })),
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
