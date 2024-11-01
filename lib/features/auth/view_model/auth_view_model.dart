@@ -5,6 +5,7 @@ import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/core/mock/token_mock.dart';
 import 'package:telware_cross_platform/core/mock/user_mock.dart';
 import 'package:flutter/material.dart';
+import 'package:telware_cross_platform/core/models/signup_result.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_local_repository.dart';
@@ -40,11 +41,10 @@ class AuthViewModel extends _$AuthViewModel {
       state = AuthState.authorized;
       return;
     }
-    
+
     // try getting updated user data
-    final response =
-        await ref.read(authRemoteRepositoryProvider).getMe(token);
-    
+    final response = await ref.read(authRemoteRepositoryProvider).getMe(token);
+
     response.match((appError) {
       state = AuthState.fail(appError.error);
       // getting user data from local as remote failed
@@ -67,7 +67,7 @@ class AuthViewModel extends _$AuthViewModel {
     return token != null && token.isNotEmpty;
   }
 
-  Future<AuthState> signUp({
+  Future<SignupResult> signUp({
     required String email,
     required String phone,
     required String password,
@@ -79,7 +79,7 @@ class AuthViewModel extends _$AuthViewModel {
     // if we are using mock data, we will not send the request to the server
     if (USE_MOCK_DATA) {
       state = AuthState.unauthenticated;
-      return state;
+      return SignupResult(state: state);
     }
 
     final AppError? response = await ref
@@ -96,7 +96,7 @@ class AuthViewModel extends _$AuthViewModel {
       state = AuthState
           .unauthenticated; // user is not authenticated yet, he needs to verify his email
     }
-    return state;
+    return SignupResult(state: state, error: response);
   }
 
   Future<AuthState> verifyEmail({
@@ -119,20 +119,12 @@ class AuthViewModel extends _$AuthViewModel {
         .read(authRemoteRepositoryProvider)
         .verifyEmail(email: email, code: code);
 
-    response.match((appError) {
-      state = AuthState.unauthenticated;
-    }, (verificationResponse) {
-      ref.read(authLocalRepositoryProvider).setUser(verificationResponse.user);
-      ref.read(userProvider.notifier).update((_) => verificationResponse.user);
-
-      ref
-          .read(authLocalRepositoryProvider)
-          .setToken(verificationResponse.token);
-      ref
-          .read(tokenProvider.notifier)
-          .update((_) => verificationResponse.token);
+    if (response != null) {
+      state = AuthState.fail(response.error);
+      return state;
+    } else {
       state = AuthState.authenticated;
-    });
+    }
     return state;
   }
 

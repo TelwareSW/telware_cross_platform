@@ -11,6 +11,8 @@ class AuthPhoneNumber extends StatelessWidget {
     required this.shakeKey,
     required this.focusNode,
     required this.isFocused,
+    this.formKey,
+    this.errorText,
     this.padding = const EdgeInsets.only(
       bottom: Dimensions.inputPaddingBottom,
       left: Dimensions.inputPaddingLeft,
@@ -20,7 +22,9 @@ class AuthPhoneNumber extends StatelessWidget {
   });
 
   final GlobalKey<ShakeWidgetState> shakeKey;
+  final GlobalKey<FormFieldState>? formKey;
   final String name;
+  final String? errorText;
   final EdgeInsetsGeometry padding;
   final FocusNode focusNode;
   final bool isFocused;
@@ -36,10 +40,12 @@ class AuthPhoneNumber extends StatelessWidget {
       child: Padding(
         padding: padding,
         child: PhoneFormField(
+          key: formKey,
           focusNode: focusNode,
           decoration: InputDecoration(
             hintText: isFocused ? '' : name,
             labelText: !(isFocused) ? '' : name,
+            errorText: errorText,
             hintStyle: const TextStyle(
               color: Palette.accentText,
               fontWeight: FontWeight.normal,

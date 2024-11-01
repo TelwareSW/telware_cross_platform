@@ -12,7 +12,7 @@ class AuthResponseModel {
   factory AuthResponseModel.fromMap(Map<String, dynamic> map) {
     return AuthResponseModel(
       user: UserModel.fromMap(map['user'] as Map<String, dynamic>),
-      token: map['accessToken'] as String,
+      token: map['sessionId'] as String,
     );
   }
 

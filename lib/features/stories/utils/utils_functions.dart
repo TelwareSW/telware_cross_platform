@@ -23,8 +23,7 @@ Future<Uint8List?> downloadImage(String url) async {
   }
 }
 
-Future<bool> uploadImage(File imageFile) async {
-  String uploadUrl = "http://192.168.1.2:3000/upload";
+Future<bool> uploadImage(File imageFile, String uploadUrl) async {
   var uri = Uri.parse(uploadUrl);
   var request = http.MultipartRequest('POST', uri);
   var multipartFile = await http.MultipartFile.fromPath(

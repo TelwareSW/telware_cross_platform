@@ -4,16 +4,21 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:signature/signature.dart';
 import 'package:path_provider/path_provider.dart';
-import '../../utils/utils_functions.dart';
+import 'package:telware_cross_platform/core/theme/palette.dart';
+import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
+import '../widget/bottom_action_buttons_edit_taken_image.dart';
+import '../widget/signature_pen.dart';
+import '../widget/story_caption_text_field.dart';
 
-class ShowTakenStoryScreen extends StatefulWidget {
-  final File image;
+class ShowTakenStoryScreen extends ConsumerStatefulWidget {
   static const String route = '/show-taken-story';
+  final File image;
 
   const ShowTakenStoryScreen({super.key, required this.image});
 
@@ -21,14 +26,15 @@ class ShowTakenStoryScreen extends StatefulWidget {
   _ShowTakenStoryScreenState createState() => _ShowTakenStoryScreenState();
 }
 
-class _ShowTakenStoryScreenState extends State<ShowTakenStoryScreen> {
-  final GlobalKey _signatureBoundaryKey  = GlobalKey();
+class _ShowTakenStoryScreenState extends ConsumerState<ShowTakenStoryScreen> {
+  final GlobalKey _signatureBoundaryKey = GlobalKey();
   File? _imageFile;
-  File? _originalImageFile; // Store the original image
+  File? _originalImageFile;
   final SignatureController _controller = SignatureController(
     penStrokeWidth: 5,
     penColor: Colors.red,
   );
+  final TextEditingController _captionController = TextEditingController();
 
   @override
   void initState() {
@@ -38,8 +44,14 @@ class _ShowTakenStoryScreenState extends State<ShowTakenStoryScreen> {
       DeviceOrientation.portraitDown,
     ]);
     _imageFile = widget.image;
-    _originalImageFile = File(widget.image.path); // Save the original image
+    _originalImageFile = File(widget.image.path);
     _requestPermissions();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   Future<void> _requestPermissions() async {
@@ -63,7 +75,7 @@ class _ShowTakenStoryScreenState extends State<ShowTakenStoryScreen> {
         uiSettings: [
           AndroidUiSettings(
             toolbarTitle: 'Cropper',
-            toolbarColor: Colors.deepOrange,
+            toolbarColor: Palette.secondary,
             toolbarWidgetColor: Colors.white,
             aspectRatioPresets: [
               CropAspectRatioPreset.original,
@@ -88,43 +100,30 @@ class _ShowTakenStoryScreenState extends State<ShowTakenStoryScreen> {
   }
 
   Future<ui.Image> _captureImage() async {
-    // Find the RenderRepaintBoundary in the context
-    final boundary = _signatureBoundaryKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+    final boundary = _signatureBoundaryKey.currentContext!.findRenderObject()
+        as RenderRepaintBoundary;
     return await boundary.toImage(pixelRatio: 3.0);
   }
 
-  // Method to save the combined image
   Future<File> _saveCombinedImage() async {
-    // Check if _imageFile is null
     if (_imageFile == null) {
-      throw Exception("No image file found."); // Or handle as needed
+      throw Exception("No image file found.");
     }
-
     ui.Image combinedImage = await _captureImage();
-    ByteData? byteData = await combinedImage.toByteData(format: ui.ImageByteFormat.png);
+    ByteData? byteData =
+        await combinedImage.toByteData(format: ui.ImageByteFormat.png);
     Uint8List pngBytes = byteData!.buffer.asUint8List();
-
-    // Get the temporary directory
     final directory = await getTemporaryDirectory();
-    // Create a file to save the image
     final file = File('${directory.path}/combined_image.png');
-    // Write the bytes to the file
     await file.writeAsBytes(pngBytes);
-
-    return file; // Return the saved file
+    return file;
   }
 
-
-  void _clearDrawing() {
-    _controller.clear();
-  }
-
-  // Reset the image to the original image file
   void _discardChanges() {
     setState(() {
-      _imageFile = _originalImageFile; // Revert to original image
+      _imageFile = _originalImageFile;
     });
-    _clearDrawing(); // Clear any drawings as well
+    _controller.clear();
   }
 
   @override
@@ -132,84 +131,46 @@ class _ShowTakenStoryScreenState extends State<ShowTakenStoryScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        elevation: 0, // Remove shadow
+        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            context.pop(); // Pop the screen
-          },
+          onPressed: () => context.pop(),
         ),
       ),
-      body: Stack(
-        children: [
-          RepaintBoundary(
-            key: _signatureBoundaryKey,
-            child: Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: FileImage(_imageFile!),
-                  fit: BoxFit.contain,
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Stack(
+          children: [
+            SignaturePen(
+              signatureBoundaryKey: _signatureBoundaryKey,
+              imageFile: _imageFile,
+              controller: _controller,
+            ),
+            Positioned(
+              bottom: 20,
+              left: 0,
+              right: 0,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    StoryCaptionField(controller: _captionController),
+                    BottomActionButtonsEditTakenImage(
+                      cropImage: _cropImage,
+                      discardChanges: _discardChanges,
+                      saveAndPostStory: _saveCombinedImage,
+                      captionController: _captionController,
+                      ref: ref,
+                    ),
+                  ],
                 ),
               ),
-              child: Signature(
-                controller: _controller,
-                backgroundColor: Colors.transparent,
-              ),
             ),
-          ),
-          Positioned(
-            bottom: 20,
-            left: 0,
-            right: 0,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Wrap(
-                spacing: 10.0,
-                alignment: WrapAlignment.center,
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: _cropImage,
-                    icon: const Icon(Icons.crop),
-                    label: const Text("Crop"),
-                  ),
-                  ElevatedButton.icon(
-                    onPressed: _discardChanges,
-                    icon: const Icon(Icons.clear),
-                    label: const Text("Discard"),
-                  ),
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      File combinedImageFile = await _saveCombinedImage();
-                      bool uploadResult = await uploadImage(combinedImageFile);
-                      final snackBar = SnackBar(
-                        content: Text(uploadResult
-                            ? 'Story Posted Successfully'
-                            : 'Failed to post Story'),
-                      );
-                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-
-                      if (uploadResult) {
-                        Future.delayed(const Duration(seconds: 2), () {
-                          context.pop();
-                        });
-                      }
-                    },
-                    icon: const Icon(Icons.send),
-                    label: const Text("Post"),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
   }
 }
 
