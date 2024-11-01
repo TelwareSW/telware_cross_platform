@@ -1,29 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/features/user/view/widget/profile_header_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
+import 'package:telware_cross_platform/features/user/repository/user_local_repository.dart';
 
-class UserProfileScreen extends StatefulWidget {
+class UserProfileScreen extends ConsumerStatefulWidget {
   static const String route = '/profile';
 
   const UserProfileScreen({super.key});
 
   @override
-  State<UserProfileScreen> createState() => _UserProfileScreen();
+  ConsumerState<UserProfileScreen> createState() => _UserProfileScreen();
 }
 
-class _UserProfileScreen extends State<UserProfileScreen> {
-  static const String fullName = "Moamen Hefny";
+class _UserProfileScreen extends ConsumerState<UserProfileScreen> {
+  late final UserModel _user;
 
-  static var user = {
-    "phoneNumber": "+20 110 5035588",
-    "username": "Moamen",
-    "bio": "test",
-  };
+  @override
+  void initState() {
+    super.initState();
+
+    _user = ref.read(userLocalRepositoryProvider).getUser()!;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +53,7 @@ class _UserProfileScreen extends State<UserProfileScreen> {
               builder: (context, constraints) {
                 double factor = _calculateFactor(constraints);
                 return FlexibleSpaceBar(
-                  title: ProfileHeader(fullName: fullName, factor: factor),
+                  title: ProfileHeader(fullName: _user.screenName, factor: factor),
                   centerTitle: true,
                   background: Container(
                     alignment: Alignment.topLeft,
@@ -67,18 +71,18 @@ class _UserProfileScreen extends State<UserProfileScreen> {
                     title: "Info",
                     settingsOptions: const [],
                     actions: [
-                      SettingsOptionWidget(text: user["phoneNumber"] ?? "",
+                      SettingsOptionWidget(text: _user.phone ?? "",
                         icon: null,
                         subtext: "Mobile",
                       ),
-                      if (user["bio"] != null)
+                      if (_user.bio != "")
                         SettingsOptionWidget(icon: null,
-                            text: user["bio"] ?? "",
+                            text: _user.bio,
                             subtext: "Bio"
                         ),
-                      if (user["username"] != null)
+                      if (_user.username != "")
                         SettingsOptionWidget(icon: null,
-                            text: "@${user["username"]}",
+                            text: "@${_user.username}",
                             subtext: "Username"
                         ),
                     ],

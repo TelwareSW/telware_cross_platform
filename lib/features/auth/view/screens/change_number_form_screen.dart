@@ -10,6 +10,9 @@ import 'package:telware_cross_platform/features/auth/view/widget/auth_phone_numb
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_floating_action_button.dart';
+import 'package:telware_cross_platform/features/user/view/screens/settings_screen.dart';
+import 'package:telware_cross_platform/features/user/view_model/user_state.dart';
+import 'package:telware_cross_platform/features/user/view_model/user_view_model.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -53,12 +56,11 @@ class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
     return MediaQuery.of(context).viewInsets.bottom != 0;
   }
 
-  void _updatePhoneNumber() {
-    // ref.read(authViewModelProvider.notifier).updatePhoneNumber(
-    //   phone: phoneController.value.international,
-    // );
-    context.pop(); // to close the dialog
-    context.pushReplacement(Routes.verification);
+  Future<void> _updatePhoneNumber() async {
+    final newPhoneNumber = phoneController.value.international;
+
+    // Trigger the update process in UserViewModel
+    await ref.read(userViewModelProvider.notifier).updatePhoneNumber(newPhoneNumber);
   }
 
   void _onEdit() {
@@ -85,6 +87,7 @@ class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
       // showConfirmationDialog(context,
       //     "Is this the correct number?", phoneNumber,
       //     "Yes", "Edit", _updatePhoneNumber, _onEdit);
+      _updatePhoneNumber();
       if (kDebugMode) {
         print("Success");
       }
@@ -93,6 +96,23 @@ class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userState = ref.watch(userViewModelProvider);
+
+    ref.listen<UserState>(userViewModelProvider, (previous, next) {
+      if (next.type == UserStateType.success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(next.message ?? 'Phone number updated successfully')),
+        );
+        // context.pop();
+        // context.pushReplacement(Routes.verification);
+        context.go(SettingsScreen.route);
+      } else if (next.type == UserStateType.fail) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(next.message ?? 'Failed to update phone number')),
+        );
+      }
+    });
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Palette.background,

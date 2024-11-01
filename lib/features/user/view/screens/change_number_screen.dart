@@ -1,30 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gif/gif.dart';
 import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/change_number_form_screen.dart';
+import 'package:telware_cross_platform/features/user/repository/user_local_repository.dart';
 import 'package:telware_cross_platform/features/user/view/screens/settings_screen.dart';
 import 'package:telware_cross_platform/features/user/view/widget/toolbar_widget.dart';
 
-class ChangeNumberScreen extends StatefulWidget {
+class ChangeNumberScreen extends ConsumerStatefulWidget {
   static const String route = '/change-number';
 
   const ChangeNumberScreen({super.key});
 
   @override
-  State<ChangeNumberScreen> createState() => _ChangeNumberScreenState();
+  ConsumerState<ChangeNumberScreen> createState() => _ChangeNumberScreenState();
 }
 
-class _ChangeNumberScreenState extends State<ChangeNumberScreen>
+class _ChangeNumberScreenState extends ConsumerState<ChangeNumberScreen>
     with TickerProviderStateMixin {
-  static const user = {
-    "phoneNumber": "+20 1105035588"
-  };
+  late final _user;
   late GifController _controller;
 
   @override
   void initState() {
     super.initState();
+    _user = ref.read(userLocalRepositoryProvider).getUser()!;
     _controller = GifController(vsync: this);
   }
 
@@ -106,7 +107,7 @@ class _ChangeNumberScreenState extends State<ChangeNumberScreen>
                         context.pop(); // Go back on button press
                       },
                       child: Text(
-                        "Keep ${user["phoneNumber"]}", // Example number
+                        "Keep ${_user.phone}", // Example number
                         style: const TextStyle(fontSize: 16, color: Palette.primary),
                       ),
                     ),
@@ -126,11 +127,9 @@ class _ChangeNumberScreenState extends State<ChangeNumberScreen>
                         padding: const EdgeInsets.symmetric(vertical: 12.0), // Add internal padding
                       ),
                       onPressed: () {
-                        // todo(moamen): use go_router instead of navigator
-                        Navigator.pushNamedAndRemoveUntil(
-                          context,
+                        context.go(
                           ChangeNumberFormScreen.route,
-                          ModalRoute.withName(SettingsScreen.route),
+                          extra: ModalRoute.withName(SettingsScreen.route),
                         );
                       },
                       child: const Text(

@@ -25,7 +25,7 @@ class UserRemoteRepository {
 
   Future<String?> _getSessionId() async {
     final authLocalRepository = _ref.read(authLocalRepositoryProvider);
-    return authLocalRepository.getSessionId();
+    return authLocalRepository.getToken();
   }
 
   Future<Either<AppError, void>> changeNumber({
