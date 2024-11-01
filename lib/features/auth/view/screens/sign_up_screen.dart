@@ -5,6 +5,7 @@ import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phone_form_field/phone_form_field.dart';
 import 'package:telware_cross_platform/core/models/signup_result.dart';
+import 'package:telware_cross_platform/features/auth/view/widget/confirmation_dialog.dart';
 import 'package:vibration/vibration.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
