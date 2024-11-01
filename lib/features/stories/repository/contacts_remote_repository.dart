@@ -152,11 +152,11 @@ class ContactsRemoteRepository {
   }
 
   Future<bool> postStory(File storyImage, String? caption) async {
+
     String uploadUrl = 'http://testing.telware.tech:3000/api/v1/users/stories';
     var uri = Uri.parse(uploadUrl);
     var request = http.MultipartRequest('POST', uri);
     request.headers['X-Session-Token'] = authLocalRepository.getToken() ?? '';
-
     var multipartFile = await http.MultipartFile.fromPath(
       'file',
       storyImage.path,
