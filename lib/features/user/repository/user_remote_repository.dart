@@ -33,7 +33,7 @@ class UserRemoteRepository {
   }) async {
     try {
       final sessionId = await _getSessionId();
-      final response = await _dio.post(
+      final response = await _dio.patch(
         '/users/phone',
         data: {
           'phoneNumber': newPhoneNumber,
@@ -61,7 +61,7 @@ class UserRemoteRepository {
   }) async {
     try {
       final sessionId = await _getSessionId();
-      final response = await _dio.put(
+      final response = await _dio.patch(
         '/users/bio',
         data: {
           'bio': newBio,
@@ -90,7 +90,7 @@ class UserRemoteRepository {
   }) async {
     try {
       final sessionId = await _getSessionId();
-      final response = await _dio.put(
+      final response = await _dio.patch(
         '/users/screen-name',
         data: {
           'screenFirstName': newScreenFirstName,
@@ -119,7 +119,7 @@ class UserRemoteRepository {
   }) async {
     try {
       final sessionId = await _getSessionId();
-      final response = await _dio.put(
+      final response = await _dio.patch(
         '/users/username',
         data: {
           'username': newUsername,
@@ -174,7 +174,7 @@ class UserRemoteRepository {
   AppError handleDioException(DioException dioException) {
     String? message;
     if (dioException.response != null) {
-      message = (dioException.response!.data)['data']['message'];
+      message = dioException.response!.data?['message'] ?? 'Unexpected server Error';
       debugPrint(message);
     } else if (dioException.type == DioExceptionType.connectionTimeout ||
         dioException.type == DioExceptionType.connectionError ||

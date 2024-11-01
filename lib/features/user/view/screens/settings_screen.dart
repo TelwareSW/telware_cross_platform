@@ -12,6 +12,9 @@ import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart'
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
 import 'package:telware_cross_platform/features/stories/view/screens/add_my_image_screen.dart';
 import 'package:telware_cross_platform/features/user/repository/user_local_repository.dart';
+import 'package:telware_cross_platform/features/user/view/screens/change_number_screen.dart';
+import 'package:telware_cross_platform/features/user/view/screens/change_username_screen.dart';
+import 'package:telware_cross_platform/features/user/view/screens/profile_info_screen.dart';
 import 'package:telware_cross_platform/features/user/view/widget/profile_header_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
@@ -205,18 +208,19 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
                             "key": "change-number-option",
                             "text": user.phone,
                             "subtext": "Tap to change phone number",
-                            "routes": "/change-number"
+                            "routes": ChangeNumberScreen.route,
                           },
                           {
                             "text": (user.phone != "" ? "@${user.username}" : "None"),
-                            "subtext": "Username"
+                            "subtext": "Username",
+                            "routes": ChangeUsernameScreen.route,
                           },
                           {
                             "key": "bio-option",
                             "text": user.bio != "" ? user.bio : "Bio",
                             "subtext":
                             user.bio != "" ? "Bio" : "Add a few words about yourself",
-                            "routes": "/bio"
+                            "routes": ProfileInfoScreen.route,
                           }
                         ],
                       ),

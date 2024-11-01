@@ -175,24 +175,26 @@ class UserViewModel extends _$UserViewModel {
     );
   }
 
-  Future<void> checkUsernameUniqueness(String username) async {
+  Future<bool> checkUsernameUniqueness(String username) async {
     state = UserState.loading;
 
     if (USE_MOCK_DATA) {
       // Simulate a mock check for username uniqueness
       final isUnique = username != "mock.user";
       state = isUnique ? UserState.success('Username is unique') : UserState.fail('Username is already taken');
-      return;
+      return true;
     }
 
     final response = await ref.read(userRemoteRepositoryProvider).checkUsernameUniqueness(username: username);
 
-    response.fold(
+    return response.fold(
           (appError) {
         state = UserState.fail(appError.error);
+        return false;
       },
           (isUnique) {
         state = isUnique ? UserState.success('Username is unique') : UserState.fail('Username is already taken');
+        return true;
       },
     );
   }
