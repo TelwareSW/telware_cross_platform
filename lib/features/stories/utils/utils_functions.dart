@@ -4,7 +4,10 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
-Future<Uint8List?> downloadImage(String url) async {
+Future<Uint8List?> downloadImage(String? url) async {
+  if (url == null || url.isEmpty) {
+    return null;
+  }
   try {
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {

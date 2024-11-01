@@ -10,6 +10,7 @@ class BottomActionButtonsEditTakenImage extends StatelessWidget {
   final Future<File> Function() saveAndPostStory;
   final TextEditingController captionController;
   final WidgetRef ref;
+  final String destination;
 
   const BottomActionButtonsEditTakenImage({
     Key? key,
@@ -18,6 +19,7 @@ class BottomActionButtonsEditTakenImage extends StatelessWidget {
     required this.saveAndPostStory,
     required this.captionController,
     required this.ref,
+    this.destination = 'story'
   }) : super(key: key);
 
   @override
@@ -41,14 +43,33 @@ class BottomActionButtonsEditTakenImage extends StatelessWidget {
             FocusScope.of(context).unfocus();
             File combinedImageFile = await saveAndPostStory();
             String storyCaption = captionController.text;
-            final contactViewModel = ref.read(usersViewModelProvider.notifier);
-            bool uploadResult = await contactViewModel.postStory(combinedImageFile, storyCaption);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(uploadResult ? 'Story Posted Successfully' : 'Failed to post Story'),
-              ),
-            );
-
+            bool uploadResult = false;
+            if(destination == 'story') {
+              final contactViewModel = ref.read(
+                  usersViewModelProvider.notifier);
+              uploadResult = await contactViewModel.postStory(
+                  combinedImageFile, storyCaption);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(uploadResult
+                      ? 'Story Posted Successfully'
+                      : 'Failed to post Story'),
+                ),
+              );
+            }
+            else{
+              final contactViewModel = ref.read(
+                  usersViewModelProvider.notifier);
+              uploadResult = await contactViewModel.updateProfilePicture(
+                  combinedImageFile);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(uploadResult
+                      ? 'Profile Picture updated'
+                      : 'Failed to post update profile picture'),
+                ),
+              );
+            }
             if (uploadResult) {
               Future.delayed(const Duration(seconds: 2), () {
                 Navigator.of(context).pop();

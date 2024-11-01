@@ -16,17 +16,18 @@ import '../widget/bottom_action_buttons_edit_taken_image.dart';
 import '../widget/signature_pen.dart';
 import '../widget/story_caption_text_field.dart';
 
-class ShowTakenStoryScreen extends ConsumerStatefulWidget {
+class ShowTakenImageScreen extends ConsumerStatefulWidget {
   static const String route = '/show-taken-story';
   final File image;
+  final String destination;
 
-  const ShowTakenStoryScreen({super.key, required this.image});
+  const ShowTakenImageScreen({super.key, required this.image, this.destination = 'story',});
 
   @override
   _ShowTakenStoryScreenState createState() => _ShowTakenStoryScreenState();
 }
 
-class _ShowTakenStoryScreenState extends ConsumerState<ShowTakenStoryScreen> {
+class _ShowTakenStoryScreenState extends ConsumerState<ShowTakenImageScreen> {
   final GlobalKey _signatureBoundaryKey = GlobalKey();
   File? _imageFile;
   File? _originalImageFile;
@@ -155,13 +156,14 @@ class _ShowTakenStoryScreenState extends ConsumerState<ShowTakenStoryScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    StoryCaptionField(controller: _captionController),
+                    widget.destination == 'story' ? StoryCaptionField(controller: _captionController) : const SizedBox(),
                     BottomActionButtonsEditTakenImage(
                       cropImage: _cropImage,
                       discardChanges: _discardChanges,
                       saveAndPostStory: _saveCombinedImage,
                       captionController: _captionController,
                       ref: ref,
+                      destination: widget.destination,
                     ),
                   ],
                 ),

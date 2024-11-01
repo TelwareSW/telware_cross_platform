@@ -1,15 +1,15 @@
 import 'package:telware_cross_platform/core/models/user_model.dart';
 
-const UserModel userMock = UserModel(
+final UserModel userMock = UserModel(
   username: 'mock.user',
   screenName: 'Mocka Mocka',
   email: 'mock@gmail.com',
-  status: 'verified',
+  status: 'online',
   bio: 'I am a mocking user',
   maxFileSize: 30,
   automaticDownloadEnable: true,
   lastSeenPrivacy: 'recently',
-  readReceiptsEnablePrivacy: 'enable',
+  readReceiptsEnablePrivacy: true,
   storiesPrivacy: 'private',
   picturePrivacy: 'global',
   invitePermissionsPrivacy: 'enable',
