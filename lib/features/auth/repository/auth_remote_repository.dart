@@ -179,9 +179,11 @@ class AuthRemoteRepository {
 
   Future<AppError?> forgotPassword(String email) async {
     try {
+      debugPrint('email: $email');
       final response =
-          await _dio.post('/auth/password/forget', data: {email: email});
+          await _dio.post('/auth/password/forget', data: {'email': email});
 
+      debugPrint('Forgot Password response: ${response.data ?? 'No data'}');
       if (response.statusCode! >= 300 || response.statusCode! < 200) {
         final String message = response.data?['message'] ?? 'Unexpected Error';
         return AppError(message);
