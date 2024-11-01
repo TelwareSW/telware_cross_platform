@@ -16,7 +16,6 @@ import 'package:telware_cross_platform/core/view/widget/responsive.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_floating_action_button.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_phone_number.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_sub_text_button.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/confirmation_dialog.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/shake_my_auth_input.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/social_log_in.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
@@ -251,7 +250,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const TitleElement(
-                          name: 'Already have an account?  ',
+                          padding: EdgeInsets.only(right: 5),
+                          name: 'Already have an account?',
                           color: Palette.primaryText,
                           fontSize: Sizes.infoText),
                       AuthSubTextButton(

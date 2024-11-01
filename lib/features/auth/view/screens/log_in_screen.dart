@@ -192,7 +192,8 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
                           const TitleElement(
-                            name: 'Don\'t have an account? ',
+                            padding: EdgeInsets.only(right: 5),
+                            name: 'Don\'t have an account?',
                             color: Palette.primaryText,
                             fontSize: Sizes.infoText,
                           ),
