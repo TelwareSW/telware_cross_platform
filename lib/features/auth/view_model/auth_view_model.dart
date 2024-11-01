@@ -172,7 +172,7 @@ class AuthViewModel extends _$AuthViewModel {
 
     response.match((appError) {
       if (appError.code == 403) {
-        state = AuthState.unauthenticated;
+        state = AuthState.unverified;
       } else {
         state = AuthState.fail(appError.error);
       }

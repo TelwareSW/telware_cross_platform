@@ -96,24 +96,24 @@ class _BlockUserScreen extends State<BlockUserScreen>
     userChats = <Map<String, dynamic>>[
       {
         "options": <Map<String, dynamic>>[
-          {
-            "trailing": "1:22 AM",
-            "text": 'Marwan Mohammed',
-            "imagePath": 'assets/imgs/marwan.jpg',
-            "subtext": ".",
-          },
-          {
-            "trailing": "12:21 AM",
-            "text": 'Ahmed Alaa',
-            "imagePath": 'assets/imgs/ahmed.jpeg',
-            "subtext": "Check out my new project for watching movies",
-          },
-          {
-            "trailing": "12:02 AM",
-            "text": 'Bishoy Wadea',
-            "imagePath": 'assets/imgs/bishoy.jpeg',
-            "subtext": "Find stickers in the catalog ⬇️",
-          },
+          // {
+          //   "trailing": "1:22 AM",
+          //   "text": 'Marwan Mohammed',
+          //   "imagePath": 'assets/imgs/marwan.jpg',
+          //   "subtext": ".",
+          // },
+          // {
+          //   "trailing": "12:21 AM",
+          //   "text": 'Ahmed Alaa',
+          //   "imagePath": 'assets/imgs/ahmed.jpeg',
+          //   "subtext": "Check out my new project for watching movies",
+          // },
+          // {
+          //   "trailing": "12:02 AM",
+          //   "text": 'Bishoy Wadea',
+          //   "imagePath": 'assets/imgs/bishoy.jpeg',
+          //   "subtext": "Find stickers in the catalog ⬇️",
+          // },
         ],
       },
     ];
@@ -179,7 +179,7 @@ class _BlockUserScreen extends State<BlockUserScreen>
           },
         ),
         title: const Text(
-          "Blocked Users",
+          "Block User",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 20,
