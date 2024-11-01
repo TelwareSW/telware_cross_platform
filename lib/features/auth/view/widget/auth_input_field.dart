@@ -9,6 +9,7 @@ class AuthInputField extends StatefulWidget {
   final bool obscure;
   final FocusNode focusNode;
   final FormFieldValidator<String>? validator;
+  final String? errorText;
   final TextEditingController? controller;
   final Key? visibilityKey;
 
@@ -21,6 +22,7 @@ class AuthInputField extends StatefulWidget {
     required this.focusNode,
     this.obscure = false,
     this.validator,
+    this.errorText,
     this.controller,
     this.visibilityKey,
   });
@@ -73,6 +75,7 @@ class AuthInputFieldState extends State<AuthInputField> {
           decoration: InputDecoration(
             hintText: widget.isFocused ? '' : widget.name,
             labelText: !widget.isFocused ? '' : widget.name,
+            errorText: widget.errorText,
             hintStyle: const TextStyle(
                 color: Palette.accentText, fontWeight: FontWeight.normal),
             labelStyle: const TextStyle(

@@ -48,20 +48,20 @@ class Routes {
   static const String privacySettings = PrivacySettingsScreen.route;
 
   static GoRouter appRouter(WidgetRef ref) => GoRouter(
-        initialLocation: Routes.home,
-        // redirect: (context, state) {
-        //   final isAuthenticated =
-        //   ref.read(authViewModelProvider.notifier).isAuthenticated();
-        //   if (!isAuthenticated) {
-        //     if (state.fullPath != Routes.logIn &&
-        //         state.fullPath != Routes.signUp &&
-        //         state.fullPath != Routes.verification &&
-        //         state.fullPath != Routes.splash) {
-        //       return Routes.logIn;
-        //     }
-        //   }
-        //   return null;
-        // },
+        initialLocation: Routes.splash,
+        redirect: (context, state) {
+          final isAuthenticated =
+              ref.read(authViewModelProvider.notifier).isAuthenticated();
+          if (!isAuthenticated) {
+            if (state.fullPath != Routes.logIn &&
+                state.fullPath != Routes.signUp &&
+                state.fullPath != Routes.verification &&
+                state.fullPath != Routes.splash) {
+              return Routes.logIn;
+            }
+          }
+          return null;
+        },
         routes: [
           GoRoute(
             path: Routes.splash,
