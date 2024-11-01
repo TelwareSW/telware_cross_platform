@@ -9,6 +9,10 @@ import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/app_theme.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
+import 'package:telware_cross_platform/core/models/user_model.dart';
+import 'features/auth/view/screens/sign_up_screen.dart';
+import 'features/auth/view/screens/verification_screen.dart';
+import 'features/user/view/screens/devices_screen.dart';
 import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
 import 'package:telware_cross_platform/features/stories/models/story_model.dart';
 
@@ -40,6 +44,7 @@ class TelWare extends ConsumerStatefulWidget {
 
 class _TelWareState extends ConsumerState<TelWare> {
   late GoRouter router;
+
   @override
   void initState() {
     super.initState();

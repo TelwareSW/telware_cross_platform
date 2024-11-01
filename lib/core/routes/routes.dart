@@ -24,6 +24,8 @@ import 'package:telware_cross_platform/features/user/view/screens/profile_info_s
 import 'package:telware_cross_platform/features/user/view/screens/settings_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/user_profile_screen.dart';
 
+import '../../features/user/view/screens/devices_screen.dart';
+
 class Routes {
   static const String home = HomeScreen.route;
   static const String splash = SplashScreen.route;
@@ -34,7 +36,8 @@ class Routes {
   static const String inboxScreen = InboxScreen.route;
   static const String addMyStory = AddMyStoryScreen.route;
   static const String showTakenStory = ShowTakenStoryScreen.route;
-  static const storyScreen = StoryScreen.route;
+  static const String storyScreen = StoryScreen.route;
+  static const String devicesScreen = DevicesScreen.route;
   static const String settings = SettingsScreen.route;
   static const String changeNumber = ChangeNumberScreen.route;
   static const String changeNumberForm = ChangeNumberFormScreen.route;
@@ -163,6 +166,10 @@ class Routes {
           GoRoute(
             path: Routes.privacySettings,
             builder: (context, state) => const PrivacySettingsScreen(),
+          ),
+          GoRoute(
+            path: Routes.devicesScreen,
+            builder: (context, state) => const DevicesScreen(),
           ),
         ],
       );
