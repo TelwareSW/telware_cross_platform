@@ -52,9 +52,9 @@ class Routes {
   static GoRouter appRouter(WidgetRef ref) => GoRouter(
         initialLocation: Routes.splash,
         redirect: (context, state) {
-          final isAuthenticated =
-              ref.read(authViewModelProvider.notifier).isAuthenticated();
-          if (!isAuthenticated) {
+          final isAuthorized =
+              ref.read(authViewModelProvider.notifier).isAuthorized();
+          if (!isAuthorized) {
             if (state.fullPath != Routes.logIn &&
                 state.fullPath != Routes.signUp &&
                 state.fullPath != Routes.verification &&

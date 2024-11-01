@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/providers/user_provider.dart';
 
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
@@ -119,7 +120,7 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
     ref.listen<AuthState>(authViewModelProvider, (_, state) {
       if (state.type == AuthStateType.fail) {
         showToastMessage(state.message!);
-      } else if (state.type == AuthStateType.unauthorized) {
+      } else if (state.type == AuthStateType.unauthenticated) {
         context.push(Routes.home);
       }
     });

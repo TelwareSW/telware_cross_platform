@@ -9,6 +9,7 @@ import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.
 
 class SplashScreen extends ConsumerWidget {
   const SplashScreen({super.key});
+
   static const String route = '/splash';
 
   @override
@@ -19,9 +20,9 @@ class SplashScreen extends ConsumerWidget {
       authViewModelProvider,
       (_, state) {
         // a callback function that takes the old and current state
-        if (state == AuthState.authorized) {
+        if (state == AuthState.authenticated) {
           context.go(Routes.home);
-        } else if (state == AuthState.unauthorized) {
+        } else if (state == AuthState.unauthenticated) {
           context.go(Routes.logIn);
         }
       },

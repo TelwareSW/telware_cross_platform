@@ -3,10 +3,10 @@ enum AuthStateType {
   loading,
   fail,
   success,
-  unauthorized,
-  authorized,
   unauthenticated,
   authenticated,
+  unverified,
+  verified,
 }
 
 class AuthState {
@@ -17,10 +17,10 @@ class AuthState {
 
   static const init = AuthState._(AuthStateType.init);
   static const loading = AuthState._(AuthStateType.loading);
-  static const unauthorized = AuthState._(AuthStateType.unauthorized);
-  static const authorized = AuthState._(AuthStateType.authorized);
   static const unauthenticated = AuthState._(AuthStateType.unauthenticated);
   static const authenticated = AuthState._(AuthStateType.authenticated);
+  static const unverified = AuthState._(AuthStateType.unverified);
+  static const verified = AuthState._(AuthStateType.verified);
 
   static AuthState fail(String message) =>
       AuthState._(AuthStateType.fail, message);

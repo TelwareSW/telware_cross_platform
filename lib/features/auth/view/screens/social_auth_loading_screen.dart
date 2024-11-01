@@ -8,6 +8,7 @@ import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.
 
 class SocialAuthLoadingScreen extends ConsumerStatefulWidget {
   const SocialAuthLoadingScreen({super.key, required this.secretSessionId});
+
   static const String route = '/social-auth-loading';
 
   final String secretSessionId;
@@ -19,15 +20,16 @@ class SocialAuthLoadingScreen extends ConsumerStatefulWidget {
 
 class _SocialAuthLoadingScreenState
     extends ConsumerState<SocialAuthLoadingScreen> {
-  
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(authViewModelProvider.notifier).authorizeOAuth(widget.secretSessionId);
+      ref
+          .read(authViewModelProvider.notifier)
+          .authorizeOAuth(widget.secretSessionId);
     });
   }
-  
+
   @override
   Widget build(BuildContext context) {
     ref.listen<AuthState>(authViewModelProvider, (_, state) {
