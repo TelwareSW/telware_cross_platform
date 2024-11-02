@@ -108,3 +108,14 @@ String getInitials(String name) {
   }
   return initials.toUpperCase();
 }
+
+String capitalizeEachWord(String sentence) {
+  if (sentence.isEmpty) return sentence;
+
+  return sentence
+      .split(' ')
+      .map((word) => word.isNotEmpty
+      ? word[0].toUpperCase() + word.substring(1).toLowerCase()
+      : word)
+      .join(' ');
+}

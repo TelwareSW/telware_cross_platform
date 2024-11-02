@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
+import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/features/user/view/widget/section_title_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
+import 'package:telware_cross_platform/features/user/view/widget/settings_section_trailing.dart';
 
 class SettingsSection extends StatelessWidget {
   final double? trailingFontSize;
@@ -12,20 +15,23 @@ class SettingsSection extends StatelessWidget {
   final double? titleFontSize;
   final EdgeInsetsGeometry? padding;
   final String title;
+  final ValueKey<String>? containerKey;
   final List<Map<String, dynamic>> settingsOptions;
   final String trailing;
   final List<Widget>? actions;
 
-  const SettingsSection(
-      {super.key,
-      this.padding,
-      this.trailingFontSize,
-      this.trailingLineHeight,
-      this.titleFontSize,
-      this.title = "",
-      required this.settingsOptions,
-      this.trailing = "",
-      this.actions});
+  const SettingsSection({
+    super.key,
+    this.containerKey,
+    this.padding,
+    this.trailingFontSize,
+    this.trailingLineHeight,
+    this.titleFontSize,
+    this.title = "",
+    required this.settingsOptions,
+    this.trailing = "",
+    this.actions
+  });
 
   void _navigateTo(BuildContext context, String route) {
     context.push(route);
@@ -33,19 +39,18 @@ class SettingsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('Widget Options: $settingsOptions');
-
+    final ValueKey<String>? sectionKey = containerKey ?? (title != "" ? ValueKey("${toKebabCase(title)}${WidgetKeys.settingsSectionSuffix.value}") : null);
     return Column(
       children: [
         Container(
-            key: title != "" ? ValueKey("${toKebabCase(title)}-section") : null,
+            key: sectionKey,
             color: Palette.secondary,
             child: Column(
               children: [
                 if (title != "")
                   SectionTitleWidget(
-                    key: title != ""
-                        ? ValueKey("${toKebabCase(title)}-section-title")
+                    key: sectionKey != null
+                        ? ValueKey(sectionKey.value + WidgetKeys.titleSuffix.value)
                         : null,
                     title: title,
                     fontSize: titleFontSize ?? 14,
@@ -57,7 +62,6 @@ class SettingsSection extends StatelessWidget {
                         settingsOptions.length,
                         (index) {
                           final option = settingsOptions[index];
-                          final type = option["type"] ?? "";
                           final key = option["key"] != null
                               ? ValueKey("${option["key"]}")
                               : null;
@@ -104,17 +108,18 @@ class SettingsSection extends StatelessWidget {
               ],
             )),
         if (trailing != "")
-          Padding(
-            padding: padding ?? const EdgeInsets.fromLTRB(11, 16, 11, 7),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(trailing,
+          SettingsSectionTrailingWidget(
+            key: sectionKey != null ? ValueKey(sectionKey.value + WidgetKeys.trailingSuffix.value) : null,
+            padding: padding,
+            actions: [
+              Text(trailing,
                   style: TextStyle(
                       height: trailingLineHeight,
-                      fontSize: trailingFontSize ?? 14,
-                      color: Palette.accentText)),
-            ),
-          )
+                      fontSize: trailingFontSize ?? Dimensions.fontSizeSmall,
+                      color: Palette.accentText)
+              ),
+            ],
+          ),
       ],
     );
   }

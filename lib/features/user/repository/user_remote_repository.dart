@@ -146,11 +146,34 @@ class UserRemoteRepository {
     required String username,
   }) async {
     try {
-      final sessionId = await _getSessionId();
       final response = await _dio.get(
-        '/users/username-unique',
+        '/users/username/check',
         queryParameters: {
           'username': username,
+        }
+      );
+
+      if (response.statusCode! >= 400) {
+        return const Right(false);
+      }
+      return const Right(true);
+    } on DioException catch (dioException) {
+      return Left(handleDioException(dioException));
+    } catch (error) {
+      debugPrint('Check Username Uniqueness error:\n${error.toString()}');
+      return Left(AppError("Couldn't check username uniqueness now. Please, try again later."));
+    }
+  }
+
+  Future<Either<AppError, void>> changeLastSeenPrivacy({
+    required String privacy,
+  }) async {
+    try {
+      final sessionId = await _getSessionId();
+      final response = await _dio.patch(
+        '/users/privacy/last-seen',
+        data: {
+          'privacy': privacy,
         },
         options: Options(
           headers: {'X-Session-Token': sessionId},
@@ -161,13 +184,68 @@ class UserRemoteRepository {
         final String message = response.data?['message'] ?? 'Unexpected Error';
         return Left(AppError(message));
       }
-      final bool isUnique = response.data['data']['isUnique'] ?? false;
-      return Right(isUnique);
+      return const Right(null);
     } on DioException catch (dioException) {
       return Left(handleDioException(dioException));
     } catch (error) {
-      debugPrint('Check Username Uniqueness error:\n${error.toString()}');
-      return Left(AppError("Couldn't check username uniqueness now. Please, try again later."));
+      debugPrint('Change last seen privacy error:\n${error.toString()}');
+      return Left(AppError("Couldn't change last seen privacy now. Please, try again later."));
+    }
+  }
+
+  Future<Either<AppError, void>> changeProfilePhotoPrivacy({
+    required String privacy,
+  }) async {
+    try {
+      final sessionId = await _getSessionId();
+      final response = await _dio.patch(
+        '/users/privacy/picture',
+        data: {
+          'privacy': privacy,
+        },
+        options: Options(
+          headers: {'X-Session-Token': sessionId},
+        ),
+      );
+
+      if (response.statusCode! >= 400) {
+        final String message = response.data?['message'] ?? 'Unexpected Error';
+        return Left(AppError(message));
+      }
+      return const Right(null);
+    } on DioException catch (dioException) {
+      return Left(handleDioException(dioException));
+    } catch (error) {
+      debugPrint('Change profile photo privacy error:\n${error.toString()}');
+      return Left(AppError("Couldn't change profile photo privacy now. Please, try again later."));
+    }
+  }
+
+  Future<Either<AppError, void>> changeInvitePermissions({
+    required String permissions,
+  }) async {
+    try {
+      final sessionId = await _getSessionId();
+      final response = await _dio.patch(
+        '/users/privacy/invite-permissions',
+        data: {
+          'privacy': permissions,
+        },
+        options: Options(
+          headers: {'X-Session-Token': sessionId},
+        ),
+      );
+
+      if (response.statusCode! >= 400) {
+        final String message = response.data?['message'] ?? 'Unexpected Error';
+        return Left(AppError(message));
+      }
+      return const Right(null);
+    } on DioException catch (dioException) {
+      return Left(handleDioException(dioException));
+    } catch (error) {
+      debugPrint('Change invite permissions error:\n${error.toString()}');
+      return Left(AppError("Couldn't change invite permissions now. Please, try again later."));
     }
   }
 

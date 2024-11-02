@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 
 class SectionTitleWidget extends StatelessWidget {
@@ -14,7 +15,7 @@ class SectionTitleWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 18, top: 16),
+      padding: const EdgeInsets.only(left: Dimensions.optionsHorizontalPad, top: 16),
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
