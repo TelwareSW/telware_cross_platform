@@ -6,6 +6,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive/hive.dart';
 import 'package:telware_cross_platform/features/stories/utils/utils_functions.dart';
 
+import '../constants/server_constants.dart';
+
 part 'user_model.g.dart';
 
 @HiveType(typeId: 0)
@@ -65,7 +67,7 @@ class UserModel {
   }
 
   _setPhotoBytes() async {
-    String url = 'http://testing.telware.tech:3000/static/media/$photo';
+    String url = '${API_URL_PICTURES}/$photo';
     Uint8List? tempImage;
     tempImage = await downloadImage(url);
     if(tempImage != null) {
