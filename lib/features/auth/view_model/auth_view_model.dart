@@ -322,6 +322,7 @@ class AuthViewModel extends _$AuthViewModel {
     response.match((appError) {
     }, (user) {
       ref.read(authLocalRepositoryProvider).setUser(user);
+      print(user);
       ref.read(userProvider.notifier).update((_) => user);
     });
   }

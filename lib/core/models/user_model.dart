@@ -64,7 +64,7 @@ class UserModel {
   }
 
   _setPhotoBytes() async {
-    String url = '${dotenv.env['API_URL_PICTURE']}/media/$photo';
+    String url = '${dotenv.env['API_URL_PICTURES']}$photo';
     photoBytes = await downloadImage(url);
   }
 

@@ -207,4 +207,13 @@ class UserViewModel extends _$UserViewModel {
     }
     return false;
   }
+
+  Future<bool> deleteProfilePicture() async {
+    if (await ref.read(contactsRemoteRepositoryProvider).deleteProfilePicture() ==
+        true) {
+      await ref.read(authViewModelProvider.notifier).getMe();
+      return true;
+    }
+    return false;
+  }
 }

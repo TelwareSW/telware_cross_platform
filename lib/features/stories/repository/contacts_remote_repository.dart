@@ -203,6 +203,23 @@ class ContactsRemoteRepository {
     }
   }
 
+  Future<bool> deleteProfilePicture() async {
+    String uploadUrl = '${dotenv.env['API_URL']}/users/picture';
+    var uri = Uri.parse(uploadUrl);
+    var request = http.MultipartRequest('DELETE', uri);
+    request.headers['X-Session-Token'] = authLocalRepository.getToken()!;
+
+    try {
+      var response = await request.send();
+      return response.statusCode == 204;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error occurred: $e');
+      }
+      return false;
+    }
+  }
+
   Future<ContactModel?> getContact(String contactId) async {
     String uploadUrl =
         '${dotenv.env['BASE_URL']}/users/$contactId';
