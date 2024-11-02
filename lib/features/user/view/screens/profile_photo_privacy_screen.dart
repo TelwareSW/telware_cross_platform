@@ -35,7 +35,7 @@ class _ProfilePhotoPrivacyScreen extends ConsumerState<ProfilePhotoPrivacyScreen
   void initState() {
     super.initState();
     _user = ref.read(userLocalRepositoryProvider).getUser()!;
-    _seeProfilePhotoSelectedOption = "Nobody";
+    _seeProfilePhotoSelectedOption = _user.picturePrivacy;
     _seeProfilePhotoInitValue = _seeProfilePhotoSelectedOption;
   }
 
@@ -117,14 +117,14 @@ class _ProfilePhotoPrivacyScreen extends ConsumerState<ProfilePhotoPrivacyScreen
                   SettingsRadioButtonWidget(
                     key: ValueKey("see-profile-photos-contacts${WidgetKeys.settingsRadioOptionSuffix.value}"),
                     text: "My Contacts",
-                    isSelected: _seeProfilePhotoSelectedOption == "My Contacts",
-                    onTap: () => _handleSeeProfilePhotoPrivacy("My Contacts"),
+                    isSelected: _seeProfilePhotoSelectedOption == "contacts",
+                    onTap: () => _handleSeeProfilePhotoPrivacy("contacts"),
                   ),
                   SettingsRadioButtonWidget(
                     key: ValueKey("see-profile-photos-nobody${WidgetKeys.settingsRadioOptionSuffix.value}"),
                     text: "Nobody",
-                    isSelected: _seeProfilePhotoSelectedOption == "Nobody",
-                    onTap: () => _handleSeeProfilePhotoPrivacy("Nobody"),
+                    isSelected: _seeProfilePhotoSelectedOption == "nobody",
+                    onTap: () => _handleSeeProfilePhotoPrivacy("nobody"),
                     showDivider: false,
                   ),
                 ],
@@ -141,7 +141,7 @@ class _ProfilePhotoPrivacyScreen extends ConsumerState<ProfilePhotoPrivacyScreen
                       text: "Always Share With",
                       trailing: "Add Users",
                       onTap: () => showToastMessage("Coming Soon..."),
-                      showDivider: _seeProfilePhotoSelectedOption != "Nobody",
+                      showDivider: _seeProfilePhotoSelectedOption != "nobody",
                     ),
                   if (_seeProfilePhotoSelectedOption != "nobody")
                     SettingsOptionWidget(

@@ -26,6 +26,7 @@ import 'package:telware_cross_platform/features/user/view/screens/phone_privacy_
 import 'package:telware_cross_platform/features/user/view/screens/privacy_and_security_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/profile_info_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/profile_photo_privacy_screen.dart';
+import 'package:telware_cross_platform/features/user/view/screens/self_destruct_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/settings_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/user_profile_screen.dart';
 
@@ -56,6 +57,7 @@ class Routes {
   static const String lastSeenPrivacySettings = LastSeenPrivacyScreen.route;
   static const String profilePhotoPrivacySettings = ProfilePhotoPrivacyScreen.route;
   static const String invitePermissionsSettings = InvitesPermissionScreen.route;
+  static const String selfDestructTimer = SelfDestructScreen.route;
 
   static GoRouter appRouter(WidgetRef ref) => GoRouter(
         initialLocation: Routes.splash,
@@ -200,6 +202,10 @@ class Routes {
           GoRoute(
             path: Routes.invitePermissionsSettings,
             builder: (context, state) => const InvitesPermissionScreen(),
+          ),
+          GoRoute(
+            path: Routes.selfDestructTimer,
+            builder: (context, state) => const SelfDestructScreen(),
           ),
         ],
       );

@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/utils.dart';
-import 'package:telware_cross_platform/features/user/repository/user_local_repository.dart';
 import 'package:telware_cross_platform/features/user/view/screens/invites_permissions_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/last_seen_privacy_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/phone_privacy_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/profile_photo_privacy_screen.dart';
+import 'package:telware_cross_platform/features/user/view/screens/self_destruct_screen.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
 import 'package:telware_cross_platform/features/user/view/widget/toolbar_widget.dart';
 
@@ -21,7 +21,6 @@ class PrivacySettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _PrivacySettingsScreen extends ConsumerState<PrivacySettingsScreen> {
-  late final _user;
   late List<Map<String, dynamic>> profileSections;
 
   @override
@@ -49,7 +48,8 @@ class _PrivacySettingsScreen extends ConsumerState<PrivacySettingsScreen> {
           {
             "icon": Icons.timelapse,
             "text": 'Auto-Delete Messages',
-            "trailing": "Off"
+            "trailing": "Off",
+            "routes": SelfDestructScreen.route
           },
           {
             "icon": Icons.lock_outline_rounded,
@@ -79,11 +79,11 @@ class _PrivacySettingsScreen extends ConsumerState<PrivacySettingsScreen> {
           {"text": 'Phone Number', "trailing": "My Contacts", "routes": PhonePrivacyScreen.route },
           {"text": 'Last Seen & Online', "trailing": _formatPrivacy(user.lastSeenPrivacy), "routes": LastSeenPrivacyScreen.route },
           {"text": 'Profile Photos', "trailing": _formatPrivacy(user.picturePrivacy), "routes": ProfilePhotoPrivacyScreen.route },
-          {"text": 'Forwarded Messages', "trailing": "EveryBody"},
-          {"text": 'Calls', "trailing": "EveryBody"},
-          {"text": 'Voice Messages', "trailing": "EveryBody"},
-          {"text": 'Messages', "trailing": "EveryBody"},
-          {"text": 'Date of Birth', "trailing": "My Contacts"},
+          {"text": 'Forwarded Messages', "trailing": "EveryBody", "routes": "locked" },
+          {"text": 'Calls', "trailing": "EveryBody", "routes": "locked"},
+          {"text": 'Voice Messages', "trailing": "EveryBody", "routes": "locked"},
+          {"text": 'Messages', "trailing": "EveryBody", "routes": "locked"},
+          {"text": 'Date of Birth', "trailing": "My Contacts", "routes": "locked"},
           {"text": 'Invites', "trailing": _formatPrivacy(user.invitePermissionsPrivacy), "routes": InvitesPermissionScreen.route },
         ],
         "trailing":
