@@ -5,6 +5,7 @@ import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
+import 'package:telware_cross_platform/core/view/widget/animated_snack_bar_widget.dart';
 import 'package:telware_cross_platform/features/stories/view/screens/add_my_image_screen.dart';
 import 'package:telware_cross_platform/features/user/repository/user_local_repository.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
@@ -44,7 +45,7 @@ class _ProfilePhotoPrivacyScreen extends ConsumerState<ProfilePhotoPrivacyScreen
   }
 
   Future<void> _updatePrivacy() async {
-
+    await ref.read(userViewModelProvider.notifier).changeProfilePhotoPrivacy(_seeProfilePhotoSelectedOption);
   }
 
   void _handleSeeProfilePhotoPrivacy(String value) {
@@ -69,12 +70,21 @@ class _ProfilePhotoPrivacyScreen extends ConsumerState<ProfilePhotoPrivacyScreen
     ref.listen<UserState>(userViewModelProvider, (previous, next) {
       if (next.type == UserStateType.success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.message ?? 'Phone privacy updated successfully')),
+          SnackBar(content: AnimatedSnackBarWidget(
+              icon: const Icon(Icons.upgrade_rounded),
+              text: next.message ?? 'Profile photo privacy updated successfully'
+          )
+          ),
         );
         context.pop();
       } else if (next.type == UserStateType.fail) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.message ?? 'Failed to update phone privacy')),
+          SnackBar(content: AnimatedSnackBarWidget(
+              icon: const Icon(Icons.error_outline_rounded),
+              text: next.message ?? 'Failed to update profile photo privacy'
+            ),
+            backgroundColor: Palette.error,
+          ),
         );
       }
     });
@@ -101,8 +111,8 @@ class _ProfilePhotoPrivacyScreen extends ConsumerState<ProfilePhotoPrivacyScreen
                   SettingsRadioButtonWidget(
                     key: ValueKey("see-profile-photos-everybody${WidgetKeys.settingsRadioOptionSuffix.value}"),
                     text: "Everybody",
-                    isSelected: _seeProfilePhotoSelectedOption == "Everybody",
-                    onTap: () => _handleSeeProfilePhotoPrivacy("Everybody"),
+                    isSelected: _seeProfilePhotoSelectedOption == "everyone",
+                    onTap: () => _handleSeeProfilePhotoPrivacy("everyone"),
                   ),
                   SettingsRadioButtonWidget(
                     key: ValueKey("see-profile-photos-contacts${WidgetKeys.settingsRadioOptionSuffix.value}"),
@@ -126,14 +136,14 @@ class _ProfilePhotoPrivacyScreen extends ConsumerState<ProfilePhotoPrivacyScreen
                 title: "Add exceptions",
                 settingsOptions: const [],
                 actions: [
-                  if (_seeProfilePhotoSelectedOption != "Everybody")
+                  if (_seeProfilePhotoSelectedOption != "everyone")
                     SettingsOptionWidget(
                       text: "Always Share With",
                       trailing: "Add Users",
                       onTap: () => showToastMessage("Coming Soon..."),
                       showDivider: _seeProfilePhotoSelectedOption != "Nobody",
                     ),
-                  if (_seeProfilePhotoSelectedOption != "Nobody")
+                  if (_seeProfilePhotoSelectedOption != "nobody")
                     SettingsOptionWidget(
                       text: "Never Share With",
                       trailing: "Add Users",
@@ -143,7 +153,7 @@ class _ProfilePhotoPrivacyScreen extends ConsumerState<ProfilePhotoPrivacyScreen
                 ],
                 trailing: _getExceptionsTrailing(),
               ),
-              if (_seeProfilePhotoSelectedOption != "Everybody") ...[
+              if (_seeProfilePhotoSelectedOption != "everyone") ...[
                 const SizedBox(height: Dimensions.sectionGaps),
                 SettingsSection(
                   settingsOptions: const [],

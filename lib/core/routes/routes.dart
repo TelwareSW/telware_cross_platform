@@ -20,6 +20,7 @@ import 'package:telware_cross_platform/features/user/view/screens/block_user.dar
 import 'package:telware_cross_platform/features/user/view/screens/blocked_users.dart';
 import 'package:telware_cross_platform/features/user/view/screens/change_number_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/change_username_screen.dart';
+import 'package:telware_cross_platform/features/user/view/screens/invites_permissions_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/last_seen_privacy_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/phone_privacy_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/privacy_and_security_screen.dart';
@@ -54,6 +55,7 @@ class Routes {
   static const String phonePrivacySettings = PhonePrivacyScreen.route;
   static const String lastSeenPrivacySettings = LastSeenPrivacyScreen.route;
   static const String profilePhotoPrivacySettings = ProfilePhotoPrivacyScreen.route;
+  static const String invitePermissionsSettings = InvitesPermissionScreen.route;
 
   static GoRouter appRouter(WidgetRef ref) => GoRouter(
         initialLocation: Routes.splash,
@@ -194,6 +196,10 @@ class Routes {
           GoRoute(
             path: Routes.profilePhotoPrivacySettings,
             builder: (context, state) => const ProfilePhotoPrivacyScreen(),
+          ),
+          GoRoute(
+            path: Routes.invitePermissionsSettings,
+            builder: (context, state) => const InvitesPermissionScreen(),
           ),
         ],
       );

@@ -5,7 +5,7 @@ import 'package:telware_cross_platform/core/theme/dimensions.dart';
 final appTheme = ThemeData.dark().copyWith(
   scaffoldBackgroundColor: Palette.background,
   snackBarTheme: const SnackBarThemeData(
-      backgroundColor: Palette.secondary,
+      backgroundColor: Palette.trinary,
       contentTextStyle: TextStyle(color: Palette.primaryText)),
   appBarTheme: const AppBarTheme(color: Palette.trinary, elevation: 0),
   inputDecorationTheme: InputDecorationTheme(

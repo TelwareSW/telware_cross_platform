@@ -3,7 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
+import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
+import 'package:telware_cross_platform/core/view/widget/animated_snack_bar_widget.dart';
 import 'package:telware_cross_platform/features/user/repository/user_local_repository.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_radio_button_widget.dart';
@@ -24,7 +26,6 @@ class LastSeenPrivacyScreen extends ConsumerStatefulWidget {
 }
 
 class _LastSeenPrivacyScreen extends ConsumerState<LastSeenPrivacyScreen> {
-  late final UserModel _user;
   late String _seeLastSeenSelectedOption;
   late bool _isHideReadTime;
   late final String _seeLastSeenInitValue;
@@ -34,8 +35,8 @@ class _LastSeenPrivacyScreen extends ConsumerState<LastSeenPrivacyScreen> {
   @override
   void initState() {
     super.initState();
-    _user = ref.read(userLocalRepositoryProvider).getUser()!;
-    _seeLastSeenSelectedOption = "Nobody";
+    final UserModel user = ref.read(userLocalRepositoryProvider).getUser()!;
+    _seeLastSeenSelectedOption = user.lastSeenPrivacy;
     _seeLastSeenInitValue = _seeLastSeenSelectedOption;
     _isHideReadTime = true;
     _isHideReadTimeInitValue = _isHideReadTime;
@@ -47,7 +48,7 @@ class _LastSeenPrivacyScreen extends ConsumerState<LastSeenPrivacyScreen> {
   }
 
   Future<void> _updatePrivacy() async {
-
+    await ref.read(userViewModelProvider.notifier).changeLastSeenPrivacy(_seeLastSeenSelectedOption);
   }
 
   void _handleSeeLastSeenPrivacy(String value) {
@@ -77,12 +78,21 @@ class _LastSeenPrivacyScreen extends ConsumerState<LastSeenPrivacyScreen> {
     ref.listen<UserState>(userViewModelProvider, (previous, next) {
       if (next.type == UserStateType.success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.message ?? 'Phone privacy updated successfully')),
+          SnackBar(content: AnimatedSnackBarWidget(
+              icon: const Icon(Icons.upgrade_rounded),
+              text: next.message ?? 'Last seen privacy updated successfully'
+            )
+          ),
         );
         context.pop();
       } else if (next.type == UserStateType.fail) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.message ?? 'Failed to update phone privacy')),
+          SnackBar(content: AnimatedSnackBarWidget(
+              icon: const Icon(Icons.error_outline_rounded),
+              text: next.message ?? 'Failed to update last seen privacy'
+            ),
+            backgroundColor: Palette.error,
+          ),
         );
       }
     });
@@ -109,20 +119,20 @@ class _LastSeenPrivacyScreen extends ConsumerState<LastSeenPrivacyScreen> {
                   SettingsRadioButtonWidget(
                     key: ValueKey("see-last-seen-everybody${WidgetKeys.settingsRadioOptionSuffix.value}"),
                     text: "Everybody",
-                    isSelected: _seeLastSeenSelectedOption == "Everybody",
-                    onTap: () => _handleSeeLastSeenPrivacy("Everybody"),
+                    isSelected: _seeLastSeenSelectedOption == "everyone",
+                    onTap: () => _handleSeeLastSeenPrivacy("everyone"),
                   ),
                   SettingsRadioButtonWidget(
                     key: ValueKey("see-last-seen-contacts${WidgetKeys.settingsRadioOptionSuffix.value}"),
                     text: "My Contacts",
-                    isSelected: _seeLastSeenSelectedOption == "My Contacts",
-                    onTap: () => _handleSeeLastSeenPrivacy("My Contacts"),
+                    isSelected: _seeLastSeenSelectedOption == "contacts",
+                    onTap: () => _handleSeeLastSeenPrivacy("contacts"),
                   ),
                   SettingsRadioButtonWidget(
                     key: ValueKey("see-last-seen-nobody${WidgetKeys.settingsRadioOptionSuffix.value}"),
                     text: "Nobody",
-                    isSelected: _seeLastSeenSelectedOption == "Nobody",
-                    onTap: () => _handleSeeLastSeenPrivacy("Nobody"),
+                    isSelected: _seeLastSeenSelectedOption == "nobody",
+                    onTap: () => _handleSeeLastSeenPrivacy("nobody"),
                     showDivider: false,
                   ),
                 ],
@@ -135,14 +145,14 @@ class _LastSeenPrivacyScreen extends ConsumerState<LastSeenPrivacyScreen> {
                 title: "Add exceptions",
                 settingsOptions: const [],
                 actions: [
-                  if (_seeLastSeenSelectedOption != "Everybody")
+                  if (_seeLastSeenSelectedOption != "everyone")
                     SettingsOptionWidget(
                       text: "Always Share With",
                       trailing: "Add Users",
                       onTap: () => showToastMessage("Coming Soon..."),
-                      showDivider: _seeLastSeenSelectedOption != "Nobody",
+                      showDivider: _seeLastSeenSelectedOption != "nobody",
                     ),
-                  if (_seeLastSeenSelectedOption != "Nobody")
+                  if (_seeLastSeenSelectedOption != "nobody")
                     SettingsOptionWidget(
                       text: "Never Share With",
                       trailing: "Add Users",
@@ -153,7 +163,7 @@ class _LastSeenPrivacyScreen extends ConsumerState<LastSeenPrivacyScreen> {
                 trailing: "You can add users or entire groups as exceptions that "
                     "will override the settings above.",
               ),
-              if (_seeLastSeenSelectedOption != "Everybody") ...[
+              if (_seeLastSeenSelectedOption != "everyone") ...[
                 const SizedBox(height: Dimensions.sectionGaps),
                 SettingsSection(
                   title: "Add exceptions",
