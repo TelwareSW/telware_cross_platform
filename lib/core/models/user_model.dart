@@ -58,14 +58,20 @@ class UserModel {
     required this.picturePrivacy,
     required this.invitePermissionsPrivacy,
     required this.phone,
-    required this.id
+    required this.id,
+    this.photoBytes,
   }) {
     _setPhotoBytes();
   }
 
   _setPhotoBytes() async {
-    String url = '${dotenv.env['API_URL_PICTURES']}$photo';
-    photoBytes = await downloadImage(url);
+    String url = 'http://testing.telware.tech:3000/static/media/$photo';
+    Uint8List? tempImage;
+    tempImage = await downloadImage(url);
+    if(tempImage != null) {
+      photoBytes = tempImage;
+    }
+
   }
 
   @override
@@ -129,6 +135,7 @@ class UserModel {
     String? invitePermissionsPrivacy,
     String? phone,
     String? id,
+    Uint8List? photoBytes,
   }) {
     return UserModel(
       username: username ?? this.username,
@@ -149,6 +156,7 @@ class UserModel {
           invitePermissionsPrivacy ?? this.invitePermissionsPrivacy,
       phone: phone ?? this.phone,
       id: id ?? this.id,
+      photoBytes: photoBytes?? this.photoBytes,
     );
   }
 
