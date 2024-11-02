@@ -11,7 +11,6 @@ import 'package:signature/signature.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:go_router/go_router.dart';
-import 'package:telware_cross_platform/core/routes/routes.dart';
 import '../widget/bottom_action_buttons_edit_taken_image.dart';
 import '../widget/signature_pen.dart';
 import '../widget/story_caption_text_field.dart';

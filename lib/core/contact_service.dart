@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:fast_contacts/fast_contacts.dart';
 import 'package:hive/hive.dart';

@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phone_form_field/phone_form_field.dart';
-import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/view/widget/responsive.dart';

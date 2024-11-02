@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../user/view_model/user_view_model.dart';
 import '../../view_model/contact_view_model.dart';
 class BottomActionButtonsEditTakenImage extends StatelessWidget {
   final VoidCallback cropImage;
@@ -43,7 +44,7 @@ class BottomActionButtonsEditTakenImage extends StatelessWidget {
             FocusScope.of(context).unfocus();
             File combinedImageFile = await saveAndPostStory();
             String storyCaption = captionController.text;
-            bool uploadResult = false;
+            bool? uploadResult;
             if(destination == 'story') {
               final contactViewModel = ref.read(
                   usersViewModelProvider.notifier);
@@ -58,17 +59,18 @@ class BottomActionButtonsEditTakenImage extends StatelessWidget {
               );
             }
             else{
-              final contactViewModel = ref.read(
-                  usersViewModelProvider.notifier);
-              uploadResult = await contactViewModel.updateProfilePicture(
-                  combinedImageFile);
+              uploadResult = await ref.read(userViewModelProvider.notifier).updateProfilePicture(combinedImageFile);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(uploadResult
-                      ? 'Profile Picture updated'
-                      : 'Failed to post update profile picture'),
+                  content: Text(uploadResult ? 'Profile Picture updated' : 'Failed to post update profile picture'),
                 ),
               );
+
+              if (uploadResult) {
+                Future.delayed(const Duration(seconds: 2), () {
+                  Navigator.of(context).pop();
+                });
+              }
             }
             if (uploadResult) {
               Future.delayed(const Duration(seconds: 2), () {
@@ -81,5 +83,6 @@ class BottomActionButtonsEditTakenImage extends StatelessWidget {
         ),
       ],
     );
+
   }
 }

@@ -3,16 +3,11 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-
 import 'package:telware_cross_platform/core/models/contact_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/app_theme.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
-import 'package:telware_cross_platform/core/models/user_model.dart';
-import 'features/auth/view/screens/sign_up_screen.dart';
-import 'features/auth/view/screens/verification_screen.dart';
-import 'features/user/view/screens/devices_screen.dart';
 import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
 import 'package:telware_cross_platform/features/stories/models/story_model.dart';
 

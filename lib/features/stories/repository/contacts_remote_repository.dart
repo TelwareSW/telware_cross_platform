@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -152,8 +154,7 @@ class ContactsRemoteRepository {
   }
 
   Future<bool> postStory(File storyImage, String? caption) async {
-
-    String uploadUrl = 'http://testing.telware.tech:3000/api/v1/users/stories';
+    String uploadUrl = '${dotenv.env['BASE_URL']}/users/stories';
     var uri = Uri.parse(uploadUrl);
     var request = http.MultipartRequest('POST', uri);
     request.headers['X-Session-Token'] = authLocalRepository.getToken() ?? '';
@@ -180,11 +181,10 @@ class ContactsRemoteRepository {
   }
 
   Future<bool> updateProfilePicture(File storyImage) async {
-    String uploadUrl = 'http://testing.telware.tech:3000/api/v1/users/picture';
+    String uploadUrl = '${dotenv.env['API_URL']}/users/picture';
     var uri = Uri.parse(uploadUrl);
     var request = http.MultipartRequest('PATCH', uri);
-    request.headers['X-Session-Token'] = authLocalRepository.getToken() ??
-        '410b860a-de14-4cbe-b5f2-7cff8518a2f7';
+    request.headers['X-Session-Token'] = authLocalRepository.getToken()!;
     var multipartFile = await http.MultipartFile.fromPath(
       'file',
       storyImage.path,
@@ -203,9 +203,41 @@ class ContactsRemoteRepository {
     }
   }
 
+  Future<ContactModel?> getContact(String contactId) async {
+    String uploadUrl =
+        '${dotenv.env['BASE_URL']}/users/$contactId';
+    var uri = Uri.parse(uploadUrl);
+    var request = http.MultipartRequest('GET', uri);
+
+    request.headers['X-Session-Token'] = authLocalRepository.getToken()!;
+
+    try {
+      var response = await request.send();
+
+
+      if(response.statusCode != 200){
+        return null;
+      }
+      var responseBody = await response.stream.bytesToString();
+      var jsonResponse = json.decode(responseBody);
+      ContactModel user = ContactModel(
+        stories: [],
+        userName: jsonResponse['data']['user']['username'],
+        userId: jsonResponse['data']['user']['id'],
+        userImageUrl: jsonResponse['data']['user']['photo'],
+      );
+      return user;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error occurred: $e');
+      }
+      return null;
+    }
+  }
+
   Future<bool> markStoryAsSeen(String storyId) async {
     String uploadUrl =
-        'http://testing.telware.tech:3000/api/v1/stories/:storyId/views';
+        '${dotenv.env['BASE_URL']}/stories/:storyId/views';
     // var uri = Uri.parse(uploadUrl);
     // var request = http.MultipartRequest('POST', uri);
     // String? token = authLocalRepository.getToken();

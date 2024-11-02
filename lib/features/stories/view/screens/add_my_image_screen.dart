@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:telware_cross_platform/features/stories/view/screens/show_taken_image_screen.dart';
 import '../widget/take_photo_row.dart';
@@ -61,7 +61,8 @@ class _AddMyImageScreenState extends State<AddMyImageScreen> {
 
   Future<File> _saveImageBytesToFile(Uint8List imageBytes) async {
     final directory = await getTemporaryDirectory();
-    final filePath = '${directory.path}/taken_story.png';
+    final randomNumber = Random().nextInt(100000);
+    final filePath = '${directory.path}/taken_story_$randomNumber.png';
     final file = File(filePath);
     await file.writeAsBytes(imageBytes);
     return file;
@@ -151,6 +152,7 @@ class _AddMyImageScreenState extends State<AddMyImageScreen> {
                             selectedMode: _selectedMode,
                             onCapture: _captureImage,
                             onToggle: _toggleCamera,
+                            destination: widget.destination,
                           ),
                           const SizedBox(
                             height: 25,

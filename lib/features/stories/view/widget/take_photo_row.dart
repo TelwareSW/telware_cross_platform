@@ -6,11 +6,12 @@ class TakePhotoRow extends StatelessWidget {
     super.key,
     required String selectedMode,
     required this.onCapture,
-    required this.onToggle,
+    required this.onToggle, required this.destination,
   }) : _selectedMode = selectedMode;
   final String _selectedMode;
   final VoidCallback onCapture;
   final VoidCallback onToggle;
+  final String destination;
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +24,9 @@ class TakePhotoRow extends StatelessWidget {
           child: ClipOval(
             child: Container(
               color: Colors.grey.shade900.withOpacity(0.5),
-              child: const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: PickFromGallery(),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: PickFromGallery(destination: destination,),
               ),
             ),
           ),
