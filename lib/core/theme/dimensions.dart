@@ -11,4 +11,6 @@ class Dimensions {
   static const double fontSizeTitle = 18;
   static const double splashIconSize = 170.0;
   static const double sectionGaps = 10;
+  static const double optionsVerticalPad = 3.5;
+  static const double optionsHorizontalPad = 18;
 }

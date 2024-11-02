@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/features/user/repository/user_local_repository.dart';
+import 'package:telware_cross_platform/features/user/view/screens/last_seen_privacy_screen.dart';
+import 'package:telware_cross_platform/features/user/view/screens/phone_privacy_screen.dart';
+import 'package:telware_cross_platform/features/user/view/screens/profile_photo_privacy_screen.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
 import 'package:telware_cross_platform/features/user/view/widget/toolbar_widget.dart';
 
@@ -61,9 +64,9 @@ class _PrivacySettingsScreen extends ConsumerState<PrivacySettingsScreen> {
       {
         "title": "Privacy",
         "options": [
-          {"text": 'Phone Number', "trailing": "My Contacts"},
-          {"text": 'Last Seen & Online', "trailing": _user.lastSeenPrivacy},
-          {"text": 'Profile Photos', "trailing": "Everybody"},
+          {"text": 'Phone Number', "trailing": "My Contacts", "routes": PhonePrivacyScreen.route },
+          {"text": 'Last Seen & Online', "trailing": _user.lastSeenPrivacy, "routes": LastSeenPrivacyScreen.route },
+          {"text": 'Profile Photos', "trailing": "Everybody", "routes": ProfilePhotoPrivacyScreen.route },
           {"text": 'Forwarded Messages', "trailing": "EveryBody"},
           {"text": 'Calls', "trailing": "EveryBody"},
           {"text": 'Voice Messages', "trailing": "EveryBody"},
