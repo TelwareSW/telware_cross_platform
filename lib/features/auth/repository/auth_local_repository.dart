@@ -44,12 +44,20 @@ class AuthLocalRepository {
 
   // todo: create the user setting and getting methods
   void setUser(UserModel user) async {
-    Uint8List? imageBytes = await downloadImage('$API_URL_PICTURES/${user.photo}');
-    if(imageBytes!=null) {
+    Uint8List? imageBytes = await _fetchUserImage(user.photo!);
+
+    if (imageBytes != null) {
       final userWithImage = user.copyWith(photoBytes: imageBytes);
       await _userBox.put('user', userWithImage);
-      UserModel? temp = await _userBox.get('user');
     }
+  }
+
+  Future<Uint8List?> _fetchUserImage(String photoUrl) async {
+    final imageUrl = photoUrl.startsWith('https')
+        ? photoUrl
+        : '$API_URL_PICTURES/$photoUrl';
+
+    return await downloadImage(imageUrl);
   }
 
   UserModel? getMe() {
