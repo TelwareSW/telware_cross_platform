@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
 
 void main() {
   group('Settings Section Widget Tests', () {
     testWidgets('renders title and settings options', (WidgetTester tester) async {
+      ValueKey<String> optionKey1 = ValueKey("option1${WidgetKeys.settingsOptionSuffix.value}");
+      ValueKey<String> optionKey2 = ValueKey("option2${WidgetKeys.settingsOptionSuffix.value}");
       final settingsOptions = [
         {
-          "key": "option1-option",
+          "key": optionKey1.value,
           "text": "Option 1",
           "route": "/option1",
           "icon": Icons.settings,
           "type": "normal",
         },
         {
-          "key": "option2-option",
+          "key": optionKey2.value,
           "text": "Option 2",
           "route": "locked",
           "icon": Icons.lock,
@@ -22,10 +25,12 @@ void main() {
         },
       ];
 
+      ValueKey<String> sectionKey = ValueKey("settings${WidgetKeys.settingsSectionSuffix.value}");
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: SettingsSection(
+              containerKey: sectionKey,
               title: "Settings",
               settingsOptions: settingsOptions,
             ),
@@ -33,22 +38,24 @@ void main() {
         ),
       );
 
-      expect(find.byKey(const ValueKey("settings-section")), findsOneWidget,
+      expect(find.byKey(sectionKey), findsOneWidget,
           reason: "Expected settings section to render");
 
-      expect(find.byKey(const ValueKey("settings-section-title")), findsOneWidget,
+      expect(find.byKey(ValueKey(sectionKey.value + WidgetKeys.titleSuffix.value)), findsOneWidget,
           reason: "Expected section title to render");
 
-      expect(find.byKey(const ValueKey("option1-option")), findsOneWidget,
+      expect(find.byKey(optionKey1), findsOneWidget,
           reason: "Expected first option to render");
-      expect(find.byKey(const ValueKey("option2-option")), findsOneWidget,
+      expect(find.byKey(optionKey2), findsOneWidget,
           reason: "Expected second option to render");
     });
 
     testWidgets('navigates to the correct path on option tap', (WidgetTester tester) async {
+
+      ValueKey<String> optionKey1 = ValueKey("option1${WidgetKeys.settingsOptionSuffix.value}");
       final settingsOptions = [
         {
-          "key": "option1-option",
+          "key": optionKey1.value,
           "text": "Option 1",
           "route": "/option1",
           "icon": Icons.settings,
@@ -70,10 +77,10 @@ void main() {
         ),
       );
 
-      expect(find.byKey(const ValueKey("option1-option")), findsOneWidget,
+      expect(find.byKey(optionKey1), findsOneWidget,
           reason: "The first option didn't render");
 
-      await tester.tap(find.byKey(const ValueKey("option1-option")));
+      await tester.tap(find.byKey(optionKey1));
       await tester.pumpAndSettle(); // Wait for navigation to complete
 
       final BuildContext currentContext = tester.element(find.byType(SettingsSection));

@@ -140,14 +140,6 @@ class AuthRemoteRepository {
         },
       );
 
-      if (response.statusCode! >= 300 || response.statusCode! < 200) {
-        final String message = response.data?['message'] ?? 'Unexpected Error';
-        if (response.statusCode == 403) {
-          return Left(AppError(message, code: 403));
-        }
-        return Left(AppError(message));
-      }
-
       // todo(ahmed): check response body from the back side
       final AuthResponseModel logInResponse = AuthResponseModel.fromMap(
           (response.data['data']) as Map<String, dynamic>);
@@ -210,9 +202,15 @@ class AuthRemoteRepository {
 
   AppError handleDioException(DioException dioException) {
     String? message;
+    int? code;
     if (dioException.response != null) {
       message =
           dioException.response!.data?['message'] ?? 'Unexpected server Error';
+      if (message == 'please verify your email first to be able to login') {
+        code = 403;
+      } else {
+        code = dioException.response!.statusCode;
+      }
       debugPrint(message);
     } else if (dioException.type == DioExceptionType.connectionTimeout ||
         dioException.type == DioExceptionType.connectionError ||
@@ -226,6 +224,7 @@ class AuthRemoteRepository {
     }
     return AppError(
       message ?? 'Unexpected server error.',
+      code: code,
       emailError: dioException.response?.data?['error']?['errors']?['email']
           ?['message'],
       phoneNumberError: dioException.response?.data?['error']?['errors']

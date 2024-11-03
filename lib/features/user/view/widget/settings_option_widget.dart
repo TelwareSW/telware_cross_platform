@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 
 import 'package:telware_cross_platform/core/utils.dart';
@@ -61,7 +62,7 @@ class SettingsOptionWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+        padding: const EdgeInsets.symmetric(horizontal: Dimensions.optionsHorizontalPad, vertical: Dimensions.optionsVerticalPad),
         child: Row(
           children: [
             if (icon != null) ...[
@@ -141,7 +142,7 @@ class SettingsOptionWidget extends StatelessWidget {
                         ? Padding(
                             padding: trailingPadding ?? const EdgeInsets.all(0),
                             child: Text(
-                              trailing,
+                              capitalizeEachWord(trailing),
                               key: key != null
                                   ? ValueKey(
                                       "${(key as ValueKey).value}-trailing")

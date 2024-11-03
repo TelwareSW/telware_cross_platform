@@ -216,4 +216,97 @@ class UserViewModel extends _$UserViewModel {
     }
     return false;
   }
+  
+  Future<void> changeLastSeenPrivacy(String newPrivacy) async {
+    state = UserState.loading;
+
+    if (USE_MOCK_DATA) {
+      // Simulate a successful update with mock data
+      final updatedUser = userMock.copyWith(lastSeenPrivacy: newPrivacy);
+      ref.read(authLocalRepositoryProvider).setUser(updatedUser);
+      ref.read(userProvider.notifier).update((_) => updatedUser);
+      state = UserState.success('Last seen privacy updated successfully');
+      return;
+    }
+
+    final response = await ref.read(userRemoteRepositoryProvider).changeLastSeenPrivacy(privacy: newPrivacy);
+
+    response.fold(
+          (appError) {
+        state = UserState.fail(appError.error);
+      },
+          (_) {
+        // Update the user locally after successful update
+        final user = ref.read(userProvider);
+        if (user != null) {
+          final updatedUser = user.copyWith(lastSeenPrivacy: newPrivacy);
+          ref.read(authLocalRepositoryProvider).setUser(updatedUser);
+          ref.read(userProvider.notifier).update((_) => updatedUser);
+        }
+        state = UserState.success('Last seen privacy updated successfully');
+      },
+    );
+  }
+
+  Future<void> changeProfilePhotoPrivacy(String newPrivacy) async {
+    state = UserState.loading;
+
+    if (USE_MOCK_DATA) {
+      // Simulate a successful update with mock data
+      final updatedUser = userMock.copyWith(picturePrivacy: newPrivacy);
+      ref.read(authLocalRepositoryProvider).setUser(updatedUser);
+      ref.read(userProvider.notifier).update((_) => updatedUser);
+      state = UserState.success('Profile photo privacy updated successfully');
+      return;
+    }
+
+    final response = await ref.read(userRemoteRepositoryProvider).changeProfilePhotoPrivacy(privacy: newPrivacy);
+
+    response.fold(
+          (appError) {
+        state = UserState.fail(appError.error);
+      },
+          (_) {
+        // Update the user locally after successful update
+        final user = ref.read(userProvider);
+        if (user != null) {
+          final updatedUser = user.copyWith(picturePrivacy: newPrivacy);
+          ref.read(authLocalRepositoryProvider).setUser(updatedUser);
+          ref.read(userProvider.notifier).update((_) => updatedUser);
+        }
+        state = UserState.success('Profile photo privacy updated successfully');
+      },
+    );
+  }
+
+  Future<void> changeInvitePermissions(String newPermissions) async {
+    state = UserState.loading;
+
+    if (USE_MOCK_DATA) {
+      // Simulate a successful update with mock data
+      final updatedUser = userMock.copyWith(invitePermissionsPrivacy: newPermissions);
+      ref.read(authLocalRepositoryProvider).setUser(updatedUser);
+      ref.read(userProvider.notifier).update((_) => updatedUser);
+      state = UserState.success('Invite permissions updated successfully');
+      return;
+    }
+
+    final response = await ref.read(userRemoteRepositoryProvider).changeInvitePermissions(permissions: newPermissions);
+
+    response.fold(
+          (appError) {
+        state = UserState.fail(appError.error);
+      },
+          (_) {
+        // Update the user locally after successful update
+        final user = ref.read(userProvider);
+        if (user != null) {
+          final updatedUser = user.copyWith(invitePermissionsPrivacy: newPermissions);
+          ref.read(authLocalRepositoryProvider).setUser(updatedUser);
+          ref.read(userProvider.notifier).update((_) => updatedUser);
+        }
+        state = UserState.success('Invite permissions updated successfully');
+      },
+    );
+  }
 }

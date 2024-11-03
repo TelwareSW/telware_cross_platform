@@ -170,32 +170,33 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
                 ),
                 SliverToBoxAdapter(
                     child: Column(
-                  children: [
-                    SettingsSection(
-                      settingsOptions: const [],
-                      actions: [
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => const AddMyImageScreen(
-                                    destination: 'profile'),
+                      children: [
+                        SettingsSection(
+                          settingsOptions: const [],
+                          actions: [
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => const AddMyImageScreen(
+                                        destination: 'profile'),
+                                  ),
+                                );
+                              },
+                              child: const SettingsOptionWidget(
+                                key: ValueKey("set-profile-photo-option"),
+                                icon: Icons.camera_alt_outlined,
+                                iconColor: Palette.primary,
+                                text: "Set Profile Photo",
+                                color: Palette.primary,
+                                showDivider: false,
                               ),
-                            );
-                          },
-                          child: const SettingsOptionWidget(
-                            key: ValueKey("set-profile-photo-option"),
-                            icon: Icons.camera_alt_outlined,
-                            iconColor: Palette.primary,
-                            text: "Set Profile Photo",
-                            color: Palette.primary,
-                            showDivider: false,
-                          ),
+                            ),
+                          ],
                         ),
                       ],
-                    ),
-                  ],
-                )),
+                    )
+                ),
                 SliverToBoxAdapter(
                   child: Column(
                     children: [
