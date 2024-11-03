@@ -2,8 +2,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive/hive.dart';
 import 'package:telware_cross_platform/features/stories/utils/utils_functions.dart';
+
+import '../constants/server_constants.dart';
 
 part 'user_model.g.dart';
 
@@ -39,6 +42,8 @@ class UserModel {
   final String phone;
   @HiveField(14)
   Uint8List? photoBytes;
+  @HiveField(15)
+  String? id;
 
   UserModel({
     required this.username,
@@ -55,12 +60,20 @@ class UserModel {
     required this.picturePrivacy,
     required this.invitePermissionsPrivacy,
     required this.phone,
+    required this.id,
+    this.photoBytes,
   }) {
     _setPhotoBytes();
   }
 
   _setPhotoBytes() async {
-    photoBytes = await downloadImage(photo);
+    String url = '${API_URL_PICTURES}/$photo';
+    Uint8List? tempImage;
+    tempImage = await downloadImage(url);
+    if(tempImage != null) {
+      photoBytes = tempImage;
+    }
+
   }
 
   @override
@@ -80,7 +93,8 @@ class UserModel {
         other.storiesPrivacy == storiesPrivacy &&
         other.picturePrivacy == picturePrivacy &&
         other.invitePermissionsPrivacy == invitePermissionsPrivacy &&
-        other.phone == phone;
+        other.phone == phone &&
+        other.id == id;
   }
 
   @override
@@ -98,12 +112,13 @@ class UserModel {
         storiesPrivacy.hashCode ^
         picturePrivacy.hashCode ^
         invitePermissionsPrivacy.hashCode ^
-        phone.hashCode;
+        phone.hashCode ^
+        id.hashCode;
   }
 
   @override
   String toString() {
-    return 'UserModel(username: $username, screenName: $screenName, email: $email, photo: $photo, status: $status, bio: $bio, maxFileSize: $maxFileSize, automaticDownloadEnable: $automaticDownloadEnable, lastSeenPrivacy: $lastSeenPrivacy, readReceiptsEnablePrivacy: $readReceiptsEnablePrivacy, storiesPrivacy: $storiesPrivacy, picturePrivacy: $picturePrivacy, invitePermissionsPrivacy: $invitePermissionsPrivacy, phone: $phone)';
+    return 'UserModel(username: $username, screenName: $screenName, email: $email, photo: $photo, status: $status, bio: $bio, maxFileSize: $maxFileSize, automaticDownloadEnable: $automaticDownloadEnable, lastSeenPrivacy: $lastSeenPrivacy, readReceiptsEnablePrivacy: $readReceiptsEnablePrivacy, storiesPrivacy: $storiesPrivacy, picturePrivacy: $picturePrivacy, invitePermissionsPrivacy: $invitePermissionsPrivacy, phone: $phone, id: $id)';
   }
 
   UserModel copyWith({
@@ -121,6 +136,8 @@ class UserModel {
     String? picturePrivacy,
     String? invitePermissionsPrivacy,
     String? phone,
+    String? id,
+    Uint8List? photoBytes,
   }) {
     return UserModel(
       username: username ?? this.username,
@@ -140,6 +157,8 @@ class UserModel {
       invitePermissionsPrivacy:
           invitePermissionsPrivacy ?? this.invitePermissionsPrivacy,
       phone: phone ?? this.phone,
+      id: id ?? this.id,
+      photoBytes: photoBytes?? this.photoBytes,
     );
   }
 
@@ -159,6 +178,7 @@ class UserModel {
       'picturePrivacy': picturePrivacy,
       'invitePermissionsPrivacy': invitePermissionsPrivacy,
       'phone': phone,
+      'id': id,
     };
   }
 
@@ -182,6 +202,7 @@ class UserModel {
       picturePrivacy: map['picturePrivacy'] as String,
       invitePermissionsPrivacy: map['invitePermessionsPrivacy'] as String,
       phone: (map['phoneNumber'] as String?) ?? '',
+      id: map['id'] as String,
     );
   }
 

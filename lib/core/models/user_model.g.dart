@@ -31,13 +31,14 @@ class UserModelAdapter extends TypeAdapter<UserModel> {
       picturePrivacy: fields[11] as String,
       invitePermissionsPrivacy: fields[12] as String,
       phone: fields[13] as String,
+      id: fields[15] as String?,
     )..photoBytes = fields[14] as Uint8List?;
   }
 
   @override
   void write(BinaryWriter writer, UserModel obj) {
     writer
-      ..writeByte(15)
+      ..writeByte(16)
       ..writeByte(0)
       ..write(obj.username)
       ..writeByte(1)
@@ -67,7 +68,9 @@ class UserModelAdapter extends TypeAdapter<UserModel> {
       ..writeByte(13)
       ..write(obj.phone)
       ..writeByte(14)
-      ..write(obj.photoBytes);
+      ..write(obj.photoBytes)
+      ..writeByte(15)
+      ..write(obj.id);
   }
 
   @override

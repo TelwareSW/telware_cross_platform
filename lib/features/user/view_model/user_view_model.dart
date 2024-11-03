@@ -1,4 +1,6 @@
 // ignore_for_file: avoid_manual_providers_as_generated_provider_dependency
+import 'dart:io';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/core/mock/user_mock.dart';
@@ -6,12 +8,10 @@ import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_local_repository.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_remote_repository.dart';
+import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
+import 'package:telware_cross_platform/features/stories/repository/contacts_remote_repository.dart';
 import 'package:telware_cross_platform/features/user/view_model/user_state.dart';
 import 'package:telware_cross_platform/features/user/repository/user_remote_repository.dart';
-import 'package:telware_cross_platform/core/models/app_error.dart';
-import 'package:flutter/material.dart';
-import 'package:fpdart/fpdart.dart';
-import 'package:telware_cross_platform/core/models/user_model.dart';
 
 part 'user_view_model.g.dart';
 
@@ -199,6 +199,24 @@ class UserViewModel extends _$UserViewModel {
     );
   }
 
+  Future<bool> updateProfilePicture(File storyImage) async {
+    if (await ref.read(contactsRemoteRepositoryProvider).updateProfilePicture(storyImage) ==
+        true) {
+      await ref.read(authViewModelProvider.notifier).getMe();
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> deleteProfilePicture() async {
+    if (await ref.read(contactsRemoteRepositoryProvider).deleteProfilePicture() ==
+        true) {
+      await ref.read(authViewModelProvider.notifier).getMe();
+      return true;
+    }
+    return false;
+  }
+  
   Future<void> changeLastSeenPrivacy(String newPrivacy) async {
     state = UserState.loading;
 
@@ -291,5 +309,4 @@ class UserViewModel extends _$UserViewModel {
       },
     );
   }
-
 }

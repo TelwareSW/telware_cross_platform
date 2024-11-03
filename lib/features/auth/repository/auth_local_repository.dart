@@ -1,6 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:hive/hive.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
+
+import '../../../core/constants/server_constants.dart';
+import '../../stories/utils/utils_functions.dart';
 
 part 'auth_local_repository.g.dart';
 
@@ -39,7 +44,20 @@ class AuthLocalRepository {
 
   // todo: create the user setting and getting methods
   void setUser(UserModel user) async {
-    await _userBox.put('user', user);
+    Uint8List? imageBytes = await _fetchUserImage(user.photo!);
+
+    if (imageBytes != null) {
+      final userWithImage = user.copyWith(photoBytes: imageBytes);
+      await _userBox.put('user', userWithImage);
+    }
+  }
+
+  Future<Uint8List?> _fetchUserImage(String photoUrl) async {
+    final imageUrl = photoUrl.startsWith('https')
+        ? photoUrl
+        : '$API_URL_PICTURES/$photoUrl';
+
+    return await downloadImage(imageUrl);
   }
 
   UserModel? getMe() {

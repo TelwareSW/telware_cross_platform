@@ -67,6 +67,7 @@ class AuthViewModel extends _$AuthViewModel {
     return token != null && token.isNotEmpty;
   }
 
+
   Future<SignupResult> signUp({
     required String email,
     required String phone,
@@ -303,5 +304,26 @@ class AuthViewModel extends _$AuthViewModel {
     } else {
       state = AuthState.fail(appError.error);
     }
+  }
+
+  Future<void> getMe() async {
+    String? token = ref.read(tokenProvider);
+
+    if (USE_MOCK_DATA) {
+      final user = userMock;
+      ref.read(userProvider.notifier).update((_) => user);
+      state = AuthState.authenticated;
+      return;
+    }
+
+    // try getting updated user data
+    final response = await ref.read(authRemoteRepositoryProvider).getMe(token!);
+
+    response.match((appError) {
+    }, (user) {
+      ref.read(authLocalRepositoryProvider).setUser(user);
+      print(user);
+      ref.read(userProvider.notifier).update((_) => user);
+    });
   }
 }

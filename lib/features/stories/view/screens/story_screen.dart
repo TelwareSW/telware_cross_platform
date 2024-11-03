@@ -8,7 +8,6 @@ import '../widget/bottom_actions_story_screen.dart';
 import '../widget/passive_content_story_screen.dart';
 import '../widget/top_actions_story_screen.dart';
 import 'package:go_router/go_router.dart';
-import 'package:telware_cross_platform/core/routes/routes.dart';
 
 class StoryScreen extends ConsumerStatefulWidget {
   static const String route = '/story';
