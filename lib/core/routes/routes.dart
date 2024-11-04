@@ -18,6 +18,7 @@ import 'package:telware_cross_platform/features/stories/view/screens/show_taken_
 import 'package:telware_cross_platform/features/stories/view/screens/story_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/block_user.dart';
 import 'package:telware_cross_platform/features/user/view/screens/blocked_users.dart';
+import 'package:telware_cross_platform/features/user/view/screens/change_email_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/change_number_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/change_username_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/invites_permissions_screen.dart';
@@ -55,9 +56,11 @@ class Routes {
   static const String privacySettings = PrivacySettingsScreen.route;
   static const String phonePrivacySettings = PhonePrivacyScreen.route;
   static const String lastSeenPrivacySettings = LastSeenPrivacyScreen.route;
-  static const String profilePhotoPrivacySettings = ProfilePhotoPrivacyScreen.route;
+  static const String profilePhotoPrivacySettings =
+      ProfilePhotoPrivacyScreen.route;
   static const String invitePermissionsSettings = InvitesPermissionScreen.route;
   static const String selfDestructTimer = SelfDestructScreen.route;
+  static const String changeEmail = ChangeEmailScreen.route;
 
   static GoRouter appRouter(WidgetRef ref) => GoRouter(
         initialLocation: Routes.splash,
@@ -66,7 +69,10 @@ class Routes {
               ref.read(authViewModelProvider.notifier).isAuthorized();
           debugPrint('fullPath: ${state.fullPath}');
           if (!isAuthorized) {
-            if ((state.fullPath?.startsWith(Routes.socialAuthLoading) ?? false)) return null;
+            if ((state.fullPath?.startsWith(Routes.socialAuthLoading) ??
+                false)) {
+              return null;
+            }
             if (state.fullPath != Routes.logIn &&
                 state.fullPath != Routes.signUp &&
                 state.fullPath != Routes.verification &&
@@ -97,7 +103,12 @@ class Routes {
             path: Routes.verification,
             pageBuilder: (context, state) => CustomTransitionPage(
               key: state.pageKey,
-              child: const VerificationScreen(),
+              child: VerificationScreen(
+                sendVerificationCode: (state.extra
+                            as Map<String, dynamic>?)?['sendVerificationCode']
+                        as bool? ??
+                    false,
+              ),
               transitionsBuilder: _slideRightTransitionBuilder,
             ),
           ),
@@ -208,6 +219,10 @@ class Routes {
           GoRoute(
             path: Routes.selfDestructTimer,
             builder: (context, state) => const SelfDestructScreen(),
+          ),
+          GoRoute(
+            path: Routes.changeEmail,
+            builder: (context, state) => const ChangeEmailScreen(),
           ),
         ],
       );

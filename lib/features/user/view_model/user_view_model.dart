@@ -30,13 +30,14 @@ class UserViewModel extends _$UserViewModel {
       return;
     }
 
-    final response = await ref.read(authRemoteRepositoryProvider).getMe(sessionId);
+    final response =
+        await ref.read(authRemoteRepositoryProvider).getMe(sessionId);
 
     response.fold(
-          (appError) {
+      (appError) {
         state = UserState.fail(appError.error);
       },
-          (user) {
+      (user) {
         ref.read(authLocalRepositoryProvider).setUser(user);
         ref.read(userProvider.notifier).update((_) => user);
         state = UserState.authorized;
@@ -50,25 +51,34 @@ class UserViewModel extends _$UserViewModel {
     if (USE_MOCK_DATA) {
       // Simulate a successful update with mock data
       final updatedUser = userMock.copyWith(phone: newPhoneNumber);
-      ref.read(authLocalRepositoryProvider).setUser(updatedUser); // Persist the change
+      ref
+          .read(authLocalRepositoryProvider)
+          .setUser(updatedUser); // Persist the change
       ref.read(userProvider.notifier).update((_) => updatedUser);
       state = UserState.success('Phone number updated successfully');
       return;
     }
 
-    final response = await ref.read(userRemoteRepositoryProvider).changeNumber(newPhoneNumber: newPhoneNumber);
+    final response = await ref
+        .read(userRemoteRepositoryProvider)
+        .changeNumber(newPhoneNumber: newPhoneNumber);
 
     response.fold(
-          (appError) {
+      (appError) {
         state = UserState.fail(appError.error);
       },
-          (_) {
+      (_) {
         // Update the user locally after successful update
         final user = ref.read(userProvider);
         if (user != null) {
-          final updatedUser = user.copyWith(phone: newPhoneNumber); // Create a new User object
-          ref.read(authLocalRepositoryProvider).setUser(updatedUser); // Persist the change
-          ref.read(userProvider.notifier).update((_) => updatedUser); // Update the state
+          final updatedUser =
+              user.copyWith(phone: newPhoneNumber); // Create a new User object
+          ref
+              .read(authLocalRepositoryProvider)
+              .setUser(updatedUser); // Persist the change
+          ref
+              .read(userProvider.notifier)
+              .update((_) => updatedUser); // Update the state
         }
         state = UserState.success('Phone number updated successfully');
       },
@@ -81,37 +91,47 @@ class UserViewModel extends _$UserViewModel {
     if (USE_MOCK_DATA) {
       // Simulate a successful update with mock data
       final updatedUser = userMock.copyWith(bio: newBio);
-      ref.read(authLocalRepositoryProvider).setUser(updatedUser); // Persist the change
+      ref
+          .read(authLocalRepositoryProvider)
+          .setUser(updatedUser); // Persist the change
       ref.read(userProvider.notifier).update((_) => updatedUser);
       state = UserState.success('Bio updated successfully');
       return;
     }
 
-    final response = await ref.read(userRemoteRepositoryProvider).updateBio(newBio: newBio);
+    final response =
+        await ref.read(userRemoteRepositoryProvider).updateBio(newBio: newBio);
 
     response.fold(
-          (appError) {
+      (appError) {
         state = UserState.fail(appError.error);
       },
-          (_) {
+      (_) {
         // Update the user locally after successful update
         final user = ref.read(userProvider);
         if (user != null) {
-          final updatedUser = user.copyWith(bio: newBio); // Create a new User object
-          ref.read(authLocalRepositoryProvider).setUser(updatedUser); // Persist the change
-          ref.read(userProvider.notifier).update((_) => updatedUser); // Update the state
+          final updatedUser =
+              user.copyWith(bio: newBio); // Create a new User object
+          ref
+              .read(authLocalRepositoryProvider)
+              .setUser(updatedUser); // Persist the change
+          ref
+              .read(userProvider.notifier)
+              .update((_) => updatedUser); // Update the state
         }
         state = UserState.success('Bio updated successfully');
       },
     );
   }
 
-  Future<void> updateUserInfo(String firstName, String lastName, String newBio) async {
+  Future<void> updateUserInfo(
+      String firstName, String lastName, String newBio) async {
     state = UserState.loading;
 
     if (USE_MOCK_DATA) {
       // Simulate a successful update with mock data
-      final updatedUser = userMock.copyWith(screenName: "$firstName $lastName", bio: newBio);
+      final updatedUser =
+          userMock.copyWith(screenName: "$firstName $lastName", bio: newBio);
       ref.read(authLocalRepositoryProvider).setUser(updatedUser);
       ref.read(userProvider.notifier).update((_) => updatedUser);
       state = UserState.success('Screen name updated successfully');
@@ -119,27 +139,61 @@ class UserViewModel extends _$UserViewModel {
     }
 
     await ref.read(userRemoteRepositoryProvider).updateScreenName(
-      newScreenFirstName: firstName,
-      newScreenLastName: lastName,
-    );
+          newScreenFirstName: firstName,
+          newScreenLastName: lastName,
+        );
 
     final response = await ref.read(userRemoteRepositoryProvider).updateBio(
-      newBio: newBio,
-    );
+          newBio: newBio,
+        );
 
     response.fold(
-          (appError) {
+      (appError) {
         state = UserState.fail(appError.error);
       },
-          (_) {
+      (_) {
         // Update the user locally after successful update
         final user = ref.read(userProvider);
         if (user != null) {
-          final updatedUser = user.copyWith(screenName: "$firstName $lastName", bio: newBio);
+          final updatedUser =
+              user.copyWith(screenName: "$firstName $lastName", bio: newBio);
           ref.read(authLocalRepositoryProvider).setUser(updatedUser);
           ref.read(userProvider.notifier).update((_) => updatedUser);
         }
         state = UserState.success('Screen name updated successfully');
+      },
+    );
+  }
+
+  Future<void> updateEmail({required String newEmail}) async {
+    state = UserState.loading;
+
+    if (USE_MOCK_DATA) {
+      // Simulate a successful update with mock data
+      final updatedUser = userMock.copyWith(email: newEmail);
+      ref.read(authLocalRepositoryProvider).setUser(updatedUser);
+      ref.read(userProvider.notifier).update((_) => updatedUser);
+      state = UserState.success('Email updated successfully');
+      return;
+    }
+
+    final response = await ref.read(userRemoteRepositoryProvider).updateEmail(
+          newEmail: newEmail,
+        );
+
+    response.fold(
+      (appError) {
+        state = UserState.fail(appError.error);
+      },
+      (_) {
+        // Update the user locally after successful update
+        final user = ref.read(userProvider);
+        if (user != null) {
+          final updatedUser = user.copyWith(email: newEmail);
+          ref.read(authLocalRepositoryProvider).setUser(updatedUser);
+          ref.read(userProvider.notifier).update((_) => updatedUser);
+        }
+        state = UserState.success('Email updated successfully');
       },
     );
   }
@@ -156,13 +210,15 @@ class UserViewModel extends _$UserViewModel {
       return;
     }
 
-    final response = await ref.read(userRemoteRepositoryProvider).changeUsername(newUsername: newUsername);
+    final response = await ref
+        .read(userRemoteRepositoryProvider)
+        .changeUsername(newUsername: newUsername);
 
     response.fold(
-          (appError) {
+      (appError) {
         state = UserState.fail(appError.error);
       },
-          (_) {
+      (_) {
         // Update the user locally after successful update
         final user = ref.read(userProvider);
         if (user != null) {
@@ -181,19 +237,25 @@ class UserViewModel extends _$UserViewModel {
     if (USE_MOCK_DATA) {
       // Simulate a mock check for username uniqueness
       final isUnique = username != "mock.user";
-      state = isUnique ? UserState.success('Username is unique') : UserState.fail('Username is already taken');
+      state = isUnique
+          ? UserState.success('Username is unique')
+          : UserState.fail('Username is already taken');
       return true;
     }
 
-    final response = await ref.read(userRemoteRepositoryProvider).checkUsernameUniqueness(username: username);
+    final response = await ref
+        .read(userRemoteRepositoryProvider)
+        .checkUsernameUniqueness(username: username);
 
     return response.fold(
-          (appError) {
+      (appError) {
         state = UserState.fail(appError.error);
         return false;
       },
-          (isUnique) {
-        state = isUnique ? UserState.success('Username is unique') : UserState.fail('Username is already taken');
+      (isUnique) {
+        state = isUnique
+            ? UserState.success('Username is unique')
+            : UserState.fail('Username is already taken');
         return true;
       },
     );
@@ -211,13 +273,15 @@ class UserViewModel extends _$UserViewModel {
       return;
     }
 
-    final response = await ref.read(userRemoteRepositoryProvider).changeLastSeenPrivacy(privacy: newPrivacy);
+    final response = await ref
+        .read(userRemoteRepositoryProvider)
+        .changeLastSeenPrivacy(privacy: newPrivacy);
 
     response.fold(
-          (appError) {
+      (appError) {
         state = UserState.fail(appError.error);
       },
-          (_) {
+      (_) {
         // Update the user locally after successful update
         final user = ref.read(userProvider);
         if (user != null) {
@@ -242,13 +306,15 @@ class UserViewModel extends _$UserViewModel {
       return;
     }
 
-    final response = await ref.read(userRemoteRepositoryProvider).changeProfilePhotoPrivacy(privacy: newPrivacy);
+    final response = await ref
+        .read(userRemoteRepositoryProvider)
+        .changeProfilePhotoPrivacy(privacy: newPrivacy);
 
     response.fold(
-          (appError) {
+      (appError) {
         state = UserState.fail(appError.error);
       },
-          (_) {
+      (_) {
         // Update the user locally after successful update
         final user = ref.read(userProvider);
         if (user != null) {
@@ -266,24 +332,28 @@ class UserViewModel extends _$UserViewModel {
 
     if (USE_MOCK_DATA) {
       // Simulate a successful update with mock data
-      final updatedUser = userMock.copyWith(invitePermissionsPrivacy: newPermissions);
+      final updatedUser =
+          userMock.copyWith(invitePermissionsPrivacy: newPermissions);
       ref.read(authLocalRepositoryProvider).setUser(updatedUser);
       ref.read(userProvider.notifier).update((_) => updatedUser);
       state = UserState.success('Invite permissions updated successfully');
       return;
     }
 
-    final response = await ref.read(userRemoteRepositoryProvider).changeInvitePermissions(permissions: newPermissions);
+    final response = await ref
+        .read(userRemoteRepositoryProvider)
+        .changeInvitePermissions(permissions: newPermissions);
 
     response.fold(
-          (appError) {
+      (appError) {
         state = UserState.fail(appError.error);
       },
-          (_) {
+      (_) {
         // Update the user locally after successful update
         final user = ref.read(userProvider);
         if (user != null) {
-          final updatedUser = user.copyWith(invitePermissionsPrivacy: newPermissions);
+          final updatedUser =
+              user.copyWith(invitePermissionsPrivacy: newPermissions);
           ref.read(authLocalRepositoryProvider).setUser(updatedUser);
           ref.read(userProvider.notifier).update((_) => updatedUser);
         }
@@ -291,5 +361,4 @@ class UserViewModel extends _$UserViewModel {
       },
     );
   }
-
 }

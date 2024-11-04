@@ -62,7 +62,9 @@ class SettingsOptionWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: Dimensions.optionsHorizontalPad, vertical: Dimensions.optionsVerticalPad),
+        padding: const EdgeInsets.symmetric(
+            horizontal: Dimensions.optionsHorizontalPad,
+            vertical: Dimensions.optionsVerticalPad),
         child: Row(
           children: [
             if (icon != null) ...[
@@ -142,7 +144,7 @@ class SettingsOptionWidget extends StatelessWidget {
                         ? Padding(
                             padding: trailingPadding ?? const EdgeInsets.all(0),
                             child: Text(
-                              capitalizeEachWord(trailing),
+                              trailing,
                               key: key != null
                                   ? ValueKey(
                                       "${(key as ValueKey).value}-trailing")
