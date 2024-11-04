@@ -206,11 +206,7 @@ class AuthRemoteRepository {
     if (dioException.response != null) {
       message =
           dioException.response!.data?['message'] ?? 'Unexpected server Error';
-      if (message == 'please verify your email first to be able to login') {
-        code = 403;
-      } else {
-        code = dioException.response!.statusCode;
-      }
+      code = dioException.response!.statusCode;
       debugPrint(message);
     } else if (dioException.type == DioExceptionType.connectionTimeout ||
         dioException.type == DioExceptionType.connectionError ||
