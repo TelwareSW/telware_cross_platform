@@ -155,16 +155,16 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const LottieViewer(
-                path: 'assets/json/mail.json',
-                width: 200,
-                height: 200,
+                path: 'assets/tgs/emailCheckInbox.tgs',
+                width: 120,
+                height: 120,
               ),
               const TitleElement(
                 name: 'Check Your Email',
                 color: Palette.primaryText,
-                fontSize: 20,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
-                padding: EdgeInsets.only(bottom: 10),
+                padding: EdgeInsets.only(bottom: 10, top: 15),
               ),
               TitleElement(
                 name:

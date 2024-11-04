@@ -124,13 +124,13 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen>
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 const LottieViewer(
-                    path: 'assets/json/mailBox.json', width: 200, height: 200),
+                    path: 'assets/tgs/mailBox.tgs', width: 120, height: 120),
                 const TitleElement(
                   name: 'Enter New Email',
                   color: Palette.primaryText,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  padding: EdgeInsets.only(bottom: 10),
+                  padding: EdgeInsets.only(bottom: 10, top: 15),
                 ),
                 const TitleElement(
                   name:
