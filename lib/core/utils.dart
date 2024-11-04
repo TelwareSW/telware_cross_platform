@@ -94,18 +94,17 @@ String toKebabCase(String input) {
   return kebabCased.replaceAll(RegExp(r'^-+|-+$'), '');
 }
 
-String getInitials(String name) {
-  if (name.isEmpty) {
-    return "NN";
-  }
-  List<String> nameParts = name.split(' ');
-  String initials = "";
-  if (nameParts.isNotEmpty) {
-    initials = nameParts[0][0];
-    if (nameParts.length > 1) {
-      initials += nameParts[1][0];
-    }
-  }
+String getInitials(String? name) {
+  if (name == null || name.isEmpty) return 'NN';
+  List<String> nameParts = name.trim().split(' ');
+  String initials = nameParts
+      .map((part) {
+        String cleanedPart =
+            part.replaceAll(RegExp(r'[^a-zA-Z\u0600-\u06FF]'), '');
+        return cleanedPart.isNotEmpty ? cleanedPart[0] : '';
+      })
+      .take(2)
+      .join();
   return initials.toUpperCase();
 }
 
@@ -115,7 +114,24 @@ String capitalizeEachWord(String sentence) {
   return sentence
       .split(' ')
       .map((word) => word.isNotEmpty
-      ? word[0].toUpperCase() + word.substring(1).toLowerCase()
-      : word)
+          ? word[0].toUpperCase() + word.substring(1).toLowerCase()
+          : word)
       .join(' ');
+}
+
+String formatTime(int seconds,
+    {bool singleDigit = false, bool showHours = false}) {
+  // if singleDigit is true, the function will return the time in the format "H" or "M" or "S"
+  // if showHours is true, the function will return hours if the time is more than an hour
+  if (singleDigit) {
+    return (showHours && seconds >= 60 * 60)
+        ? '${seconds ~/ (60 * 60)}'
+        : (seconds >= 60)
+            ? '${(seconds ~/ 60)} minutes'
+            : '$seconds seconds';
+  }
+  final hours = (seconds ~/ 3600).toString().padLeft(2, '0');
+  final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
+  final secs = (seconds % 60).toString().padLeft(2, '0');
+  return showHours ? '$hours:$minutes:$secs' : '$minutes:$secs';
 }
