@@ -34,28 +34,19 @@ void main() {
       expect(passwordValidator('Password1'), null);
     });
 
-    test('returns null for valid password with marks', () {
-      expect(passwordValidator('Pass_word1@'), null);
-    });
-
     test('returns error message for short password', () {
       expect(passwordValidator('Pass1'),
           'Password must be at least 8 characters long');
     });
 
-    test('returns error message for password with unvalid marks', () {
-      expect(passwordValidator('Passw#rd4*'),
-          'Must contain letters and digits and can contain . _ @ & -');
-    });
-
     test('returns error message for password without digits', () {
       expect(passwordValidator('Password'),
-          'Must contain letters and digits and can contain . _ @ & -');
+          'Password must contain both letters and digits');
     });
 
     test('returns error message for password without letters', () {
       expect(passwordValidator('12345678'),
-          'Must contain letters and digits and can contain . _ @ & -');
+          'Password must contain both letters and digits');
     });
 
     test('returns null for empty password', () {

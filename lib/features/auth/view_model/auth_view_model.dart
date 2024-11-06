@@ -23,7 +23,7 @@ class AuthViewModel extends _$AuthViewModel {
     return AuthState.init;
   }
 
-  void init() async {
+  Future<void> init() async {
     await Future.delayed(const Duration(seconds: 1, microseconds: 50));
 
     String? token = ref.read(authLocalRepositoryProvider).getToken();
@@ -148,7 +148,7 @@ class AuthViewModel extends _$AuthViewModel {
     return state;
   }
 
-  void login({required String email, required String password}) async {
+  Future<void> login({required String email, required String password}) async {
     state = AuthState.loading;
 
     if (USE_MOCK_DATA) {
@@ -186,7 +186,7 @@ class AuthViewModel extends _$AuthViewModel {
     });
   }
 
-  void forgotPassword(String email) async {
+  Future<void> forgotPassword(String email) async {
     debugPrint('forgot password start');
     state = AuthState.loading;
     if (USE_MOCK_DATA) {
