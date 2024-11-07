@@ -11,14 +11,13 @@ part 'auth_remote_repository.g.dart';
 
 @Riverpod(keepAlive: true)
 AuthRemoteRepository authRemoteRepository(AuthRemoteRepositoryRef ref) {
-  return AuthRemoteRepository(ref: ref, dio: Dio(BASE_OPTIONS));
+  return AuthRemoteRepository(dio: Dio(BASE_OPTIONS));
 }
 
 class AuthRemoteRepository {
   final Dio _dio;
 
   AuthRemoteRepository({
-    required ProviderRef<AuthRemoteRepository> ref,
     required Dio dio,
   }) : _dio = dio;
 

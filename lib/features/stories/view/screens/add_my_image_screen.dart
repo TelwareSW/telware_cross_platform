@@ -17,7 +17,7 @@ class AddMyImageScreen extends StatefulWidget {
   const AddMyImageScreen({super.key, this.destination = 'story',});
 
   @override
-  _AddMyImageScreenState createState() => _AddMyImageScreenState();
+  State<AddMyImageScreen> createState() => _AddMyImageScreenState();
 }
 
 class _AddMyImageScreenState extends State<AddMyImageScreen> {
