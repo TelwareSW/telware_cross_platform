@@ -9,7 +9,7 @@ import 'package:telware_cross_platform/features/auth/view/widget/confirmation_di
 import 'package:vibration/vibration.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
-import 'package:telware_cross_platform/core/providers/sign_up_email_provider.dart';
+import 'package:telware_cross_platform/core/providers/sign_up_provider.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
@@ -177,17 +177,14 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             );
 
     if (mounted) {
-      context.pop(); // to close the dialog
+      context.pop();
     }
     if (signUpResult.state.type == AuthStateType.unverified) {
-      ref
-          .read(signUpEmailProvider.notifier)
-          .update((_) => emailController.text);
+      ref.read(emailProvider.notifier).update((_) => emailController.text);
       if (mounted) {
         context.push(Routes.verification);
       }
     } else {
-      //todo show error message to the user eg. email already exists / email not valid
       setState(() {
         emailError = signUpResult.error?.emailError;
         phoneError = signUpResult.error?.phoneNumberError;
@@ -343,6 +340,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       ),
       floatingActionButton: AuthFloatingActionButton(
         formKey: formKey,
+        buttonKey: signUpSubmitKey,
         onSubmit: handelSubmit,
       ),
     );

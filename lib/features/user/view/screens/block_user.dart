@@ -24,7 +24,6 @@ class _BlockUserScreen extends State<BlockUserScreen>
   final ContactService _contactService = ContactService();
   late List<Map<String, dynamic>> userChats;
   late List<Map<String, dynamic>> userContacts;
-  late AnimationController _duckController;
   late TabController _tabController;
   final ScrollController scrollController = ScrollController();
 
@@ -86,12 +85,6 @@ class _BlockUserScreen extends State<BlockUserScreen>
   void initState() {
     super.initState();
     _initializeContacts();
-    _duckController = AnimationController(vsync: this);
-    _duckController.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        _duckController.stop();
-      }
-    });
     _tabController = TabController(vsync: this, length: 2);
     userChats = <Map<String, dynamic>>[
       {
@@ -156,14 +149,8 @@ class _BlockUserScreen extends State<BlockUserScreen>
 
   @override
   void dispose() {
-    _duckController.dispose();
     _tabController.dispose();
     super.dispose();
-  }
-
-  void _restartAnimation() {
-    _duckController.reset();
-    _duckController.forward();
   }
 
   @override
@@ -223,10 +210,9 @@ class _BlockUserScreen extends State<BlockUserScreen>
               controller: _tabController,
               children: <Widget>[
                 userChats[0]["options"].length == 0
-                    ? EmptyChats(
-                        padding: const EdgeInsets.only(top: 50),
-                        duckController: _duckController,
-                        onTap: _restartAnimation)
+                    ? const EmptyChats(
+                        padding: EdgeInsets.only(top: 50),
+                      )
                     : SingleChildScrollView(
                         child: UserChats(chatSections: userChats),
                       ),

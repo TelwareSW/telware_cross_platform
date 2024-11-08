@@ -1,32 +1,37 @@
 import 'dart:async';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive/hive.dart';
+import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:flutter/material.dart';
+import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/core/view/widget/responsive.dart';
-import 'package:telware_cross_platform/core/providers/sign_up_email_provider.dart';
+import 'package:telware_cross_platform/core/providers/sign_up_provider.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_sub_text_button.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_floating_action_button.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_verification_code/flutter_verification_code.dart';
 import 'package:telware_cross_platform/core/constants/constant.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
+import 'package:telware_cross_platform/core/utils.dart';
 
 class VerificationScreen extends ConsumerStatefulWidget {
   static const String route = '/verify';
+  final bool sendVerificationCode;
 
-  const VerificationScreen({super.key});
+  const VerificationScreen({super.key, required this.sendVerificationCode});
 
   @override
   ConsumerState<VerificationScreen> createState() => _VerificationScreen();
 }
 
 class _VerificationScreen extends ConsumerState<VerificationScreen> {
+  //-------------------------------------- Keys --------------------------------
   final verificationCodeKey =
       GlobalKey<State>(debugLabel: 'verificationCode_input');
   final resendCodeKey =
@@ -34,8 +39,10 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
   final submitKey = GlobalKey<State>(debugLabel: 'verification_submit_button');
   final shakeKey = GlobalKey<ShakeWidgetState>();
 
+  //------------------------------ Controllers ---------------------------------
+  late StreamController<ErrorAnimationType> errorController;
+
   String _code = '';
-  bool codeNotMatched = false;
   int remainingTime =
       VERIFICATION_CODE_EXPIRATION_TIME; // Total seconds for countdown
   Timer? _timer;
@@ -44,19 +51,32 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
   final TextStyle digitStyle = const TextStyle(
     fontSize: 20.0,
     fontWeight: FontWeight.bold,
-    color: Palette.primary,
+    color: Colors.white,
   );
+
+  sendVerificationCode() async {
+    await ref.read(authViewModelProvider.notifier).sendConfirmationCode(
+          email: email,
+        );
+  }
 
   @override
   void initState() {
     super.initState();
-    email = ref.read(signUpEmailProvider);
+    errorController = StreamController<ErrorAnimationType>();
+    email = ref.read(emailProvider);
+    if (widget.sendVerificationCode) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        sendVerificationCode();
+      });
+    }
     startTimer(); // Start the countdown timer
   }
 
   @override
   void dispose() {
     _timer?.cancel(); // Cancel timer when widget is disposed
+    errorController.close();
     super.dispose();
   }
 
@@ -84,33 +104,16 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
     });
   }
 
-  String formatTime(int seconds) {
-    final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
-    final secs = (seconds % 60).toString().padLeft(2, '0');
-    return '$minutes:$secs';
-  }
-
   void onCompleted(String value) {
     setState(() {
       _code = value;
     });
   }
 
-  void onEditing(bool value) {
+  void onEditing(String? value) {
     setState(() {
-      codeNotMatched =
-          false; // waiting for the user to enter the code to show an error message if the code is not correct
+      _code = '';
     });
-    if (value) {
-      setState(() {
-        // if the user completed the code then edited it
-        // again but did not complete it, then submit the code will contains the old one,
-        // so we have to set it to empty to avoid this issue
-        _code = '';
-      });
-    } else {
-      FocusScope.of(context).unfocus();
-    }
   }
 
   void onSubmit() async {
@@ -121,14 +124,11 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
                 code: _code,
               );
       if (state.type == AuthStateType.verified) {
-        // todo: Navigate to the home screen
         if (mounted) {
           context.push(Routes.logIn);
         }
       } else {
-        setState(() {
-          codeNotMatched = true;
-        });
+        showToastMessage(state.message!);
       }
     } else {
       shakeKey.currentState?.shake();
@@ -143,98 +143,103 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Palette.background,
+      backgroundColor: Palette.secondary,
       appBar: AppBar(
-        backgroundColor: Palette.background,
+        backgroundColor: Palette.secondary,
         elevation: 0,
       ),
-      body: Responsive(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 100),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const TitleElement(
-                  name: 'Verification',
-                  color: Palette.primaryText,
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                  padding: EdgeInsets.only(bottom: 30),
-                ),
-                const TitleElement(
-                  name: 'Please enter the verification code sent to',
-                  color: Palette.accentText,
-                  fontSize: Sizes.secondaryText + 1,
-                  padding: EdgeInsets.only(bottom: 5),
-                ),
-                TitleElement(
-                  name: email,
-                  color: Colors.white,
-                  fontSize: Sizes.secondaryText,
-                  fontWeight: FontWeight.bold,
-                  padding: const EdgeInsets.only(bottom: 30),
-                  width: 250.0,
-                ),
-                codeNotMatched
-                    ? const TitleElement(
-                        name:
-                            'Verification failed. Try again or request a new one.',
-                        color: Colors.white,
-                        fontSize: Sizes.secondaryText,
-                        padding: EdgeInsets.only(bottom: 30),
-                        width: 350.0,
-                      )
-                    : const SizedBox(),
-                ShakeMe(
-                  key: shakeKey,
-                  shakeCount: 3,
-                  shakeOffset: 10,
-                  shakeDuration: const Duration(milliseconds: 500),
-                  child: VerificationCode(
-                    key: verificationCodeKey,
-                    textStyle: digitStyle,
-                    keyboardType: TextInputType.number,
-                    underlineColor: Palette.accentText,
-                    underlineUnfocusedColor: Palette.primary,
-                    fullBorder: true,
-                    digitsOnly: true,
-                    underlineWidth: 2.0,
-                    length: VERIFICATION_LENGTH,
-                    cursorColor: Palette.accentText,
-                    onCompleted: onCompleted,
-                    onEditing: onEditing,
+      body: SingleChildScrollView(
+        child: Responsive(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const LottieViewer(
+                path: 'assets/tgs/emailCheckInbox.tgs',
+                width: 120,
+                height: 120,
+              ),
+              const TitleElement(
+                name: 'Check Your Email',
+                color: Palette.primaryText,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                padding: EdgeInsets.only(bottom: 10, top: 15),
+              ),
+              TitleElement(
+                name:
+                    'Please enter the code we have sent to your email\n $email',
+                color: Palette.accentText,
+                fontSize: 14,
+                padding: const EdgeInsets.only(bottom: 40),
+              ),
+              ShakeMe(
+                key: shakeKey,
+                shakeCount: 3,
+                shakeOffset: 10,
+                shakeDuration: const Duration(milliseconds: 500),
+                child: PinCodeTextField(
+                  keyboardType: TextInputType.number,
+                  length: VERIFICATION_LENGTH,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  obscureText: false,
+                  animationType: AnimationType.slide,
+                  autoFocus: true,
+                  useHapticFeedback: true,
+                  textStyle: digitStyle,
+                  pinTheme: PinTheme(
+                    fieldOuterPadding: const EdgeInsets.all(5),
+                    shape: PinCodeFieldShape.box,
+                    borderRadius: BorderRadius.circular(5),
+                    fieldHeight: 42,
+                    fieldWidth: 33,
+                    activeFillColor: Palette.secondary,
+                    inactiveFillColor: Palette.secondary,
+                    selectedFillColor: Palette.secondary,
+                    inactiveColor: const Color.fromRGBO(77, 91, 104, 1),
+                    activeColor: const Color.fromRGBO(77, 91, 104, 1),
+                    selectedColor: Palette.primary,
                   ),
+                  showCursor: false,
+                  animationDuration: const Duration(milliseconds: 200),
+                  backgroundColor: Palette.secondary,
+                  enableActiveFill: true,
+                  errorAnimationController: errorController,
+                  onCompleted: onCompleted,
+                  onChanged: onEditing,
+                  beforeTextPaste: (text) {
+                    return false;
+                  },
+                  appContext: context,
                 ),
-                remainingTime == 0
-                    ? AuthSubTextButton(
-                        buttonKey: resendCodeKey,
-                        onPressed: resendCode,
-                        label: 'Resend code',
-                        padding: const EdgeInsets.only(top: 20, right: 5),
-                        fontSize: Sizes.secondaryText,
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const TitleElement(
-                            name: 'Resend code in',
-                            color: Palette.accentText,
-                            fontSize: Sizes.secondaryText,
-                            padding: EdgeInsets.only(top: 20, right: 5),
-                          ),
-                          TitleElement(
-                            name: formatTime(remainingTime),
-                            color: Colors.white,
-                            fontSize: Sizes.secondaryText,
-                            fontWeight: FontWeight.bold,
-                            padding: const EdgeInsets.only(top: 20),
-                          ),
-                        ],
-                      ),
-              ],
-            ),
+              ),
+              remainingTime == 0
+                  ? AuthSubTextButton(
+                      buttonKey: resendCodeKey,
+                      onPressed: resendCode,
+                      label: 'Resend code',
+                      padding: const EdgeInsets.only(top: 20, right: 5),
+                      fontSize: Sizes.secondaryText,
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const TitleElement(
+                          name: 'Resend code in',
+                          color: Palette.accentText,
+                          fontSize: Sizes.secondaryText,
+                          padding: EdgeInsets.only(top: 20, right: 5),
+                        ),
+                        TitleElement(
+                          name: formatTime(remainingTime),
+                          color: Colors.white,
+                          fontSize: Sizes.secondaryText,
+                          fontWeight: FontWeight.bold,
+                          padding: const EdgeInsets.only(top: 20),
+                        ),
+                      ],
+                    ),
+            ],
           ),
         ),
       ),

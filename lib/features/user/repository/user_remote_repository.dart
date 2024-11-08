@@ -52,7 +52,8 @@ class UserRemoteRepository {
       return Left(handleDioException(dioException));
     } catch (error) {
       debugPrint('Change Number error:\n${error.toString()}');
-      return Left(AppError("Couldn't change number now. Please, try again later."));
+      return Left(
+          AppError("Couldn't change number now. Please, try again later."));
     }
   }
 
@@ -80,7 +81,8 @@ class UserRemoteRepository {
       return Left(handleDioException(dioException));
     } catch (error) {
       debugPrint('Update Bio error:\n${error.toString()}');
-      return Left(AppError("Couldn't update bio now. Please, try again later."));
+      return Left(
+          AppError("Couldn't update bio now. Please, try again later."));
     }
   }
 
@@ -110,7 +112,37 @@ class UserRemoteRepository {
       return Left(handleDioException(dioException));
     } catch (error) {
       debugPrint('Update Screen Name error:\n${error.toString()}');
-      return Left(AppError("Couldn't update screen name now. Please, try again later."));
+      return Left(AppError(
+          "Couldn't update screen name now. Please, try again later."));
+    }
+  }
+
+  Future<Either<AppError, void>> updateEmail({
+    required String newEmail,
+  }) async {
+    try {
+      final sessionId = await _getSessionId();
+      final response = await _dio.patch(
+        '/users/email',
+        data: {
+          'email': newEmail,
+        },
+        options: Options(
+          headers: {'X-Session-Token': sessionId},
+        ),
+      );
+
+      if (response.statusCode! >= 400) {
+        final String message = response.data?['message'] ?? 'Unexpected Error';
+        return Left(AppError(message));
+      }
+      return const Right(null);
+    } on DioException catch (dioException) {
+      return Left(handleDioException(dioException));
+    } catch (error) {
+      debugPrint('Update Email error:\n${error.toString()}');
+      return Left(
+          AppError("Couldn't update email now. Please, try again later."));
     }
   }
 
@@ -138,7 +170,8 @@ class UserRemoteRepository {
       return Left(handleDioException(dioException));
     } catch (error) {
       debugPrint('Change Username error:\n${error.toString()}');
-      return Left(AppError("Couldn't change username now. Please, try again later."));
+      return Left(
+          AppError("Couldn't change username now. Please, try again later."));
     }
   }
 
@@ -146,12 +179,10 @@ class UserRemoteRepository {
     required String username,
   }) async {
     try {
-      final response = await _dio.get(
-        '/users/username/check',
-        queryParameters: {
-          'username': username,
-        }
-      );
+      final response =
+          await _dio.get('/users/username/check', queryParameters: {
+        'username': username,
+      });
 
       if (response.statusCode! >= 400) {
         return const Right(false);
@@ -161,7 +192,8 @@ class UserRemoteRepository {
       return Left(handleDioException(dioException));
     } catch (error) {
       debugPrint('Check Username Uniqueness error:\n${error.toString()}');
-      return Left(AppError("Couldn't check username uniqueness now. Please, try again later."));
+      return Left(AppError(
+          "Couldn't check username uniqueness now. Please, try again later."));
     }
   }
 
@@ -189,7 +221,8 @@ class UserRemoteRepository {
       return Left(handleDioException(dioException));
     } catch (error) {
       debugPrint('Change last seen privacy error:\n${error.toString()}');
-      return Left(AppError("Couldn't change last seen privacy now. Please, try again later."));
+      return Left(AppError(
+          "Couldn't change last seen privacy now. Please, try again later."));
     }
   }
 
@@ -217,7 +250,8 @@ class UserRemoteRepository {
       return Left(handleDioException(dioException));
     } catch (error) {
       debugPrint('Change profile photo privacy error:\n${error.toString()}');
-      return Left(AppError("Couldn't change profile photo privacy now. Please, try again later."));
+      return Left(AppError(
+          "Couldn't change profile photo privacy now. Please, try again later."));
     }
   }
 
@@ -245,14 +279,16 @@ class UserRemoteRepository {
       return Left(handleDioException(dioException));
     } catch (error) {
       debugPrint('Change invite permissions error:\n${error.toString()}');
-      return Left(AppError("Couldn't change invite permissions now. Please, try again later."));
+      return Left(AppError(
+          "Couldn't change invite permissions now. Please, try again later."));
     }
   }
 
   AppError handleDioException(DioException dioException) {
     String? message;
     if (dioException.response != null) {
-      message = dioException.response!.data?['message'] ?? 'Unexpected server Error';
+      message =
+          dioException.response!.data?['message'] ?? 'Unexpected server Error';
       debugPrint(message);
     } else if (dioException.type == DioExceptionType.connectionTimeout ||
         dioException.type == DioExceptionType.connectionError ||
