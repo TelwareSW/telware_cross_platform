@@ -2,7 +2,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive/hive.dart';
 import 'package:telware_cross_platform/features/stories/utils/utils_functions.dart';
 
@@ -67,8 +66,10 @@ class UserModel {
   }
 
   _setPhotoBytes() async {
+    // todo: check if the photo is a total url
     String url = '${API_URL_PICTURES}/$photo';
     Uint8List? tempImage;
+    // todo: add try catch block
     tempImage = await downloadImage(url);
     if(tempImage != null) {
       photoBytes = tempImage;

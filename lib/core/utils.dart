@@ -10,6 +10,8 @@ String? emailValidator(String? value) {
 
   if (value == null || value.isEmpty) {
     return null;
+  } else if (value.length > 254) {
+    return 'Email can\'t be longer than 254 characters';
   } else if (!regex.hasMatch(value)) {
     return 'Enter a valid email address';
   }
@@ -22,16 +24,16 @@ String? passwordValidator(String? value) {
     return null;
   } else if (value.length < 8) {
     return 'Password must be at least 8 characters long';
-  } else if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d._@&-]{8,}$')
-      .hasMatch(value)) {
-    return 'Must contain letters and digits and can contain . _ @ & -';
-  }
+  } else if (value.length > 128) {
+    return 'Password can\'t be longer than 128 characters';
+  } 
   return null;
 }
 
 // todo(ahmed): update this function to handle more cases
 String? confirmPasswordValidation(String? password, String? confirmedPassword) {
-  if (password!.isEmpty || confirmedPassword!.isEmpty) return null;
+  if (password == null || confirmedPassword == null) return null;
+  if (password.isEmpty || confirmedPassword.isEmpty) return null;
   if (password != confirmedPassword) return 'Passwords do not match.';
   return null;
 }

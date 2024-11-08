@@ -23,7 +23,7 @@ class ShowTakenImageScreen extends ConsumerStatefulWidget {
   const ShowTakenImageScreen({super.key, required this.image, this.destination = 'story',});
 
   @override
-  _ShowTakenStoryScreenState createState() => _ShowTakenStoryScreenState();
+  ConsumerState<ShowTakenImageScreen> createState() => _ShowTakenStoryScreenState();
 }
 
 class _ShowTakenStoryScreenState extends ConsumerState<ShowTakenImageScreen> {
