@@ -210,6 +210,7 @@ class AuthViewModel extends _$AuthViewModel {
   void githubLogIn() => _launchSocialAuth(GITHUB_AUTH_URL);
 
   Future<void> _launchSocialAuth(String authUrl) async {
+    authUrl += '?platform=mobile';
     final Uri authUri = Uri.parse(authUrl);
     try {
       if (await canLaunchUrl(authUri)) {
@@ -321,8 +322,9 @@ class AuthViewModel extends _$AuthViewModel {
 
     response.match((appError) {
     }, (user) {
-      ref.read(authLocalRepositoryProvider).setUser(user);
+      debugPrint('** getMe is called\nuser supposed to have img');
       print(user);
+      ref.read(authLocalRepositoryProvider).setUser(user);
       ref.read(userProvider.notifier).update((_) => user);
     });
   }
