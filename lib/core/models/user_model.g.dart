@@ -32,7 +32,8 @@ class UserModelAdapter extends TypeAdapter<UserModel> {
       invitePermissionsPrivacy: fields[12] as String,
       phone: fields[13] as String,
       id: fields[15] as String?,
-    )..photoBytes = fields[14] as Uint8List?;
+      photoBytes: fields[14] as Uint8List?,
+    );
   }
 
   @override

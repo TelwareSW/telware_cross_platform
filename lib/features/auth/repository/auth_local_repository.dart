@@ -40,14 +40,8 @@ class AuthLocalRepository {
     await _tokenBox.delete('token');
   }
 
-  // todo: create the user setting and getting methods
   Future<void> setUser(UserModel user) async {
-    Uint8List? imageBytes = await _fetchUserImage(user.photo!);
-
-    if (imageBytes != null) {
-      final userWithImage = user.copyWith(photoBytes: imageBytes);
-      await _userBox.put('user', userWithImage);
-    }
+    await _userBox.put('user', user);
   }
 
   Future<Uint8List?> _fetchUserImage(String photoUrl) async {
