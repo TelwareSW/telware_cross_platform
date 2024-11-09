@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
 import 'package:flutter/foundation.dart';
+import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_local_repository.dart';
 
 part 'user_remote_repository.g.dart';
@@ -24,8 +25,7 @@ class UserRemoteRepository {
         _ref = ref;
 
   Future<String?> _getSessionId() async {
-    final authLocalRepository = _ref.read(authLocalRepositoryProvider);
-    return authLocalRepository.getToken();
+    return _ref.read(tokenProvider);
   }
 
   Future<Either<AppError, void>> changeNumber({

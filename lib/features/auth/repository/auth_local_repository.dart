@@ -42,11 +42,17 @@ class AuthLocalRepository {
 
   // todo: create the user setting and getting methods
   Future<void> setUser(UserModel user) async {
-    Uint8List? imageBytes = await _fetchUserImage(user.photo!);
-
-    if (imageBytes != null) {
-      final userWithImage = user.copyWith(photoBytes: imageBytes);
-      await _userBox.put('user', userWithImage);
+    print('** user photo: ${user.photo}');
+    print('** user photo isNull: ${user.photo == null}');
+    if (user.photo?.isNotEmpty ?? false) {
+      Uint8List? imageBytes = await _fetchUserImage(user.photo!);
+      print('** setUser imageBytes');
+      if (imageBytes != null) {
+        final userWithImage = user.copyWith(photoBytes: imageBytes);
+        await _userBox.put('user', userWithImage);
+      }
+    } else {
+      await _userBox.put('user', user);
     }
   }
 
