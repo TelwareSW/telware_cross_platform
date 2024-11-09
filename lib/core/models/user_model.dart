@@ -64,7 +64,6 @@ class UserModel {
   });
 
   _setPhotoBytes() async {
-    print('** Entered SetPhotoBytes');
     late String url;
     if (photo?.startsWith('http') ?? false) {
       url = photo!;
@@ -77,15 +76,11 @@ class UserModel {
 
     Uint8List? tempImage;
     try {
-      print('** url before calling downloadImg: $url');
       tempImage = await downloadImage(url);
       if (tempImage != null) {
         photoBytes = tempImage;
-        print('** donwload success');
       }
-      print('** donwload ended');
     } catch (e) {
-      print('** donwload failed');
       photoBytes = null;
     }
   }

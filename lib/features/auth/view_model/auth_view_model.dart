@@ -1,4 +1,6 @@
 // ignore_for_file: avoid_manual_providers_as_generated_provider_dependency
+import 'dart:io';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/mock/constants_mock.dart';
@@ -210,7 +212,9 @@ class AuthViewModel extends _$AuthViewModel {
   void githubLogIn() => _launchSocialAuth(GITHUB_AUTH_URL);
 
   Future<void> _launchSocialAuth(String authUrl) async {
-    authUrl += '?platform=mobile';
+    if (Platform.isAndroid || Platform.isIOS) {
+      authUrl += '?platform=mobile';
+    }
     final Uri authUri = Uri.parse(authUrl);
     try {
       if (await canLaunchUrl(authUri)) {
