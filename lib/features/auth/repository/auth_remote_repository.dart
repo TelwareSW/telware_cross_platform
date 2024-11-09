@@ -115,7 +115,8 @@ class AuthRemoteRepository {
 
       debugPrint('=========================================');
       debugPrint('Get me was successful');
-      final user = UserModel.fromMap(response.data['data']['user']);
+      final user = await UserModel.fromMap(response.data['data']['user']);
+      debugPrint('** First Creation done');
       return Right(user);
     } on DioException catch (dioException) {
       return Left(handleDioException(dioException));
@@ -140,7 +141,7 @@ class AuthRemoteRepository {
       );
 
       // todo(ahmed): check response body from the back side
-      final AuthResponseModel logInResponse = AuthResponseModel.fromMap(
+      final AuthResponseModel logInResponse = await AuthResponseModel.fromMap(
           (response.data['data']) as Map<String, dynamic>);
 
       return Right(logInResponse);

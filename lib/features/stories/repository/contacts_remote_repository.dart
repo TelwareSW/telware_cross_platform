@@ -5,23 +5,22 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
 import 'package:telware_cross_platform/features/stories/models/story_model.dart';
 import 'package:http/http.dart' as http;
-import '../../auth/repository/auth_local_repository.dart';
 
 part 'contacts_remote_repository.g.dart';
 
 @Riverpod(keepAlive: true)
 ContactsRemoteRepository contactsRemoteRepository(
     ContactsRemoteRepositoryRef ref) {
-  final authLocalRepository = ref.read(authLocalRepositoryProvider);
-  return ContactsRemoteRepository(authLocalRepository);
+  return ContactsRemoteRepository(ref);
 }
 
 class ContactsRemoteRepository {
-  late final AuthLocalRepository authLocalRepository;
-  ContactsRemoteRepository(this.authLocalRepository);
+  final ProviderRef _ref;
+  ContactsRemoteRepository(this._ref);
 
   Future<List<ContactModel>> fetchContactsFromBackend() async {
     await Future.delayed(const Duration(seconds: 2));
@@ -157,7 +156,7 @@ class ContactsRemoteRepository {
     String uploadUrl = '${dotenv.env['BASE_URL']}/users/stories';
     var uri = Uri.parse(uploadUrl);
     var request = http.MultipartRequest('POST', uri);
-    request.headers['X-Session-Token'] = authLocalRepository.getToken() ?? '';
+    request.headers['X-Session-Token'] = _ref.read(tokenProvider) ?? '';
     var multipartFile = await http.MultipartFile.fromPath(
       'file',
       storyImage.path,
@@ -184,7 +183,7 @@ class ContactsRemoteRepository {
     String uploadUrl = '${dotenv.env['API_URL']}/users/picture';
     var uri = Uri.parse(uploadUrl);
     var request = http.MultipartRequest('PATCH', uri);
-    request.headers['X-Session-Token'] = authLocalRepository.getToken()!;
+    request.headers['X-Session-Token'] = _ref.read(tokenProvider)!;
     var multipartFile = await http.MultipartFile.fromPath(
       'file',
       storyImage.path,
@@ -194,6 +193,7 @@ class ContactsRemoteRepository {
 
     try {
       var response = await request.send();
+      debugPrint('** status Code: ${response.statusCode.toString()}');
       return response.statusCode == 201;
     } catch (e) {
       if (kDebugMode) {
@@ -207,7 +207,7 @@ class ContactsRemoteRepository {
     String uploadUrl = '${dotenv.env['API_URL']}/users/picture';
     var uri = Uri.parse(uploadUrl);
     var request = http.MultipartRequest('DELETE', uri);
-    request.headers['X-Session-Token'] = authLocalRepository.getToken()!;
+    request.headers['X-Session-Token'] = _ref.read(tokenProvider)!;
 
     try {
       var response = await request.send();
@@ -226,7 +226,7 @@ class ContactsRemoteRepository {
     var uri = Uri.parse(uploadUrl);
     var request = http.MultipartRequest('GET', uri);
 
-    request.headers['X-Session-Token'] = authLocalRepository.getToken()!;
+    request.headers['X-Session-Token'] = _ref.read(tokenProvider)!;
 
     try {
       var response = await request.send();
@@ -257,7 +257,7 @@ class ContactsRemoteRepository {
         '${dotenv.env['BASE_URL']}/stories/:storyId/views';
     // var uri = Uri.parse(uploadUrl);
     // var request = http.MultipartRequest('POST', uri);
-    // String? token = authLocalRepository.getToken();
+    // String? token = _ref.read(tokenProvider);
     // if (token != null) {
     //   request.headers['Authorization'] = 'Bearer $token';
     // }
@@ -276,7 +276,7 @@ class ContactsRemoteRepository {
     // String uploadUrl = '\${domain}:\${port}/users/stories/$storyId';
     // var uri = Uri.parse(uploadUrl);
     // var request = http.MultipartRequest('DELETE', uri);
-    // String? token = authLocalRepository.getToken();
+    // String? token = _ref.read(tokenProvider);
     // if (token != null) {
     //   request.headers['Authorization'] = 'Bearer $token';
     // }

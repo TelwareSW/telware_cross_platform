@@ -61,20 +61,33 @@ class UserModel {
     required this.phone,
     required this.id,
     this.photoBytes,
-  }) {
-    _setPhotoBytes();
-  }
+  });
 
   _setPhotoBytes() async {
-    // todo: check if the photo is a total url
-    String url = '${API_URL_PICTURES}/$photo';
-    Uint8List? tempImage;
-    // todo: add try catch block
-    tempImage = await downloadImage(url);
-    if(tempImage != null) {
-      photoBytes = tempImage;
+    print('** Entered SetPhotoBytes');
+    late String url;
+    if (photo?.startsWith('http') ?? false) {
+      url = photo!;
+    } else if (photo?.isNotEmpty ?? false) {
+      url = '$API_URL_PICTURES/$photo';
+    } else {
+      url = '';
     }
+    if (url.isEmpty) return;
 
+    Uint8List? tempImage;
+    try {
+      print('** url before calling downloadImg: $url');
+      tempImage = await downloadImage(url);
+      if (tempImage != null) {
+        photoBytes = tempImage;
+        print('** donwload success');
+      }
+      print('** donwload ended');
+    } catch (e) {
+      print('** donwload failed');
+      photoBytes = null;
+    }
   }
 
   @override
@@ -119,7 +132,7 @@ class UserModel {
 
   @override
   String toString() {
-    return 'UserModel(username: $username, screenName: $screenName, email: $email, photo: $photo, status: $status, bio: $bio, maxFileSize: $maxFileSize, automaticDownloadEnable: $automaticDownloadEnable, lastSeenPrivacy: $lastSeenPrivacy, readReceiptsEnablePrivacy: $readReceiptsEnablePrivacy, storiesPrivacy: $storiesPrivacy, picturePrivacy: $picturePrivacy, invitePermissionsPrivacy: $invitePermissionsPrivacy, phone: $phone, id: $id)';
+    return 'UserModel(\n username: $username,\n screenName: $screenName,\n email: $email,\n photo: $photo,\n status: $status,\n bio: $bio,\n maxFileSize: $maxFileSize,\n automaticDownloadEnable: $automaticDownloadEnable,\n lastSeenPrivacy: $lastSeenPrivacy,\n readReceiptsEnablePrivacy: $readReceiptsEnablePrivacy,\n storiesPrivacy: $storiesPrivacy,\n picturePrivacy: $picturePrivacy,\n invitePermissionsPrivacy: $invitePermissionsPrivacy,\n phone: $phone,\n id: $id,\n isPhotoBytesSet: ${photoBytes != null}\n)';
   }
 
   UserModel copyWith({
@@ -159,7 +172,7 @@ class UserModel {
           invitePermissionsPrivacy ?? this.invitePermissionsPrivacy,
       phone: phone ?? this.phone,
       id: id ?? this.id,
-      photoBytes: photoBytes?? this.photoBytes,
+      photoBytes: photoBytes ?? this.photoBytes,
     );
   }
 
@@ -183,15 +196,15 @@ class UserModel {
     };
   }
 
-  factory UserModel.fromMap(Map<String, dynamic> map) {
+  static Future<UserModel> fromMap(Map<String, dynamic> map) async {
     String screenName = (map['screenName'] as String?) ?? '';
     if (screenName.isEmpty) {
       screenName = 'No Name';
     }
-    return UserModel(
+    final user = UserModel(
       username: map['username'] as String,
       screenName: screenName,
-      email:(map['email'] as String?) ?? '',
+      email: (map['email'] as String?) ?? '',
       photo: map['photo'] != null ? map['photo'] as String : null,
       status: map['status'] as String,
       bio: map['bio'] as String,
@@ -205,10 +218,9 @@ class UserModel {
       phone: (map['phoneNumber'] as String?) ?? '',
       id: map['id'] as String,
     );
+    await user._setPhotoBytes();
+    return user;
   }
 
   String toJson() => json.encode(toMap());
-
-  factory UserModel.fromJson(String source) =>
-      UserModel.fromMap(json.decode(source) as Map<String, dynamic>);
 }
