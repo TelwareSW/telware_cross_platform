@@ -3,7 +3,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/contact_model.dart';
+import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/app_theme.dart';
@@ -22,6 +24,8 @@ Future<void> init() async {
   Hive.registerAdapter(ContactModelAdapter());
   Hive.registerAdapter(StoryModelAdapter());
   Hive.registerAdapter(ContactModelBlockAdapter());
+  Hive.registerAdapter(ChatModelAdapter());
+  Hive.registerAdapter(MessageModelAdapter());
   await Hive.initFlutter();
   await Hive.openBox<ContactModel>('contacts');
   await Hive.openBox<ContactModelBlock>('contacts-block');

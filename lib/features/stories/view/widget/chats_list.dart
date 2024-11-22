@@ -1,4 +1,9 @@
+import 'dart:math';
+import 'package:faker/faker.dart';
 import 'package:flutter/material.dart';
+import 'package:telware_cross_platform/core/models/chat_model.dart';
+import 'package:telware_cross_platform/core/models/message_model.dart';
+import 'package:telware_cross_platform/features/chat/view/widget/chat_tile_widget.dart';
 
 class ChatsList extends StatelessWidget {
   const ChatsList({
@@ -9,15 +14,81 @@ class ChatsList extends StatelessWidget {
   Widget build(BuildContext context) {
     debugPrint('Building chats_list...');
     return SliverList(
-      delegate: SliverChildBuilderDelegate(
-            (BuildContext context, int index) {
-          return ListTile(
-            title: Text(
-                'Chat ${index + 1}'),
-          );
-        },
-        childCount: 20,
+      delegate: SliverChildBuilderDelegate(_delegate, childCount: 20),
+    );
+  }
+
+  Widget _delegate(BuildContext context, int index) {
+    final Faker faker = Faker();
+    final Random random = Random();
+
+    // Randomly decide if a draft should exist
+    final hasDraft = random.nextBool();
+    final draft = hasDraft ? faker.lorem.sentence() : null;
+
+    // Random booleans for various chat properties
+    final isArchived = random.nextBool();
+    final isMuted = random.nextBool();
+    final isGroupChat = random.nextBool();
+
+    // Randomly generate message states for demonstration
+    final messageStates = _generateRandomMessageStates();
+
+    return ChatTileWidget(
+      chatModel: ChatModel(
+        title: faker.company.name(),
+        userIds: [faker.guid.guid()],
+        type: isGroupChat ? ChatType.group : ChatType.channel,
+        description: faker.lorem.sentence(),
+        lastMessageTimestamp: DateTime.now(),
+        isArchived: isArchived,
+        isMuted: isMuted,
+        draft: draft, // Sometimes this will be null
+      ),
+      displayMessage: MessageModel(
+        senderName: faker.person.name(),
+        content: faker.lorem.sentence(),
+        timestamp: faker.date.dateTimeBetween(
+          DateTime.now().subtract(const Duration(days: 8)), // from one year ago
+          DateTime.now(), // to current date
+        ),
+        autoDeleteDuration: const Duration(hours: 1), // Example auto-delete duration
+        userStates: messageStates,
       ),
     );
+  }
+
+  // Helper method to generate random message states
+  Map<String, MessageState> _generateRandomMessageStates() {
+    final Faker faker = Faker();
+    final Random random = Random();
+
+    // Generate 1 to 3 random message states
+    final int numStates = random.nextInt(3) + 1;
+    final Map<String, MessageState> messageStates = {};
+
+    for (int i = 0; i < numStates; i++) {
+      final String userId = faker.guid.guid();
+      final MessageState state = _getRandomMessageState();
+      messageStates[userId] = state;
+    }
+
+    return messageStates;
+  }
+
+  // Helper method to get a random message state
+  MessageState _getRandomMessageState() {
+    final Random random = Random();
+    final int stateIndex = random.nextInt(3); // 0, 1, or 2
+    switch (stateIndex) {
+      case 0:
+        return MessageState.sent;
+      case 1:
+        return MessageState.delivered;
+      case 2:
+        return MessageState.read;
+      default:
+        return MessageState.sent;
+    }
   }
 }
