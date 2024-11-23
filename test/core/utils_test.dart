@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 
 void main() {
@@ -103,7 +104,8 @@ void main() {
     });
 
     test('Multi-Word input', () {
-      expect(toKebabCase('I am the king of the world'), 'i-am-the-king-of-the-world');
+      expect(toKebabCase('I am the king of the world'),
+          'i-am-the-king-of-the-world');
     });
 
     test('handles multiple spaces', () {
@@ -147,6 +149,112 @@ void main() {
       expect(color.red, inInclusiveRange(50, 149));
       expect(color.green, inInclusiveRange(50, 149));
       expect(color.blue, inInclusiveRange(50, 149));
+    });
+  });
+
+  group('capitalizeEachWord', () {
+    test('capitalizes each word in a sentence', () {
+      expect(capitalizeEachWord('hello world'), 'Hello World');
+    });
+
+    test('capitalizes each word in a sentence with mixed cases', () {
+      expect(capitalizeEachWord('hELLo wOrLD'), 'Hello World');
+    });
+
+    test('capitalizes each word in a sentence with special characters', () {
+      expect(capitalizeEachWord('hello, world!'), 'Hello, World!');
+    });
+
+    test('capitalizes each word in a sentence with leading spaces', () {
+      expect(capitalizeEachWord('  hello world'), '  Hello World');
+    });
+
+    test('capitalizes each word in a sentence with trailing spaces', () {
+      expect(capitalizeEachWord('hello world  '), 'Hello World  ');
+    });
+
+    test('capitalizes each word in a sentence with leading and trailing spaces',
+        () {
+      expect(capitalizeEachWord('  hello world  '), '  Hello World  ');
+    });
+
+    test('capitalizes each word in a sentence with multiple spaces', () {
+      expect(capitalizeEachWord('hello   world'), 'Hello   World');
+    });
+
+    test('capitalizes each word in a sentence with empty string', () {
+      expect(capitalizeEachWord(''), '');
+    });
+  });
+
+  group('formatTime', () {
+    test('formats time in seconds to hours, minutes, and seconds', () {
+      expect(formatTime(3661, showHours: true), '01:01:01');
+    });
+
+    test('formats time in seconds to minutes and seconds', () {
+      expect(formatTime(61), '01:01');
+    });
+
+    test('formats time in seconds to seconds', () {
+      expect(formatTime(1), '00:01');
+    });
+
+    test('formats time in seconds to hours', () {
+      expect(formatTime(3600, showHours: true), '01:00:00');
+    });
+
+    test('formats time in seconds to minutes', () {
+      expect(formatTime(60), '01:00');
+    });
+
+    test('formats time in seconds to seconds', () {
+      expect(formatTime(1), '00:01');
+    });
+
+    test('formats time in seconds to seconds with single digit', () {
+      expect(formatTime(1, singleDigit: true), '1 seconds');
+    });
+
+    test('formats time in seconds to minutes with single digit', () {
+      expect(formatTime(60, singleDigit: true), '1 minutes');
+    });
+
+    test('formats time in seconds to minutes with single digit', () {
+      expect(formatTime(3600, singleDigit: true), '60 minutes');
+    });
+
+    test('formats time in seconds to hours with single digit and show hours',
+        () {
+      expect(formatTime(3600, singleDigit: true, showHours: true), '1 hours');
+    });
+
+    test('formats time in seconds to minutes with single digit and show hours',
+        () {
+      expect(formatTime(60, singleDigit: true, showHours: true), '1 minutes');
+    });
+
+    test('formats time in seconds to seconds with single digit and show hours',
+        () {
+      expect(formatTime(1, singleDigit: true, showHours: true), '1 seconds');
+    });
+  });
+
+  group('formatTimestamp', () {
+    test('formats timestamp to hh:mm a', () {
+      final timestamp = DateTime(2024, 11, 23, 15, 17);
+      expect(formatTimestamp(timestamp), '03:17 PM');
+    });
+
+    test('formats timestamp to Yesterday', () {
+      final timestamp = DateTime.now().subtract(const Duration(days: 1));
+      expect(formatTimestamp(timestamp), 'Yesterday');
+    });
+
+    test('formats timestamp to weekday', () {
+      final timestamp = DateTime.now().subtract(const Duration(days: 2));
+      final expectedDay = DateFormat('E').format(timestamp);
+      expect(formatTimestamp(timestamp), expectedDay);
     });
   });
 }
