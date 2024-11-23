@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hive/hive.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
@@ -31,17 +31,10 @@ class VerificationScreen extends ConsumerStatefulWidget {
 }
 
 class _VerificationScreen extends ConsumerState<VerificationScreen> {
-  //-------------------------------------- Keys --------------------------------
-  final verificationCodeKey =
-      GlobalKey<State>(debugLabel: 'verificationCode_input');
-  final resendCodeKey =
-      GlobalKey<State>(debugLabel: 'verification_resendCode_button');
-  final submitKey = GlobalKey<State>(debugLabel: 'verification_submit_button');
-  final shakeKey = GlobalKey<ShakeWidgetState>();
-
   //------------------------------ Controllers ---------------------------------
   late StreamController<ErrorAnimationType> errorController;
 
+  //----------------------------------------------------------------------------
   String _code = '';
   int remainingTime =
       VERIFICATION_CODE_EXPIRATION_TIME; // Total seconds for countdown
@@ -131,7 +124,7 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
         showToastMessage(state.message!);
       }
     } else {
-      shakeKey.currentState?.shake();
+      ValidationKeys.shakeKey.currentState?.shake();
       Vibration.hasVibrator().then((hasVibrator) {
         if (hasVibrator ?? false) {
           Vibration.vibrate(duration: 100);
@@ -174,11 +167,12 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
                 padding: const EdgeInsets.only(bottom: 40),
               ),
               ShakeMe(
-                key: shakeKey,
+                key: ValidationKeys.shakeKey,
                 shakeCount: 3,
                 shakeOffset: 10,
                 shakeDuration: const Duration(milliseconds: 500),
                 child: PinCodeTextField(
+                  key: ValidationKeys.verificationCodeKey,
                   keyboardType: TextInputType.number,
                   length: VERIFICATION_LENGTH,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -215,7 +209,7 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
               ),
               remainingTime == 0
                   ? AuthSubTextButton(
-                      buttonKey: resendCodeKey,
+                      buttonKey: ValidationKeys.resendCodeKey,
                       onPressed: resendCode,
                       label: 'Resend code',
                       padding: const EdgeInsets.only(top: 20, right: 5),
@@ -244,7 +238,7 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
         ),
       ),
       floatingActionButton: AuthFloatingActionButton(
-        buttonKey: submitKey,
+        buttonKey: ValidationKeys.submitKey,
         onSubmit: onSubmit,
       ),
     );
