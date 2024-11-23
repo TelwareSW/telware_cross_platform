@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/models/chat_model.dart';
 
 import 'package:telware_cross_platform/core/view/screen/splash_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/change_number_form_screen.dart';
@@ -11,6 +12,7 @@ import 'package:telware_cross_platform/features/auth/view/screens/sign_up_screen
 import 'package:telware_cross_platform/features/auth/view/screens/social_auth_loading_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/verification_screen.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
+import 'package:telware_cross_platform/features/chat/view/screens/chat_screen.dart';
 import 'package:telware_cross_platform/features/home/view/screens/home_screen.dart';
 import 'package:telware_cross_platform/features/home/view/screens/inbox_screen.dart';
 import 'package:telware_cross_platform/features/stories/view/screens/add_my_image_screen.dart';
@@ -61,6 +63,7 @@ class Routes {
   static const String invitePermissionsSettings = InvitesPermissionScreen.route;
   static const String selfDestructTimer = SelfDestructScreen.route;
   static const String changeEmail = ChangeEmailScreen.route;
+  static const String chatScreen = ChatScreen.route;
 
   static GoRouter appRouter(WidgetRef ref) => GoRouter(
         initialLocation: Routes.splash,
@@ -223,6 +226,13 @@ class Routes {
           GoRoute(
             path: Routes.changeEmail,
             builder: (context, state) => const ChangeEmailScreen(),
+          ),
+          GoRoute(
+            path: Routes.chatScreen,
+            builder: (context, state) {
+              final ChatModel chatModel = state.extra as ChatModel;
+              return ChatScreen(chatModel: chatModel);
+            }
           ),
         ],
       );

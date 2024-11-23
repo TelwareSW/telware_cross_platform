@@ -14,7 +14,7 @@ enum MessageState {
   read,
 }
 
-@HiveType(typeId: 0)
+@HiveType(typeId: 6)
 class MessageModel {
   @HiveField(0)
   final String senderName;

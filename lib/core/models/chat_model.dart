@@ -5,10 +5,11 @@ import 'package:hive/hive.dart';
 import 'package:telware_cross_platform/features/stories/utils/utils_functions.dart';
 
 import '../constants/server_constants.dart';
+import 'message_model.dart';
 
 part 'chat_model.g.dart';
 
-@HiveType(typeId: 1)
+@HiveType(typeId: 5)
 enum ChatType {
   @HiveField(0)
   oneToOne,
@@ -18,7 +19,7 @@ enum ChatType {
   channel,
 }
 
-@HiveType(typeId: 0)
+@HiveType(typeId: 4)
 class ChatModel {
   @HiveField(0)
   final String title;
@@ -44,6 +45,10 @@ class ChatModel {
   final bool isMuted;
   @HiveField(11)
   final String? draft;
+  @HiveField(12)
+  final bool isMentioned;
+  @HiveField(13)
+  final List<MessageModel> messages;
 
   ChatModel({
     required this.title,
@@ -57,7 +62,9 @@ class ChatModel {
     this.lastMessageTimestamp,
     this.isArchived = false,
     this.isMuted = false,
+    this.isMentioned = false,
     this.draft,
+    required this.messages,
   });
 
   Future<void> _setPhotoBytes() async {
@@ -94,7 +101,9 @@ class ChatModel {
         other.lastMessageTimestamp == lastMessageTimestamp &&
         other.isArchived == isArchived &&
         other.isMuted == isMuted &&
-        other.draft == draft;
+        other.draft == draft &&
+        other.isMentioned == isMentioned &&
+        other.messages == messages; // Compare the messages list
   }
 
   @override
@@ -109,7 +118,9 @@ class ChatModel {
     lastMessageTimestamp.hashCode ^
     isArchived.hashCode ^
     isMuted.hashCode ^
-    draft.hashCode;
+    draft.hashCode ^
+    isMentioned.hashCode ^
+    messages.hashCode; // Include messages in hashCode
   }
 
   @override
@@ -126,7 +137,8 @@ class ChatModel {
         'isArchived: $isArchived,\n'
         'isMuted: $isMuted,\n'
         'draft: $draft,\n'
-        'isPhotoBytesSet: ${photoBytes != null}\n'
+        'isMentioned: $isMentioned,\n'
+        'messages: $messages,\n' // Add messages to the string representation
         ')');
   }
 
@@ -143,6 +155,8 @@ class ChatModel {
     bool? isArchived,
     bool? isMuted,
     String? draft,
+    bool? isMentioned,
+    List<MessageModel>? messages, // Add this for message copy
   }) {
     return ChatModel(
       title: title ?? this.title,
@@ -157,6 +171,8 @@ class ChatModel {
       isArchived: isArchived ?? this.isArchived,
       isMuted: isMuted ?? this.isMuted,
       draft: draft ?? this.draft,
+      isMentioned: isMentioned ?? this.isMentioned,
+      messages: messages ?? this.messages, // Handle messages copy
     );
   }
 
@@ -173,6 +189,8 @@ class ChatModel {
       'isArchived': isArchived,
       'isMuted': isMuted,
       'draft': draft,
+      'isMentioned': isMentioned,
+      'messages': messages.map((message) => message.toMap()).toList(), // Convert messages to Map
     };
   }
 
@@ -194,6 +212,11 @@ class ChatModel {
       isArchived: map['isArchived'] as bool? ?? false,
       isMuted: map['isMuted'] as bool? ?? false,
       draft: map['draft'] as String?,
+      isMentioned: map['isMentioned'] as bool? ?? false,
+      messages: await Future.wait(
+          (map['messages'] as List<dynamic>)
+              .map((msg) async => await MessageModel.fromMap(msg as Map<String, dynamic>))
+      ), // Deserialize messages
     );
     await chat._setPhotoBytes();
     return chat;

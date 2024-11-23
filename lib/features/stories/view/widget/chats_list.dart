@@ -29,23 +29,12 @@ class ChatsList extends StatelessWidget {
     // Random booleans for various chat properties
     final isArchived = random.nextBool();
     final isMuted = random.nextBool();
+    final isMentioned = random.nextBool();
     final isGroupChat = random.nextBool();
 
     // Randomly generate message states for demonstration
     final messageStates = _generateRandomMessageStates();
-
-    return ChatTileWidget(
-      chatModel: ChatModel(
-        title: faker.company.name(),
-        userIds: [faker.guid.guid()],
-        type: isGroupChat ? ChatType.group : ChatType.channel,
-        description: faker.lorem.sentence(),
-        lastMessageTimestamp: DateTime.now(),
-        isArchived: isArchived,
-        isMuted: isMuted,
-        draft: draft, // Sometimes this will be null
-      ),
-      displayMessage: MessageModel(
+    final message = MessageModel(
         senderName: faker.person.name(),
         content: faker.lorem.sentence(),
         timestamp: faker.date.dateTimeBetween(
@@ -54,7 +43,22 @@ class ChatsList extends StatelessWidget {
         ),
         autoDeleteDuration: const Duration(hours: 1), // Example auto-delete duration
         userStates: messageStates,
+    );
+
+    return ChatTileWidget(
+      chatModel: ChatModel(
+        title: isGroupChat ? faker.company.name() : faker.person.name(),
+        userIds: [faker.guid.guid()],
+        type: isGroupChat ? ChatType.group : ChatType.oneToOne,
+        description: faker.lorem.sentence(),
+        lastMessageTimestamp: DateTime.now(),
+        isArchived: isArchived,
+        isMuted: isMuted,
+        isMentioned: isMentioned,
+        draft: draft,
+        messages: [message],
       ),
+      displayMessage: message,
     );
   }
 
