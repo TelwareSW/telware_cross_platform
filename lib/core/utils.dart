@@ -2,6 +2,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/classes/telware_toast.dart';
+import 'package:intl/intl.dart';
 
 String? emailValidator(String? value) {
   const String emailPattern =
@@ -136,4 +137,29 @@ String formatTime(int seconds,
   final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
   final secs = (seconds % 60).toString().padLeft(2, '0');
   return showHours ? '$hours:$minutes:$secs' : '$minutes:$secs';
+}
+
+String formatTimestamp(DateTime timestamp) {
+  // Current date to check for today's or yesterday's date
+  final now = DateTime.now();
+  final diff = now.difference(timestamp).inDays;
+
+  // If the message is today
+  if (diff == 0) {
+    return DateFormat('hh:mm a').format(timestamp); // 12:53 AM
+  }
+
+  // If the message is yesterday
+  if (diff == 1) {
+    return 'Yesterday'; // Yesterday
+  }
+
+  // If the message is within the last 7 days, show the weekday (Mon, Tue, etc.)
+  if (diff <= 7) {
+    return DateFormat('E').format(timestamp); // Mon, Tue, etc.
+  }
+
+  // If the message is older than 7 days, show the full date
+  return DateFormat('MMM dd').format(timestamp); // Nov 03
+  // For another format like "30.09.21", use 'dd.MM.yy'
 }

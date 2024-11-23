@@ -72,6 +72,7 @@ dependencies:
   mockito: ^5.0.0
   flutter_switch: ^0.3.2
   pin_code_fields: ^8.0.1
+  faker: ^2.2.0
 
 
 dev_dependencies:
