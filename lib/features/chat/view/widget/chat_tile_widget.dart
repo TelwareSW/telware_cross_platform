@@ -6,6 +6,7 @@ import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/chat_screen.dart';
+import 'package:telware_cross_platform/features/user/view/widget/avatar_generator.dart';
 
 class ChatTileWidget extends StatelessWidget {
   const ChatTileWidget({
@@ -24,7 +25,7 @@ class ChatTileWidget extends StatelessWidget {
     final imageBytes = chatModel.photoBytes;
     final hasDraft = chatModel.draft?.isNotEmpty ?? false;
     final isGroupChat = chatModel.type == ChatType.group;
-    final messageStateIcon = _getMessageStateIcon(displayMessage);
+    final messageStateIcon = Icon(getMessageStateIcon(displayMessage), size: 16, color: Palette.accent);
     final unreadCount = _getUnreadMessageCount();
     final isMuted = chatModel.isMuted;
     final isMentioned = chatModel.isMentioned;
@@ -42,12 +43,10 @@ class ChatTileWidget extends StatelessWidget {
                 backgroundImage: imageBytes != null ? MemoryImage(imageBytes) : null,
                 backgroundColor: imageBytes == null ? Palette.primary : null,
                 child: imageBytes == null
-                    ? Text(
-                  getInitials(chatModel.title),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: Palette.primaryText,
-                  ),
+                    ? AvatarGenerator(
+                  name: chatModel.title,
+                  backgroundColor: getRandomColor(),
+                  size: 100,
                 )
                     : null,
               ),
@@ -181,18 +180,6 @@ class ChatTileWidget extends StatelessWidget {
 
       ),
     );
-  }
-
-  Widget? _getMessageStateIcon(MessageModel message) {
-    if (message.isReadByAll()) {
-      return const Icon(Icons.done_all, size: 16, color: Colors.blue);
-    }
-
-    if (message.isDeliveredToAll()) {
-      return const Icon(Icons.check, size: 16, color: Colors.blue);
-    }
-
-    return const Icon(Icons.check, size: 16, color: Colors.grey);
   }
 
   int _getUnreadMessageCount() {

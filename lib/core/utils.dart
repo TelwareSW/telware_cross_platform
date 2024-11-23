@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/classes/telware_toast.dart';
 import 'package:intl/intl.dart';
 
+import 'models/message_model.dart';
+
 String? emailValidator(String? value) {
   const String emailPattern =
       r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
@@ -164,17 +166,23 @@ String formatTimestamp(DateTime timestamp) {
     return DateFormat('hh:mm a').format(timestamp); // 12:53 AM
   }
 
-  // If the message is yesterday
-  if (diff == 1) {
-    return 'Yesterday'; // Yesterday
-  }
-
   // If the message is within the last 7 days, show the weekday (Mon, Tue, etc.)
   if (diff <= 7) {
     return DateFormat('E').format(timestamp); // Mon, Tue, etc.
   }
 
   // If the message is older than 7 days, show the full date
-  return DateFormat('MMM dd').format(timestamp); // Nov 03
+  if (diff <= 7) {
+    return DateFormat('MMM dd').format(timestamp); // Nov 03
+  }
+
   // For another format like "30.09.21", use 'dd.MM.yy'
+  return DateFormat('dd.MM.yy').format(timestamp);
+}
+
+IconData getMessageStateIcon(MessageModel message) {
+  if (message.isReadByAll()) {
+    return Icons.done_all;
+  }
+  return Icons.check;
 }
