@@ -64,6 +64,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   final String siteKey = dotenv.env['RECAPTCHA_SITE_KEY'] ?? '';
 
+  final bool byPassCaptcha =
+      (dotenv.env['BYPASS_CAPTCHA'] ?? 'false') == 'true';
+
   String? captchaToken;
 
   @override
@@ -141,7 +144,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   }
 
   void signUp() async {
-    if (captchaToken == null || captchaToken!.isEmpty) {
+    if ((captchaToken == null || captchaToken!.isEmpty) && !byPassCaptcha) {
       vibrate();
       return;
     }
@@ -152,13 +155,18 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               phone: phoneController.value.international,
               password: passwordController.text,
               confirmPassword: confirmPasswordController.text,
-              reCaptchaResponse: captchaToken!,
+              reCaptchaResponse: byPassCaptcha ? 'dummy' : captchaToken!,
             );
 
     if (mounted) {
       context.pop();
     }
-    if (signUpResult.state.type == AuthStateType.unverified) {
+    // if the error message is not "Please provide all required fields" then
+    // the captcha token is invalid, so if the byPassCaptcha is true then we will
+    // ignore the captcha token and proceed to the verification screen
+    if (signUpResult.state.type == AuthStateType.unverified ||
+        (byPassCaptcha &&
+            signUpResult.error?.error == "reCaptcha verification failed")) {
       ref.read(emailProvider.notifier).update((_) => emailController.text);
       if (mounted) {
         context.push(Routes.verification);
@@ -200,7 +208,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     if (someNotFilled) {
       vibrate();
     } else {
-      // todo make recaptcha better
       showConfirmationDialog(
         context: context,
         title: 'is this the correct email?',
