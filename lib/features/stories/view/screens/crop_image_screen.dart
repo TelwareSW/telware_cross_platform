@@ -36,6 +36,9 @@ class _CropImageScreenState extends State<CropImageScreen> {
   void initState() {
     super.initState();
     controller = CustomImageCropController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _setInitialRatio();
+    });
   }
 
   @override
@@ -44,9 +47,20 @@ class _CropImageScreenState extends State<CropImageScreen> {
     super.dispose();
   }
 
+  void _setInitialRatio() {
+    final size = MediaQuery.of(context).size;
+    setState(() {
+      _width = min(size.width, size.height);
+      _height = max(size.width, size.height);
+    });
+  }
+
   void _changeCropShape(CustomCropShape newShape) {
     setState(() {
       _currentShape = newShape;
+      if (newShape == CustomCropShape.Ratio) {
+        _setInitialRatio();
+      }
     });
   }
 
