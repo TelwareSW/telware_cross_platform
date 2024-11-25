@@ -14,10 +14,27 @@ enum MessageState {
   read,
 }
 
+enum MessageType {
+  normal,
+  announcement,
+  forward;
+
+  static MessageType getType(String type) {
+    switch (type) {
+      case 'announcement':
+        return MessageType.announcement;
+      case 'forward':
+        return MessageType.forward;
+      default:
+        return MessageType.normal;
+    }
+  }
+}
+
 @HiveType(typeId: 6)
 class MessageModel {
   @HiveField(0)
-  final String senderName;
+  final String senderName; // todo(ahmed): not needed
   @HiveField(1)
   final String? content;
   @HiveField(2)
