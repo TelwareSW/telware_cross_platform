@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 
 class CropImageScreen extends StatefulWidget {
+  static const String route = '/cropImageScreen';
   final String path;
 
   const CropImageScreen({

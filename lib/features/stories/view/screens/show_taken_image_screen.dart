@@ -11,6 +11,7 @@ import 'package:signature/signature.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
+import '../../../../core/routes/routes.dart';
 import '../widget/bottom_action_buttons_edit_taken_image.dart';
 import '../widget/signature_pen.dart';
 import '../widget/story_caption_text_field.dart';
@@ -80,18 +81,14 @@ class _ShowTakenStoryScreenState extends ConsumerState<ShowTakenImageScreen> {
 
   Future<void> _cropImage() async {
     try {
-      final croppedFile = await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => CropImageScreen(path: widget.image.path),
-        ),
-      );
+      final File croppedFile = (await context.push<String>(
+        Routes.cropImageScreen,extra: widget.image.path
+      )) as File;
 
-      if (croppedFile != null) {
-        setState(() {
-          _imageFile = croppedFile;
-        });
-      }
-    } catch (e) {
+      setState(() {
+        _imageFile = croppedFile;
+      });
+        } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to crop image: $e')),
       );

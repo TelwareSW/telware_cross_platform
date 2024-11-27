@@ -33,6 +33,7 @@ import 'package:telware_cross_platform/features/user/view/screens/self_destruct_
 import 'package:telware_cross_platform/features/user/view/screens/settings_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/user_profile_screen.dart';
 
+import '../../features/stories/view/screens/crop_image_screen.dart';
 import '../../features/user/view/screens/devices_screen.dart';
 
 class Routes {
@@ -64,6 +65,7 @@ class Routes {
   static const String selfDestructTimer = SelfDestructScreen.route;
   static const String changeEmail = ChangeEmailScreen.route;
   static const String chatScreen = ChatScreen.route;
+  static const String cropImageScreen = CropImageScreen.route;
 
   static GoRouter appRouter(WidgetRef ref) => GoRouter(
         initialLocation: Routes.splash,
@@ -233,6 +235,13 @@ class Routes {
               final ChatModel chatModel = state.extra as ChatModel;
               return ChatScreen(chatModel: chatModel);
             }
+          ),
+          GoRoute(
+              path: Routes.cropImageScreen,
+              builder: (context, state) {
+                final String path = state.extra as String;
+                return CropImageScreen(path: path);
+              }
           ),
         ],
       );
