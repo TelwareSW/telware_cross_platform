@@ -48,6 +48,7 @@ class ChatsList extends StatelessWidget {
 
     return ChatTileWidget(
       chatModel: ChatModel(
+        id: faker.guid.guid(),
         title: isGroupChat ? faker.company.name() : personName,
         userIds: [faker.guid.guid()],
         type: isGroupChat ? ChatType.group : ChatType.oneToOne,

@@ -5,12 +5,14 @@ class LottieViewer extends StatefulWidget {
   final String path;
   final double width;
   final double height;
+  final bool isLooping;
 
   const LottieViewer({
     super.key,
     required this.path,
     required this.width,
     required this.height,
+    this.isLooping = false,
   });
 
   @override
@@ -26,7 +28,7 @@ class LottieViewerState extends State<LottieViewer>
     super.initState();
     controller = AnimationController(vsync: this);
     controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
+      if (status == AnimationStatus.completed && !widget.isLooping) {
         controller.stop();
       }
     });
@@ -52,10 +54,14 @@ class LottieViewerState extends State<LottieViewer>
         controller: controller,
         onLoaded: (composition) {
           controller.duration = composition.duration;
-          controller.forward();
+          if (widget.isLooping) {
+            controller.repeat();
+          } else {
+            controller.forward();
+          }
         },
         width: widget.width,
-        height: widget.width,
+        height: widget.height,
         decoder: LottieComposition.decodeGZip,
       ),
     );

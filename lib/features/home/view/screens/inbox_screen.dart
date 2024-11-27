@@ -6,6 +6,7 @@ import 'package:telware_cross_platform/core/routes/routes.dart';
 
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
+import 'package:telware_cross_platform/features/chat/view/screens/create_chat_screen.dart';
 import 'package:telware_cross_platform/features/home/view/widget/drawer.dart';
 import 'package:telware_cross_platform/features/stories/view/widget/chats_list.dart';
 import 'package:telware_cross_platform/features/stories/view/widget/colapsed_story_section.dart';
@@ -97,13 +98,16 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
                         ? const ExpandedStoriesSection()
                         : Container(),
                   ),
-                  actions: const [
+                  actions: [
                     Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Icon(
-                        Icons.search_rounded,
-                        size: Sizes.iconSize,
-                      ),
+                      padding: const EdgeInsets.all(16),
+                      child: IconButton(
+                        onPressed: () => { context.push(CreateChatScreen.route) },
+                        icon: const Icon(
+                          Icons.search_rounded,
+                          size: Sizes.iconSize,
+                        )
+                      )
                     )
                   ],
                 ),
