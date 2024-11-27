@@ -29,10 +29,12 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    _controller.text = widget.chatModel.draft ?? "";
     type = widget.chatModel.type;
     WidgetsBinding.instance.addObserver(this);
     final messages = generateFakeMessages();
     chatContent = _generateChatContentWithDateLabels(messages);
+    _scrollToBottom();
   }
 
   @override
