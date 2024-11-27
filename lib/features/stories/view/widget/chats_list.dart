@@ -88,8 +88,6 @@ class ChatsList extends StatelessWidget {
       case 0:
         return MessageState.sent;
       case 1:
-        return MessageState.delivered;
-      case 2:
         return MessageState.read;
       default:
         return MessageState.sent;

@@ -9,7 +9,6 @@ import '../constants/server_constants.dart';
 part 'message_model.g.dart';
 
 enum MessageState {
-  delivered,
   sent,
   read,
 }
@@ -70,10 +69,6 @@ class MessageModel {
 
   bool isReadByAll() {
     return userStates.values.every((state) => state == MessageState.read);
-  }
-
-  bool isDeliveredToAll() {
-    return userStates.values.every((state) => state == MessageState.delivered);
   }
 
   @override
@@ -167,7 +162,7 @@ class MessageModel {
           key,
           MessageState.values.firstWhere(
                 (e) => e.toString().split('.').last == value,
-            orElse: () => MessageState.delivered,
+            orElse: () => MessageState.sent,
           ),
         ),
       ),

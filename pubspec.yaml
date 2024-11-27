@@ -124,6 +124,7 @@ flutter:
     - assets/tgs/
     - assets/json/
     - assets/webpages/
+    - assets/svg/
     - lib/.env
   #   - images/a_dot_ham.jpeg
 
