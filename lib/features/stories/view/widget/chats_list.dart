@@ -38,16 +38,17 @@ class ChatsList extends StatelessWidget {
         senderName: faker.person.name(),
         content: faker.lorem.sentence(),
         timestamp: faker.date.dateTimeBetween(
-          DateTime.now().subtract(const Duration(days: 8)), // from one year ago
+          DateTime.now().subtract(const Duration(days: 800)), // from one year ago
           DateTime.now(), // to current date
         ),
         autoDeleteDuration: const Duration(hours: 1), // Example auto-delete duration
         userStates: messageStates,
     );
+    final personName = faker.person.name();
 
     return ChatTileWidget(
       chatModel: ChatModel(
-        title: isGroupChat ? faker.company.name() : faker.person.name(),
+        title: isGroupChat ? faker.company.name() : personName,
         userIds: [faker.guid.guid()],
         type: isGroupChat ? ChatType.group : ChatType.oneToOne,
         description: faker.lorem.sentence(),
@@ -59,6 +60,7 @@ class ChatsList extends StatelessWidget {
         messages: [message],
       ),
       displayMessage: message,
+      sentByUser: message.senderName != personName,
     );
   }
 
