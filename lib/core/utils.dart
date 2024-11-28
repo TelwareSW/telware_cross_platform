@@ -45,7 +45,8 @@ bool isKeyboardOpen(BuildContext context) {
   return MediaQuery.of(context).viewInsets.bottom != 0;
 }
 
-void showSnackBarMessage(BuildContext context, String message) {
+void showSnackBarMessage(BuildContext context, String message,
+    {SnackBarAction? action}) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
     ..showSnackBar(
@@ -53,6 +54,7 @@ void showSnackBarMessage(BuildContext context, String message) {
         content: Center(
           child: Text(message),
         ),
+        action: action,
       ),
     );
 }
@@ -149,8 +151,9 @@ String formatTime(int seconds,
             : '$seconds seconds';
   }
   final hours = (seconds ~/ 3600).toString().padLeft(2, '0');
-  if (showHours)
+  if (showHours) {
     seconds %= 3600; // get the remaining seconds after calculating hours
+  }
   final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
   final secs = (seconds % 60).toString().padLeft(2, '0');
   return showHours ? '$hours:$minutes:$secs' : '$minutes:$secs';

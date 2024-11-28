@@ -29,17 +29,18 @@ class MessageTileWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Alignment messageAlignment = isSentByMe ? Alignment.centerRight : Alignment.centerLeft;
+    Alignment messageAlignment =
+        isSentByMe ? Alignment.centerRight : Alignment.centerLeft;
     IconData messageState = getMessageStateIcon(messageModel);
     Widget senderNameWidget = showInfo && !isSentByMe
         ? Text(
-      messageModel.senderName,
-      style: TextStyle(
-        fontWeight: FontWeight.bold,
-        color: nameColor,
-        fontSize: 12,
-      ),
-    )
+            messageModel.senderName,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: nameColor,
+              fontSize: 12,
+            ),
+          )
         : SizedBox.shrink();
 
     return Align(
@@ -47,17 +48,19 @@ class MessageTileWidget extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 5),
         padding: const EdgeInsets.all(12),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+        constraints:
+            BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
         decoration: BoxDecoration(
           gradient: isSentByMe
               ? LinearGradient(
-            colors: [
-              Color.lerp(Colors.deepPurpleAccent, Colors.white, 0.2) ?? Colors.black,
-              Colors.deepPurpleAccent,
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          )
+                  colors: [
+                    Color.lerp(Colors.deepPurpleAccent, Colors.white, 0.2) ??
+                        Colors.black,
+                    Colors.deepPurpleAccent,
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                )
               : null,
           color: isSentByMe ? null : Palette.secondary,
           borderRadius: BorderRadius.circular(15),
@@ -75,7 +78,7 @@ class MessageTileWidget extends StatelessWidget {
                       style: const TextStyle(color: Palette.primaryText),
                     ),
                     SizedBox(width: isSentByMe ? 70.0 : 55.0),
-                    Text("")
+                    const Text("")
                   ],
                 )
               ],
@@ -85,27 +88,26 @@ class MessageTileWidget extends StatelessWidget {
               bottom: 0,
               right: 0,
               child: Container(
-                  padding: const EdgeInsets.only(top: 5), // Add some space above the timestamp
+                  padding: const EdgeInsets.only(top: 5),
+                  // Add some space above the timestamp
                   child: Row(
                     children: [
                       Text(
                         formatTimestamp(messageModel.timestamp),
                         style: TextStyle(
                           fontSize: 11,
-                          color: isSentByMe ? Palette.primaryText : Palette.inactiveSwitch,
+                          color: isSentByMe
+                              ? Palette.primaryText
+                              : Palette.inactiveSwitch,
                         ),
                       ),
                       if (isSentByMe) ...[
                         const SizedBox(width: 4),
-                        Icon(
-                          messageState,
-                          size: 12,
-                          color: Palette.primaryText
-                        ),
+                        Icon(messageState,
+                            size: 12, color: Palette.primaryText),
                       ]
                     ],
-                  )
-              ),
+                  )),
             ),
           ],
         ),

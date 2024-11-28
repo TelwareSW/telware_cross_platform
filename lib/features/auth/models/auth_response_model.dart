@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 
 class AuthResponseModel {
@@ -12,7 +13,8 @@ class AuthResponseModel {
   static Future<AuthResponseModel> fromMap(Map<String, dynamic> map) async {
     map.forEach(
       (key, value) {
-        print('key: $key, value: $value, value type: ${value.runtimeType}');
+        debugPrint(
+            'key: $key, value: $value, value type: ${value.runtimeType}');
       },
     );
     return AuthResponseModel(
