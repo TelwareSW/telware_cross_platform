@@ -21,6 +21,8 @@ enum ChatType {
 
 @HiveType(typeId: 4)
 class ChatModel {
+  @HiveField(14)
+  final String chatID;
   @HiveField(0)
   final String title;
   @HiveField(1)
@@ -51,6 +53,7 @@ class ChatModel {
   final List<MessageModel> messages;
 
   ChatModel({
+    required this.chatID,
     required this.title,
     required this.userIds,
     this.photo,
@@ -92,6 +95,7 @@ class ChatModel {
     if (identical(this, other)) return true;
 
     return other.title == title &&
+        other.chatID == chatID &&
         other.userIds == userIds &&
         other.type == type &&
         other.photo == photo &&
@@ -109,6 +113,7 @@ class ChatModel {
   @override
   int get hashCode {
     return title.hashCode ^
+    chatID.hashCode ^
     userIds.hashCode ^
     type.hashCode ^
     photo.hashCode ^
@@ -126,6 +131,7 @@ class ChatModel {
   @override
   String toString() {
     return ('ChatModel(\n'
+        'chatID: $chatID,\n'
         'title: $title,\n'
         'userIds: $userIds,\n'
         'type: $type,\n'
@@ -143,6 +149,7 @@ class ChatModel {
   }
 
   ChatModel copyWith({
+    String? chatID,
     String? title,
     List<String>? userIds,
     String? photo,
@@ -159,6 +166,7 @@ class ChatModel {
     List<MessageModel>? messages, // Add this for message copy
   }) {
     return ChatModel(
+      chatID: chatID ?? this.chatID,
       title: title ?? this.title,
       userIds: userIds ?? this.userIds,
       photo: photo ?? this.photo,
@@ -178,6 +186,7 @@ class ChatModel {
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
+      'chatID': chatID,
       'title': title,
       'userIds': userIds,
       'type': type.toString().split('.').last,
@@ -196,6 +205,7 @@ class ChatModel {
 
   static Future<ChatModel> fromMap(Map<String, dynamic> map) async {
     final chat = ChatModel(
+      chatID: map['chatID'] as String,
       title: map['title'] as String,
       userIds: (map['userIds'] as List<dynamic>).cast<String>(),
       type: ChatType.values.firstWhere(
