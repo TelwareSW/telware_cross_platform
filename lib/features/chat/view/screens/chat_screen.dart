@@ -1,10 +1,14 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart'; // Import flutter_svg
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import 'package:telware_cross_platform/core/mock/messages_mock.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
+import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/bottom_input_bar_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/chat_header_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/date_label_widget.dart';
@@ -32,7 +36,7 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
     _controller.text = widget.chatModel.draft ?? "";
     type = widget.chatModel.type;
     WidgetsBinding.instance.addObserver(this);
-    final messages = generateFakeMessages();
+    final messages = widget.chatModel.id != null ? generateFakeMessages() : <MessageModel>[];
     chatContent = _generateChatContentWithDateLabels(messages);
     _scrollToBottom();
   }
@@ -138,7 +142,59 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
             Column(
               children: [
                 Expanded(
-                  child: SingleChildScrollView(
+                  child: chatContent.isEmpty ?
+                    Center(
+                      child: Container(
+                        width: 210,
+                        margin: const EdgeInsets.symmetric(horizontal: 24.0),
+                        padding: const EdgeInsets.all(22.0),
+                        decoration: BoxDecoration(
+                          color: const Color.fromRGBO(4, 86, 57, 0.30),
+                          borderRadius: BorderRadius.circular(16.0),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 4.0,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'No messages here yet...',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Palette.primaryText,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 10),
+                            const Text(
+                              'Send a message or tap the greeting below.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Palette.primaryText,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            LottieViewer(
+                              path: getRandomLottieAnimation(),
+                              width: 100,
+                              height: 100,
+                              isLooping: true,
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                      :
+                    SingleChildScrollView(
                     controller: _scrollController, // Use the ScrollController
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
@@ -168,5 +224,55 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
         ),
       ),
     );
+  }
+
+  String getRandomLottieAnimation() {
+    // List of Lottie animation paths
+    List<String> lottieAnimations = [
+      'assets/tgs/curious_pigeon.tgs',
+      'assets/tgs/fruity_king.tgs',
+      'assets/tgs/graceful_elmo.tgs',
+      'assets/tgs/hello_anteater.tgs',
+      'assets/tgs/hello_astronaut.tgs',
+      'assets/tgs/hello_badger.tgs',
+      'assets/tgs/hello_bee.tgs',
+      'assets/tgs/hello_cat.tgs',
+      'assets/tgs/hello_clouds.tgs',
+      'assets/tgs/hello_duck.tgs',
+      'assets/tgs/hello_elmo.tgs',
+      'assets/tgs/hello_fish.tgs',
+      'assets/tgs/hello_flower.tgs',
+      'assets/tgs/hello_food.tgs',
+      'assets/tgs/hello_fridge.tgs',
+      'assets/tgs/hello_ghoul.tgs',
+      'assets/tgs/hello_king.tgs',
+      'assets/tgs/hello_lama.tgs',
+      'assets/tgs/hello_monkey.tgs',
+      'assets/tgs/hello_pigeon.tgs',
+      'assets/tgs/hello_possum.tgs',
+      'assets/tgs/hello_rat.tgs',
+      'assets/tgs/hello_seal.tgs',
+      'assets/tgs/hello_shawn_sheep.tgs',
+      'assets/tgs/hello_snail_rabbit.tgs',
+      'assets/tgs/hello_virus.tgs',
+      'assets/tgs/hello_water_animal.tgs',
+      'assets/tgs/hello_whales.tgs',
+      'assets/tgs/muscles_wizard.tgs',
+      'assets/tgs/plague_doctor.tgs',
+      'assets/tgs/screaming_elmo.tgs',
+      'assets/tgs/shy_elmo.tgs',
+      'assets/tgs/sick_wizard.tgs',
+      'assets/tgs/snowman.tgs',
+      'assets/tgs/spinny_jelly.tgs',
+      'assets/tgs/sus_moon.tgs',
+      'assets/tgs/toiletpaper.tgs',
+    ];
+
+    // Generate a random index
+    Random random = Random();
+    int randomIndex = random.nextInt(lottieAnimations.length);  // Gets a random index
+
+    // Return the randomly chosen Lottie animation path
+    return lottieAnimations[randomIndex];
   }
 }

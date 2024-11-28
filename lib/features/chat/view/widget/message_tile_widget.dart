@@ -40,7 +40,7 @@ class MessageTileWidget extends StatelessWidget {
         fontSize: 12,
       ),
     )
-        : SizedBox.shrink();
+        : const SizedBox.shrink();
 
     return Align(
       alignment: messageAlignment,
