@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/services/socket_service.dart';
+import 'package:telware_cross_platform/features/chat/models/enums.dart';
 import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 

@@ -51,6 +51,27 @@ class ChatsViewModel extends _$ChatsViewModel {
     _moveChatToFront(chatID);
   }
 
+  void deleteMessage(String msgID, String chatID) {
+    final chat = _chatsMap[chatID];
+    // todo: check if msg is really deleted or just not showed
+    // Find the msg with the specified ID
+    final msgIndex = chat!.messages.indexWhere((msg) => msg.id == msgID);
+    
+    if (msgIndex != -1) {
+      chat.messages.removeAt(msgIndex);
+    }
+  }
+
+  void editMessage(String msgID, String chatID, String content) {
+    final chat = _chatsMap[chatID];
+    // Find the msg with the specified ID
+    final msgIndex = chat!.messages.indexWhere((msg) => msg.id == msgID);
+    
+    if (msgIndex != -1) {
+      chat.messages[msgIndex].copyWith(content: content);
+    }
+  }
+
   void _moveChatToFront(String id) {
     // Find the chat with the specified ID
     final chatIndex = state.indexWhere((chat) => chat.id == id);

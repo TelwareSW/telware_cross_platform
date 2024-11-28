@@ -9,6 +9,7 @@ import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/services/socket_service.dart';
+import 'package:telware_cross_platform/features/chat/models/enums.dart';
 import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
 import 'package:telware_cross_platform/features/chat/repository/chat_local_repository.dart';
 import 'package:telware_cross_platform/features/chat/repository/chat_remote_repository.dart';
@@ -101,8 +102,32 @@ class ChattingController {
   }
 
   // delete a message
+  void deleteMsg(String msgID, String chatID, DeleteMsgType deleteType) {
+    final msgEvent = DeleteMessageEvent(this, {
+      'chatId': chatID,
+      'senderId': _ref.read(userProvider)!.id,
+      'messageId': msgID,
+      'deleteType': deleteType.name
+    });
+
+    _eventHandler.addEvent(msgEvent);
+
+    _ref.read(chatsViewModelProvider.notifier).deleteMessage(msgID, chatID);
+  }
 
   // edit a message
+  void editMsg(String msgID, String chatID, String content) {
+    final msgEvent = DeleteMessageEvent(this, {
+      'chatId': chatID,
+      'senderId': _ref.read(userProvider)!.id,
+      'messageId': msgID,
+      'content': content
+    });
+
+    _eventHandler.addEvent(msgEvent);
+
+    _ref.read(chatsViewModelProvider.notifier).editMessage(msgID, chatID);
+  }
 
   // recieve a message
 
