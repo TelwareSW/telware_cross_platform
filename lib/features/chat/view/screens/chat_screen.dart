@@ -1,30 +1,32 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart'; // Import flutter_svg
 import 'package:intl/intl.dart';
-import 'package:lottie/lottie.dart';
 import 'package:telware_cross_platform/core/mock/messages_mock.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
+import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
+import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/bottom_input_bar_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/chat_header_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/date_label_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/message_tile_widget.dart';
 
-class ChatScreen extends StatefulWidget {
+class ChatScreen extends ConsumerStatefulWidget {
   static const String route = '/chat';
   final ChatModel chatModel;
 
   const ChatScreen({super.key, required this.chatModel});
 
   @override
-  State<ChatScreen> createState() => _ChatScreen();
+  ConsumerState<ChatScreen> createState() => _ChatScreen();
 }
 
-class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
+class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver {
   List<dynamic> chatContent = [];
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -36,7 +38,8 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
     _controller.text = widget.chatModel.draft ?? "";
     type = widget.chatModel.type;
     WidgetsBinding.instance.addObserver(this);
-    final messages = widget.chatModel.id != null ? generateFakeMessages() : <MessageModel>[];
+    final messages =
+        widget.chatModel.id != null ? generateFakeMessages() : <MessageModel>[];
     chatContent = _generateChatContentWithDateLabels(messages);
     _scrollToBottom();
   }
@@ -49,11 +52,14 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  List<dynamic> _generateChatContentWithDateLabels(List<MessageModel> messages) {
+  List<dynamic> _generateChatContentWithDateLabels(
+      List<MessageModel> messages) {
     List<dynamic> chatContent = [];
     for (int i = 0; i < messages.length; i++) {
-      if (i == 0 || !isSameDay(messages[i - 1].timestamp, messages[i].timestamp)) {
-        chatContent.add(DateLabelWidget(label: DateFormat('MMMM d').format(messages[i].timestamp)));
+      if (i == 0 ||
+          !isSameDay(messages[i - 1].timestamp, messages[i].timestamp)) {
+        chatContent.add(DateLabelWidget(
+            label: DateFormat('MMMM d').format(messages[i].timestamp)));
       }
       chatContent.add(messages[i]);
     }
@@ -61,7 +67,9 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   bool isSameDay(DateTime date1, DateTime date2) {
-    return date1.year == date2.year && date1.month == date2.month && date1.day == date2.day;
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day;
   }
 
   // Called when the keyboard visibility changes
@@ -76,7 +84,8 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
 
   // Check if the user is already at the bottom of the scroll view
   bool _isAtBottom() {
-    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
       return true;
     }
     return false;
@@ -95,7 +104,7 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final String title = widget.chatModel.title;
     final membersNumber = widget.chatModel.userIds.length;
-    final String subtitle = widget.chatModel.type == ChatType.oneToOne
+    final String subtitle = widget.chatModel.type == ChatType.private
         ? "last seen a long time ago"
         : "$membersNumber Member${membersNumber > 1 ? "s" : ""}";
     final imageBytes = widget.chatModel.photoBytes;
@@ -116,9 +125,7 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
           imageBytes: imageBytes,
         ),
         actions: [
-          IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.more_vert))
+          IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert))
         ],
       ),
       body: GestureDetector(
@@ -142,79 +149,81 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
             Column(
               children: [
                 Expanded(
-                  child: chatContent.isEmpty ?
-                    Center(
-                      child: Container(
-                        width: 210,
-                        margin: const EdgeInsets.symmetric(horizontal: 24.0),
-                        padding: const EdgeInsets.all(22.0),
-                        decoration: BoxDecoration(
-                          color: const Color.fromRGBO(4, 86, 57, 0.30),
-                          borderRadius: BorderRadius.circular(16.0),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black26,
-                              blurRadius: 4.0,
-                              offset: Offset(0, 2),
+                  child: chatContent.isEmpty
+                      ? Center(
+                          child: Container(
+                            width: 210,
+                            margin:
+                                const EdgeInsets.symmetric(horizontal: 24.0),
+                            padding: const EdgeInsets.all(22.0),
+                            decoration: BoxDecoration(
+                              color: const Color.fromRGBO(4, 86, 57, 0.30),
+                              borderRadius: BorderRadius.circular(16.0),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  blurRadius: 4.0,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
                             ),
-                          ],
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  'No messages here yet...',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Palette.primaryText,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 10),
+                                const Text(
+                                  'Send a message or tap the greeting below.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Palette.primaryText,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                LottieViewer(
+                                  path: getRandomLottieAnimation(),
+                                  width: 100,
+                                  height: 100,
+                                  isLooping: true,
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : SingleChildScrollView(
+                          controller:
+                              _scrollController, // Use the ScrollController
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 10),
+                            child: Column(
+                              children: chatContent.map((item) {
+                                if (item is DateLabelWidget) {
+                                  return item;
+                                } else if (item is MessageModel) {
+                                  return MessageTileWidget(
+                                    messageModel: item,
+                                    isSentByMe: item.senderId == ref.read(userProvider)!.id,
+                                    showInfo: type == ChatType.group,
+                                  );
+                                } else {
+                                  return const SizedBox.shrink();
+                                }
+                              }).toList(),
+                            ),
+                          ),
                         ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const Text(
-                              'No messages here yet...',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Palette.primaryText,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 10),
-                            const Text(
-                              'Send a message or tap the greeting below.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Palette.primaryText,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            LottieViewer(
-                              path: getRandomLottieAnimation(),
-                              width: 100,
-                              height: 100,
-                              isLooping: true,
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                      :
-                    SingleChildScrollView(
-                    controller: _scrollController, // Use the ScrollController
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                      child: Column(
-                        children: chatContent.map((item) {
-                          if (item is DateLabelWidget) {
-                            return item;
-                          } else if (item is MessageModel) {
-                            return MessageTileWidget(
-                              messageModel: item,
-                              isSentByMe: item.senderName == "John Doe",
-                              showInfo: type == ChatType.group,
-                            );
-                          } else {
-                            return const SizedBox.shrink();
-                          }
-                        }).toList(),
-                      ),
-                    ),
-                  ),
                 ),
                 // The input bar at the bottom
                 BottomInputBarWidget(controller: _controller),
@@ -270,7 +279,8 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
 
     // Generate a random index
     Random random = Random();
-    int randomIndex = random.nextInt(lottieAnimations.length);  // Gets a random index
+    int randomIndex =
+        random.nextInt(lottieAnimations.length); // Gets a random index
 
     // Return the randomly chosen Lottie animation path
     return lottieAnimations[randomIndex];

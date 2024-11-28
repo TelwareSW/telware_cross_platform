@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:telware_cross_platform/core/services/socket_service.dart';
-import 'package:telware_cross_platform/features/chat/models/enums.dart';
+import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 
 // todo: create the event classes here
@@ -66,13 +66,9 @@ class SendMessageEvent extends MessageEvent {
       ackCallback: (response, timer, completer) {
         if (!completer.isCompleted) {
           timer.cancel(); // Cancel the timeout timer
-          if (response['status'] == 'success') {
-            completer.complete(true);
-            // todo(moamen): confirm msg was sent
-            // _controller.confirmMsgSent()
-          } else {
-            completer.complete(false);
-          }
+          // todo(moamen): confirm msg was sent
+          // change from pending to sent
+          completer.complete(true);
         }
       },
     );
@@ -93,11 +89,7 @@ class DeleteMessageEvent extends MessageEvent {
       ackCallback: (response, timer, completer) {
         if (!completer.isCompleted) {
           timer.cancel(); // Cancel the timeout timer
-          if (response['status'] == 'success') {
-            completer.complete(true);
-          } else {
-            completer.complete(false);
-          }
+          completer.complete(true);
         }
       },
     );

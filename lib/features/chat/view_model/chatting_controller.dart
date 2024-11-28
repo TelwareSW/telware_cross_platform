@@ -9,7 +9,8 @@ import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/services/socket_service.dart';
-import 'package:telware_cross_platform/features/chat/models/enums.dart';
+import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
+import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
 import 'package:telware_cross_platform/features/chat/repository/chat_local_repository.dart';
 import 'package:telware_cross_platform/features/chat/repository/chat_remote_repository.dart';
@@ -75,34 +76,46 @@ class ChattingController {
   /// Send a text message.
   /// Must specify either the chatID or userID in case of new chat,
   /// otherwise, it will throw an error
-  void sendMsg(String content, {String? chatID, String? userID}) {
+  void sendMsg({
+    required String content,
+    required MessageType msgType,
+    required MessageContentType contentType,
+    required ChatType chatType,
+    String? chatID,
+    String? userID,
+  }) {
     // todo: handle new chats case
     if (chatID == null && userID == null) {
       throw Exception('specify the chatID, or userID in case of new chats');
     }
 
-    final MessageModel msg = MessageModel(
-      senderName: _ref.read(userProvider)!.screenName,
-      timestamp: DateTime.now(),
-      content: content, 
-    );
-
     final msgEvent = SendMessageEvent(this, {
       'chatId': chatID ?? userID,
       'content': content,
-      'contentType': 'text',
+      'contentType': contentType.content,
       'senderId': _ref.read(userProvider)!.id,
-      'isFirstTime': chatID == null
+      'isFirstTime': chatID == null,
+      'chatType': chatType.type
     });
 
     _eventHandler.addEvent(msgEvent);
 
     // todo: handle new chats case ----------------------------------!
-    _ref.read(chatsViewModelProvider.notifier).addMessage(msg, chatID!);
+    _ref
+        .read(chatsViewModelProvider.notifier)
+        .addSentMessage(content, chatID!, msgType);
+    _localRepository.setChats(_ref.read(chatsViewModelProvider));
+  }
+
+  void receiveMsg(String chatID, MessageModel msg) {
+    _ref
+        .read(chatsViewModelProvider.notifier)
+        .addReceivedMessage(chatID, msg);
+    _localRepository.setChats(_ref.read(chatsViewModelProvider));
   }
 
   // delete a message
-  void deleteMsg(String msgID, String chatID, DeleteMsgType deleteType) {
+  void deleteMsg(String msgID, String chatID, DeleteMessageType deleteType) {
     final msgEvent = DeleteMessageEvent(this, {
       'chatId': chatID,
       'senderId': _ref.read(userProvider)!.id,
@@ -113,6 +126,7 @@ class ChattingController {
     _eventHandler.addEvent(msgEvent);
 
     _ref.read(chatsViewModelProvider.notifier).deleteMessage(msgID, chatID);
+    _localRepository.setChats(_ref.read(chatsViewModelProvider));
   }
 
   // edit a message
@@ -126,10 +140,19 @@ class ChattingController {
 
     _eventHandler.addEvent(msgEvent);
 
-    _ref.read(chatsViewModelProvider.notifier).editMessage(msgID, chatID, content);
+    _ref
+        .read(chatsViewModelProvider.notifier)
+        .editMessage(msgID, chatID, content);
+    _localRepository.setChats(_ref.read(chatsViewModelProvider));
   }
 
   // recieve a message
+
+  Future<ChatModel> getChat(String chatID) async {
+    final sessionID = _ref.read(tokenProvider);
+    final response = await _remoteRepository.getChat(sessionID!, chatID);
+    return response.chat!;
+  }
 
   Future<UserModel> getOtherUser(String id) async {
     // todo: call the remote repo and get the other user from server

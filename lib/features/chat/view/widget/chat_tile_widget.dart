@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
-import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
+import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/chat_screen.dart';
 import 'package:telware_cross_platform/features/user/view/widget/avatar_generator.dart';
 
@@ -118,7 +118,7 @@ class ChatTileWidget extends StatelessWidget {
                                   children: [
                                     TextSpan(
                                       text: hasDraft ? "Draft: "
-                                          : isGroupChat ? "${displayMessage.senderName.split(" ")[0]}: " : "",
+                                          : isGroupChat ? "${'John Doe'.split(" ")[0]}: " : "",
                                       style: TextStyle(
                                         color: hasDraft ? Palette.error
                                             : isGroupChat ? Palette.primaryText : Palette.accentText,

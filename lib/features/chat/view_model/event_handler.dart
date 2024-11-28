@@ -2,8 +2,9 @@ import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
+import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/services/socket_service.dart';
-import 'package:telware_cross_platform/features/chat/models/enums.dart';
+import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 
@@ -17,7 +18,6 @@ class EventHandler {
 
   void init(Queue<MessageEvent> eventsQueue) {
     _queue = eventsQueue;
-    // todo(ahmed): check is this the right url
     _socket.connect(API_URL, _onSocketConnect);
   }
 
@@ -34,7 +34,7 @@ class EventHandler {
     _stopRequested = true; // Gracefully request stopping the loop
   }
 
-  void _processQueue() async {
+  Future<void> _processQueue() async {
     if (_isProcessing) return; // Avoid multiple loops
 
     _isProcessing = true;
@@ -68,8 +68,13 @@ class EventHandler {
 
   void _onSocketConnect() {
     // receive a message
-    _socket.on(EventType.receiveMessage.event, (response) {
-      // send the message to the chatting controller
+    _socket.on(EventType.receiveMessage.event, (response) async {
+      try {
+        final msg = await MessageModel.fromMap(response);
+        _chattingController.receiveMsg(response['chatId'] ,msg);
+      } on Exception catch (e) {
+        debugPrint('!!! Error in recieving a message:\n${e.toString()}');
+      }
     });
 
     // todo(ahmed): add the rest of the recieved events

@@ -3,6 +3,8 @@ import 'package:faker/faker.dart';
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
+import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
+import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/chat_tile_widget.dart';
 
 class ChatsList extends StatelessWidget {
@@ -35,14 +37,15 @@ class ChatsList extends StatelessWidget {
     // Randomly generate message states for demonstration
     final messageStates = _generateRandomMessageStates();
     final message = MessageModel(
-        senderName: faker.person.name(),
-        content: faker.lorem.sentence(),
-        timestamp: faker.date.dateTimeBetween(
-          DateTime.now().subtract(const Duration(days: 800)), // from one year ago
-          DateTime.now(), // to current date
-        ),
-        autoDeleteDuration: const Duration(hours: 1), // Example auto-delete duration
-        userStates: messageStates,
+      senderId: faker.guid.guid(),
+      content: faker.lorem.sentence(),
+      timestamp: faker.date.dateTimeBetween(
+        DateTime.now().subtract(const Duration(days: 800)), // from one year ago
+        DateTime.now(), // to current date
+      ),
+      autoDeleteTimestamp: DateTime.now().add(const Duration(days: 2)), // Example auto-delete duration
+      userStates: messageStates,
+      messageType: MessageType.normal 
     );
     final personName = faker.person.name();
 
@@ -51,7 +54,7 @@ class ChatsList extends StatelessWidget {
         id: faker.guid.guid(),
         title: isGroupChat ? faker.company.name() : personName,
         userIds: [faker.guid.guid()],
-        type: isGroupChat ? ChatType.group : ChatType.oneToOne,
+        type: isGroupChat ? ChatType.group : ChatType.private,
         description: faker.lorem.sentence(),
         lastMessageTimestamp: DateTime.now(),
         isArchived: isArchived,
@@ -61,7 +64,7 @@ class ChatsList extends StatelessWidget {
         messages: [message],
       ),
       displayMessage: message,
-      sentByUser: message.senderName != personName,
+      sentByUser: message.senderId != personName,
     );
   }
 

@@ -33,7 +33,7 @@ class MessageTileWidget extends StatelessWidget {
     IconData messageState = getMessageStateIcon(messageModel);
     Widget senderNameWidget = showInfo && !isSentByMe
         ? Text(
-      messageModel.senderName,
+      messageModel.senderId,
       style: TextStyle(
         fontWeight: FontWeight.bold,
         color: nameColor,

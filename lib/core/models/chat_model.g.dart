@@ -87,20 +87,20 @@ class ChatTypeAdapter extends TypeAdapter<ChatType> {
   ChatType read(BinaryReader reader) {
     switch (reader.readByte()) {
       case 0:
-        return ChatType.oneToOne;
+        return ChatType.private;
       case 1:
         return ChatType.group;
       case 2:
         return ChatType.channel;
       default:
-        return ChatType.oneToOne;
+        return ChatType.private;
     }
   }
 
   @override
   void write(BinaryWriter writer, ChatType obj) {
     switch (obj) {
-      case ChatType.oneToOne:
+      case ChatType.private:
         writer.writeByte(0);
         break;
       case ChatType.group:
