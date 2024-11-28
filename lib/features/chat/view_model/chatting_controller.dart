@@ -126,7 +126,7 @@ class ChattingController {
 
     _eventHandler.addEvent(msgEvent);
 
-    _ref.read(chatsViewModelProvider.notifier).editMessage(msgID, chatID);
+    _ref.read(chatsViewModelProvider.notifier).editMessage(msgID, chatID, content);
   }
 
   // recieve a message
