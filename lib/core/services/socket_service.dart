@@ -40,4 +40,8 @@ class SocketService {
   void emit(String event, dynamic data) {
     _socket.emit(event, data);
   }
+
+  void emitWithAck(String event, dynamic data, {required Function(dynamic data) ackCallback}) {
+    _socket.emitWithAck(event, data, ack: ackCallback);
+  }
 }
