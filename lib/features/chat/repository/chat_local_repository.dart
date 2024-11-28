@@ -4,11 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
-import 'package:telware_cross_platform/features/chat/models/emitted_event_models.dart';
+import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
 
 class ChatLocalRepository {
   final Box<List<ChatModel>> _chatsBox;
-  final Box<List<EmittedEvent>> _eventsBox;
+  final Box<List<MessageEvent>> _eventsBox;
   final Box<Map<String, UserModel>> _otherUsersBox;
 
   static const String _eventsBoxKey = 'eventsQueue';
@@ -17,7 +17,7 @@ class ChatLocalRepository {
 
   ChatLocalRepository({
     required Box<List<ChatModel>> chatsBox,
-    required Box<List<EmittedEvent>> eventsBox,
+    required Box<List<MessageEvent>> eventsBox,
     required Box<Map<String, UserModel>> otherUsersBox,
   })  : _chatsBox = chatsBox,
         _eventsBox = eventsBox,
@@ -61,7 +61,7 @@ class ChatLocalRepository {
 
   /////////////////////////////////////
   // sets event queue
-  Future<bool> setEventQueue(Queue<EmittedEvent> queue) async {
+  Future<bool> setEventQueue(Queue<MessageEvent> queue) async {
     final list = queue.toList();
 
     try {
@@ -74,9 +74,9 @@ class ChatLocalRepository {
   }
 
   // get event queue
-  Queue<EmittedEvent> getEventQueue() {
+  Queue<MessageEvent> getEventQueue() {
     final list = _eventsBox.get(_eventsBoxKey, defaultValue: []);
-    final queue = Queue<EmittedEvent>.from(list ?? []);
+    final queue = Queue<MessageEvent>.from(list ?? []);
     return queue;
   }
 }

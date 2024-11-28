@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:telware_cross_platform/core/mock/user_mock.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
@@ -27,5 +28,17 @@ class ChatRemoteRepository {
       debugPrint(e.toString());
     }
     return (chats: <ChatModel>[], users: <UserModel>[], appError: null);
+  }
+
+  Future<({
+    AppError? appError,
+    UserModel? otherUser
+  })> getOtherUser(String id) async {
+    try {
+      return (appError: null, otherUser: userMock); 
+    } catch (e) {
+      debugPrint('!!! Faild to get other user data, ${e.toString()}'); 
+      return (appError: AppError('This User was not Found', code: 404), otherUser: null); 
+    }
   }
 }
