@@ -9,21 +9,28 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:signature/signature.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:go_router/go_router.dart';
+import 'package:uuid/uuid.dart';
+import '../../../../core/routes/routes.dart';
 import '../widget/bottom_action_buttons_edit_taken_image.dart';
 import '../widget/signature_pen.dart';
 import '../widget/story_caption_text_field.dart';
+import 'crop_image_screen.dart';
 
 class ShowTakenImageScreen extends ConsumerStatefulWidget {
   static const String route = '/show-taken-story';
   final File image;
   final String destination;
 
-  const ShowTakenImageScreen({super.key, required this.image, this.destination = 'story',});
+  const ShowTakenImageScreen({
+    super.key,
+    required this.image,
+    this.destination = 'story',
+  });
 
   @override
-  ConsumerState<ShowTakenImageScreen> createState() => _ShowTakenStoryScreenState();
+  ConsumerState<ShowTakenImageScreen> createState() =>
+      _ShowTakenStoryScreenState();
 }
 
 class _ShowTakenStoryScreenState extends ConsumerState<ShowTakenImageScreen> {
@@ -61,38 +68,27 @@ class _ShowTakenStoryScreenState extends ConsumerState<ShowTakenImageScreen> {
     }
   }
 
+  Future<void> saveCroppedFile(
+      Uint8List croppedFile, Function(File) onFileSaved) async {
+    if (croppedFile.isNotEmpty) {
+      Directory tempDir = await getTemporaryDirectory();
+      String fileName = const Uuid().v4();
+      String filePath = '${tempDir.path}/$fileName.jpg';
+      final File file = await File(filePath).writeAsBytes(croppedFile);
+      onFileSaved(file);
+    }
+  }
+
   Future<void> _cropImage() async {
     try {
-      if (_imageFile == null || !await _imageFile!.exists()) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Image file not found.')),
-        );
-        return;
-      }
+      final File croppedFile = (await context.push<String>(
+        Routes.cropImageScreen,extra: widget.image.path
+      )) as File;
 
-      final croppedFile = await ImageCropper().cropImage(
-        sourcePath: widget.image.path,
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: 'Cropper',
-            toolbarColor: Palette.secondary,
-            toolbarWidgetColor: Colors.white,
-            aspectRatioPresets: [
-              CropAspectRatioPreset.original,
-              CropAspectRatioPreset.square,
-              CropAspectRatioPresetCustom(),
-            ],
-          ),
-          WebUiSettings(context: context),
-        ],
-      );
-
-      if (croppedFile != null) {
-        setState(() {
-          _imageFile = File(croppedFile.path);
-        });
-      }
-    } catch (e) {
+      setState(() {
+        _imageFile = croppedFile;
+      });
+        } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to crop image: $e')),
       );
@@ -155,7 +151,9 @@ class _ShowTakenStoryScreenState extends ConsumerState<ShowTakenImageScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    widget.destination == 'story' ? StoryCaptionField(controller: _captionController) : const SizedBox(),
+                    widget.destination == 'story'
+                        ? StoryCaptionField(controller: _captionController)
+                        : const SizedBox(),
                     BottomActionButtonsEditTakenImage(
                       cropImage: _cropImage,
                       discardChanges: _discardChanges,

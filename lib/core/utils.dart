@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/classes/telware_toast.dart';
 import 'package:intl/intl.dart';
 
+import 'models/message_model.dart';
+
 String? emailValidator(String? value) {
   const String emailPattern =
       r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
@@ -27,7 +29,7 @@ String? passwordValidator(String? value) {
     return 'Password must be at least 8 characters long';
   } else if (value.length > 128) {
     return 'Password can\'t be longer than 128 characters';
-  } 
+  }
   return null;
 }
 
@@ -61,18 +63,31 @@ void showToastMessage(String message) async {
 }
 
 String formatPhoneNumber(String phoneNumber) {
+  // assume if no code is provided, it's an Egyptian number
   // remove all spaces
   phoneNumber = phoneNumber.replaceAll(" ", "");
 
-  if (!phoneNumber.startsWith("+20")) {
+  if (phoneNumber.length < 8) {
+    return phoneNumber;
+  }
+
+  if (!phoneNumber.startsWith("+")) {
     phoneNumber = "+20${phoneNumber.substring(1)}";
   }
-  if (phoneNumber.length == 13) {
+
+  if (phoneNumber.length > 15) {
+    return phoneNumber;
+  }
+
+  if (phoneNumber.length <= 13) {
     return "${phoneNumber.substring(0, 3)} " // +20
         "${phoneNumber.substring(3, 6)} " // 109
         "${phoneNumber.substring(6)}"; // 3401932
+  } else {
+    return "${phoneNumber.substring(0, 4)} " // +966
+        "${phoneNumber.substring(4, 7)} " // 109
+        "${phoneNumber.substring(7)}"; // 3401932
   }
-  return phoneNumber; // Return the original if it doesn't match the format.
 }
 
 // Helper function to generate random pastel-like colors
@@ -127,13 +142,15 @@ String formatTime(int seconds,
   // if singleDigit is true, the function will return the time in the format "H" or "M" or "S"
   // if showHours is true, the function will return hours if the time is more than an hour
   if (singleDigit) {
-    return (showHours && seconds >= 60 * 60)
-        ? '${seconds ~/ (60 * 60)}'
+    return (showHours && seconds >= 3600)
+        ? '${seconds ~/ (3600)} hours'
         : (seconds >= 60)
             ? '${(seconds ~/ 60)} minutes'
             : '$seconds seconds';
   }
   final hours = (seconds ~/ 3600).toString().padLeft(2, '0');
+  if (showHours)
+    seconds %= 3600; // get the remaining seconds after calculating hours
   final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
   final secs = (seconds % 60).toString().padLeft(2, '0');
   return showHours ? '$hours:$minutes:$secs' : '$minutes:$secs';
@@ -149,17 +166,23 @@ String formatTimestamp(DateTime timestamp) {
     return DateFormat('hh:mm a').format(timestamp); // 12:53 AM
   }
 
-  // If the message is yesterday
-  if (diff == 1) {
-    return 'Yesterday'; // Yesterday
-  }
-
   // If the message is within the last 7 days, show the weekday (Mon, Tue, etc.)
   if (diff <= 7) {
     return DateFormat('E').format(timestamp); // Mon, Tue, etc.
   }
 
   // If the message is older than 7 days, show the full date
-  return DateFormat('MMM dd').format(timestamp); // Nov 03
+  if (diff <= 7) {
+    return DateFormat('MMM dd').format(timestamp); // Nov 03
+  }
+
   // For another format like "30.09.21", use 'dd.MM.yy'
+  return DateFormat('dd.MM.yy').format(timestamp);
+}
+
+IconData getMessageStateIcon(MessageModel message) {
+  if (message.isReadByAll()) {
+    return Icons.done_all;
+  }
+  return Icons.check;
 }

@@ -9,7 +9,8 @@ part 'user_local_repository.g.dart';
 @Riverpod(keepAlive: true)
 UserLocalRepository userLocalRepository(UserLocalRepositoryRef ref) {
   return UserLocalRepository(
-    userBox: Hive.box<UserModel>('auth-user'),  // Same box as in auth_local_repository
+    userBox: Hive.box<UserModel>('auth-user'),
+    // Same box as in auth_local_repository
     ref: ref,
   );
 }
@@ -88,7 +89,7 @@ class UserLocalRepository {
       if (user.username == username) {
         return Left(AppError("Username is already taken."));
       }
-      return Right(true);
+      return const Right(true);
     }
     return Left(AppError("User not found."));
   }

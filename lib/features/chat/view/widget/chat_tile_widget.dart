@@ -3,28 +3,32 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
+import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/chat_screen.dart';
+import 'package:telware_cross_platform/features/user/view/widget/avatar_generator.dart';
 
 class ChatTileWidget extends StatelessWidget {
   const ChatTileWidget({
     super.key,
     required this.chatModel,
     required this.displayMessage,
+    required this.sentByUser,
     this.showDivider = true,
   });
 
   final ChatModel chatModel;
   final MessageModel displayMessage;
   final bool showDivider;
+  final bool sentByUser;
 
   @override
   Widget build(BuildContext context) {
     final imageBytes = chatModel.photoBytes;
     final hasDraft = chatModel.draft?.isNotEmpty ?? false;
     final isGroupChat = chatModel.type == ChatType.group;
-    final messageStateIcon = _getMessageStateIcon(displayMessage);
+    final messageStateIcon = sentByUser ? Icon(getMessageStateIcon(displayMessage), size: 16, color: Palette.accent) : null;
     final unreadCount = _getUnreadMessageCount();
     final isMuted = chatModel.isMuted;
     final isMentioned = chatModel.isMentioned;
@@ -36,18 +40,16 @@ class ChatTileWidget extends StatelessWidget {
         child: Row(
           children: [
             Padding(
-              padding: const EdgeInsets.only(right: 12.0, left: 16.0, top: 8.0, bottom: 8.0),
+              padding: const EdgeInsets.only(right: 12.0, left: 12.0, top: 8.0, bottom: 8.0),
               child: CircleAvatar(
-                radius: 24,
+                radius: 28,
                 backgroundImage: imageBytes != null ? MemoryImage(imageBytes) : null,
                 backgroundColor: imageBytes == null ? Palette.primary : null,
                 child: imageBytes == null
-                    ? Text(
-                  getInitials(chatModel.title),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: Palette.primaryText,
-                  ),
+                    ? AvatarGenerator(
+                  name: chatModel.title,
+                  backgroundColor: getRandomColor(),
+                  size: 100,
                 )
                     : null,
               ),
@@ -79,7 +81,7 @@ class ChatTileWidget extends StatelessWidget {
                             ),
                             if (isMuted)
                               const Padding(
-                                padding: EdgeInsets.only(right: 8.0),
+                                padding: EdgeInsets.only(right: 2.0),
                                 child: Icon(
                                   Icons.volume_off,
                                   size: 18,
@@ -88,7 +90,7 @@ class ChatTileWidget extends StatelessWidget {
                               ),
                             if (messageStateIcon != null)
                               Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
+                                padding: const EdgeInsets.only(right: 2.0),
                                 child: messageStateIcon,
                               ),
                             Text(
@@ -102,6 +104,7 @@ class ChatTileWidget extends StatelessWidget {
                             ),
                           ],
                         ),
+                        const SizedBox(height: 4,),
                         Row(
                           children: [
                             // Displayed message content
@@ -161,7 +164,7 @@ class ChatTileWidget extends StatelessWidget {
                                     unreadCount.toString(),
                                     style: const TextStyle(
                                       color: Palette.primaryText,
-                                      fontSize: 12,
+                                      fontSize: 10,
                                     ),
                                   ),
                                 ),
@@ -181,18 +184,6 @@ class ChatTileWidget extends StatelessWidget {
 
       ),
     );
-  }
-
-  Widget? _getMessageStateIcon(MessageModel message) {
-    if (message.isReadByAll()) {
-      return const Icon(Icons.done_all, size: 16, color: Colors.blue);
-    }
-
-    if (message.isDeliveredToAll()) {
-      return const Icon(Icons.check, size: 16, color: Colors.blue);
-    }
-
-    return const Icon(Icons.check, size: 16, color: Colors.grey);
   }
 
   int _getUnreadMessageCount() {

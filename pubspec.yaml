@@ -74,6 +74,8 @@ dependencies:
   pin_code_fields: ^8.0.1
   faker: ^2.2.0
   socket_io_client: ^3.0.2
+  custom_image_crop: ^0.0.13
+  uuid: ^4.5.1
 
 
 dev_dependencies:
@@ -125,6 +127,7 @@ flutter:
     - assets/tgs/
     - assets/json/
     - assets/webpages/
+    - assets/svg/
     - lib/.env
   #   - images/a_dot_ham.jpeg
 
