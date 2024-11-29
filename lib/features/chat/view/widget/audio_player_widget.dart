@@ -126,7 +126,7 @@ class AudioPlayerWidgetState extends State<AudioPlayerWidget>
             borderRadius: BorderRadius.circular(0),
             color: Palette.accent,
           ),
-          waveformData: const [],
+          waveformData: generateDummyWaveform(500),
         ),
         Container(
           width: 60, // Set the width

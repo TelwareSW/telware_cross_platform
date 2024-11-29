@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:faker/faker.dart';
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
+import 'package:telware_cross_platform/core/models/message_content.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/chat_tile_widget.dart';
 
@@ -35,14 +36,16 @@ class ChatsList extends StatelessWidget {
     // Randomly generate message states for demonstration
     final messageStates = _generateRandomMessageStates();
     final message = MessageModel(
-        senderName: faker.person.name(),
-        content: faker.lorem.sentence(),
-        timestamp: faker.date.dateTimeBetween(
-          DateTime.now().subtract(const Duration(days: 8)), // from one year ago
-          DateTime.now(), // to current date
-        ),
-        autoDeleteDuration: const Duration(hours: 1), // Example auto-delete duration
-        userStates: messageStates,
+      senderName: faker.person.name(),
+      content: TextContent(faker.lorem.sentence()),
+      timestamp: faker.date.dateTimeBetween(
+        DateTime.now().subtract(const Duration(days: 8)), // from one year ago
+        DateTime.now(), // to current date
+      ),
+      autoDeleteDuration: const Duration(hours: 1),
+      // Example auto-delete duration
+      userStates: messageStates,
+      type: MessageType.text,
     );
 
     return ChatTileWidget(

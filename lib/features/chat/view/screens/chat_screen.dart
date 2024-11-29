@@ -34,7 +34,9 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
+  //---------------------------------Recording--------------------------------
   // TODO: This works only on mobile if you tried to run it on web it will throw an error
+
   late final RecorderController _recorderController;
   final PlayerController _playerController = PlayerController();
   String? musicFile;
@@ -48,6 +50,9 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
   final lockPath = "assets/json/passcode_lock.json";
   String? path;
   late Directory appDirectory;
+
+  //----------------------------------------------------------------------------
+  //-------------------------------Media----------------------------------------
 
   late ChatType type;
 
@@ -65,9 +70,14 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
     _controller.text = widget.chatModel.draft ?? "";
     type = widget.chatModel.type;
     WidgetsBinding.instance.addObserver(this);
-    final messages = generateFakeMessages();
+    loadChatContent();
+  }
+
+  loadChatContent() async {
+    final messages = await generateFakeMessages();
     chatContent = _generateChatContentWithDateLabels(messages);
     _scrollToBottom();
+    setState(() {});
   }
 
   @override
@@ -221,13 +231,13 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
         isRecordingCompleted = true;
         isRecording = false;
         isRecordingPaused = false;
-        setState(() {});
         await _playerController.preparePlayer(
           path: path!,
           shouldExtractWaveform: true,
           noOfSamples: 1000,
           volume: 1.0,
         );
+        setState(() {});
         debugPrint(path);
         debugPrint("Recorded file size: ${File(path!).lengthSync()}");
       }
@@ -289,6 +299,7 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   //----------------------------------------------------------------------------
+  //-------------------------------Media----------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -379,6 +390,7 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
                 ),
               ],
             ),
+
             isRecording || isRecordingLocked
                 ? AnimatedPositioned(
                     bottom: 90,

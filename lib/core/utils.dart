@@ -1,6 +1,10 @@
 // common utility functions are added here
+import 'dart:io';
 import 'dart:math';
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:telware_cross_platform/core/classes/telware_toast.dart';
 import 'package:intl/intl.dart';
 
@@ -188,4 +192,29 @@ IconData getMessageStateIcon(MessageModel message) {
     return Icons.done_all;
   }
   return Icons.check;
+}
+
+List<double> generateDummyWaveform(int length) {
+  return List<double>.generate(length, (i) {
+    double randomValue =
+        (Random().nextDouble() * 2 - 1); // Random value between -1 and 1
+    return randomValue * 0.5; // Scale the random value
+  });
+}
+
+Future<XFile> loadAssetAsXFile(String assetPath, String filename) async {
+  // Load the asset as ByteData
+  ByteData data = await rootBundle.load(assetPath);
+
+  // Get the system's temporary directory
+  Directory tempDir = await getTemporaryDirectory();
+
+  // Create a temporary file
+  File tempFile = File('${tempDir.path}/$filename');
+
+  // Write the asset data to the file
+  await tempFile.writeAsBytes(data.buffer.asUint8List(), flush: true);
+
+  // Return the temporary file as an XFile
+  return XFile(tempFile.path);
 }

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
+import 'package:telware_cross_platform/core/models/message_content.dart';
 import 'package:telware_cross_platform/features/stories/utils/utils_functions.dart';
 
 import '../constants/server_constants.dart';
@@ -13,42 +14,53 @@ enum MessageState {
   read,
 }
 
+enum MessageType {
+  text,
+  audio,
+  image,
+  video,
+  file,
+}
+
 @HiveType(typeId: 6)
 class MessageModel {
   @HiveField(0)
   final String senderName;
   @HiveField(1)
-  final String? content;
+  final MessageType type;
   @HiveField(2)
-  final DateTime timestamp;
+  final MessageContent? content;
   @HiveField(3)
-  final Duration? autoDeleteDuration;
+  final DateTime timestamp;
   @HiveField(4)
-  String? id;
+  final Duration? autoDeleteDuration;
   @HiveField(5)
-  final String? photo;
+  String? id;
   @HiveField(6)
-  Uint8List? photoBytes;
+  final String? photo;
   @HiveField(7)
+  Uint8List? photoBytes;
+  @HiveField(8)
   final Map<String, MessageState> userStates;
 
+//<editor-fold desc="Data Methods">
   MessageModel({
     required this.senderName,
+    required this.type,
     this.content,
     required this.timestamp,
     this.autoDeleteDuration,
     this.id,
     this.photo,
     this.photoBytes,
-    Map<String, MessageState>? userStates,
-  }) : userStates = userStates ?? {};
+    required this.userStates,
+  });
 
   Future<void> _setPhotoBytes() async {
     if (photo == null || photo!.isEmpty) return;
 
-    String url = photo!.startsWith('http')
-        ? photo!
-        : '$API_URL_PICTURES/$photo';
+    String url =
+        photo!.startsWith('http') ? photo! : '$API_URL_PICTURES/$photo';
 
     if (url.isEmpty) return;
 
@@ -87,12 +99,12 @@ class MessageModel {
   @override
   int get hashCode {
     return senderName.hashCode ^
-    content.hashCode ^
-    timestamp.hashCode ^
-    id.hashCode ^
-    photo.hashCode ^
-    photoBytes.hashCode ^
-    userStates.hashCode;
+        content.hashCode ^
+        timestamp.hashCode ^
+        id.hashCode ^
+        photo.hashCode ^
+        photoBytes.hashCode ^
+        userStates.hashCode;
   }
 
   @override
@@ -111,7 +123,8 @@ class MessageModel {
 
   MessageModel copyWith({
     String? senderName,
-    String? content,
+    MessageType? type,
+    MessageContent? content,
     DateTime? timestamp,
     Duration? autoDeleteDuration,
     String? id,
@@ -128,6 +141,7 @@ class MessageModel {
       photo: photo ?? this.photo,
       photoBytes: photoBytes ?? this.photoBytes,
       userStates: userStates ?? Map.from(this.userStates),
+      type: type ?? this.type,
     );
   }
 
@@ -140,7 +154,8 @@ class MessageModel {
       'id': id,
       'photo': photo,
       'userStates': forSender
-          ? userStates.map((key, value) => MapEntry(key, value.toString().split('.').last))
+          ? userStates.map(
+              (key, value) => MapEntry(key, value.toString().split('.').last))
           : null,
     };
 
@@ -150,26 +165,29 @@ class MessageModel {
   static Future<MessageModel> fromMap(Map<String, dynamic> map) async {
     final message = MessageModel(
       senderName: map['senderName'] as String,
-      content: map['content'] as String?,
+      content: map['content'] as MessageContent?,
       timestamp: DateTime.parse(map['timestamp'] as String),
       autoDeleteDuration: map['autoDeleteDuration'] != null
           ? Duration(seconds: map['autoDeleteDuration'] as int)
           : null,
       id: map['id'] as String?,
       photo: map['photo'] as String?,
-      userStates: (map['userStates'] as Map<String, dynamic>?)?.map(
-            (key, value) => MapEntry(
+      userStates: (map['userStates'] as Map<String, dynamic>?)!.map(
+        (key, value) => MapEntry(
           key,
           MessageState.values.firstWhere(
-                (e) => e.toString().split('.').last == value,
+            (e) => e.toString().split('.').last == value,
             orElse: () => MessageState.sent,
           ),
         ),
       ),
+      type: map['type']! as MessageType,
     );
     await message._setPhotoBytes();
     return message;
   }
 
-  String toJson({bool forSender = false}) => json.encode(toMap(forSender: forSender));
+  String toJson({bool forSender = false}) =>
+      json.encode(toMap(forSender: forSender));
+//</editor-fold>
 }

@@ -1,5 +1,8 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:telware_cross_platform/core/utils.dart';
@@ -46,6 +49,7 @@ class BottomInputBarWidget extends StatefulWidget {
 
 class BottomInputBarWidgetState extends State<BottomInputBarWidget> {
   bool isTextEmpty = true;
+
   int elapsedTime = 0; // Track the elapsed time in seconds
   double _dragPosition = 0;
   final double _cancelThreshold = 100.0; // Drag threshold for complete fade
@@ -90,6 +94,23 @@ class BottomInputBarWidgetState extends State<BottomInputBarWidget> {
         elapsedTime++;
       });
     });
+  }
+
+  List<XFile> mediaFiles = [];
+
+  Future<void> _loadMediaFiles() async {
+    mediaFiles.clear(); // Clear previous files
+    const int maxFiles = 10;
+    const int maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+    final List<XFile> media = await ImagePicker().pickMultipleMedia();
+    for (var mediaFile in media) {
+      final file = File(mediaFile.path);
+      if (await file.length() <= maxSizeInBytes &&
+          mediaFiles.length < maxFiles) {
+        mediaFiles.add(mediaFile);
+      }
+    }
+    setState(() {});
   }
 
   @override
@@ -211,11 +232,12 @@ class BottomInputBarWidgetState extends State<BottomInputBarWidget> {
               ] else
                 SlideToCancelWidget(dragPosition: _dragPosition),
             ] else ...[
-              // const Spacer(),
               IconButton(
                 icon: const Icon(Icons.attach_file_rounded),
                 color: Palette.accentText,
-                onPressed: () => {},
+                onPressed: () => {
+                  _loadMediaFiles(),
+                },
               ),
             ],
             if (!widget.isRecordingCompleted) ...[

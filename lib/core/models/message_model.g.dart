@@ -18,35 +18,38 @@ class MessageModelAdapter extends TypeAdapter<MessageModel> {
     };
     return MessageModel(
       senderName: fields[0] as String,
-      content: fields[1] as String?,
-      timestamp: fields[2] as DateTime,
-      autoDeleteDuration: fields[3] as Duration?,
-      id: fields[4] as String?,
-      photo: fields[5] as String?,
-      photoBytes: fields[6] as Uint8List?,
-      userStates: (fields[7] as Map?)?.cast<String, MessageState>(),
+      type: fields[1] as MessageType,
+      content: fields[2] as MessageContent?,
+      timestamp: fields[3] as DateTime,
+      autoDeleteDuration: fields[4] as Duration?,
+      id: fields[5] as String?,
+      photo: fields[6] as String?,
+      photoBytes: fields[7] as Uint8List?,
+      userStates: (fields[8] as Map).cast<String, MessageState>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, MessageModel obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.senderName)
       ..writeByte(1)
-      ..write(obj.content)
+      ..write(obj.type)
       ..writeByte(2)
-      ..write(obj.timestamp)
+      ..write(obj.content)
       ..writeByte(3)
-      ..write(obj.autoDeleteDuration)
+      ..write(obj.timestamp)
       ..writeByte(4)
-      ..write(obj.id)
+      ..write(obj.autoDeleteDuration)
       ..writeByte(5)
-      ..write(obj.photo)
+      ..write(obj.id)
       ..writeByte(6)
-      ..write(obj.photoBytes)
+      ..write(obj.photo)
       ..writeByte(7)
+      ..write(obj.photoBytes)
+      ..writeByte(8)
       ..write(obj.userStates);
   }
 
