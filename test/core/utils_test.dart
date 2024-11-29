@@ -242,19 +242,27 @@ void main() {
 
   group('formatTimestamp', () {
     test('formats timestamp to hh:mm a', () {
-      final timestamp = DateTime(2024, 11, 23, 15, 17);
-      expect(formatTimestamp(timestamp), '03:17 PM');
-    });
-
-    test('formats timestamp to Yesterday', () {
-      final timestamp = DateTime.now().subtract(const Duration(days: 1));
-      expect(formatTimestamp(timestamp), 'Yesterday');
+      final timestamp = DateTime.now().subtract(const Duration(hours: 2));
+      final expectedFormat = DateFormat('hh:mm a').format(timestamp);
+      expect(formatTimestamp(timestamp), expectedFormat);
     });
 
     test('formats timestamp to weekday', () {
-      final timestamp = DateTime.now().subtract(const Duration(days: 2));
-      final expectedDay = DateFormat('E').format(timestamp);
-      expect(formatTimestamp(timestamp), expectedDay);
+      final timestamp = DateTime.now().subtract(const Duration(days: 1));
+      final expectedFormat = DateFormat('E').format(timestamp);
+      expect(formatTimestamp(timestamp), expectedFormat);
+    });
+
+    test('formats timestamp to MMM dd for past months', () {
+      final timestamp = DateTime.now().subtract(const Duration(days: 40));
+      final expectedFormat = DateFormat('MMM dd').format(timestamp);
+      expect(formatTimestamp(timestamp), expectedFormat);
+    });
+
+    test('formats timestamp to dd.MM.yy for past years', () {
+      final timestamp = DateTime.now().subtract(const Duration(days: 365));
+      final expectedFormat = DateFormat('dd.MM.yy').format(timestamp);
+      expect(formatTimestamp(timestamp), expectedFormat);
     });
   });
 }
