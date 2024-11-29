@@ -85,6 +85,7 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
     _controller.dispose();
     _scrollController.dispose(); // Dispose of the ScrollController
     _recorderController.dispose();
+    _playerController.dispose();
     WidgetsBinding.instance.removeObserver(this); // Remove the observer
     super.dispose();
   }
@@ -231,13 +232,13 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
         isRecordingCompleted = true;
         isRecording = false;
         isRecordingPaused = false;
+        setState(() {});
         await _playerController.preparePlayer(
           path: path!,
           shouldExtractWaveform: true,
-          noOfSamples: 1000,
+          noOfSamples: 500,
           volume: 1.0,
         );
-        setState(() {});
         debugPrint(path);
         debugPrint("Recorded file size: ${File(path!).lengthSync()}");
       }
