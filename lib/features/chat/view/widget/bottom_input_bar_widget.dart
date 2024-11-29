@@ -1,14 +1,12 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 
 import 'package:telware_cross_platform/features/chat/view/widget/audio_player_widget.dart';
-import 'package:telware_cross_platform/features/chat/view/widget/slide_to_cancel_widget.dart'; // Import flutter_svg
+import 'package:telware_cross_platform/features/chat/view/widget/slide_to_cancel_widget.dart';
 
 class BottomInputBarWidget extends StatefulWidget {
   final TextEditingController controller; // Accept controller as a parameter

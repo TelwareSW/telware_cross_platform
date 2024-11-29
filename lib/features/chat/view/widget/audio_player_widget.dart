@@ -117,7 +117,9 @@ class AudioPlayerWidgetState extends State<AudioPlayerWidget>
             fixedWaveColor: Colors.white38,
             liveWaveColor: Colors.white,
             showSeekLine: false,
-            spacing: 6,
+            spacing: 4,
+            waveThickness: 2,
+            scaleFactor: 10,
           ),
           margin: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(

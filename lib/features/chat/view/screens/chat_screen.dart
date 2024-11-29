@@ -17,6 +17,7 @@ import 'package:telware_cross_platform/features/chat/view/widget/bottom_input_ba
 import 'package:telware_cross_platform/features/chat/view/widget/chat_header_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/date_label_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/message_tile_widget.dart';
+import 'package:vibration/vibration.dart';
 
 class ChatScreen extends StatefulWidget {
   static const String route = '/chat';
@@ -55,9 +56,11 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
     super.initState();
     _recorderController = RecorderController()
       ..androidEncoder = AndroidEncoder.aac
-      ..androidOutputFormat = AndroidOutputFormat.mpeg4
+      ..androidOutputFormat = AndroidOutputFormat.aac_adts
       ..iosEncoder = IosEncoder.kAudioFormatMPEG4AAC
+      ..bitRate = 128000
       ..sampleRate = 44100;
+
     _getDir();
     _controller.text = widget.chatModel.draft ?? "";
     type = widget.chatModel.type;
@@ -155,6 +158,7 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   void _lockRecording() {
+    if (!isRecordingLocked) vibrate();
     isRecordingLocked = true;
     setState(() {});
   }
@@ -221,7 +225,7 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
         await _playerController.preparePlayer(
           path: path!,
           shouldExtractWaveform: true,
-          noOfSamples: 200,
+          noOfSamples: 1000,
           volume: 1.0,
         );
         debugPrint(path);
@@ -234,16 +238,19 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
 
   void _startRecording(context) async {
     if (isRecording) return;
+
     setState(() {
       isRecordingCompleted = false;
     });
     var status = await Permission.microphone.status;
     if (status.isGranted) {
       _record();
+      vibrate();
     } else if (status.isDenied || status.isRestricted) {
       status = await Permission.microphone.request();
       if (status.isGranted) {
         _record();
+        vibrate();
       } else {
         // Handle denied permission scenario gracefully
         showSnackBarMessage(
@@ -271,6 +278,14 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
     } catch (e) {
       debugPrint(e.toString());
     }
+  }
+
+  void vibrate() {
+    Vibration.hasVibrator().then((hasVibrator) {
+      if (hasVibrator ?? false) {
+        Vibration.vibrate(duration: 50);
+      }
+    });
   }
 
   //----------------------------------------------------------------------------
@@ -404,6 +419,28 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
                     ),
                   )
                 : const SizedBox.shrink(),
+            if (isRecording) ...[
+              const Positioned(
+                bottom: -50,
+                right: -50,
+                child: LottieViewer(
+                  path: "assets/json/wave_animation_2.json",
+                  width: 150,
+                  height: 150,
+                  isLooping: true,
+                ),
+              ),
+              const Positioned(
+                bottom: -50,
+                right: -50,
+                child: LottieViewer(
+                  path: "assets/json/wave_animation_1.json",
+                  width: 150,
+                  height: 150,
+                  isLooping: true,
+                ),
+              )
+            ],
             AnimatedPositioned(
               bottom: -20,
               right: -20,
