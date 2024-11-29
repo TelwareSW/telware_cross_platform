@@ -260,7 +260,7 @@ void main() {
     });
 
     test('formats timestamp to dd.MM.yy for past years', () {
-      final timestamp = DateTime.now().subtract(const Duration(days: 365));
+      final timestamp = DateTime.now().subtract(const Duration(days: 366));
       final expectedFormat = DateFormat('dd.MM.yy').format(timestamp);
       expect(formatTimestamp(timestamp), expectedFormat);
     });
