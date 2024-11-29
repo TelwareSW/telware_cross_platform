@@ -1,5 +1,7 @@
 import 'package:hive/hive.dart';
 
+part 'chatting_enums.g.dart';
+
 enum EventType {
   sendMessage(event: 'SEND_MESSAGE'),
   sendAnnouncement(event: 'SEND_ANNOUNCEMENT'),

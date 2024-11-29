@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart'; // Import flutter_svg
 import 'package:intl/intl.dart';
-import 'package:telware_cross_platform/core/mock/messages_mock.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
+import 'package:telware_cross_platform/features/chat/providers/chat_provider.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/bottom_input_bar_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/chat_header_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/date_label_widget.dart';
@@ -18,9 +18,9 @@ import 'package:telware_cross_platform/features/chat/view/widget/message_tile_wi
 
 class ChatScreen extends ConsumerStatefulWidget {
   static const String route = '/chat';
-  final ChatModel chatModel;
+  final String chatId;
 
-  const ChatScreen({super.key, required this.chatModel});
+  const ChatScreen({super.key, required this.chatId});
 
   @override
   ConsumerState<ChatScreen> createState() => _ChatScreen();
@@ -30,17 +30,16 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
   List<dynamic> chatContent = [];
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  late ChatType type;
+  late ChatModel? chatModel;
 
   @override
   void initState() {
     super.initState();
-    _controller.text = widget.chatModel.draft ?? "";
-    type = widget.chatModel.type;
     WidgetsBinding.instance.addObserver(this);
-    final messages =
-        widget.chatModel.id != null ? generateFakeMessages() : <MessageModel>[];
-    chatContent = _generateChatContentWithDateLabels(messages);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      chatModel = ref.read(chatProvider(widget.chatId));
+      _controller.text = chatModel!.draft ?? "";
+    });
     _scrollToBottom();
   }
 
@@ -93,7 +92,7 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
 
   // Scroll the chat view to the bottom
   void _scrollToBottom() {
-    Future.delayed(Duration(milliseconds: 100), () {
+    Future.delayed(const Duration(milliseconds: 100), () {
       if (_scrollController.hasClients) {
         _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
       }
@@ -102,13 +101,19 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
 
   @override
   Widget build(BuildContext context) {
-    final String title = widget.chatModel.title;
-    final membersNumber = widget.chatModel.userIds.length;
-    final String subtitle = widget.chatModel.type == ChatType.private
+    final chatModel = ref.watch(chatProvider(widget.chatId))!;
+
+    final type = chatModel.type;
+    final String title = chatModel.title;
+    final membersNumber = chatModel.userIds.length;
+    final String subtitle = chatModel.type == ChatType.private
         ? "last seen a long time ago"
         : "$membersNumber Member${membersNumber > 1 ? "s" : ""}";
-    final imageBytes = widget.chatModel.photoBytes;
-    final photo = widget.chatModel.photo;
+    final imageBytes = chatModel.photoBytes;
+    final photo = chatModel.photo;
+    final messages =
+          chatModel.id != null ? chatModel.messages : <MessageModel>[];
+      chatContent = _generateChatContentWithDateLabels(messages);
 
     return Scaffold(
       appBar: AppBar(

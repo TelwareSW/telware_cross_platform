@@ -17,10 +17,11 @@ class MessageModelAdapter extends TypeAdapter<MessageModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return MessageModel(
-      senderName: fields[0] as String,
+      autoDeleteTimestamp: fields[3] as DateTime?,
+      messageType: fields[8] as MessageType,
+      senderId: fields[0] as String,
       content: fields[1] as String?,
       timestamp: fields[2] as DateTime,
-      autoDeleteDuration: fields[3] as Duration?,
       id: fields[4] as String?,
       photo: fields[5] as String?,
       photoBytes: fields[6] as Uint8List?,
@@ -31,15 +32,15 @@ class MessageModelAdapter extends TypeAdapter<MessageModel> {
   @override
   void write(BinaryWriter writer, MessageModel obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(9)
       ..writeByte(0)
-      ..write(obj.senderName)
+      ..write(obj.senderId)
       ..writeByte(1)
       ..write(obj.content)
       ..writeByte(2)
       ..write(obj.timestamp)
       ..writeByte(3)
-      ..write(obj.autoDeleteDuration)
+      ..write(obj.autoDeleteTimestamp)
       ..writeByte(4)
       ..write(obj.id)
       ..writeByte(5)
@@ -47,7 +48,9 @@ class MessageModelAdapter extends TypeAdapter<MessageModel> {
       ..writeByte(6)
       ..write(obj.photoBytes)
       ..writeByte(7)
-      ..write(obj.userStates);
+      ..write(obj.userStates)
+      ..writeByte(8)
+      ..write(obj.messageType);
   }
 
   @override

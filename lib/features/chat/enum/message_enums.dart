@@ -1,6 +1,14 @@
+import 'package:hive/hive.dart';
+
+part 'message_enums.g.dart';
+
+@HiveType(typeId: 11)
 enum MessageState {
+  @HiveField(0)
   sent(text: 'sent'),
+  @HiveField(1)
   read(text: 'read'),
+  @HiveField(2)
   pending(text: 'pending');
 
   static MessageState getType(String type) {
@@ -18,9 +26,13 @@ enum MessageState {
   const MessageState({required this.text});
 }
 
+@HiveType(typeId: 12)
 enum MessageType {
+  @HiveField(0)
   normal(text: 'normal'),
+  @HiveField(1)
   announcement(text: 'announcement'),
+  @HiveField(2)
   forward(text: 'forward');
 
   static MessageType getType(String type) {
@@ -33,7 +45,7 @@ enum MessageType {
         return MessageType.normal;
     }
   }
-
+  
   final String text;
   const MessageType({required this.text});
 }

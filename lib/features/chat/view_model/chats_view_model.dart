@@ -67,6 +67,7 @@ class ChatsViewModel extends _$ChatsViewModel {
     if (chat == null) {
       chat = await ref.read(chattingControllerProvider).getChat(chatID);
       _chatsMap[chatID] = chat;
+      state.insert(0, chat);
     }
 
     chat.messages.insert(0, msg);
@@ -92,6 +93,10 @@ class ChatsViewModel extends _$ChatsViewModel {
     if (msgIndex != -1) {
       chat.messages[msgIndex].copyWith(content: content);
     }
+  }
+
+  ChatModel? getChatById(String chatId) {
+    return _chatsMap[chatId];
   }
 
   void _moveChatToFront(String id) {

@@ -1,7 +1,11 @@
+import 'dart:collection';
+
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/core/mock/user_mock.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
@@ -15,6 +19,7 @@ import 'package:telware_cross_platform/features/chat/models/message_event_models
 import 'package:telware_cross_platform/features/chat/repository/chat_local_repository.dart';
 import 'package:telware_cross_platform/features/chat/repository/chat_remote_repository.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
+import 'package:telware_cross_platform/features/chat/services/chat_mocking_service.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 import 'package:telware_cross_platform/features/chat/view_model/event_handler.dart';
 
@@ -27,9 +32,9 @@ ChattingController chattingController(Ref ref) {
   );
 
   final localRepo = ChatLocalRepository(
-      chatsBox: Hive.box<List<ChatModel>>('chats-box'),
-      eventsBox: Hive.box<List<MessageEvent>>('chatting-events-box'),
-      otherUsersBox: Hive.box<Map<String, UserModel>>('other-users-box'));
+      chatsBox: Hive.box<List>('chats-box'),
+      eventsBox: Hive.box<List>('chatting-events-box'),
+      otherUsersBox: Hive.box<Map>('other-users-box'));
 
   return ChattingController(
     localRepository: localRepo,
@@ -39,6 +44,7 @@ ChattingController chattingController(Ref ref) {
 }
 
 class ChattingController {
+  // todo: transform this into a NotifierProvider
   late final EventHandler _eventHandler;
   final ChatRemoteRepository _remoteRepository;
   final ChatLocalRepository _localRepository;
@@ -56,12 +62,16 @@ class ChattingController {
   }
 
   Future<void> getUserChats() async {
+    // todo: make use of the return of this
     _remoteRepository.getUserChats(_ref.read(tokenProvider)!);
   }
 
   Future<void> init() async {
+    debugPrint('!!! tried to enter controller init');
+    debugPrint('!!! enter controller init');
     // get the chats and give it to the chats view model from local
     final chats = _localRepository.getChats();
+    debugPrint('!!! chats list length ${chats.length}');
     _ref.read(chatsViewModelProvider.notifier).setChats(chats);
 
     // get the users list from local
@@ -70,7 +80,55 @@ class ChattingController {
 
     // get the events and give it to the handler from local
     final events = _localRepository.getEventQueue();
-    _eventHandler.init(events);
+    final newEvents = events.map((e) => e.copyWith(controller: this));
+    _eventHandler.init(Queue<MessageEvent>.from(newEvents.toList()));
+
+  }
+
+  Future<void> newLoginInit() async {
+    debugPrint('!!! newLoginInit called');
+    if (USE_MOCK_DATA) {
+      final mocker = ChatMockingService.instance;
+      final response = mocker.createMockedChats(20, _ref.read(tokenProvider)!);
+      // descinding sorting for the chats, based on last message
+      response.chats.sort(
+        (a, b) => b.messages[0].timestamp.compareTo(
+          a.messages[0].timestamp,
+        ),
+      );
+
+      final otherUsersMap = <String, UserModel>{
+        for (var user in response.users) user.id!: user
+      };
+
+      debugPrint((await _localRepository.setChats(response.chats)).toString());
+      debugPrint((await _localRepository.setOtherUsers(otherUsersMap)).toString());
+      debugPrint('!!! ended the newLoginInit mock');
+      return;
+    }
+
+    final response =
+        await _remoteRepository.getUserChats(_ref.read(tokenProvider)!);
+
+    if (response.appError == null) {
+      // todo(ahmed): for the notifier provider, return a state of fail
+    } else {
+      // descinding sorting for the chats, based on last message
+      response.chats.sort(
+        (a, b) => b.messages[0].timestamp.compareTo(
+          a.messages[0].timestamp,
+        ),
+      );
+
+      final otherUsersMap = <String, UserModel>{
+        for (var user in response.users) user.id!: user
+      };
+
+      _localRepository.setChats(response.chats);
+      _localRepository.setOtherUsers(otherUsersMap);
+      debugPrint('!!! ended the newLoginInit');
+    }
+
   }
 
   /// Send a text message.
@@ -89,14 +147,14 @@ class ChattingController {
       throw Exception('specify the chatID, or userID in case of new chats');
     }
 
-    final msgEvent = SendMessageEvent(this, {
+    final msgEvent = SendMessageEvent({
       'chatId': chatID ?? userID,
       'content': content,
       'contentType': contentType.content,
       'senderId': _ref.read(userProvider)!.id,
       'isFirstTime': chatID == null,
       'chatType': chatType.type
-    });
+    }, controller: this);
 
     _eventHandler.addEvent(msgEvent);
 
@@ -108,20 +166,18 @@ class ChattingController {
   }
 
   void receiveMsg(String chatID, MessageModel msg) {
-    _ref
-        .read(chatsViewModelProvider.notifier)
-        .addReceivedMessage(chatID, msg);
+    _ref.read(chatsViewModelProvider.notifier).addReceivedMessage(chatID, msg);
     _localRepository.setChats(_ref.read(chatsViewModelProvider));
   }
 
   // delete a message
   void deleteMsg(String msgID, String chatID, DeleteMessageType deleteType) {
-    final msgEvent = DeleteMessageEvent(this, {
+    final msgEvent = DeleteMessageEvent({
       'chatId': chatID,
       'senderId': _ref.read(userProvider)!.id,
       'messageId': msgID,
       'deleteType': deleteType.name
-    });
+    }, controller: this);
 
     _eventHandler.addEvent(msgEvent);
 
@@ -131,12 +187,12 @@ class ChattingController {
 
   // edit a message
   void editMsg(String msgID, String chatID, String content) {
-    final msgEvent = DeleteMessageEvent(this, {
+    final msgEvent = DeleteMessageEvent({
       'chatId': chatID,
       'senderId': _ref.read(userProvider)!.id,
       'messageId': msgID,
       'content': content
-    });
+    }, controller: this);
 
     _eventHandler.addEvent(msgEvent);
 

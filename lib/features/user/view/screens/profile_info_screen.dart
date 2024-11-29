@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/features/user/repository/user_local_repository.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_input_widget.dart';
@@ -21,7 +22,7 @@ class ProfileInfoScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileInfoScreen extends ConsumerState<ProfileInfoScreen> with SingleTickerProviderStateMixin {
-  late final _user;
+  late final UserModel _user;
   final firstNameShakeKey = GlobalKey<ShakeWidgetState>();
   final lastNameShakeKey = GlobalKey<ShakeWidgetState>();
 
@@ -36,8 +37,8 @@ class _ProfileInfoScreen extends ConsumerState<ProfileInfoScreen> with SingleTic
     super.initState();
 
     // Initialize controllers based on userViewModelProvider data
-    _user = ref.read(userLocalRepositoryProvider).getUser();
-    final nameParts = (_user?.screenName ?? '').split(' ');
+    _user = ref.read(userLocalRepositoryProvider).getUser()!;
+    final nameParts = [_user.screenFirstName, _user.screenLastName];
     _firstNameController = TextEditingController(text: nameParts.isNotEmpty ? nameParts[0] : '');
     _secondNameController = TextEditingController(
       text: nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '',
@@ -59,8 +60,7 @@ class _ProfileInfoScreen extends ConsumerState<ProfileInfoScreen> with SingleTic
 
   void _checkForChanges() {
     final screenName = '${_firstNameController.text} ${_secondNameController.text}'.trim();
-    final hasChanged = _user != null &&
-        (screenName != _user.screenName || _bioController.text != _user.bio);
+    final hasChanged = (screenName != '${_user.screenFirstName} ${_user.screenFirstName}' || _bioController.text != _user.bio);
 
     if (hasChanged != _showSaveButton) {
       setState(() {

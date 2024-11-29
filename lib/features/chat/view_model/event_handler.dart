@@ -98,7 +98,7 @@ class EventHandler {
     required ChattingController controller,
     required SocketService socket,
   }) {
-    _instance ??=
+    _instance =
         EventHandler._internal(controller: controller, socket: socket);
   }
 

@@ -213,7 +213,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
   void _createNewChat(UserModel userInfo) {
     final myUser = ref.read(userProvider)!;
     ChatModel newChat = ChatModel(
-      title: userInfo.screenName,
+      title: '${userInfo.screenFirstName} ${userInfo.screenLastName}',
       userIds: [myUser.id!, userInfo.id!],
       type: ChatType.private,
       messages: [],
@@ -232,7 +232,8 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
 
     for (int i = 0; i < count; i++) {
       String username = faker.internet.userName();
-      String screenName = faker.person.name();
+      String screenFirstName = faker.person.firstName();
+      String screenLastName = faker.person.lastName();
       String email = faker.internet.email();
       String status = faker.lorem.sentence();
       String bio = faker.lorem.sentences(2).join(' ');
@@ -257,7 +258,8 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
 
       users.add(UserModel(
         username: username,
-        screenName: screenName,
+        screenFirstName: screenFirstName,
+        screenLastName: screenLastName,
         email: email,
         photo: photo,
         status: status,
@@ -277,7 +279,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
 
     for (UserModel user in users) {
       var option = <String, dynamic>{
-        "text": user.screenName,
+        "text": user.screenFirstName,
         "imagePath": user.photo,
         "subtext": "last seen Nov 23 at 6:40 PM",
         "trailingFontSize": 13.0,
