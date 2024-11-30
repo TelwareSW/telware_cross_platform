@@ -67,3 +67,36 @@ class ChangeEmailKeys {
   static final emailShakeKey =
       GlobalKey<ShakeWidgetState>(debugLabel: 'change_email_shake');
 }
+
+class ChatKeys {
+  static const ValueKey<String> chatSearchButton = ValueKey('chat-search-button');
+  static const ValueKey<String> chatSearchInput = ValueKey('chat-search-input');
+  static const ValueKey<String> chatSearchShowMode = ValueKey('chat-search-show-mode');
+  static const ValueKey<String> chatSearchDatePicker = ValueKey('chat-search-date-picker');
+  static const ValueKey<String> chatTilePrefix = ValueKey('chat-tile-');
+  static const ValueKey<String> chatMessagePrefix = ValueKey('chat-message-');
+  static const ValueKey<String> chatNamePostfix = ValueKey('-name');
+  static const ValueKey<String> chatTileDisplayTextPostfix =
+      ValueKey('-display-text');
+  static const ValueKey<String> chatTileDisplayTimePostfix =
+      ValueKey('-display-time');
+  static const ValueKey<String> chatTileDisplayUnreadCountPostfix =
+      ValueKey('-display-unread-count');
+  static const ValueKey<String> chatTileMentionPostfix = ValueKey('-mention');
+  static const ValueKey<String> chatTileMutePostfix = ValueKey('-mute');
+  static const ValueKey<String> chatTileMessageStatusPostfix =
+      ValueKey('-message');
+  static const ValueKey<String> chatAvatarPostfix = ValueKey('-avatar');
+}
+
+class MessageKeys {
+  static const ValueKey<String> messagePrefix = ValueKey('message-');
+  static const ValueKey<String> messageSenderPostfix = ValueKey('-sender');
+  static const ValueKey<String> messageContentPostfix = ValueKey('-content');
+  static const ValueKey<String> messageTimePostfix = ValueKey('-time');
+  static const ValueKey<String> messageStatusPostfix = ValueKey('-status');
+  static const ValueKey<String> messageReplyPostfix = ValueKey('-reply');
+  static const ValueKey<String> messageForwardPostfix = ValueKey('-forward');
+  static const ValueKey<String> messageCopyPostfix = ValueKey('-copy');
+  static const ValueKey<String> messageDeletePostfix = ValueKey('-delete');
+}

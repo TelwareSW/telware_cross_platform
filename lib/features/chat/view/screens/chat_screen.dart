@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_cupertino_datetime_picker/flutter_cupertino_datetime_picker.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
@@ -180,6 +181,7 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
           chatModel.id != null ? chatModel.messages : <MessageModel>[];
       chatContent = _generateChatContentWithDateLabels(messages);
     const menuItemsHeight = 45.0;
+    var messagesIndex = 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -207,6 +209,7 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
           imageBytes: imageBytes,
         ) :
         TextField(
+          key: ChatKeys.chatSearchInput,
           autofocus: true,
           decoration: const InputDecoration(
             hintText: 'Search',
@@ -270,6 +273,7 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
                   ),
                 ),
                 const PopupMenuItem<String>(
+                  key: ChatKeys.chatSearchButton,
                   value: 'search',
                   padding: EdgeInsets.zero,
                   height: menuItemsHeight,
@@ -410,6 +414,7 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
                             return item;
                           } else if (item is MessageModel) {
                             return MessageTileWidget(
+                              key: ValueKey('${MessageKeys.messagePrefix}${messagesIndex++}'),
                               messageModel: item,
                               isSentByMe: item.senderId == ref.read(userProvider)!.id,
                               showInfo: type == ChatType.group,
@@ -434,7 +439,8 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         IconButton(
-                          icon: Icon(Icons.edit_calendar),
+                          key: ChatKeys.chatSearchDatePicker,
+                          icon: const Icon(Icons.edit_calendar),
                           onPressed: () {
                             // Show the Cupertino Date Picker when the icon is pressed
                             DatePicker.showDatePicker(
@@ -473,7 +479,7 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
                           isShowAsList ?
                           '$_numberOfMatches result${_numberOfMatches != 1 ? 's' :''}' :
                           '$_currentMatch of $_numberOfMatches',
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Palette.primaryText,
                             fontWeight: FontWeight.w500
                           ),
@@ -486,6 +492,7 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
                                 _toggleSearchDisplay();
                               },
                               child: Text(
+                                key: ChatKeys.chatSearchShowMode,
                                 isShowAsList ? 'Show as Chat' : 'Show as List',
                                 style: const TextStyle(
                                   color: Palette.accent,
