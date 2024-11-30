@@ -6,6 +6,7 @@ import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
+
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
@@ -34,8 +35,7 @@ class ChatMockingService {
       photo: faker.internet.httpsUrl(),
       status: faker.lorem.sentence(),
       bio: faker.lorem.sentences(3).join(' '),
-      maxFileSize: 10485760,
-      // 10 MB
+      maxFileSize: 10485760, // 10 MB
       automaticDownloadEnable: faker.randomGenerator.boolean(),
       lastSeenPrivacy: 'Everyone',
       readReceiptsEnablePrivacy: faker.randomGenerator.boolean(),
@@ -43,7 +43,7 @@ class ChatMockingService {
       picturePrivacy: 'Everyone',
       invitePermissionsPrivacy: 'Everyone',
       phone: faker.phoneNumber.us(),
-      id: faker.guid.guid(),
+      id: '11',
     );
   }
 
@@ -118,6 +118,7 @@ class ChatMockingService {
       return createMockedChat(msgs, [users[index].id!, appUserId]);
     });
     final chats = await Future.wait(chatFutures);
+
     return (chats: chats, users: users);
   }
 }

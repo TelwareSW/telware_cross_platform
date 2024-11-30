@@ -16,7 +16,8 @@ final UserModel userMock = UserModel(
   invitePermissionsPrivacy: 'admins',
   phone: '+01100663311',
   photo:
-      'https://static1.cbrimages.com/wordpress/wp-content/uploads/2023/05/jujutsu-kaisen-gojo-223.jpg', id: '11',
+      'https://static1.cbrimages.com/wordpress/wp-content/uploads/2023/05/jujutsu-kaisen-gojo-223.jpg',
+  id: '11',
 );
 
 const userMockPassword = 'qwerty99';

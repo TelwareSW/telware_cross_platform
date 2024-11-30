@@ -1,9 +1,15 @@
 import 'dart:math';
+
 import 'package:camera/camera.dart';
 import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/core/utils.dart';
+
+import 'package:faker/faker.dart';
+import 'package:telware_cross_platform/core/models/message_model.dart';
+import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
+
 
 // Faker function to generate a list of random MessageModel objects
 Future<List<MessageModel>> generateFakeMessages() async {
@@ -37,11 +43,12 @@ Future<List<MessageModel>> generateFakeMessages() async {
 
     // Create a new message
     MessageModel message = MessageModel(
-      senderId: random.nextBool() ? "John Doe" : "Jane Smith",
+      senderId: random.nextBool() ? '11' : faker.guid.guid(),
       messageType: MessageType.normal,
       messageContentType: MessageContentType.text,
       content:
           TextContent(sampleMessages[random.nextInt(sampleMessages.length)]),
+
       timestamp: currentDate.add(Duration(
         hours: random.nextInt(24),
         minutes: random.nextInt(60),

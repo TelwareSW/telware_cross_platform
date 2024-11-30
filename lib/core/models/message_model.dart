@@ -3,7 +3,9 @@ import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
+
 import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
+
 import 'package:telware_cross_platform/features/stories/utils/utils_functions.dart';
 
 import '../constants/server_constants.dart';
@@ -19,6 +21,7 @@ class MessageModel {
   @HiveField(2)
   final MessageContentType messageContentType;
   @HiveField(3)
+
   final MessageContent? content;
   @HiveField(4)
   final DateTime? autoDeleteTimestamp;
@@ -32,6 +35,8 @@ class MessageModel {
   Uint8List? photoBytes;
   @HiveField(9)
   final Map<String, MessageState> userStates;
+  @HiveField(8)
+  final MessageType messageType;
 
 //<editor-fold desc="Data Methods">
   MessageModel({

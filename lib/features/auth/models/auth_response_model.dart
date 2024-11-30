@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 
 class AuthResponseModel {

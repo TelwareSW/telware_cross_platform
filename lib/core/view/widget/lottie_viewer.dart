@@ -7,6 +7,7 @@ class LottieViewer extends StatefulWidget {
   final bool isIcon;
   final double width;
   final double height;
+
   final int? customDurationInMillis; // Optional custom duration in milliseconds
   final void Function()? onTap;
   final void Function()? onCompleted;

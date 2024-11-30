@@ -40,7 +40,7 @@ class ContactsLocalRepository {
       await _userBox.put(contact.userId, contactWithImage);
     } catch (e) {
       if (kDebugMode) {
-        print('Error updating contact in Hive: $e');
+        debugPrint('Error updating contact in Hive: $e');
       }
     }
   }
@@ -71,12 +71,12 @@ class ContactsLocalRepository {
         await _userBox.put(updatedContact.userId, updatedContact);
       } else {
         if (kDebugMode) {
-          print('User not found');
+          debugPrint('User not found');
         }
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Failed to update user in Hive: $e');
+        debugPrint('Failed to update user in Hive: $e');
       }
       throw Exception('Error updating user in Hive');
     }
@@ -97,7 +97,7 @@ class ContactsLocalRepository {
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Error saving story image to Hive: $e');
+        debugPrint('Error saving story image to Hive: $e');
       }
     }
   }

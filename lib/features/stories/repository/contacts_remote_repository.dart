@@ -173,7 +173,7 @@ class ContactsRemoteRepository {
       return response.statusCode == 201;
     } catch (e) {
       if (kDebugMode) {
-        print('Error occurred: $e');
+        debugPrint('Error occurred: $e');
       }
       return false;
     }
@@ -197,7 +197,7 @@ class ContactsRemoteRepository {
       return response.statusCode == 201;
     } catch (e) {
       if (kDebugMode) {
-        print('Error occurred: $e');
+        debugPrint('Error occurred: $e');
       }
       return false;
     }
@@ -214,7 +214,7 @@ class ContactsRemoteRepository {
       return response.statusCode == 204;
     } catch (e) {
       if (kDebugMode) {
-        print('Error occurred: $e');
+        debugPrint('Error occurred: $e');
       }
       return false;
     }
@@ -244,7 +244,7 @@ class ContactsRemoteRepository {
       return user;
     } catch (e) {
       if (kDebugMode) {
-        print('Error occurred: $e');
+        debugPrint('Error occurred: $e');
       }
       return null;
     }
@@ -262,7 +262,7 @@ class ContactsRemoteRepository {
     //   var response = await request.send();
     //   return response.statusCode == 200;
     // } catch (e) {
-    //   print('Error occurred: $e');
+    //   debugPrint('Error occurred: $e');
     //   return false;
     // }
     await Future.delayed(const Duration(seconds: 2));
@@ -281,7 +281,7 @@ class ContactsRemoteRepository {
     //   var response = await request.send();
     //   return response.statusCode == 204;
     // } catch (e) {
-    //   print('Error occurred: $e');
+    //   debugPrint('Error occurred: $e');
     //   return false;
     // }
     await Future.delayed(const Duration(seconds: 2));

@@ -13,7 +13,9 @@ import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/services/socket_service.dart';
+
 import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
+
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
@@ -66,6 +68,7 @@ class ChattingController {
     // todo: make use of the return of this
     _remoteRepository.getUserChats(
         _ref.read(tokenProvider)!, _ref.read(userProvider)!.id!);
+
   }
 
   Future<void> init() async {
@@ -84,15 +87,18 @@ class ChattingController {
     final events = _localRepository.getEventQueue();
     final newEvents = events.map((e) => e.copyWith(controller: this));
     _eventHandler.init(Queue<MessageEvent>.from(newEvents.toList()));
+
   }
 
   Future<void> newLoginInit() async {
     debugPrint('!!! newLoginInit called');
     if (USE_MOCK_DATA) {
       final mocker = ChatMockingService.instance;
+
       final response =
           await mocker.createMockedChats(20, _ref.read(tokenProvider)!);
       // descending sorting for the chats, based on last message
+
       response.chats.sort(
         (a, b) => b.messages[0].timestamp.compareTo(
           a.messages[0].timestamp,
@@ -104,11 +110,14 @@ class ChattingController {
       };
 
       debugPrint((await _localRepository.setChats(response.chats)).toString());
+
       debugPrint(
           (await _localRepository.setOtherUsers(otherUsersMap)).toString());
+
       debugPrint('!!! ended the newLoginInit mock');
       return;
     }
+
 
     final response = await _remoteRepository.getUserChats(
         _ref.read(tokenProvider)!, _ref.read(userProvider)!.id!);
@@ -124,6 +133,7 @@ class ChattingController {
           }
           return b.messages[0].timestamp.compareTo(a.messages[0].timestamp);
         },
+
       );
 
       final otherUsersMap = <String, UserModel>{
@@ -134,13 +144,16 @@ class ChattingController {
       _localRepository.setOtherUsers(otherUsersMap);
       debugPrint('!!! ended the newLoginInit');
     }
+
   }
 
   /// Send a text message.
   /// Must specify either the chatID or userID in case of new chat,
   /// otherwise, it will throw an error
   void sendMsg({
+
     required MessageContent content,
+
     required MessageType msgType,
     required MessageContentType contentType,
     required ChatType chatType,
@@ -166,7 +179,9 @@ class ChattingController {
     // todo: handle new chats case ----------------------------------!
     _ref
         .read(chatsViewModelProvider.notifier)
+
         .addSentMessage(content, chatID!, msgType, contentType);
+
     _localRepository.setChats(_ref.read(chatsViewModelProvider));
   }
 
@@ -191,7 +206,9 @@ class ChattingController {
   }
 
   // edit a message
+
   void editMsg(String msgID, String chatID, MessageContent content) {
+
     final msgEvent = DeleteMessageEvent({
       'chatId': chatID,
       'senderId': _ref.read(userProvider)!.id,
@@ -217,7 +234,9 @@ class ChattingController {
 
   Future<UserModel> getOtherUser(String id) async {
     // todo: call the remote repo and get the other user from server
+
     _remoteRepository.getOtherUser(_ref.read(tokenProvider)!, id);
+
     return userMock;
   }
 

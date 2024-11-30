@@ -108,3 +108,4 @@ enum DeleteMessageType {
 
   const DeleteMessageType({required this.text});
 }
+

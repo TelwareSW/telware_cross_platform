@@ -25,7 +25,7 @@ class _PickFromGalleryState extends State<PickFromGallery> {
       });
     } else {
       if (kDebugMode) {
-        print("No image selected.");
+        debugPrint("No image selected.");
       }
     }
   }
