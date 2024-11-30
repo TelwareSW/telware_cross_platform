@@ -1,53 +1,31 @@
 import 'dart:math';
-
 import 'dart:io';
-
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:file_picker/file_picker.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart'; // Import flutter_svg
-import 'package:intl/intl.dart';
-
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:telware_cross_platform/core/mock/messages_mock.dart';
-
-import 'package:collection/collection.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_cupertino_datetime_picker/flutter_cupertino_datetime_picker.dart';
-
-// ignore: depend_on_referenced_packages
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:collection/collection.dart';
+import 'package:flutter_cupertino_datetime_picker/flutter_cupertino_datetime_picker.dart';
 import 'package:telware_cross_platform/core/constants/keys.dart';
-
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
-
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
+import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/providers/chat_provider.dart';
-
 import 'package:telware_cross_platform/core/utils.dart';
-
-import 'package:telware_cross_platform/core/utils.dart';
-import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/core/view/widget/popup_menu_item_widget.dart';
-import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
-import 'package:telware_cross_platform/features/chat/providers/chat_provider.dart';
-
 import 'package:telware_cross_platform/features/chat/view/widget/bottom_input_bar_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/chat_header_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/date_label_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/message_tile_widget.dart';
-
 import 'package:vibration/vibration.dart';
-
 import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
@@ -362,10 +340,11 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     int currentMatchIndex = 0;
     List<int> messageIndices = [];
     for (int i = 0; i < chatContent.length; i++) {
-      if (chatContent[i] is! MessageModel) {
+      var msg = chatContent[i];
+      if (msg is! MessageModel || msg.messageContentType !=  MessageContentType.text) {
         continue;
       }
-      String messageText = chatContent[i].content ?? "";
+      String messageText = msg.content?.toJson()['text'] ?? "";
       List<MapEntry<int, int>> matches = kmp(messageText, searchText);
       if (matches.isNotEmpty && matches[0].value != 0) {
         numberOfMatches += 1;

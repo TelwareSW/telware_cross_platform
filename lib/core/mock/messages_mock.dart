@@ -10,8 +10,21 @@ import 'package:faker/faker.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 
-// Faker function to generate a list of random MessageModel objects
-Future<List<MessageModel>> generateFakeMessages() async {
+randomizeMessageContentType() {
+  final Random random = Random();
+  const List<MessageContentType> messageContentTypes = [
+    MessageContentType.text,
+    MessageContentType.text,
+    MessageContentType.text,
+    MessageContentType.text,
+    MessageContentType.image,
+    MessageContentType.audio,
+    MessageContentType.video,
+  ];
+  return messageContentTypes[random.nextInt(messageContentTypes.length)];
+}
+
+randomizeMessageContent(MessageContentType contentType) async {
   // Sample messages
   final List<String> sampleMessages = [
     "Hello! How are you?",
@@ -26,6 +39,39 @@ Future<List<MessageModel>> generateFakeMessages() async {
     "Sure, let's catch up in the afternoon.",
   ];
 
+  final Random random = Random();
+  MessageContent content;
+  switch (contentType) {
+    case MessageContentType.text:
+      return TextContent(sampleMessages[random.nextInt(sampleMessages.length)]);
+    case MessageContentType.image:
+      XFile imageFile =
+          await loadAssetAsXFile("assets/imgs/marwan.jpg", "marwan.jpg");
+      return ImageContent(
+        imageUrl: "assets/imgs/marwan.jpg",
+        filePath: imageFile.path,
+      );
+    case MessageContentType.audio:
+      return AudioContent(
+        audioUrl: "dummy_audio_url",
+        duration: const Duration(minutes: 1, seconds: 20).inSeconds,
+        filePath: "assets/audio/test8.mp3",
+      );
+    case MessageContentType.video:
+      XFile videoFile = await loadAssetAsXFile("assets/video/demo.mp4", "demo.mp4");
+      return VideoContent(
+      videoUrl: "assets/video/demo.mp4",
+      duration: const Duration(minutes: 1, seconds: 20).inSeconds,
+      filePath: videoFile.path,
+      );
+    default:
+      return TextContent(sampleMessages[random.nextInt(sampleMessages.length)]);
+  }
+}
+
+
+Future<List<MessageModel>> generateFakeMessages() async {
+
   // Random generator
   final Random random = Random();
 
@@ -39,14 +85,14 @@ Future<List<MessageModel>> generateFakeMessages() async {
   for (int i = 0; i < 30; i++) {
     // Randomly increase the current date by 0 to 2 days
     currentDate = currentDate.add(Duration(days: random.nextInt(3)));
-
+    MessageContentType contentType = randomizeMessageContentType();
+    MessageContent content = await randomizeMessageContent(contentType);
     // Create a new message
     MessageModel message = MessageModel(
       senderId: random.nextBool() ? '11' : faker.guid.guid(),
       messageType: MessageType.normal,
-      messageContentType: MessageContentType.text,
-      content:
-          TextContent(sampleMessages[random.nextInt(sampleMessages.length)]),
+      messageContentType: contentType,
+      content: content,
       timestamp: currentDate.add(Duration(
         hours: random.nextInt(24),
         minutes: random.nextInt(60),
@@ -57,50 +103,6 @@ Future<List<MessageModel>> generateFakeMessages() async {
     // Add the generated message to the list
     generatedMessages.add(message);
   }
-  MessageModel audioMessage = MessageModel(
-    messageType: MessageType.normal,
-    messageContentType: MessageContentType.audio,
-    senderId: "11",
-    content: AudioContent(
-      audioUrl: "dummy_audio_url",
-      duration: const Duration(minutes: 1, seconds: 20).inSeconds,
-      filePath: "assets/audio/test8.mp3",
-    ),
-    timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
-    userStates: {},
-  );
-  XFile imageFile =
-      await loadAssetAsXFile("assets/imgs/marwan.jpg", "marwan.jpg");
-  XFile videoFile = await loadAssetAsXFile("assets/video/demo.mp4", "demo.mp4");
-
-  MessageModel imageMessage = MessageModel(
-    messageType: MessageType.normal,
-    messageContentType: MessageContentType.image,
-    senderId: "11",
-    content: ImageContent(
-      imageUrl: "assets/imgs/marwan.jpg",
-      filePath: imageFile.path,
-    ),
-    timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
-    userStates: {},
-  );
-
-  MessageModel videoMessage = MessageModel(
-    messageType: MessageType.normal,
-    messageContentType: MessageContentType.video,
-    senderId: "11",
-    content: VideoContent(
-      videoUrl: "assets/video/demo.mp4",
-      duration: const Duration(minutes: 1, seconds: 20).inSeconds,
-      filePath: videoFile.path,
-    ),
-    timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
-    userStates: {},
-  );
-
-  generatedMessages.add(audioMessage);
-  generatedMessages.add(imageMessage);
-  generatedMessages.add(videoMessage);
 
   return generatedMessages;
 }

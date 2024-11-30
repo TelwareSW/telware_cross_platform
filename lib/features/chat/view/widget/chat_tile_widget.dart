@@ -8,6 +8,7 @@ import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
+import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/user/view/widget/avatar_generator.dart';
 
 class ChatTileWidget extends StatelessWidget {
@@ -24,6 +25,29 @@ class ChatTileWidget extends StatelessWidget {
   final bool showDivider;
   final bool sentByUser;
 
+  String _getDisplayText(MessageContentType displayMessageContentType) {
+    if (chatModel.draft?.isNotEmpty ?? false) {
+      return chatModel.draft!;
+    }
+
+    switch (displayMessageContentType) {
+      case MessageContentType.text:
+        return displayMessage.content?.toJson()['text'];
+      case MessageContentType.image:
+        return "Photo";
+      case MessageContentType.video:
+        return "Video";
+      case MessageContentType.audio:
+        return "Voice message";
+      case MessageContentType.file:
+        return "File";
+      case MessageContentType.sticker:
+        return "Sticker";
+      default:
+        return "Unknown";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final keyValue = (key as ValueKey).value;
@@ -33,6 +57,7 @@ class ChatTileWidget extends StatelessWidget {
     final unreadCount = _getUnreadMessageCount();
     final isMuted = chatModel.isMuted;
     final isMentioned = chatModel.isMentioned;
+    final displayMessageContentType = displayMessage.messageContentType;
 
     return InkWell(
       onTap: () {
@@ -156,13 +181,11 @@ class ChatTileWidget extends StatelessWidget {
                                         ),
                                       ),
                                       TextSpan(
-                                        text: hasDraft
-                                            ? chatModel.draft!
-                                            : displayMessage.content
-                                                    ?.toJson()['text'] ??
-                                                "",
-                                        style: const TextStyle(
-                                          color: Palette.accentText,
+                                        text: _getDisplayText(displayMessageContentType),
+                                        style: TextStyle(
+                                          color: hasDraft || displayMessageContentType == MessageContentType.text
+                                              ? Palette.accentText
+                                              : Palette.accent,
                                           fontStyle: FontStyle.normal,
                                         ),
                                       ),

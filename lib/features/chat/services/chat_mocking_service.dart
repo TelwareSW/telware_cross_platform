@@ -87,6 +87,12 @@ class ChatMockingService {
     }
   }
 
+  ChatType _getRandomChatType() {
+    final Random random = Random();
+    const List<ChatType> chatTypes = ChatType.values;
+    return chatTypes[random.nextInt(chatTypes.length)];
+  }
+
   ChatModel createMockedChat(List<MessageModel> messages, List<String> users) {
     final faker = Faker();
 
@@ -94,7 +100,7 @@ class ChatMockingService {
       id: faker.guid.guid(),
       title: faker.lorem.words(3).join(' '),
       userIds: users,
-      type: ChatType.private,
+      type: _getRandomChatType(),
       messages: messages,
       description: faker.lorem.sentence(),
       lastMessageTimestamp:
@@ -102,7 +108,7 @@ class ChatMockingService {
       isArchived: faker.randomGenerator.boolean(),
       isMuted: faker.randomGenerator.boolean(),
       isMentioned: faker.randomGenerator.boolean(),
-      draft: faker.lorem.sentence(),
+      draft: faker.randomGenerator.integer(10) < 3 ? faker.lorem.sentence() : "",
     );
   }
 

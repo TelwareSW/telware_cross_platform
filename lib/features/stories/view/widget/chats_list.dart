@@ -27,9 +27,7 @@ class ChatsList extends ConsumerWidget {
       delegate: SliverChildBuilderDelegate(
         (BuildContext context, int index) {
           return _delegate(
-
             ValueKey(ChatKeys.chatTilePrefix.value + index.toString()),
-
             chatsList[index],
             ref.read(userProvider)!.id!,
           );
