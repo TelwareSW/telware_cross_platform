@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_cupertino_datetime_picker/flutter_cupertino_datetime_picker.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
@@ -180,6 +181,7 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
           chatModel.id != null ? chatModel.messages : <MessageModel>[];
       chatContent = _generateChatContentWithDateLabels(messages);
     const menuItemsHeight = 45.0;
+    var messagesIndex = 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -410,6 +412,7 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
                             return item;
                           } else if (item is MessageModel) {
                             return MessageTileWidget(
+                              key: ValueKey('${MessageKeys.messagePrefix}${messagesIndex++}'),
                               messageModel: item,
                               isSentByMe: item.senderId == ref.read(userProvider)!.id,
                               showInfo: type == ChatType.group,

@@ -84,3 +84,15 @@ class ChatKeys {
       ValueKey('-message');
   static const ValueKey<String> chatAvatarPostfix = ValueKey('-avatar');
 }
+
+class MessageKeys {
+  static const ValueKey<String> messagePrefix = ValueKey('message-');
+  static const ValueKey<String> messageSenderPostfix = ValueKey('-sender');
+  static const ValueKey<String> messageContentPostfix = ValueKey('-content');
+  static const ValueKey<String> messageTimePostfix = ValueKey('-time');
+  static const ValueKey<String> messageStatusPostfix = ValueKey('-status');
+  static const ValueKey<String> messageReplyPostfix = ValueKey('-reply');
+  static const ValueKey<String> messageForwardPostfix = ValueKey('-forward');
+  static const ValueKey<String> messageCopyPostfix = ValueKey('-copy');
+  static const ValueKey<String> messageDeletePostfix = ValueKey('-delete');
+}
