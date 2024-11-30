@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../../core/theme/dimensions.dart';
 import '../../../../core/theme/palette.dart';
+import '../../../../core/view/widget/lottie_viewer.dart';
 import '../../view_model/devices_view_model.dart';
 import '../widget/section_title_widget.dart';
 import '../widget/toolbar_widget.dart';
@@ -33,6 +34,24 @@ class DevicesScreen extends ConsumerWidget {
           return SingleChildScrollView(
             child: Column(
               children: [
+                Container(
+                  color: Palette.secondary,
+                  child: const Column(
+                    children: [
+                      LottieViewer(
+                        path: 'assets/tgs/laptop_devices_screen.tgs',
+                        width: 125,
+                        height: 125,
+                      ),
+                      Text('Track the current sessions of your account',style: TextStyle(color: Colors.white),),
+                      SizedBox(
+                        height: Dimensions.sectionGaps,
+                        width: double.infinity,
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 10,),
                 ...sessions.asMap().entries.map((entry) {
                   int sectionIndex = entry.key;
                   final section = entry.value;
@@ -55,7 +74,8 @@ class DevicesScreen extends ConsumerWidget {
                               children: List.generate(options.length, (index) {
                                 final option = options[index];
                                 return SessionTile(
-                                  key: Key("session_tile_${sectionIndex}_$index"),
+                                  key: Key(
+                                      "session_tile_${sectionIndex}_$index"),
                                   icon: option.icon,
                                   text: option.phoneName,
                                   telegramPlatform: option.telegramVersion,

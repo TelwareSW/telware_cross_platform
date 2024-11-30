@@ -40,7 +40,7 @@ class ContactsRemoteRepository {
         ],
         userName: 'game of thrones',
         userImageUrl:
-            'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
+            'https://lh3.googleusercontent.com/a/ACg8ocKeItFVrUykUDNu3JhxVKxnZzFGyRuHK5godnf1zwEZPgcRRFo=s96-c',
         userId: 'id1',
       ),
       ContactModel(
