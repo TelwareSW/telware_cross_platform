@@ -9,13 +9,12 @@ class StoryAvatar extends StatelessWidget {
   final VoidCallback onTap;
   final bool showBorder;
 
-  const StoryAvatar({
-    super.key,
+  StoryAvatar({
     required this.user,
     required this.screenType,
     required this.onTap,
     this.showBorder = true,
-  });
+  }):super(key: ValueKey('${user.userId}_$screenType'));
 
   @override
   Widget build(BuildContext context) {

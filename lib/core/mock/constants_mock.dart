@@ -3,3 +3,4 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 final USE_MOCK_DATA = (dotenv.env['USE_MOCK_DATA'] ?? 'false') == 'true';
+final USE_MOCK_DATA_STORIES = (dotenv.env['USE_MOCK_DATA_STORIES'] ?? 'false') == 'true';

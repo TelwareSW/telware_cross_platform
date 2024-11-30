@@ -116,30 +116,37 @@ class _CropImageScreenState extends State<CropImageScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               IconButton(
+                  key: const ValueKey('refresh_key'),
                   icon: const Icon(Icons.refresh), onPressed: controller.reset),
               IconButton(
+                  key: const ValueKey('zoom_in_key'),
                   icon: const Icon(Icons.zoom_in),
                   onPressed: () =>
                       controller.addTransition(CropImageData(scale: 1.33))),
               IconButton(
+                  key: const ValueKey('zoom_out_key'),
                   icon: const Icon(Icons.zoom_out),
                   onPressed: () =>
                       controller.addTransition(CropImageData(scale: 0.75))),
               IconButton(
+                  key: const ValueKey('rotate_left_key'),
                   icon: const Icon(Icons.rotate_left),
                   onPressed: () =>
                       controller.addTransition(CropImageData(angle: -pi / 4))),
               IconButton(
+                  key: const ValueKey('rotate_right_key'),
                   icon: const Icon(Icons.rotate_right),
                   onPressed: () =>
                       controller.addTransition(CropImageData(angle: pi / 4))),
               PopupMenuButton(
+                key: const ValueKey('popup_menu_key'),
                 icon: const Icon(Icons.crop_original),
                 onSelected: _changeCropShape,
                 itemBuilder: (BuildContext context) {
                   return CustomCropShape.values.map(
                     (shape) {
                       return PopupMenuItem(
+                        key: ValueKey('popup_menu_item_${shape.name}'),
                         value: shape,
                         child: getShapeIcon(shape),
                       );
@@ -148,6 +155,7 @@ class _CropImageScreenState extends State<CropImageScreen> {
                 },
               ),
               IconButton(
+                key: const ValueKey('change_color_key'),
                 icon: const Icon(
                   Icons.color_lens_sharp,
                 ),
@@ -158,6 +166,7 @@ class _CropImageScreenState extends State<CropImageScreen> {
                 },
               ),
               IconButton(
+                key: const ValueKey('submit_crop_key'),
                 icon: const Icon(
                   Icons.crop,
                   color: Colors.green,

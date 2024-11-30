@@ -30,16 +30,19 @@ class BottomActionButtonsEditTakenImage extends StatelessWidget {
       alignment: WrapAlignment.center,
       children: [
         ElevatedButton.icon(
+          key: const ValueKey('to_crop_screen_key'),
           onPressed: cropImage,
           icon: const Icon(Icons.crop),
           label: const Text("Crop"),
         ),
         ElevatedButton.icon(
+          key: const ValueKey('discard_key'),
           onPressed: discardChanges,
           icon: const Icon(Icons.clear),
           label: const Text("Discard"),
         ),
         ElevatedButton.icon(
+          key: const ValueKey('post_key'),
           onPressed: () async {
             FocusScope.of(context).unfocus();
             File combinedImageFile = await saveAndPostStory();
