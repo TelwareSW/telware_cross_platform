@@ -3,43 +3,27 @@ import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
-import 'package:telware_cross_platform/core/models/message_content.dart';
+import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
 import 'package:telware_cross_platform/features/stories/utils/utils_functions.dart';
 
 import '../constants/server_constants.dart';
 
 part 'message_model.g.dart';
 
-
-enum MessageState {
-  sent,
-  read,
-}
-
-enum MessageType {
-  text,
-  audio,
-  image,
-  video,
-  file,
-}
-
 @HiveType(typeId: 6)
 class MessageModel {
   @HiveField(0)
   final String senderId;
   @HiveField(1)
-  final MessageType type;
+  final MessageType messageType;
   @HiveField(2)
-  final MessageContent? content;
+  final MessageContentType messageContentType;
   @HiveField(3)
-
-  final DateTime? autoDeleteTimestamp;
+  final MessageContent? content;
   @HiveField(4)
-  final DateTime timestamp;
-
+  final DateTime? autoDeleteTimestamp;
   @HiveField(5)
-  final Duration? autoDeleteDuration;
+  final DateTime timestamp;
   @HiveField(6)
   String? id;
   @HiveField(7)
@@ -48,14 +32,13 @@ class MessageModel {
   Uint8List? photoBytes;
   @HiveField(9)
   final Map<String, MessageState> userStates;
-  @HiveField(10)
-  final MessageType messageType;
 
 //<editor-fold desc="Data Methods">
   MessageModel({
     this.autoDeleteTimestamp,
     required this.senderId,
-    required this.type,
+    required this.messageType,
+    required this.messageContentType,
     this.content,
     required this.timestamp,
     this.id,
@@ -96,6 +79,7 @@ class MessageModel {
     if (identical(this, other)) return true;
 
     return other.messageType == messageType &&
+        other.messageContentType == messageContentType &&
         other.senderId == senderId &&
         other.content == content &&
         other.timestamp == timestamp &&
@@ -109,6 +93,7 @@ class MessageModel {
   @override
   int get hashCode {
     return messageType.hashCode ^
+        messageContentType.hashCode ^
         autoDeleteTimestamp.hashCode ^
         senderId.hashCode ^
         content.hashCode ^
@@ -130,13 +115,13 @@ class MessageModel {
         'photo: $photo,\n'
         'userStates: $userStates,\n'
         'messageType: ${messageType.name},\n'
+        'messageContentType: ${messageContentType.name},\n'
         'isPhotoBytesSet: ${photoBytes != null}\n'
         ')');
   }
 
   MessageModel copyWith({
     String? senderId,
-    MessageType? type,
     MessageContent? content,
     DateTime? timestamp,
     DateTime? autoDeleteTimestamp,
@@ -144,6 +129,8 @@ class MessageModel {
     String? photo,
     Uint8List? photoBytes,
     Map<String, MessageState>? userStates,
+    MessageType? messageType,
+    MessageContentType? messageContentType,
   }) {
     return MessageModel(
       senderId: senderId ?? this.senderId,
@@ -154,7 +141,8 @@ class MessageModel {
       photo: photo ?? this.photo,
       photoBytes: photoBytes ?? this.photoBytes,
       userStates: userStates ?? Map.from(this.userStates),
-      type: type ?? this.type,
+      messageType: messageType ?? this.messageType,
+      messageContentType: messageContentType ?? this.messageContentType,
     );
   }
 
@@ -170,7 +158,8 @@ class MessageModel {
           ? userStates.map(
               (key, value) => MapEntry(key, value.toString().split('.').last))
           : null,
-      'messageType': messageType.name
+      'messageType': messageType.name,
+      'messageContentType': messageContentType.name
     };
 
     return map;
@@ -183,6 +172,8 @@ class MessageModel {
       timestamp: DateTime.parse(map['timestamp'] as String),
       id: map['messageId'] as String?,
       photo: map['photo'] as String?,
+      messageType: MessageType.getType(map['messageType']),
+      messageContentType: MessageContentType.getType(map['messageContentType']),
       autoDeleteTimestamp: map['autoDeleteTimeStamp'] != null
           ? DateTime.parse(map['autoDeleteTimeStamp'])
           : null,
@@ -195,7 +186,6 @@ class MessageModel {
           ),
         ),
       ),
-      type: map['type']! as MessageType,
     );
     await message._setPhotoBytes();
     return message;

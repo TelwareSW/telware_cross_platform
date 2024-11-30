@@ -1,16 +1,13 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
+import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 import 'dart:async';
 import 'dart:io';
-import 'package:camera/camera.dart';
-import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
@@ -18,7 +15,7 @@ import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/audio_player_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/slide_to_cancel_widget.dart';
 
-class BottomInputBarWidget extends ConsumerWidget {
+class BottomInputBarWidget extends ConsumerStatefulWidget {
   final TextEditingController controller; // Accept controller as a parameter
   final RecorderController recorderController;
   final PlayerController playerController;
@@ -51,10 +48,11 @@ class BottomInputBarWidget extends ConsumerWidget {
   });
 
   @override
-  BottomInputBarWidgetState createState() => BottomInputBarWidgetState();
+  ConsumerState<BottomInputBarWidget> createState() =>
+      BottomInputBarWidgetState();
 }
 
-class BottomInputBarWidgetState extends State<BottomInputBarWidget> {
+class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
   bool isTextEmpty = true;
 
   int elapsedTime = 0; // Track the elapsed time in seconds
@@ -121,7 +119,7 @@ class BottomInputBarWidgetState extends State<BottomInputBarWidget> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
           horizontal: widget.isRecordingCompleted ? 0 : 10, vertical: 0),
@@ -300,9 +298,10 @@ class BottomInputBarWidgetState extends State<BottomInputBarWidget> {
     );
   }
 
+  //TODO: Implement the sendMsg method with another types of messages
   void sendMsg(WidgetRef ref) {
     ref.read(chattingControllerProvider).sendMsg(
-          content: controller.text,
+          content: TextContent(widget.controller.text),
           msgType: MessageType.normal,
           contentType: MessageContentType.text,
           chatType: ChatType.private,

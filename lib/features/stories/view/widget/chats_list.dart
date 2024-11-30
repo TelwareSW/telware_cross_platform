@@ -4,7 +4,7 @@ import 'package:telware_cross_platform/core/models/chat_model.dart';
 
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 
-import 'package:telware_cross_platform/core/models/message_content.dart';
+import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 
 import 'package:telware_cross_platform/features/chat/view/widget/chat_tile_widget.dart';

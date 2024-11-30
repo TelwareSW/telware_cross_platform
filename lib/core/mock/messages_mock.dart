@@ -1,10 +1,9 @@
 import 'dart:math';
 import 'package:camera/camera.dart';
-import 'package:telware_cross_platform/core/models/message_content.dart';
+import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/core/utils.dart';
-
 
 // Faker function to generate a list of random MessageModel objects
 Future<List<MessageModel>> generateFakeMessages() async {
@@ -39,7 +38,8 @@ Future<List<MessageModel>> generateFakeMessages() async {
     // Create a new message
     MessageModel message = MessageModel(
       senderId: random.nextBool() ? "John Doe" : "Jane Smith",
-      type: MessageType.text,
+      messageType: MessageType.normal,
+      messageContentType: MessageContentType.text,
       content:
           TextContent(sampleMessages[random.nextInt(sampleMessages.length)]),
       timestamp: currentDate.add(Duration(
@@ -53,8 +53,9 @@ Future<List<MessageModel>> generateFakeMessages() async {
     generatedMessages.add(message);
   }
   MessageModel audioMessage = MessageModel(
-    type: MessageType.audio,
-    senderName: "John Doe",
+    messageType: MessageType.normal,
+    messageContentType: MessageContentType.audio,
+    senderId: "John Doe",
     content: AudioContent(
       audioUrl: "dummy_audio_url",
       duration: const Duration(minutes: 1, seconds: 20),
@@ -68,8 +69,9 @@ Future<List<MessageModel>> generateFakeMessages() async {
   XFile videoFile = await loadAssetAsXFile("assets/video/demo.mp4", "demo.mp4");
 
   MessageModel imageMessage = MessageModel(
-    type: MessageType.image,
-    senderName: "John Doe",
+    messageType: MessageType.normal,
+    messageContentType: MessageContentType.image,
+    senderId: "John Doe",
     content: ImageContent(
       imageUrl: "assets/imgs/marwan.jpg",
       file: imageFile,
@@ -79,8 +81,9 @@ Future<List<MessageModel>> generateFakeMessages() async {
   );
 
   MessageModel videoMessage = MessageModel(
-    type: MessageType.video,
-    senderName: "John Doe",
+    messageType: MessageType.normal,
+    messageContentType: MessageContentType.video,
+    senderId: "John Doe",
     content: VideoContent(
       videoUrl: "assets/video/demo.mp4",
       duration: const Duration(minutes: 1, seconds: 20),

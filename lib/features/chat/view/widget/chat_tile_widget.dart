@@ -28,119 +28,71 @@ class ChatTileWidget extends StatelessWidget {
     final imageBytes = chatModel.photoBytes;
     final hasDraft = chatModel.draft?.isNotEmpty ?? false;
     final isGroupChat = chatModel.type == ChatType.group;
-    final messageStateIcon = sentByUser ? Icon(getMessageStateIcon(displayMessage), size: 16, color: Palette.accent,) : null;
+    final messageStateIcon = sentByUser
+        ? Icon(
+            getMessageStateIcon(displayMessage),
+            size: 16,
+            color: Palette.accent,
+          )
+        : null;
     final unreadCount = _getUnreadMessageCount();
     final isMuted = chatModel.isMuted;
     final isMentioned = chatModel.isMentioned;
 
     return InkWell(
-      onTap: () { context.push(Routes.chatScreen, extra: chatModel.id); },
+      onTap: () {
+        context.push(Routes.chatScreen, extra: chatModel.id);
+      },
       child: Container(
-        color: Palette.secondary,
-        child: Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(right: 12.0, left: 12.0, top: 8.0, bottom: 8.0),
-              child: CircleAvatar(
-                radius: 28,
-                backgroundImage: imageBytes != null ? MemoryImage(imageBytes) : null,
-                backgroundColor: imageBytes == null ? Palette.primary : null,
-                child: imageBytes == null
-                    ? AvatarGenerator(
-                  name: chatModel.title,
-                  backgroundColor: getRandomColor(),
-                  size: 100,
-                )
-                    : null,
+          color: Palette.secondary,
+          child: Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(
+                    right: 12.0, left: 12.0, top: 8.0, bottom: 8.0),
+                child: CircleAvatar(
+                  radius: 28,
+                  backgroundImage:
+                      imageBytes != null ? MemoryImage(imageBytes) : null,
+                  backgroundColor: imageBytes == null ? Palette.primary : null,
+                  child: imageBytes == null
+                      ? AvatarGenerator(
+                          name: chatModel.title,
+                          backgroundColor: getRandomColor(),
+                          size: 100,
+                        )
+                      : null,
+                ),
               ),
-            ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Padding (
-                    padding: const EdgeInsets.only(right: 14.0, top: 3.0, bottom: 8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                chatModel.title,
-                                style: const TextStyle(
-                                  color: Palette.primaryText,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 16,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            if (isMuted)
-                              const Padding(
-                                padding: EdgeInsets.only(right: 2.0),
-                                child: Icon(
-                                  Icons.volume_off,
-                                  size: 18,
-                                  color: Palette.inactiveSwitch,
-                                ),
-                              ),
-                            if (messageStateIcon != null)
-                              Padding(
-                                padding: const EdgeInsets.only(right: 2.0),
-                                child: messageStateIcon,
-                              ),
-                            Text(
-                              formatTimestamp(displayMessage.timestamp),
-                              style: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 12,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4,),
-                        Row(
-                          children: [
-                            // Displayed message content
-                            Expanded(
-                              child: RichText(
-                                text: TextSpan(
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          right: 14.0, top: 3.0, bottom: 8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  chatModel.title,
                                   style: const TextStyle(
                                     color: Palette.primaryText,
                                     fontWeight: FontWeight.w500,
                                     fontSize: 16,
                                   ),
-                                  children: [
-                                    TextSpan(
-                                      text: hasDraft ? "Draft: "
-                                          : isGroupChat ? "${'John Doe'.split(" ")[0]}: " : "",
-                                      style: TextStyle(
-                                        color: hasDraft ? Palette.error
-                                            : isGroupChat ? Palette.primaryText : Palette.accentText,
-                                        fontWeight: hasDraft ? FontWeight.bold : null,
-                                      ),
-                                    ),
-                                    TextSpan(
-                                      text: hasDraft
-                                          ? chatModel.draft!
-                                          : displayMessage.content ?? "",
-                                      style: const TextStyle(
-                                        color: Palette.accentText,
-                                        fontStyle: FontStyle.normal,
-                                      ),
-                                    ),
-                                  ],
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               if (isMuted)
                                 const Padding(
-                                  padding: EdgeInsets.only(right: 8.0),
+                                  padding: EdgeInsets.only(right: 2.0),
                                   child: Icon(
                                     Icons.volume_off,
                                     size: 18,
@@ -149,7 +101,7 @@ class ChatTileWidget extends StatelessWidget {
                                 ),
                               if (messageStateIcon != null)
                                 Padding(
-                                  padding: const EdgeInsets.only(right: 8.0),
+                                  padding: const EdgeInsets.only(right: 2.0),
                                   child: messageStateIcon,
                                 ),
                               Text(
@@ -163,6 +115,9 @@ class ChatTileWidget extends StatelessWidget {
                               ),
                             ],
                           ),
+                          const SizedBox(
+                            height: 4,
+                          ),
                           Row(
                             children: [
                               // Displayed message content
@@ -170,15 +125,15 @@ class ChatTileWidget extends StatelessWidget {
                                 child: RichText(
                                   text: TextSpan(
                                     style: const TextStyle(
-                                      color: Palette.primaryText,
-                                      fontSize: 10,
+                                      fontSize: 14,
+                                      fontStyle: FontStyle.italic,
                                     ),
                                     children: [
                                       TextSpan(
                                         text: hasDraft
                                             ? "Draft: "
                                             : isGroupChat
-                                                ? "${displayMessage.senderName.split(" ")[0]}: "
+                                                ? "${'John Doe'.split(" ")[0]}: "
                                                 : "",
                                         style: TextStyle(
                                           color: hasDraft
@@ -194,7 +149,7 @@ class ChatTileWidget extends StatelessWidget {
                                         text: hasDraft
                                             ? chatModel.draft!
                                             : displayMessage.content
-                                                    ?.toJson()["text"] ??
+                                                    ?.toJson()['text'] ??
                                                 "",
                                         style: const TextStyle(
                                           color: Palette.accentText,
@@ -232,7 +187,7 @@ class ChatTileWidget extends StatelessWidget {
                                       unreadCount.toString(),
                                       style: const TextStyle(
                                         color: Palette.primaryText,
-                                        fontSize: 12,
+                                        fontSize: 10,
                                       ),
                                     ),
                                   ),

@@ -4,6 +4,7 @@ import 'package:faker/faker.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
+import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
@@ -32,7 +33,8 @@ class ChatMockingService {
       photo: faker.internet.httpsUrl(),
       status: faker.lorem.sentence(),
       bio: faker.lorem.sentences(3).join(' '),
-      maxFileSize: 10485760, // 10 MB
+      maxFileSize: 10485760,
+      // 10 MB
       automaticDownloadEnable: faker.randomGenerator.boolean(),
       lastSeenPrivacy: 'Everyone',
       readReceiptsEnablePrivacy: faker.randomGenerator.boolean(),
@@ -58,7 +60,8 @@ class ChatMockingService {
           faker.randomGenerator.boolean() ? otherUserId : appUserId;
       return MessageModel(
         senderId: senderId,
-        content: faker.lorem.sentence(),
+        messageContentType: MessageContentType.text,
+        content: TextContent(faker.lorem.sentence()),
         timestamp: DateTime.now().subtract(Duration(minutes: index)),
         messageType: MessageType.normal,
         userStates: {
@@ -68,7 +71,7 @@ class ChatMockingService {
       );
     });
   }
-  
+
   // Helper method to get a random message state
   MessageState _getRandomMessageState() {
     final Random random = Random();

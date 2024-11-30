@@ -1,4 +1,3 @@
-
 import 'dart:math';
 
 import 'dart:io';
@@ -24,7 +23,6 @@ import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/providers/chat_provider.dart';
 
 import 'package:telware_cross_platform/core/utils.dart';
-import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 
 import 'package:telware_cross_platform/features/chat/view/widget/bottom_input_bar_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/chat_header_widget.dart';
@@ -42,13 +40,13 @@ class ChatScreen extends ConsumerStatefulWidget {
   ConsumerState<ChatScreen> createState() => _ChatScreen();
 }
 
-class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver {
+class _ChatScreen extends ConsumerState<ChatScreen>
+    with WidgetsBindingObserver {
   List<dynamic> chatContent = [];
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
   late ChatModel? chatModel;
-
 
   //---------------------------------Recording--------------------------------
   // TODO: This works only on mobile if you tried to run it on web it will throw an error
@@ -72,7 +70,6 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
 
   late ChatType type;
 
-
   @override
   void initState() {
     super.initState();
@@ -90,17 +87,8 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
       ..sampleRate = 44100;
 
     _getDir();
-    _controller.text = widget.chatModel.draft ?? "";
-    type = widget.chatModel.type;
-    WidgetsBinding.instance.addObserver(this);
-    loadChatContent();
-  }
-
-  loadChatContent() async {
-    final messages = await generateFakeMessages();
-    chatContent = _generateChatContentWithDateLabels(messages);
     _scrollToBottom();
-    setState(() {});
+    _loadChatContent();
   }
 
   @override
@@ -111,6 +99,13 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
     _playerController.dispose();
     WidgetsBinding.instance.removeObserver(this); // Remove the observer
     super.dispose();
+  }
+
+  _loadChatContent() async {
+    final messages = await generateFakeMessages();
+    chatContent = _generateChatContentWithDateLabels(messages);
+    _scrollToBottom();
+    setState(() {});
   }
 
   List<dynamic> _generateChatContentWithDateLabels(
@@ -338,8 +333,8 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
     final imageBytes = chatModel.photoBytes;
     final photo = chatModel.photo;
     final messages =
-          chatModel.id != null ? chatModel.messages : <MessageModel>[];
-      chatContent = _generateChatContentWithDateLabels(messages);
+        chatModel.id != null ? chatModel.messages : <MessageModel>[];
+    chatContent = _generateChatContentWithDateLabels(messages);
 
     return Scaffold(
       appBar: AppBar(
@@ -445,7 +440,8 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
                                 } else if (item is MessageModel) {
                                   return MessageTileWidget(
                                     messageModel: item,
-                                    isSentByMe: item.senderId == ref.read(userProvider)!.id,
+                                    isSentByMe: item.senderId ==
+                                        ref.read(userProvider)!.id,
                                     showInfo: type == ChatType.group,
                                   );
                                 } else {
@@ -455,7 +451,6 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
                             ),
                           ),
                         ),
-
                 ),
                 BottomInputBarWidget(
                   controller: _controller,

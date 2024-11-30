@@ -17,37 +17,43 @@ class MessageModelAdapter extends TypeAdapter<MessageModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return MessageModel(
-      autoDeleteTimestamp: fields[3] as DateTime?,
-      messageType: fields[8] as MessageType,
+      autoDeleteTimestamp: fields[4] as DateTime?,
       senderId: fields[0] as String,
-      content: fields[1] as String?,
-      timestamp: fields[2] as DateTime,
-      id: fields[4] as String?,
-      photo: fields[5] as String?,
-      photoBytes: fields[6] as Uint8List?,
-      userStates: (fields[7] as Map?)?.cast<String, MessageState>(),
+      messageType: fields[1] as MessageType,
+      messageContentType: fields[2] as MessageContentType,
+      content: fields[3] as MessageContent?,
+      timestamp: fields[5] as DateTime,
+      id: fields[6] as String?,
+      photo: fields[7] as String?,
+      photoBytes: fields[8] as Uint8List?,
+      userStates: (fields[9] as Map).cast<String, MessageState>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, MessageModel obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.senderId)
       ..writeByte(1)
-      ..write(obj.type)
+      ..write(obj.messageType)
       ..writeByte(2)
-      ..write(obj.content)
+      ..write(obj.messageContentType)
       ..writeByte(3)
+      ..write(obj.content)
       ..writeByte(4)
-      ..write(obj.autoDeleteDuration)
+      ..write(obj.autoDeleteTimestamp)
       ..writeByte(5)
-      ..write(obj.id)
+      ..write(obj.timestamp)
       ..writeByte(6)
-      ..write(obj.photo)
+      ..write(obj.id)
       ..writeByte(7)
-
+      ..write(obj.photo)
+      ..writeByte(8)
+      ..write(obj.photoBytes)
+      ..writeByte(9)
+      ..write(obj.userStates);
   }
 
   @override

@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
+import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/audio_message_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/video_player_widget.dart';
 import 'package:video_player/video_player.dart';
@@ -39,23 +40,24 @@ class MessageTileWidget extends StatelessWidget {
     IconData messageState = getMessageStateIcon(messageModel);
     Widget senderNameWidget = showInfo && !isSentByMe
         ? Text(
-      messageModel.senderId,
-      style: TextStyle(
-        fontWeight: FontWeight.bold,
-        color: nameColor,
-        fontSize: 12,
-      ),
-    )
+            messageModel.senderId,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: nameColor,
+              fontSize: 12,
+            ),
+          )
         : const SizedBox.shrink();
 
     return Align(
       alignment: messageAlignment,
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 5),
-        padding: EdgeInsets.all(messageModel.type == MessageType.image ||
-                messageModel.type == MessageType.video
-            ? 3
-            : 12),
+        padding: EdgeInsets.all(
+            messageModel.messageContentType == MessageContentType.image ||
+                    messageModel.messageContentType == MessageContentType.video
+                ? 3
+                : 12),
         constraints:
             BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
         decoration: BoxDecoration(
@@ -75,7 +77,7 @@ class MessageTileWidget extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            messageModel.type == MessageType.text
+            messageModel.messageContentType == MessageContentType.text
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -92,11 +94,12 @@ class MessageTileWidget extends StatelessWidget {
                       )
                     ],
                   )
-                : messageModel.type == MessageType.audio
+                : messageModel.messageContentType == MessageContentType.audio
                     ? AudioMessageWidget(
                         duration: messageModel.content?.toJson()["duration"],
                         filePath: messageModel.content?.toJson()["filePath"])
-                    : messageModel.type == MessageType.image
+                    : messageModel.messageContentType ==
+                            MessageContentType.image
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(15),
                             child: Image.file(
@@ -104,7 +107,8 @@ class MessageTileWidget extends StatelessWidget {
                               fit: BoxFit.cover,
                             ),
                           )
-                        : messageModel.type == MessageType.video
+                        : messageModel.messageContentType ==
+                                MessageContentType.video
                             ? SizedBox(
                                 width: 200,
                                 height: 200,
