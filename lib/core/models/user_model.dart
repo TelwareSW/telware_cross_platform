@@ -14,7 +14,9 @@ class UserModel {
   @HiveField(0)
   final String username;
   @HiveField(1)
-  final String screenName;
+  final String screenFirstName;
+  @HiveField(16)
+  final String screenLastName;
   @HiveField(2)
   final String email;
   @HiveField(3)
@@ -46,7 +48,8 @@ class UserModel {
 
   UserModel({
     required this.username,
-    required this.screenName,
+    required this.screenFirstName,
+    required this.screenLastName,
     required this.email,
     this.photo,
     required this.status,
@@ -90,7 +93,8 @@ class UserModel {
     if (identical(this, other)) return true;
 
     return other.username == username &&
-        other.screenName == screenName &&
+        other.screenFirstName == screenFirstName &&
+        other.screenLastName == screenLastName &&
         other.email == email &&
         other.photo == photo &&
         other.status == status &&
@@ -109,7 +113,8 @@ class UserModel {
   @override
   int get hashCode {
     return username.hashCode ^
-        screenName.hashCode ^
+        screenFirstName.hashCode ^
+        screenLastName.hashCode ^
         email.hashCode ^
         photo.hashCode ^
         status.hashCode ^
@@ -127,12 +132,13 @@ class UserModel {
 
   @override
   String toString() {
-    return 'UserModel(\n username: $username,\n screenName: $screenName,\n email: $email,\n photo: $photo,\n status: $status,\n bio: $bio,\n maxFileSize: $maxFileSize,\n automaticDownloadEnable: $automaticDownloadEnable,\n lastSeenPrivacy: $lastSeenPrivacy,\n readReceiptsEnablePrivacy: $readReceiptsEnablePrivacy,\n storiesPrivacy: $storiesPrivacy,\n picturePrivacy: $picturePrivacy,\n invitePermissionsPrivacy: $invitePermissionsPrivacy,\n phone: $phone,\n id: $id,\n isPhotoBytesSet: ${photoBytes != null}\n)';
+    return 'UserModel(\n username: $username,\n screenName: $screenFirstName $screenLastName,\n email: $email,\n photo: $photo,\n status: $status,\n bio: $bio,\n maxFileSize: $maxFileSize,\n automaticDownloadEnable: $automaticDownloadEnable,\n lastSeenPrivacy: $lastSeenPrivacy,\n readReceiptsEnablePrivacy: $readReceiptsEnablePrivacy,\n storiesPrivacy: $storiesPrivacy,\n picturePrivacy: $picturePrivacy,\n invitePermissionsPrivacy: $invitePermissionsPrivacy,\n phone: $phone,\n id: $id,\n isPhotoBytesSet: ${photoBytes != null}\n)';
   }
 
   UserModel copyWith({
     String? username,
-    String? screenName,
+    String? screenFirstName,
+    String? screenLastName,
     String? email,
     String? photo,
     String? status,
@@ -150,7 +156,8 @@ class UserModel {
   }) {
     return UserModel(
       username: username ?? this.username,
-      screenName: screenName ?? this.screenName,
+      screenFirstName: screenFirstName ?? this.screenFirstName,
+      screenLastName: screenLastName ?? this.screenLastName,
       email: email ?? this.email,
       photo: photo ?? this.photo,
       status: status ?? this.status,
@@ -174,7 +181,8 @@ class UserModel {
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'username': username,
-      'screenName': screenName,
+      'screenFirstName': screenFirstName,
+      'screenLastName': screenLastName,
       'email': email,
       'photo': photo,
       'status': status,
@@ -192,13 +200,16 @@ class UserModel {
   }
 
   static Future<UserModel> fromMap(Map<String, dynamic> map) async {
-    String screenName = (map['screenName'] as String?) ?? '';
-    if (screenName.isEmpty) {
-      screenName = 'No Name';
+    String first = (map['screenFirstName'] as String?) ?? '';
+    String last = (map['screenFirstName'] as String?) ?? '';
+    if (first.isEmpty) {
+      first = 'No';
+      last = 'Name';
     }
     final user = UserModel(
       username: map['username'] as String,
-      screenName: screenName,
+      screenFirstName: first,
+      screenLastName: last,
       email: (map['email'] as String?) ?? '',
       photo: map['photo'] != null ? map['photo'] as String : null,
       status: map['status'] as String,

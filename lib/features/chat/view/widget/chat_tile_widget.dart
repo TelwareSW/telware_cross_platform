@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
-import 'package:telware_cross_platform/core/models/user_model.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
-import 'package:telware_cross_platform/features/chat/view/screens/chat_screen.dart';
+import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/user/view/widget/avatar_generator.dart';
 
 class ChatTileWidget extends StatelessWidget {
@@ -28,13 +28,13 @@ class ChatTileWidget extends StatelessWidget {
     final imageBytes = chatModel.photoBytes;
     final hasDraft = chatModel.draft?.isNotEmpty ?? false;
     final isGroupChat = chatModel.type == ChatType.group;
-    final messageStateIcon = sentByUser ? Icon(getMessageStateIcon(displayMessage), size: 16, color: Palette.accent) : null;
+    final messageStateIcon = sentByUser ? Icon(getMessageStateIcon(displayMessage), size: 16, color: Palette.accent,) : null;
     final unreadCount = _getUnreadMessageCount();
     final isMuted = chatModel.isMuted;
     final isMentioned = chatModel.isMentioned;
 
     return InkWell(
-      onTap: () { context.push(ChatScreen.route, extra: chatModel); },
+      onTap: () { context.push(Routes.chatScreen, extra: chatModel.id); },
       child: Container(
         color: Palette.secondary,
         child: Row(
@@ -118,7 +118,7 @@ class ChatTileWidget extends StatelessWidget {
                                   children: [
                                     TextSpan(
                                       text: hasDraft ? "Draft: "
-                                          : isGroupChat ? "${displayMessage.senderName.split(" ")[0]}: " : "",
+                                          : isGroupChat ? "${'John Doe'.split(" ")[0]}: " : "",
                                       style: TextStyle(
                                         color: hasDraft ? Palette.error
                                             : isGroupChat ? Palette.primaryText : Palette.accentText,

@@ -52,7 +52,7 @@ class AppDrawer extends ConsumerWidget {
                     userImageBytes == null ? Palette.primary : null,
                 child: userImageBytes == null
                     ? Text(
-                        getInitials(user?.screenName ?? 'Moamen Hefny'),
+                        getInitials('${user!.screenFirstName} ${user.screenLastName}'),
                         style: const TextStyle(
                           fontWeight: FontWeight.w500,
                           color: Palette.primaryText,
@@ -63,7 +63,7 @@ class AppDrawer extends ConsumerWidget {
               const SizedBox(height: 18),
               // todo: take real user name and number
               Text(
-                user?.screenName ?? 'Moamen Hefny',
+                '${user!.screenFirstName} ${user.screenLastName}',
                 style: const TextStyle(
                     color: Palette.primaryText, fontWeight: FontWeight.bold),
               ),

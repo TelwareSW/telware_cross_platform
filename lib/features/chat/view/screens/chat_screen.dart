@@ -2,37 +2,40 @@ import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_cupertino_datetime_picker/flutter_cupertino_datetime_picker.dart';
-import 'package:flutter_svg/flutter_svg.dart'; // Import flutter_svg
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
-import 'package:lottie/lottie.dart';
-import 'package:telware_cross_platform/core/mock/messages_mock.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
+import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
+import 'package:telware_cross_platform/core/view/widget/popup_menu_item_widget.dart';
+import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
+import 'package:telware_cross_platform/features/chat/providers/chat_provider.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/bottom_input_bar_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/chat_header_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/date_label_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/message_tile_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
 
-class ChatScreen extends StatefulWidget {
+class ChatScreen extends ConsumerStatefulWidget {
   static const String route = '/chat';
-  final ChatModel chatModel;
+  final String chatId;
 
-  const ChatScreen({super.key, required this.chatModel});
+  const ChatScreen({super.key, required this.chatId});
 
   @override
-  State<ChatScreen> createState() => _ChatScreen();
+  ConsumerState<ChatScreen> createState() => _ChatScreen();
 }
 
-class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
+class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver {
   List<dynamic> chatContent = [];
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  late ChatType type;
+  late ChatModel? chatModel;
   bool isSearching = false;
   bool isShowAsList = false;
   int _numberOfMatches = 0;
@@ -44,11 +47,11 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    _messageController.text = widget.chatModel.draft ?? "";
-    type = widget.chatModel.type;
     WidgetsBinding.instance.addObserver(this);
-    final messages = widget.chatModel.id != null ? generateFakeMessages() : <MessageModel>[];
-    chatContent = _generateChatContentWithDateLabels(messages);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      chatModel = ref.read(chatProvider(widget.chatId));
+      _messageController.text = chatModel!.draft ?? "";
+    });
     _scrollToBottom();
   }
 
@@ -60,11 +63,14 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  List<dynamic> _generateChatContentWithDateLabels(List<MessageModel> messages) {
+  List<dynamic> _generateChatContentWithDateLabels(
+      List<MessageModel> messages) {
     List<dynamic> chatContent = [];
     for (int i = 0; i < messages.length; i++) {
-      if (i == 0 || !isSameDay(messages[i - 1].timestamp, messages[i].timestamp)) {
-        chatContent.add(DateLabelWidget(label: DateFormat('MMMM d').format(messages[i].timestamp)));
+      if (i == 0 ||
+          !isSameDay(messages[i - 1].timestamp, messages[i].timestamp)) {
+        chatContent.add(DateLabelWidget(
+            label: DateFormat('MMMM d').format(messages[i].timestamp)));
       }
       chatContent.add(messages[i]);
     }
@@ -72,7 +78,9 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   bool isSameDay(DateTime date1, DateTime date2) {
-    return date1.year == date2.year && date1.month == date2.month && date1.day == date2.day;
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day;
   }
 
   // Called when the keyboard visibility changes
@@ -87,7 +95,8 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
 
   // Check if the user is already at the bottom of the scroll view
   bool _isAtBottom() {
-    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
       return true;
     }
     return false;
@@ -124,7 +133,8 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
       if (chatContent[i] is! MessageModel) {
         continue;
       }
-      List<MapEntry<int, int>> matches = kmp(chatContent[i].content ?? "", searchText);
+      String messageText = chatContent[i].content ?? "";
+      List<MapEntry<int, int>> matches = kmp(messageText, searchText);
       if (matches.isNotEmpty && matches[0].value != 0) {
         numberOfMatches += 1;
         messageMatches[i] = matches;
@@ -156,13 +166,19 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final String title = widget.chatModel.title;
-    final membersNumber = widget.chatModel.userIds.length;
-    final String subtitle = widget.chatModel.type == ChatType.oneToOne
+    final chatModel = ref.watch(chatProvider(widget.chatId))!;
+
+    final type = chatModel.type;
+    final String title = chatModel.title;
+    final membersNumber = chatModel.userIds.length;
+    final String subtitle = chatModel.type == ChatType.private
         ? "last seen a long time ago"
         : "$membersNumber Member${membersNumber > 1 ? "s" : ""}";
-    final imageBytes = widget.chatModel.photoBytes;
-    final photo = widget.chatModel.photo;
+    final imageBytes = chatModel.photoBytes;
+    final photo = chatModel.photo;
+    final messages =
+          chatModel.id != null ? chatModel.messages : <MessageModel>[];
+      chatContent = _generateChatContentWithDateLabels(messages);
     const menuItemsHeight = 45.0;
 
     return Scaffold(
@@ -227,14 +243,14 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
             padding: EdgeInsets.zero,
             itemBuilder: (BuildContext context) {
               return [
-                 PopupMenuItem<String>(
+                 const PopupMenuItem<String>(
                   value: 'mute-options',
                   padding: EdgeInsets.zero,
                   height: menuItemsHeight,
-                  child: _popupMenuItem(
+                  child: PopupMenuItemWidget(
                     icon: Icons.volume_up_rounded,
                     text: 'Mute',
-                    trailing: const Icon(
+                    trailing: Icon(
                       Icons.arrow_forward_ios_rounded,
                       color: Palette.inactiveSwitch,
                       size: 16,
@@ -244,47 +260,47 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
                 const PopupMenuDivider(
                   height: 10,
                 ),
-                PopupMenuItem<String>(
+                const PopupMenuItem<String>(
                   value: 'video-call',
                   padding: EdgeInsets.zero,
                   height: menuItemsHeight,
-                  child: _popupMenuItem(
+                  child: PopupMenuItemWidget(
                       icon: Icons.videocam_outlined,
                       text: 'Video Call',
                   ),
                 ),
-                PopupMenuItem<String>(
+                const PopupMenuItem<String>(
                   value: 'search',
                   padding: EdgeInsets.zero,
                   height: menuItemsHeight,
-                  child: _popupMenuItem(
+                  child: PopupMenuItemWidget(
                     icon: Icons.search,
                     text: 'Search',
                   ),
                 ),
-                PopupMenuItem<String>(
+                const PopupMenuItem<String>(
                   value: 'change-wallpaper',
                   padding: EdgeInsets.zero,
                   height: menuItemsHeight,
-                  child: _popupMenuItem(
+                  child: PopupMenuItemWidget(
                     icon: Icons.wallpaper_rounded,
                     text: 'Change Wallpaper',
                   ),
                 ),
-                PopupMenuItem<String>(
+                const PopupMenuItem<String>(
                   value: 'clear-history',
                   padding: EdgeInsets.zero,
                   height: menuItemsHeight,
-                  child: _popupMenuItem(
+                  child: PopupMenuItemWidget(
                     icon: Icons.cleaning_services,
                     text: 'Clear History',
                   ),
                 ),
-                PopupMenuItem<String>(
+                const PopupMenuItem<String>(
                   value: 'delete-chat',
                   padding: EdgeInsets.zero,
                   height: menuItemsHeight,
-                  child: _popupMenuItem(
+                  child: PopupMenuItemWidget(
                     icon: Icons.delete_outline,
                     text: 'Delete Chat',
                   ),
@@ -323,10 +339,10 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
                           MessageModel msg = chatContent[index];
                           return SettingsOptionWidget(
                             imagePath: getRandomImagePath(),
-                            text: msg.senderName,
+                            text: msg.senderId,
                             subtext: msg.content ?? "",
                             onTap: () => {
-                              // TODO (MOAMEN): Create scroll to msg
+                              // TODO (Mo): Create scroll to msg
                             },
                           );
                         }).toList(),
@@ -395,7 +411,7 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
                           } else if (item is MessageModel) {
                             return MessageTileWidget(
                               messageModel: item,
-                              isSentByMe: item.senderName == "John Doe",
+                              isSentByMe: item.senderId == ref.read(userProvider)!.id,
                               showInfo: type == ChatType.group,
                               highlights: _messageMatches[index] ?? const [MapEntry(0, 0)],
                             );
@@ -539,35 +555,4 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
     // Return the randomly chosen Lottie animation path
     return lottieAnimations[randomIndex];
   }
-
-
-}
-
-// Popup menu item widget
-Widget _popupMenuItem({Key? key, required IconData icon, required String text, Widget? trailing, Function? onTap}) {
-  return Container(
-      color: Palette.secondary,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
-        child: Row(
-          children: [
-            Icon(icon, color: Palette.accentText,),
-            const SizedBox(width: 16),
-            Text(text,
-              style: const TextStyle(
-                color: Palette.primaryText,
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: trailing ?? const SizedBox.shrink(),
-              ),
-            ),
-          ],
-        ),
-      )
-  );
 }
