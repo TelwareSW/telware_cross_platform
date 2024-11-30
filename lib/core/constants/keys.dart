@@ -67,3 +67,20 @@ class ChangeEmailKeys {
   static final emailShakeKey =
       GlobalKey<ShakeWidgetState>(debugLabel: 'change_email_shake');
 }
+
+class ChatKeys {
+  static const ValueKey<String> chatTilePrefix = ValueKey('chat-tile-');
+  static const ValueKey<String> chatMessagePrefix = ValueKey('chat-message-');
+  static const ValueKey<String> chatNamePostfix = ValueKey('-name');
+  static const ValueKey<String> chatTileDisplayTextPostfix =
+      ValueKey('-display-text');
+  static const ValueKey<String> chatTileDisplayTimePostfix =
+      ValueKey('-display-time');
+  static const ValueKey<String> chatTileDisplayUnreadCountPostfix =
+      ValueKey('-display-unread-count');
+  static const ValueKey<String> chatTileMentionPostfix = ValueKey('-mention');
+  static const ValueKey<String> chatTileMutePostfix = ValueKey('-mute');
+  static const ValueKey<String> chatTileMessageStatusPostfix =
+      ValueKey('-message');
+  static const ValueKey<String> chatAvatarPostfix = ValueKey('-avatar');
+}
