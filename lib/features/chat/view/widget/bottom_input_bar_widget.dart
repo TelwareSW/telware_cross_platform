@@ -1,3 +1,10 @@
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:telware_cross_platform/core/theme/palette.dart';
+import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
+import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
+import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:camera/camera.dart';
@@ -11,7 +18,7 @@ import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/audio_player_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/slide_to_cancel_widget.dart';
 
-class BottomInputBarWidget extends StatefulWidget {
+class BottomInputBarWidget extends ConsumerWidget {
   final TextEditingController controller; // Accept controller as a parameter
   final RecorderController recorderController;
   final PlayerController playerController;
@@ -114,7 +121,7 @@ class BottomInputBarWidgetState extends State<BottomInputBarWidget> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       padding: EdgeInsets.symmetric(
           horizontal: widget.isRecordingCompleted ? 0 : 10, vertical: 0),
@@ -291,5 +298,14 @@ class BottomInputBarWidgetState extends State<BottomInputBarWidget> {
         ],
       ),
     );
+  }
+
+  void sendMsg(WidgetRef ref) {
+    ref.read(chattingControllerProvider).sendMsg(
+          content: controller.text,
+          msgType: MessageType.normal,
+          contentType: MessageContentType.text,
+          chatType: ChatType.private,
+        );
   }
 }

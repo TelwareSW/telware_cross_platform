@@ -179,7 +179,7 @@ String formatTimestamp(DateTime timestamp) {
   }
 
   // If the message is older than 7 days, show the full date
-  if (diff <= 7) {
+  if (diff <= 365) {
     return DateFormat('MMM dd').format(timestamp); // Nov 03
   }
 

@@ -39,13 +39,13 @@ class MessageTileWidget extends StatelessWidget {
     IconData messageState = getMessageStateIcon(messageModel);
     Widget senderNameWidget = showInfo && !isSentByMe
         ? Text(
-            messageModel.senderName,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: nameColor,
-              fontSize: 12,
-            ),
-          )
+      messageModel.senderId,
+      style: TextStyle(
+        fontWeight: FontWeight.bold,
+        color: nameColor,
+        fontSize: 12,
+      ),
+    )
         : const SizedBox.shrink();
 
     return Align(

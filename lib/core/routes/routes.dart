@@ -13,6 +13,7 @@ import 'package:telware_cross_platform/features/auth/view/screens/social_auth_lo
 import 'package:telware_cross_platform/features/auth/view/screens/verification_screen.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/chat_screen.dart';
+import 'package:telware_cross_platform/features/chat/view/screens/create_chat_screen.dart';
 import 'package:telware_cross_platform/features/home/view/screens/home_screen.dart';
 import 'package:telware_cross_platform/features/home/view/screens/inbox_screen.dart';
 import 'package:telware_cross_platform/features/stories/view/screens/add_my_image_screen.dart';
@@ -33,6 +34,7 @@ import 'package:telware_cross_platform/features/user/view/screens/self_destruct_
 import 'package:telware_cross_platform/features/user/view/screens/settings_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/user_profile_screen.dart';
 
+import '../../features/stories/view/screens/crop_image_screen.dart';
 import '../../features/user/view/screens/devices_screen.dart';
 
 class Routes {
@@ -64,6 +66,8 @@ class Routes {
   static const String selfDestructTimer = SelfDestructScreen.route;
   static const String changeEmail = ChangeEmailScreen.route;
   static const String chatScreen = ChatScreen.route;
+  static const String cropImageScreen = CropImageScreen.route;
+  static const String createChatScreen = CreateChatScreen.route;
 
   static GoRouter appRouter(WidgetRef ref) => GoRouter(
         initialLocation: Routes.splash,
@@ -230,9 +234,20 @@ class Routes {
           GoRoute(
             path: Routes.chatScreen,
             builder: (context, state) {
-              final ChatModel chatModel = state.extra as ChatModel;
-              return ChatScreen(chatModel: chatModel);
+              final String chatId = state.extra as String;
+              return ChatScreen(chatId: chatId);
             }
+          ),
+          GoRoute(
+              path: Routes.cropImageScreen,
+              builder: (context, state) {
+                final String path = state.extra as String;
+                return CropImageScreen(path: path);
+              }
+          ),
+          GoRoute(
+            path: Routes.createChatScreen,
+            builder: (context, state) => const CreateChatScreen(),
           ),
         ],
       );
