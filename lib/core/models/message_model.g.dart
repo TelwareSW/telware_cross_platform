@@ -27,7 +27,6 @@ class MessageModelAdapter extends TypeAdapter<MessageModel> {
       photo: fields[7] as String?,
       photoBytes: fields[8] as Uint8List?,
       userStates: (fields[9] as Map).cast<String, MessageState>(),
-
     );
   }
 

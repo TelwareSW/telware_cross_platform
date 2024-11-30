@@ -201,4 +201,3 @@ class DeleteMessageTypeAdapter extends TypeAdapter<DeleteMessageType> {
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
-
