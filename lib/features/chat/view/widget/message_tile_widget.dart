@@ -87,10 +87,6 @@ class MessageTileWidget extends StatelessWidget {
                       ),
                       highlights: highlights
                     ),
-                    Text(
-                      messageModel.content ?? "",
-                      style: const TextStyle(color: Palette.primaryText),
-                    ),
                     SizedBox(width: isSentByMe ? 70.0 : 55.0),
                     Text("")
                   ],
