@@ -36,21 +36,18 @@ class MessageModelAdapter extends TypeAdapter<MessageModel> {
       ..writeByte(0)
       ..write(obj.senderId)
       ..writeByte(1)
-      ..write(obj.content)
+      ..write(obj.type)
       ..writeByte(2)
-      ..write(obj.timestamp)
+      ..write(obj.content)
       ..writeByte(3)
-      ..write(obj.autoDeleteTimestamp)
       ..writeByte(4)
-      ..write(obj.id)
+      ..write(obj.autoDeleteDuration)
       ..writeByte(5)
-      ..write(obj.photo)
+      ..write(obj.id)
       ..writeByte(6)
-      ..write(obj.photoBytes)
+      ..write(obj.photo)
       ..writeByte(7)
-      ..write(obj.userStates)
-      ..writeByte(8)
-      ..write(obj.messageType);
+
   }
 
   @override

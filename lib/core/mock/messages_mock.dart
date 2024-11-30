@@ -1,9 +1,13 @@
 import 'dart:math';
+import 'package:camera/camera.dart';
+import 'package:telware_cross_platform/core/models/message_content.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
+import 'package:telware_cross_platform/core/utils.dart';
+
 
 // Faker function to generate a list of random MessageModel objects
-List<MessageModel> generateFakeMessages() {
+Future<List<MessageModel>> generateFakeMessages() async {
   // Sample messages
   final List<String> sampleMessages = [
     "Hello! How are you?",
@@ -22,7 +26,7 @@ List<MessageModel> generateFakeMessages() {
   final Random random = Random();
 
   // Starting date (7 days ago)
-  DateTime currentDate = DateTime.now().subtract(Duration(days: 7));
+  DateTime currentDate = DateTime.now().subtract(const Duration(days: 7));
 
   // List to store the generated messages
   List<MessageModel> generatedMessages = [];
@@ -34,18 +38,61 @@ List<MessageModel> generateFakeMessages() {
 
     // Create a new message
     MessageModel message = MessageModel(
-      messageType: MessageType.normal,
       senderId: random.nextBool() ? "John Doe" : "Jane Smith",
-      content: sampleMessages[random.nextInt(sampleMessages.length)],
+      type: MessageType.text,
+      content:
+          TextContent(sampleMessages[random.nextInt(sampleMessages.length)]),
       timestamp: currentDate.add(Duration(
         hours: random.nextInt(24),
         minutes: random.nextInt(60),
       )),
+      userStates: {},
     );
 
     // Add the generated message to the list
     generatedMessages.add(message);
   }
+  MessageModel audioMessage = MessageModel(
+    type: MessageType.audio,
+    senderName: "John Doe",
+    content: AudioContent(
+      audioUrl: "dummy_audio_url",
+      duration: const Duration(minutes: 1, seconds: 20),
+      filePath: "assets/audio/test8.mp3",
+    ),
+    timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
+    userStates: {},
+  );
+  XFile imageFile =
+      await loadAssetAsXFile("assets/imgs/marwan.jpg", "marwan.jpg");
+  XFile videoFile = await loadAssetAsXFile("assets/video/demo.mp4", "demo.mp4");
+
+  MessageModel imageMessage = MessageModel(
+    type: MessageType.image,
+    senderName: "John Doe",
+    content: ImageContent(
+      imageUrl: "assets/imgs/marwan.jpg",
+      file: imageFile,
+    ),
+    timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
+    userStates: {},
+  );
+
+  MessageModel videoMessage = MessageModel(
+    type: MessageType.video,
+    senderName: "John Doe",
+    content: VideoContent(
+      videoUrl: "assets/video/demo.mp4",
+      duration: const Duration(minutes: 1, seconds: 20),
+      file: videoFile,
+    ),
+    timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
+    userStates: {},
+  );
+
+  generatedMessages.add(audioMessage);
+  generatedMessages.add(imageMessage);
+  generatedMessages.add(videoMessage);
 
   return generatedMessages;
 }

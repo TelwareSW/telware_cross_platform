@@ -76,6 +76,9 @@ dependencies:
   socket_io_client: ^3.0.2
   custom_image_crop: ^0.0.13
   uuid: ^4.5.1
+  audio_waveforms: ^1.1.1
+  flutter_svg: ^2.0.16
+  flutter_sliding_up_panel: ^2.1.1
 
 
 dev_dependencies:
@@ -122,11 +125,13 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/imgs/
+    - assets/audio/
     - assets/icon/
     - assets/gifs/
     - assets/tgs/
     - assets/json/
     - assets/webpages/
+    - assets/video/
     - assets/svg/
     - lib/.env
   #   - images/a_dot_ham.jpeg

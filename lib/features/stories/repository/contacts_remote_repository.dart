@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
@@ -20,6 +19,7 @@ ContactsRemoteRepository contactsRemoteRepository(
 
 class ContactsRemoteRepository {
   final ProviderRef _ref;
+
   ContactsRemoteRepository(this._ref);
 
   Future<List<ContactModel>> fetchContactsFromBackend() async {
@@ -221,8 +221,7 @@ class ContactsRemoteRepository {
   }
 
   Future<ContactModel?> getContact(String contactId) async {
-    String uploadUrl =
-        '${dotenv.env['BASE_URL']}/users/$contactId';
+    String uploadUrl = '${dotenv.env['BASE_URL']}/users/$contactId';
     var uri = Uri.parse(uploadUrl);
     var request = http.MultipartRequest('GET', uri);
 
@@ -231,8 +230,7 @@ class ContactsRemoteRepository {
     try {
       var response = await request.send();
 
-
-      if(response.statusCode != 200){
+      if (response.statusCode != 200) {
         return null;
       }
       var responseBody = await response.stream.bytesToString();
@@ -253,8 +251,7 @@ class ContactsRemoteRepository {
   }
 
   Future<bool> markStoryAsSeen(String storyId) async {
-    String uploadUrl =
-        '${dotenv.env['BASE_URL']}/stories/:storyId/views';
+    String uploadUrl = '${dotenv.env['BASE_URL']}/stories/:storyId/views';
     // var uri = Uri.parse(uploadUrl);
     // var request = http.MultipartRequest('POST', uri);
     // String? token = _ref.read(tokenProvider);

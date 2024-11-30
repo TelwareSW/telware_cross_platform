@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
 import '../models/story_model.dart';
@@ -8,9 +7,9 @@ import '../utils/utils_functions.dart';
 
 part 'contacts_local_repository.g.dart';
 
-
 @Riverpod(keepAlive: true)
-ContactsLocalRepository contactsLocalRepository(ContactsLocalRepositoryRef ref) {
+ContactsLocalRepository contactsLocalRepository(
+    ContactsLocalRepositoryRef ref) {
   final userBox = Hive.box<ContactModel>('contacts');
   return ContactsLocalRepository(userBox);
 }
@@ -19,8 +18,6 @@ class ContactsLocalRepository {
   final Box<ContactModel> _userBox;
 
   ContactsLocalRepository(this._userBox);
-
-
 
   Future<void> saveContactsToHive(List<ContactModel> contacts) async {
     for (ContactModel contact in contacts) {
@@ -93,7 +90,7 @@ class ContactsLocalRepository {
         for (var story in user.stories) {
           if (story.storyId == storyId) {
             story.storyContent = imageData;
-            break; 
+            break;
           }
         }
         await updateContactInHive(user);
@@ -105,4 +102,3 @@ class ContactsLocalRepository {
     }
   }
 }
-

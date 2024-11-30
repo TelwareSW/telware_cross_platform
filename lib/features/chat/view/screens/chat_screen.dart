@@ -1,20 +1,36 @@
+
 import 'dart:math';
+
+import 'dart:io';
+
+import 'package:audio_waveforms/audio_waveforms.dart';
+import 'package:file_picker/file_picker.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart'; // Import flutter_svg
 import 'package:intl/intl.dart';
+
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:telware_cross_platform/core/mock/messages_mock.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
+
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/providers/chat_provider.dart';
+
+import 'package:telware_cross_platform/core/utils.dart';
+import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
+
 import 'package:telware_cross_platform/features/chat/view/widget/bottom_input_bar_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/chat_header_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/date_label_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/message_tile_widget.dart';
+import 'package:vibration/vibration.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   static const String route = '/chat';
@@ -30,7 +46,32 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
   List<dynamic> chatContent = [];
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+
   late ChatModel? chatModel;
+
+
+  //---------------------------------Recording--------------------------------
+  // TODO: This works only on mobile if you tried to run it on web it will throw an error
+
+  late final RecorderController _recorderController;
+  final PlayerController _playerController = PlayerController();
+  String? musicFile;
+  bool isRecording = false;
+  bool isRecordingCompleted = false;
+  bool isRecordingLocked = false;
+  bool isRecordingPaused = false;
+  bool isLoading = true;
+  bool isTextEmpty = true;
+  double _lockRecordingDragPosition = 0;
+  final lockPath = "assets/json/passcode_lock.json";
+  String? path;
+  late Directory appDirectory;
+
+  //----------------------------------------------------------------------------
+  //-------------------------------Media----------------------------------------
+
+  late ChatType type;
+
 
   @override
   void initState() {
@@ -40,13 +81,34 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
       chatModel = ref.read(chatProvider(widget.chatId));
       _controller.text = chatModel!.draft ?? "";
     });
+
+    _recorderController = RecorderController()
+      ..androidEncoder = AndroidEncoder.aac
+      ..androidOutputFormat = AndroidOutputFormat.aac_adts
+      ..iosEncoder = IosEncoder.kAudioFormatMPEG4AAC
+      ..bitRate = 128000
+      ..sampleRate = 44100;
+
+    _getDir();
+    _controller.text = widget.chatModel.draft ?? "";
+    type = widget.chatModel.type;
+    WidgetsBinding.instance.addObserver(this);
+    loadChatContent();
+  }
+
+  loadChatContent() async {
+    final messages = await generateFakeMessages();
+    chatContent = _generateChatContentWithDateLabels(messages);
     _scrollToBottom();
+    setState(() {});
   }
 
   @override
   void dispose() {
     _controller.dispose();
     _scrollController.dispose(); // Dispose of the ScrollController
+    _recorderController.dispose();
+    _playerController.dispose();
     WidgetsBinding.instance.removeObserver(this); // Remove the observer
     super.dispose();
   }
@@ -98,6 +160,170 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
       }
     });
   }
+
+  //--------------------------------Recording--------------------------------
+  void _getDir() async {
+    appDirectory = await getApplicationDocumentsDirectory();
+    path = "${appDirectory.path}/recording.m4a";
+    isLoading = false;
+    setState(() {});
+  }
+
+  void _lockRecordingDrag(double dragPosition) {
+    if (isRecordingLocked) {
+      _lockRecordingDragPosition = 0;
+      return;
+    }
+    if (dragPosition < 0) {
+      _lockRecordingDragPosition = dragPosition;
+    }
+    setState(() {});
+  }
+
+  void _pauseRecording() async {
+    if (isRecordingPaused) {
+      _recorderController.record(path: path);
+    } else {
+      _recorderController.pause();
+    }
+    debugPrint("Recording paused");
+    isRecordingPaused = !isRecordingPaused;
+    setState(() {});
+  }
+
+  void _lockRecording() {
+    if (!isRecordingLocked) vibrate();
+    isRecordingLocked = true;
+    setState(() {});
+  }
+
+  void _deleteRecording() {
+    if (path == null) {
+      debugPrint("No recording to delete");
+      return;
+    }
+    if (File(path!).existsSync()) {
+      File(path!).deleteSync();
+      path = null;
+      isRecording = false;
+      isRecordingLocked = false;
+      isRecordingPaused = false;
+      isRecordingCompleted = false;
+      setState(() {});
+    }
+  }
+
+  void _cancelRecording() {
+    //TODO : check for memory leaks
+    _recorderController.stop(true);
+    isRecording = false;
+    isRecordingLocked = false;
+    isRecordingPaused = false;
+    isRecordingCompleted = false;
+    setState(() {});
+  }
+
+  void _pickFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    if (result != null) {
+      musicFile = result.files.single.path;
+      setState(() {});
+    } else {
+      debugPrint("File not picked");
+    }
+  }
+
+  void _record() async {
+    try {
+      await _recorderController.record(path: path); // Path is optional
+      debugPrint("Recording started");
+    } catch (e) {
+      debugPrint(e.toString());
+    } finally {
+      setState(() {
+        isRecording = true;
+      });
+    }
+  }
+
+  void _stopRecording() async {
+    try {
+      path = await _recorderController.stop(false);
+      _recorderController.reset();
+
+      if (path != null) {
+        isRecordingCompleted = true;
+        isRecording = false;
+        isRecordingPaused = false;
+        setState(() {});
+        await _playerController.preparePlayer(
+          path: path!,
+          shouldExtractWaveform: true,
+          noOfSamples: 500,
+          volume: 1.0,
+        );
+        debugPrint(path);
+        debugPrint("Recorded file size: ${File(path!).lengthSync()}");
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+  }
+
+  void _startRecording(context) async {
+    if (isRecording) return;
+
+    setState(() {
+      isRecordingCompleted = false;
+    });
+    var status = await Permission.microphone.status;
+    if (status.isGranted) {
+      _record();
+      vibrate();
+    } else if (status.isDenied || status.isRestricted) {
+      status = await Permission.microphone.request();
+      if (status.isGranted) {
+        _record();
+        vibrate();
+      } else {
+        // Handle denied permission scenario gracefully
+        showSnackBarMessage(
+            context, 'Microphone permission is required to record audio.');
+      }
+    } else if (status.isPermanentlyDenied) {
+      // If permanently denied, open app settings
+      SnackBarAction action = SnackBarAction(
+        label: 'Open Settings',
+        onPressed: () => openAppSettings(),
+      );
+      showSnackBarMessage(context,
+          'Microphone permission is permanently denied. Please enable it in settings.',
+          action: action);
+    }
+  }
+
+  void _startOrStopRecording() async {
+    try {
+      if (isRecording) {
+        _stopRecording();
+      } else {
+        _startRecording(context);
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+  }
+
+  void vibrate() {
+    Vibration.hasVibrator().then((hasVibrator) {
+      if (hasVibrator ?? false) {
+        Vibration.vibrate(duration: 50);
+      }
+    });
+  }
+
+  //----------------------------------------------------------------------------
+  //-------------------------------Media----------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -229,10 +455,119 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
                             ),
                           ),
                         ),
+
                 ),
-                // The input bar at the bottom
-                BottomInputBarWidget(controller: _controller),
+                BottomInputBarWidget(
+                  controller: _controller,
+                  recorderController: _recorderController,
+                  playerController: _playerController,
+                  startRecording: _startRecording,
+                  stopRecording: _stopRecording,
+                  isRecording: isRecording,
+                  isRecordingCompleted: isRecordingCompleted,
+                  deleteRecording: _deleteRecording,
+                  cancelRecording: _cancelRecording,
+                  lockRecording: _lockRecording,
+                  isRecordingLocked: isRecordingLocked,
+                  isRecordingPaused: isRecordingPaused,
+                  lockRecordingDrag: _lockRecordingDrag,
+                ),
               ],
+            ),
+
+            isRecording || isRecordingLocked
+                ? AnimatedPositioned(
+                    bottom: 90,
+                    right: 10,
+                    duration: const Duration(milliseconds: 300),
+                    child: GestureDetector(
+                      child: Transform.translate(
+                        offset: Offset(0, _lockRecordingDragPosition),
+                        child: Container(
+                          width: 30,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            color: Palette.quaternary,
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                          child: Center(
+                            child: isRecordingLocked
+                                ? IconButton(
+                                    onPressed: _startOrStopRecording,
+                                    padding: const EdgeInsets.all(5),
+                                    icon: Icon(
+                                      isRecordingCompleted
+                                          ? Icons.mic
+                                          : Icons.pause,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  )
+                                : LottieViewer(
+                                    path: lockPath,
+                                    width: 20,
+                                    height: 20,
+                                    isLooping: true,
+                                  ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(),
+            if (isRecording) ...[
+              const Positioned(
+                bottom: -50,
+                right: -50,
+                child: LottieViewer(
+                  path: "assets/json/wave_animation_2.json",
+                  width: 150,
+                  height: 150,
+                  isLooping: true,
+                ),
+              ),
+              const Positioned(
+                bottom: -50,
+                right: -50,
+                child: LottieViewer(
+                  path: "assets/json/wave_animation_1.json",
+                  width: 150,
+                  height: 150,
+                  isLooping: true,
+                ),
+              )
+            ],
+            AnimatedPositioned(
+              bottom: -20,
+              right: -20,
+              duration: const Duration(milliseconds: 300),
+              child: GestureDetector(
+                onLongPressUp: () {
+                  _cancelRecording();
+                },
+                child: isRecording
+                    ? Container(
+                        width: 90,
+                        height: 90,
+                        decoration: BoxDecoration(
+                          color: Palette.accent,
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                        child: Center(
+                          child: IconButton(
+                            icon: Icon(
+                              size: 28,
+                              isRecordingLocked ? Icons.send : Icons.mic,
+                            ),
+                            color: Colors.white,
+                            onPressed: () {
+                              _cancelRecording();
+                            },
+                          ),
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+              ),
             ),
           ],
         ),

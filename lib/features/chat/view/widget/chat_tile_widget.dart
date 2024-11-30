@@ -112,8 +112,9 @@ class ChatTileWidget extends StatelessWidget {
                               child: RichText(
                                 text: TextSpan(
                                   style: const TextStyle(
-                                    fontSize: 14,
-                                    fontStyle:  FontStyle.italic,
+                                    color: Palette.primaryText,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 16,
                                   ),
                                   children: [
                                     TextSpan(
@@ -136,53 +137,118 @@ class ChatTileWidget extends StatelessWidget {
                                     ),
                                   ],
                                 ),
+                              ),
+                              if (isMuted)
+                                const Padding(
+                                  padding: EdgeInsets.only(right: 8.0),
+                                  child: Icon(
+                                    Icons.volume_off,
+                                    size: 18,
+                                    color: Palette.inactiveSwitch,
+                                  ),
+                                ),
+                              if (messageStateIcon != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: messageStateIcon,
+                                ),
+                              Text(
+                                formatTimestamp(displayMessage.timestamp),
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 12,
+                                ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                            // Add spacing between message content and unread count
-
-                            if (unreadCount > 0) ...[
-                              if (isMentioned)
-                                const Padding(
-                                  padding: EdgeInsets.only(left: 8.0),
-                                  child: Icon(
-                                    Icons.alternate_email_rounded,
-                                    size: 18,
-                                    color: Palette.primary,
-                                  ),
-                                ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 4.0),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
-                                  decoration: BoxDecoration(
-                                    color: Palette.accent,
-                                    borderRadius: BorderRadius.circular(12.0),
-                                  ),
-                                  child: Text(
-                                    unreadCount.toString(),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              // Displayed message content
+                              Expanded(
+                                child: RichText(
+                                  text: TextSpan(
                                     style: const TextStyle(
                                       color: Palette.primaryText,
                                       fontSize: 10,
                                     ),
+                                    children: [
+                                      TextSpan(
+                                        text: hasDraft
+                                            ? "Draft: "
+                                            : isGroupChat
+                                                ? "${displayMessage.senderName.split(" ")[0]}: "
+                                                : "",
+                                        style: TextStyle(
+                                          color: hasDraft
+                                              ? Palette.error
+                                              : isGroupChat
+                                                  ? Palette.primaryText
+                                                  : Palette.accentText,
+                                          fontWeight:
+                                              hasDraft ? FontWeight.bold : null,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: hasDraft
+                                            ? chatModel.draft!
+                                            : displayMessage.content
+                                                    ?.toJson()["text"] ??
+                                                "",
+                                        style: const TextStyle(
+                                          color: Palette.accentText,
+                                          fontStyle: FontStyle.normal,
+                                        ),
+                                      ),
+                                    ],
                                   ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                            ]
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (showDivider) const Divider(),
-                ],
-              ),
-            ),
-          ],
-        )
+                              // Add spacing between message content and unread count
 
-      ),
+                              if (unreadCount > 0) ...[
+                                if (isMentioned)
+                                  const Padding(
+                                    padding: EdgeInsets.only(left: 8.0),
+                                    child: Icon(
+                                      Icons.alternate_email_rounded,
+                                      size: 18,
+                                      color: Palette.primary,
+                                    ),
+                                  ),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 4.0),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6.0, vertical: 2.0),
+                                    decoration: BoxDecoration(
+                                      color: Palette.accent,
+                                      borderRadius: BorderRadius.circular(12.0),
+                                    ),
+                                    child: Text(
+                                      unreadCount.toString(),
+                                      style: const TextStyle(
+                                        color: Palette.primaryText,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ]
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (showDivider) const Divider(),
+                  ],
+                ),
+              ),
+            ],
+          )),
     );
   }
 

@@ -3,44 +3,66 @@ import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
+import 'package:telware_cross_platform/core/models/message_content.dart';
 import 'package:telware_cross_platform/features/stories/utils/utils_functions.dart';
 
 import '../constants/server_constants.dart';
 
 part 'message_model.g.dart';
 
+
+enum MessageState {
+  sent,
+  read,
+}
+
+enum MessageType {
+  text,
+  audio,
+  image,
+  video,
+  file,
+}
+
 @HiveType(typeId: 6)
 class MessageModel {
   @HiveField(0)
   final String senderId;
   @HiveField(1)
-  final String? content;
+  final MessageType type;
   @HiveField(2)
-  final DateTime timestamp;
+  final MessageContent? content;
   @HiveField(3)
+
   final DateTime? autoDeleteTimestamp;
   @HiveField(4)
-  String? id;
+  final DateTime timestamp;
+
   @HiveField(5)
-  final String? photo;
+  final Duration? autoDeleteDuration;
   @HiveField(6)
-  Uint8List? photoBytes;
+  String? id;
   @HiveField(7)
-  final Map<String, MessageState> userStates;
+  final String? photo;
   @HiveField(8)
+  Uint8List? photoBytes;
+  @HiveField(9)
+  final Map<String, MessageState> userStates;
+  @HiveField(10)
   final MessageType messageType;
 
+//<editor-fold desc="Data Methods">
   MessageModel({
     this.autoDeleteTimestamp,
-    required this.messageType,
     required this.senderId,
+    required this.type,
     this.content,
     required this.timestamp,
     this.id,
     this.photo,
     this.photoBytes,
-    Map<String, MessageState>? userStates,
-  }) : userStates = userStates ?? {};
+    required this.userStates,
+  });
 
   Future<void> _setPhotoBytes() async {
     if (photo == null || photo!.isEmpty) return;
@@ -114,14 +136,14 @@ class MessageModel {
 
   MessageModel copyWith({
     String? senderId,
-    String? content,
+    MessageType? type,
+    MessageContent? content,
     DateTime? timestamp,
     DateTime? autoDeleteTimestamp,
     String? id,
     String? photo,
     Uint8List? photoBytes,
     Map<String, MessageState>? userStates,
-    MessageType? messageType,
   }) {
     return MessageModel(
       senderId: senderId ?? this.senderId,
@@ -132,7 +154,7 @@ class MessageModel {
       photo: photo ?? this.photo,
       photoBytes: photoBytes ?? this.photoBytes,
       userStates: userStates ?? Map.from(this.userStates),
-      messageType: messageType ?? this.messageType
+      type: type ?? this.type,
     );
   }
 
@@ -157,15 +179,14 @@ class MessageModel {
   static Future<MessageModel> fromMap(Map<String, dynamic> map) async {
     final message = MessageModel(
       senderId: map['senderId'] as String,
-      content: map['content'] as String,
+      content: map['content'] as MessageContent?,
       timestamp: DateTime.parse(map['timestamp'] as String),
       id: map['messageId'] as String?,
       photo: map['photo'] as String?,
-      messageType: MessageType.getType(map['messageType']),
       autoDeleteTimestamp: map['autoDeleteTimeStamp'] != null
           ? DateTime.parse(map['autoDeleteTimeStamp'])
           : null,
-      userStates: (map['userStates'] as Map<String, dynamic>?)?.map(
+      userStates: (map['userStates'] as Map<String, dynamic>?)!.map(
         (key, value) => MapEntry(
           key,
           MessageState.values.firstWhere(
@@ -174,6 +195,7 @@ class MessageModel {
           ),
         ),
       ),
+      type: map['type']! as MessageType,
     );
     await message._setPhotoBytes();
     return message;
