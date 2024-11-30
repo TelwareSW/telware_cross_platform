@@ -67,13 +67,13 @@ class BottomActionButtonsEditTakenImage extends StatelessWidget {
               );
 
               if (uploadResult) {
-                Future.delayed(const Duration(seconds: 2), () {
+                Future.delayed(const Duration(seconds: 1), () {
                   Navigator.of(context).pop();
                 });
               }
             }
             if (uploadResult) {
-              Future.delayed(const Duration(seconds: 2), () {
+              Future.delayed(const Duration(seconds: 1), () {
                 Navigator.of(context).pop();
               });
             }

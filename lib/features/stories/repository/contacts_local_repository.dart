@@ -28,8 +28,11 @@ class ContactsLocalRepository {
       if (existingContact == null ||
           contact != existingContact ||
           existingContact.userImage == null) {
-        if (contact.userImage == null && existingContact?.userImage != null) {
-          return;
+        if (existingContact!= null &&
+            contact.userImage == null &&
+            existingContact.userImage != null &&
+            existingContact.userImageUrl == contact.userImageUrl) { //the difference is the existing has teh image bytes only
+          contact.userImage=existingContact.userImage;
         }
         await _saveContactImageInHive(contact);
       }

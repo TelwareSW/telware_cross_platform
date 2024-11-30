@@ -41,8 +41,9 @@ class ContactViewModel extends StateNotifier<ContactViewModelState> {
 
   Future<void> fetchContacts() async {
     try {
-      List<ContactModel> usersFromBackEnd =
-      await _contactsRemoteRepository.fetchContactsFromBackend();
+      List<ContactModel> usersFromBackEnd = await _contactsRemoteRepository.fetchContactsStoriesFromBackend();
+      ContactModel? myUser = await _contactsRemoteRepository.fetchMyStoriesFromBackend();
+      usersFromBackEnd.add(myUser!);
       await _contactsLocalRepository.saveContactsToHive(usersFromBackEnd);
       final contacts = _contactsLocalRepository.getAllContactsFromHive();
       state = state.copyWith(contacts: List.from(contacts), isLoading: false);

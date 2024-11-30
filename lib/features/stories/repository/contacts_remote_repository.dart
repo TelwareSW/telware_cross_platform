@@ -5,10 +5,12 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
 import 'package:telware_cross_platform/features/stories/models/story_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:telware_cross_platform/core/constants/server_constants.dart';
 
 part 'contacts_remote_repository.g.dart';
 
@@ -22,52 +24,10 @@ class ContactsRemoteRepository {
   final ProviderRef _ref;
   ContactsRemoteRepository(this._ref);
 
-  Future<List<ContactModel>> fetchContactsFromBackend() async {
-    await Future.delayed(const Duration(seconds: 2));
+  Future<List<ContactModel>> fetchContactsStoriesFromBackend() async {
     List<ContactModel> users = [
       ContactModel(
-        userName: 'game of thrones',
-        userImageUrl:
-            'https://st2.depositphotos.com/2703645/7304/v/450/depositphotos_73040253-stock-illustration-male-avatar-icon.jpg',
         stories: [
-          StoryModel(
-              storyId: 'idd11',
-              createdAt: DateTime(2024, 10, 21, 12, 0),
-              storyContentUrl:
-                  'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
-              isSeen: false,
-              storyCaption: 'very good caption',
-              seenIds: ['id1', 'id2']),
-          StoryModel(
-            storyId: 'idd12',
-            createdAt: DateTime(2024, 10, 21, 12, 0),
-            storyContentUrl:
-                'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
-            isSeen: false,
-            storyCaption: 'very good  good  good caption',
-            seenIds: ['id2'],
-          ),
-          StoryModel(
-            storyId: 'idd13',
-            createdAt: DateTime(2024, 10, 21, 12, 0),
-            storyContentUrl:
-                'https://www.e3lam.com/images/large/2015/01/unnamed-14.jpg',
-            isSeen: false,
-            seenIds: ['id1', 'id2'],
-          ),
-        ],
-        userId: 'myUser',
-      ),
-      ContactModel(
-        stories: [
-          StoryModel(
-            storyId: 'id11',
-            createdAt: DateTime(2024, 10, 21, 12, 0),
-            storyContentUrl:
-                'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
-            isSeen: false,
-            seenIds: [],
-          ),
           StoryModel(
             storyId: 'id12',
             createdAt: DateTime(2024, 10, 21, 12, 0),
@@ -151,9 +111,52 @@ class ContactsRemoteRepository {
     ];
     return users;
   }
+  Future<ContactModel?> fetchMyStoriesFromBackend() async {
+    String storiesUrl = '$API_URL/users/stories';
+    String userUrl = '$API_URL/users/me';
+    final String sessionToken = _ref.read(tokenProvider) ?? '';
+
+    try {
+      final storiesRequest = http.MultipartRequest('GET', Uri.parse(storiesUrl))
+        ..headers['X-Session-Token'] = sessionToken;
+      final storiesResponse = await storiesRequest.send();
+      if (storiesResponse.statusCode == 200) {
+        final storiesResponseBody = await storiesResponse.stream.bytesToString();
+        final userRequest = http.MultipartRequest('GET', Uri.parse(userUrl))
+          ..headers['X-Session-Token'] = sessionToken;
+        final userResponse = await userRequest.send();
+        if (userResponse.statusCode == 200) {
+          final userResponseBody = await userResponse.stream.bytesToString();
+          final Map<String, dynamic> storiesJson = json.decode(storiesResponseBody);
+          final List<dynamic> storiesList = storiesJson['data']['stories'];
+          final List<StoryModel> parsedStories = storiesList
+              .map((storyJson) => StoryModel.fromJson(storyJson as Map<String, dynamic>))
+              .toList();
+          final Map<String, dynamic> userJson = json.decode(userResponseBody);
+          final userData = userJson['data']['user'];
+          return ContactModel(
+            stories: parsedStories,
+            userName: userData['username'],
+            userId: 'myUser',
+            userImageUrl: userData['photo'],
+          );
+        } else {
+          print('Failed to fetch user data: ${userResponse.statusCode}');
+        }
+      } else {
+        print('Failed to fetch stories: ${storiesResponse.statusCode}');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error occurred: $e');
+      }
+    }
+
+    return null;
+  }
 
   Future<bool> postStory(File storyImage, String? caption) async {
-    String uploadUrl = '${dotenv.env['BASE_URL']}/users/stories';
+    String uploadUrl = '${dotenv.env['API_URL']}/users/stories';
     var uri = Uri.parse(uploadUrl);
     var request = http.MultipartRequest('POST', uri);
     request.headers['X-Session-Token'] = _ref.read(tokenProvider) ?? '';
@@ -253,41 +256,32 @@ class ContactsRemoteRepository {
   }
 
   Future<bool> markStoryAsSeen(String storyId) async {
-    String uploadUrl =
-        '${dotenv.env['BASE_URL']}/stories/:storyId/views';
-    // var uri = Uri.parse(uploadUrl);
-    // var request = http.MultipartRequest('POST', uri);
-    // String? token = _ref.read(tokenProvider);
-    // if (token != null) {
-    //   request.headers['Authorization'] = 'Bearer $token';
-    // }
-    // try {
-    //   var response = await request.send();
-    //   return response.statusCode == 200;
-    // } catch (e) {
-    //   print('Error occurred: $e');
-    //   return false;
-    // }
-    await Future.delayed(const Duration(seconds: 2));
-    return true;
+    String uploadUrl = '${dotenv.env['API_URL']}/stories/$storyId/views';
+    var uri = Uri.parse(uploadUrl);
+    var request = http.MultipartRequest('POST', uri);
+    request.headers['X-Session-Token'] = _ref.read(tokenProvider)!;
+    try {
+      var response = await request.send();
+      print(response.statusCode);
+      return response.statusCode == 200;
+    } catch (e) {
+      print('Error occurred: $e');
+      return false;
+    }
   }
 
   Future<bool> deleteStory(String storyId) async {
-    // String uploadUrl = '\${domain}:\${port}/users/stories/$storyId';
-    // var uri = Uri.parse(uploadUrl);
-    // var request = http.MultipartRequest('DELETE', uri);
-    // String? token = _ref.read(tokenProvider);
-    // if (token != null) {
-    //   request.headers['Authorization'] = 'Bearer $token';
-    // }
-    // try {
-    //   var response = await request.send();
-    //   return response.statusCode == 204;
-    // } catch (e) {
-    //   print('Error occurred: $e');
-    //   return false;
-    // }
-    await Future.delayed(const Duration(seconds: 2));
-    return true;
+    String uploadUrl = '${dotenv.env['API_URL']}/users/stories/$storyId';
+    var uri = Uri.parse(uploadUrl);
+    var request = http.MultipartRequest('DELETE', uri);
+    request.headers['X-Session-Token'] = _ref.read(tokenProvider)!;
+    try {
+      var response = await request.send();
+      print(response.statusCode);
+      return response.statusCode == 204;
+    } catch (e) {
+      print('Error occurred: $e');
+      return false;
+    }
   }
 }

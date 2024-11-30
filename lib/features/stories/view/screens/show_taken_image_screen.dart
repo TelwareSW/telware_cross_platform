@@ -81,14 +81,17 @@ class _ShowTakenStoryScreenState extends ConsumerState<ShowTakenImageScreen> {
 
   Future<void> _cropImage() async {
     try {
-      final File croppedFile = (await context.push<String>(
-        Routes.cropImageScreen,extra: widget.image.path
-      )) as File;
+      final String croppedImagePath = await context.push<String>(
+          Routes.cropImageScreen,
+          extra: widget.image.path
+      ) ?? '';
 
-      setState(() {
-        _imageFile = croppedFile;
-      });
-        } catch (e) {
+      if (croppedImagePath.isNotEmpty) {
+        setState(() {
+          _imageFile = File(croppedImagePath); // Update your image file
+        });
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to crop image: $e')),
       );

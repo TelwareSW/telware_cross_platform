@@ -22,12 +22,21 @@ class UserNameAndDateOfStory extends StatelessWidget {
           height: 32,
           width: 32,
           decoration: BoxDecoration(
-            image: DecorationImage(
+            shape: BoxShape.circle,
+            image: user?.userImage != null
+                ? DecorationImage(
               image: MemoryImage(user!.userImage!),
               fit: BoxFit.cover,
-            ),
-            shape: BoxShape.circle,
+            )
+                : null,
           ),
+          child: user?.userImage == null
+              ? Icon(
+            Icons.person,
+            size: 24, // Adjust icon size to fit nicely within the container
+            color: Colors.grey, // Optional: Change the color to suit your theme
+          )
+              : null,
         ),
         const SizedBox(
           width: 8,

@@ -174,8 +174,7 @@ class _CropImageScreenState extends State<CropImageScreen> {
                   String filePath = '$directoryPath/$fileName';
 
                   // Write the file
-                  final file =
-                      await File(filePath).writeAsBytes(croppedFile!.bytes);
+                  await File(filePath).writeAsBytes(croppedFile!.bytes);
 
                   // Optional: Clean up old files to save space
                   final directory = Directory(directoryPath);
@@ -185,15 +184,17 @@ class _CropImageScreenState extends State<CropImageScreen> {
                       final stat = await fileEntity.stat();
                       final lastModified = stat.modified;
                       final expirationDate =
-                          DateTime.now().subtract(Duration(days: 7));
+                      DateTime.now().subtract(Duration(days: 7));
                       if (lastModified.isBefore(expirationDate)) {
                         await fileEntity.delete();
                       }
                     }
                   }
-                  Navigator.pop(context, file);
+
+                  // Pass the file path instead of the File object
+                  Navigator.pop(context, filePath);
                 },
-              ),
+              )
             ],
           ),
           if (_currentShape == CustomCropShape.Ratio) ...[
