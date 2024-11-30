@@ -40,7 +40,7 @@ class ChatMockingService {
       picturePrivacy: 'Everyone',
       invitePermissionsPrivacy: 'Everyone',
       phone: faker.phoneNumber.us(),
-      id: faker.guid.guid(),
+      id: '11',
     );
   }
 
@@ -98,7 +98,7 @@ class ChatMockingService {
       isArchived: faker.randomGenerator.boolean(),
       isMuted: faker.randomGenerator.boolean(),
       isMentioned: faker.randomGenerator.boolean(),
-      draft: faker.lorem.sentence(),
+      draft: faker.randomGenerator.boolean() ? faker.lorem.sentence() : null,
     );
   }
 

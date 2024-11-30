@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:faker/faker.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 
@@ -35,7 +36,7 @@ List<MessageModel> generateFakeMessages() {
     // Create a new message
     MessageModel message = MessageModel(
       messageType: MessageType.normal,
-      senderId: random.nextBool() ? "John Doe" : "Jane Smith",
+      senderId: random.nextBool() ? '11' : faker.guid.guid(),
       content: sampleMessages[random.nextInt(sampleMessages.length)],
       timestamp: currentDate.add(Duration(
         hours: random.nextInt(24),
