@@ -1,6 +1,8 @@
 import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cupertino_datetime_picker/flutter_cupertino_datetime_picker.dart';
 import 'package:flutter_svg/flutter_svg.dart'; // Import flutter_svg
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
@@ -8,11 +10,13 @@ import 'package:telware_cross_platform/core/mock/messages_mock.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
+import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/bottom_input_bar_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/chat_header_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/date_label_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/message_tile_widget.dart';
+import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
 
 class ChatScreen extends StatefulWidget {
   static const String route = '/chat';
@@ -26,14 +30,21 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
   List<dynamic> chatContent = [];
-  final TextEditingController _controller = TextEditingController();
+  final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   late ChatType type;
+  bool isSearching = false;
+  bool isShowAsList = false;
+  int _numberOfMatches = 0;
+  int _currentMatch = 1;
+  int _currentMatchIndex = 0;
+  Map<int, List<MapEntry<int, int>>> _messageMatches = {};
+  List<int> _messageIndices = [];
 
   @override
   void initState() {
     super.initState();
-    _controller.text = widget.chatModel.draft ?? "";
+    _messageController.text = widget.chatModel.draft ?? "";
     type = widget.chatModel.type;
     WidgetsBinding.instance.addObserver(this);
     final messages = widget.chatModel.id != null ? generateFakeMessages() : <MessageModel>[];
@@ -43,7 +54,7 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    _controller.dispose();
+    _messageController.dispose();
     _scrollController.dispose(); // Dispose of the ScrollController
     WidgetsBinding.instance.removeObserver(this); // Remove the observer
     super.dispose();
@@ -82,12 +93,64 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
     return false;
   }
 
+  void _scrollToTimeStamp(DateTime date) {
+    final DateTime timestamp = DateTime(date.year, date.month, date.day);
+    final int index = chatContent.indexWhere((element) {
+      if (element is MessageModel) {
+        return element.timestamp.isAfter(timestamp);
+      }
+      return false;
+    });
+    if (index != -1) {
+      _scrollController.jumpTo(index * 20.0);
+    }
+  }
+
   // Scroll the chat view to the bottom
   void _scrollToBottom() {
-    Future.delayed(Duration(milliseconds: 100), () {
+    Future.delayed(const Duration(milliseconds: 100), () {
       if (_scrollController.hasClients) {
         _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
       }
+    });
+  }
+
+  void _searchForText(searchText) async {
+    Map<int, List<MapEntry<int, int>>>  messageMatches = {};
+    int numberOfMatches = 0;
+    int currentMatchIndex = 0;
+    List<int> messageIndices = [];
+    for (int i = 0; i < chatContent.length; i++) {
+      if (chatContent[i] is! MessageModel) {
+        continue;
+      }
+      List<MapEntry<int, int>> matches = kmp(chatContent[i].content ?? "", searchText);
+      if (matches.isNotEmpty && matches[0].value != 0) {
+        numberOfMatches += 1;
+        messageMatches[i] = matches;
+        currentMatchIndex = i;
+        messageIndices.add(i);
+      }
+    }
+
+    setState(() {
+      _messageIndices = messageIndices;
+      _currentMatchIndex = currentMatchIndex;
+      _numberOfMatches = numberOfMatches;
+      _messageMatches = messageMatches;
+    });
+  }
+
+  void _enableSearching() {
+    // Implement search functionality here
+    setState(() {
+      isSearching = true;
+    });
+  }
+
+  void _toggleSearchDisplay() {
+    setState(() {
+      isShowAsList = !isShowAsList;
     });
   }
 
@@ -100,25 +163,135 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
         : "$membersNumber Member${membersNumber > 1 ? "s" : ""}";
     final imageBytes = widget.chatModel.photoBytes;
     final photo = widget.chatModel.photo;
+    const menuItemsHeight = 45.0;
 
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Navigate back when pressed
+            if (isShowAsList) {
+              setState(() {
+                isShowAsList = false;
+              });
+            } else if (isSearching) {
+              setState(() {
+                isSearching = false;
+                _messageMatches.clear();
+              });
+            } else {
+              Navigator.pop(context);
+            }
           },
         ),
-        title: ChatHeaderWidget(
+        title: !isSearching ? ChatHeaderWidget(
           title: title,
           subtitle: subtitle,
           photo: photo,
           imageBytes: imageBytes,
+        ) :
+        TextField(
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'Search',
+            hintStyle: TextStyle(
+                color: Palette.accentText,
+                fontWeight: FontWeight.w400
+            ),
+            border: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            enabledBorder: InputBorder.none,
+
+          ),
+          onSubmitted: _searchForText,
+          onChanged: (value) => {
+            if (isShowAsList) {
+              setState(() {
+                isShowAsList = false;
+              })
+            }
+          },
         ),
         actions: [
-          IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.more_vert))
+          if (!isSearching)
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (String value) {
+              if (value == 'search') {
+                _enableSearching();
+              } else {
+                showToastMessage("No Bueno");
+              }
+            },
+            color: Palette.secondary,
+            padding: EdgeInsets.zero,
+            itemBuilder: (BuildContext context) {
+              return [
+                 PopupMenuItem<String>(
+                  value: 'mute-options',
+                  padding: EdgeInsets.zero,
+                  height: menuItemsHeight,
+                  child: _popupMenuItem(
+                    icon: Icons.volume_up_rounded,
+                    text: 'Mute',
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: Palette.inactiveSwitch,
+                      size: 16,
+                    )
+                  ),
+                ),
+                const PopupMenuDivider(
+                  height: 10,
+                ),
+                PopupMenuItem<String>(
+                  value: 'video-call',
+                  padding: EdgeInsets.zero,
+                  height: menuItemsHeight,
+                  child: _popupMenuItem(
+                      icon: Icons.videocam_outlined,
+                      text: 'Video Call',
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'search',
+                  padding: EdgeInsets.zero,
+                  height: menuItemsHeight,
+                  child: _popupMenuItem(
+                    icon: Icons.search,
+                    text: 'Search',
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'change-wallpaper',
+                  padding: EdgeInsets.zero,
+                  height: menuItemsHeight,
+                  child: _popupMenuItem(
+                    icon: Icons.wallpaper_rounded,
+                    text: 'Change Wallpaper',
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'clear-history',
+                  padding: EdgeInsets.zero,
+                  height: menuItemsHeight,
+                  child: _popupMenuItem(
+                    icon: Icons.cleaning_services,
+                    text: 'Clear History',
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'delete-chat',
+                  padding: EdgeInsets.zero,
+                  height: menuItemsHeight,
+                  child: _popupMenuItem(
+                    icon: Icons.delete_outline,
+                    text: 'Delete Chat',
+                  ),
+                ),
+              ];
+            },
+          ),
         ],
       ),
       body: GestureDetector(
@@ -142,7 +315,24 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
             Column(
               children: [
                 Expanded(
-                  child: chatContent.isEmpty ?
+                  child: isShowAsList ?
+                    Container(
+                      color: Palette.background,
+                      child: Column(
+                        children: _messageIndices.map((index) {
+                          MessageModel msg = chatContent[index];
+                          return SettingsOptionWidget(
+                            imagePath: getRandomImagePath(),
+                            text: msg.senderName,
+                            subtext: msg.content ?? "",
+                            onTap: () => {
+                              // TODO (MOAMEN): Create scroll to msg
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    )
+                  : chatContent.isEmpty ?
                     Center(
                       child: Container(
                         width: 210,
@@ -199,7 +389,7 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                       child: Column(
-                        children: chatContent.map((item) {
+                        children: chatContent.mapIndexed((index, item) {
                           if (item is DateLabelWidget) {
                             return item;
                           } else if (item is MessageModel) {
@@ -207,6 +397,7 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
                               messageModel: item,
                               isSentByMe: item.senderName == "John Doe",
                               showInfo: type == ChatType.group,
+                              highlights: _messageMatches[index] ?? const [MapEntry(0, 0)],
                             );
                           } else {
                             return const SizedBox.shrink();
@@ -217,7 +408,80 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
                   ),
                 ),
                 // The input bar at the bottom
-                BottomInputBarWidget(controller: _controller),
+                if (!isSearching)
+                  BottomInputBarWidget(controller: _messageController)
+                else
+                  Container(
+                    color: Palette.trinary,
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.edit_calendar),
+                          onPressed: () {
+                            // Show the Cupertino Date Picker when the icon is pressed
+                            DatePicker.showDatePicker(
+                              context,
+                              pickerTheme: const DateTimePickerTheme(
+                                backgroundColor: Palette.secondary,
+                                itemTextStyle: TextStyle(
+                                  color: Palette.primaryText,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                confirm: Text(
+                                  'Jump to date',
+                                  style: TextStyle(
+                                    color: Palette.primary,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                cancel: null,
+                              ),
+                              minDateTime: DateTime.now().subtract(const Duration(days: 365 * 10)),
+                              maxDateTime: DateTime.now(),
+                              initialDateTime: DateTime.now(),
+                              dateFormat: 'dd-MMMM-yyyy',
+                              locale: DateTimePickerLocale.en_us,
+                              onConfirm: (date, time) {
+                                _scrollToTimeStamp(date);
+                              },
+                            );
+                          },
+                        ),
+                        if (_numberOfMatches != 0)
+                        Text(
+                          _numberOfMatches == 0 ? 'No results' :
+                          isShowAsList ?
+                          '$_numberOfMatches result${_numberOfMatches != 1 ? 's' :''}' :
+                          '$_currentMatch of $_numberOfMatches',
+                          style: TextStyle(
+                            color: Palette.primaryText,
+                            fontWeight: FontWeight.w500
+                          ),
+                        ),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: GestureDetector(
+                              onTap: () {
+                                _toggleSearchDisplay();
+                              },
+                              child: Text(
+                                isShowAsList ? 'Show as Chat' : 'Show as List',
+                                style: const TextStyle(
+                                  color: Palette.accent,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ],
@@ -275,4 +539,35 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
     // Return the randomly chosen Lottie animation path
     return lottieAnimations[randomIndex];
   }
+
+
+}
+
+// Popup menu item widget
+Widget _popupMenuItem({Key? key, required IconData icon, required String text, Widget? trailing, Function? onTap}) {
+  return Container(
+      color: Palette.secondary,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+        child: Row(
+          children: [
+            Icon(icon, color: Palette.accentText,),
+            const SizedBox(width: 16),
+            Text(text,
+              style: const TextStyle(
+                color: Palette.primaryText,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: trailing ?? const SizedBox.shrink(),
+              ),
+            ),
+          ],
+        ),
+      )
+  );
 }

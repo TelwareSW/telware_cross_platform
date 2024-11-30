@@ -103,6 +103,7 @@ void main() {
       expect(toKebabCase('Hello'), 'hello');
     });
 
+
     test('Multi-Word input', () {
       expect(toKebabCase('I am the king of the world'),
           'i-am-the-king-of-the-world');

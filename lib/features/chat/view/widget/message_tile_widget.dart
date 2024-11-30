@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
+import 'package:telware_cross_platform/core/view/widget/highlight_text_widget.dart';
 
 class MessageTileWidget extends StatelessWidget {
   final MessageModel messageModel;
@@ -11,6 +12,7 @@ class MessageTileWidget extends StatelessWidget {
   final bool showInfo;
   final Color nameColor;
   final Color imageColor;
+  final List<MapEntry<int, int>> highlights;
 
   const MessageTileWidget({
     super.key,
@@ -19,6 +21,7 @@ class MessageTileWidget extends StatelessWidget {
     this.showInfo = false,
     this.nameColor = Palette.primary,
     this.imageColor = Palette.primary,
+    this.highlights = const []
   });
 
   // Function to format timestamp to "hh:mm AM/PM"
@@ -70,6 +73,20 @@ class MessageTileWidget extends StatelessWidget {
                 senderNameWidget,
                 Wrap(
                   children: [
+                    HighlightTextWidget(
+                      text: messageModel.content ?? "",
+                      normalStyle: const TextStyle(
+                        color: Palette.primaryText,
+                        fontSize: 16,
+                      ),
+                      highlightStyle: const TextStyle(
+                        color: Palette.primaryText,
+                        fontSize: 16,
+                        backgroundColor: Color.fromRGBO(
+                            246, 225, 2, 0.43)
+                      ),
+                      highlights: highlights
+                    ),
                     Text(
                       messageModel.content ?? "",
                       style: const TextStyle(color: Palette.primaryText),
