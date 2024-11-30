@@ -16,6 +16,8 @@ class WidgetKeys {
       ValueKey('-switch-button');
   static const ValueKey<String> userChatCopyableLink =
       ValueKey("user-chat-copyable-link");
+
+  WidgetKeys._();
 }
 
 class SignUpKeys {
@@ -45,6 +47,8 @@ class SignUpKeys {
       GlobalKey<ShakeWidgetState>(debugLabel: 'signup_password_shake');
   static final confirmPasswordShakeKey =
       GlobalKey<ShakeWidgetState>(debugLabel: 'signup_confirm_password_shake');
+
+  SignUpKeys._();
 }
 
 class ValidationKeys {
@@ -56,6 +60,8 @@ class ValidationKeys {
       GlobalKey<State>(debugLabel: 'verification_submit_button');
   static final shakeKey =
       GlobalKey<ShakeWidgetState>(debugLabel: 'verification_shake');
+
+  ValidationKeys._();
 }
 
 class ChangeEmailKeys {
@@ -66,6 +72,8 @@ class ChangeEmailKeys {
       GlobalKey<State>(debugLabel: 'change_email_submit_button');
   static final emailShakeKey =
       GlobalKey<ShakeWidgetState>(debugLabel: 'change_email_shake');
+
+  ChangeEmailKeys._();
 }
 
 class ChatKeys {
@@ -87,6 +95,8 @@ class ChatKeys {
   static const ValueKey<String> chatTileMessageStatusPostfix =
       ValueKey('-message');
   static const ValueKey<String> chatAvatarPostfix = ValueKey('-avatar');
+
+  ChatKeys._();
 }
 
 class MessageKeys {
@@ -99,4 +109,42 @@ class MessageKeys {
   static const ValueKey<String> messageForwardPostfix = ValueKey('-forward');
   static const ValueKey<String> messageCopyPostfix = ValueKey('-copy');
   static const ValueKey<String> messageDeletePostfix = ValueKey('-delete');
+
+  MessageKeys._();
+}
+
+
+class Keys {
+  // LogInScreen
+  static final logInFormKey = GlobalKey<FormState>(debugLabel:'login_form');
+  static final logInEmailKey = GlobalKey<FormFieldState>(debugLabel:'login_email_input');
+  static final logInPasswordKey = GlobalKey<FormFieldState>(debugLabel:'login_password_input');
+  static final logInForgotPasswordKey = GlobalKey<State>(debugLabel:'login_forgot_password_button');
+  static final logInSignUpKey = GlobalKey<State>(debugLabel:'login_signup_button');
+  static final logInSubmitKey = GlobalKey<State>(debugLabel:'login_submit_button');
+  static final logInemailShakeKey = GlobalKey<ShakeWidgetState>(debugLabel: 'login_email_shake');
+  static final logInpasswordShakeKey = GlobalKey<ShakeWidgetState>(debugLabel: 'login_password_shake');
+
+  // ChangeNumberFormScreen
+  static final changeNumberFormKey = GlobalKey<FormState>(debugLabel: 'change_number_form');
+  static final changeNumberPhoneShakeKey = GlobalKey<ShakeWidgetState>(debugLabel: 'change_number_phone_shake');
+
+  // SocialLogIn
+  static const googleLogIn = Key('google_log_in');
+  static const githubLogIn = Key('github_log_in');
+
+  // ShowTakenStoryScreen
+  static final signatureBoundaryKey  = GlobalKey(debugLabel: 'signature_boundary');
+
+  // ProfileInfoScreen
+  static final profileInfoFirstNameShakeKey = GlobalKey<ShakeWidgetState>();
+  static final profileInfoLastNameShakeKey = GlobalKey<ShakeWidgetState>();
+  static const profileInfoFirstNameInput = ValueKey("first-name-input");
+  static const profileInfoLastNameInput = ValueKey("last-name-input");
+  static const profileInfoBioInput = ValueKey("bio-input");
+
+  // SettingsScreen
+  static const settingsSetProfilePhotoOptions = ValueKey("set-profile-photo-option");
+
+  Keys._();
 }
