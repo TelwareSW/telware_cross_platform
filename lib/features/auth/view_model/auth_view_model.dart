@@ -161,7 +161,7 @@ class AuthViewModel extends _$AuthViewModel {
 
         ref.read(authLocalRepositoryProvider).setToken(tokenMock);
         ref.read(tokenProvider.notifier).update((_) => tokenMock);
-        
+
         await ref.read(chattingControllerProvider).newLoginInit();
 
         state = AuthState.authenticated;
@@ -330,7 +330,7 @@ class AuthViewModel extends _$AuthViewModel {
 
     response.match((appError) {}, (user) {
       debugPrint('** getMe is called\nuser supposed to have img');
-      print(user);
+      debugPrint(user.toString());
       ref.read(authLocalRepositoryProvider).setUser(user);
       ref.read(userProvider.notifier).update((_) => user);
     });

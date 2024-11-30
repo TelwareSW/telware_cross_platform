@@ -5,6 +5,7 @@ import 'package:telware_cross_platform/core/providers/user_provider.dart';
 
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
@@ -184,7 +185,7 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
                                 );
                               },
                               child: const SettingsOptionWidget(
-                                key: ValueKey("set-profile-photo-option"),
+                                key: Keys.settingsSetProfilePhotoOptions,
                                 icon: Icons.camera_alt_outlined,
                                 iconColor: Palette.primary,
                                 text: "Set Profile Photo",

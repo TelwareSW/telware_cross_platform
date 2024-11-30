@@ -35,14 +35,14 @@ class ContactViewModel extends StateNotifier<ContactViewModelState> {
   final ContactsLocalRepository _contactsLocalRepository;
   final ContactsRemoteRepository _contactsRemoteRepository;
 
-  ContactViewModel(this._contactsLocalRepository,
-      this._contactsRemoteRepository)
+  ContactViewModel(
+      this._contactsLocalRepository, this._contactsRemoteRepository)
       : super(ContactViewModelState.initial());
 
   Future<void> fetchContacts() async {
     try {
       List<ContactModel> usersFromBackEnd =
-      await _contactsRemoteRepository.fetchContactsFromBackend();
+          await _contactsRemoteRepository.fetchContactsFromBackend();
       await _contactsLocalRepository.saveContactsToHive(usersFromBackEnd);
       final contacts = _contactsLocalRepository.getAllContactsFromHive();
       state = state.copyWith(contacts: List.from(contacts), isLoading: false);
@@ -75,7 +75,7 @@ class ContactViewModel extends StateNotifier<ContactViewModelState> {
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Failed to delete expired stories: $e');
+        debugPrint('Failed to delete expired stories: $e');
       }
     }
   }
@@ -98,7 +98,7 @@ class ContactViewModel extends StateNotifier<ContactViewModelState> {
       state = state.copyWith(contacts: updatedContacts);
     } catch (e) {
       if (kDebugMode) {
-        print('Failed to delete contact: $e');
+        debugPrint('Failed to delete contact: $e');
       }
     }
   }
@@ -129,19 +129,19 @@ class ContactViewModel extends StateNotifier<ContactViewModelState> {
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Failed to mark story as seen: $e');
+        debugPrint('Failed to mark story as seen: $e');
       }
     }
   }
 
-  Future<void> saveStoryImage(String userId, String storyId,
-      Uint8List imageData) async {
+  Future<void> saveStoryImage(
+      String userId, String storyId, Uint8List imageData) async {
     try {
       await _contactsLocalRepository.saveStoryImageLocally(
           userId, storyId, imageData);
     } catch (e) {
       if (kDebugMode) {
-        print('Error saving story image: $e');
+        debugPrint('Error saving story image: $e');
       }
     }
   }
@@ -150,13 +150,12 @@ class ContactViewModel extends StateNotifier<ContactViewModelState> {
     return _contactsRemoteRepository.postStory(storyImage, storyCaption);
   }
 
-
   Future<bool> deleteStory(String storyId) async {
     return _contactsRemoteRepository.deleteStory(storyId);
   }
 
-  Future<void> handleStoryImageAndSeenStatus(StoryModel story,
-      ContactModel contact, Uint8List image) async {
+  Future<void> handleStoryImageAndSeenStatus(
+      StoryModel story, ContactModel contact, Uint8List image) async {
     if (story.storyContent == null) {
       saveStoryImage(contact.userId, story.storyId, image);
     }

@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_cupertino_datetime_picker/flutter_cupertino_datetime_picker.dart';
+// ignore: depend_on_referenced_packages
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:telware_cross_platform/core/constants/keys.dart';
@@ -40,7 +41,9 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
   bool isSearching = false;
   bool isShowAsList = false;
   int _numberOfMatches = 0;
+  // ignore: prefer_final_fields
   int _currentMatch = 1;
+  // ignore: unused_field
   int _currentMatchIndex = 0;
   Map<int, List<MapEntry<int, int>>> _messageMatches = {};
   List<int> _messageIndices = [];
