@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hive/hive.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:vibration/vibration.dart';
 
-import 'package:telware_cross_platform/core/constants/constant.dart';
 import 'package:telware_cross_platform/core/providers/sign_up_provider.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
@@ -31,14 +29,6 @@ class LogInScreen extends ConsumerStatefulWidget {
 }
 
 class _LogInScreenState extends ConsumerState<LogInScreen> {
-  final formKey = GlobalKey<FormState>(debugLabel: 'login_form');
-  final emailKey = GlobalKey<FormFieldState>(debugLabel: 'login_email_input');
-  final passwordKey =
-      GlobalKey<FormFieldState>(debugLabel: 'login_password_input');
-  final forgotPasswordKey =
-      GlobalKey<State>(debugLabel: 'login_forgot_password_button');
-  final signUpKey = GlobalKey<State>(debugLabel: 'login_signup_button');
-  final logInSubmitKey = GlobalKey<State>(debugLabel: 'login_submit_button');
   final FocusNode emailFocusNode = FocusNode();
   final FocusNode passwordFocusNode = FocusNode();
   bool isEmailFocused = false;
@@ -46,9 +36,6 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-
-  final emailShakeKey = GlobalKey<ShakeWidgetState>();
-  final passwordShakeKey = GlobalKey<ShakeWidgetState>();
 
   @override
   void initState() {
@@ -87,9 +74,9 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
         emailController.text.isEmpty || passwordController.text.isEmpty;
 
     if (emailController.text.isEmpty) {
-      emailShakeKey.currentState?.shake();
+      Keys.logInemailShakeKey.currentState?.shake();
     } else if (passwordController.text.isEmpty) {
-      passwordShakeKey.currentState?.shake();
+      Keys.logInpasswordShakeKey.currentState?.shake();
     }
 
     if (someNotFilled) {
@@ -103,19 +90,19 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
   void forgotPassword() {
     if (emailController.text.isEmpty) {
       showToastMessage('Enter an Email');
-      emailShakeKey.currentState?.shake();
+      Keys.logInemailShakeKey.currentState?.shake();
       return vibrate();
     }
 
-    if (emailKey.currentState != null &&
-        (emailKey.currentState?.validate() ?? false)) {
+    if (Keys.logInEmailKey.currentState != null &&
+        (Keys.logInEmailKey.currentState?.validate() ?? false)) {
       debugPrint('forgot password called');
       ref
           .read(authViewModelProvider.notifier)
           .forgotPassword(emailController.text);
     } else {
       debugPrint('forgot password not called');
-      debugPrint('emailKey.currentState: ${emailKey.currentState}');
+      debugPrint('Keys.logInEmailKey.currentState: ${Keys.logInEmailKey.currentState}');
     }
   }
 
@@ -153,7 +140,7 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
               child: SingleChildScrollView(
                 child: Responsive(
                   child: Form(
-                    key: formKey,
+                    key: Keys.logInFormKey,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -174,8 +161,8 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
                         ),
                         ShakeMyAuthInput(
                           name: 'Email',
-                          formKey: emailKey,
-                          shakeKey: emailShakeKey,
+                          formKey: Keys.logInEmailKey,
+                          shakeKey: Keys.logInemailShakeKey,
                           isFocused: isEmailFocused,
                           focusNode: emailFocusNode,
                           controller: emailController,
@@ -183,8 +170,8 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
                         ),
                         ShakeMyAuthInput(
                           name: 'Password',
-                          formKey: passwordKey,
-                          shakeKey: passwordShakeKey,
+                          formKey: Keys.logInPasswordKey,
+                          shakeKey: Keys.logInpasswordShakeKey,
                           isFocused: isPasswordFocused,
                           focusNode: passwordFocusNode,
                           controller: passwordController,
@@ -207,7 +194,7 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
                               fontSize: Sizes.infoText,
                             ),
                             AuthSubTextButton(
-                              buttonKey: signUpKey,
+                              buttonKey: Keys.logInSignUpKey,
                               onPressed: () {
                                 context.push(Routes.signUp);
                               },
@@ -223,8 +210,8 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
               ),
             ),
       floatingActionButton: AuthFloatingActionButton(
-        formKey: formKey,
-        buttonKey: logInSubmitKey,
+        formKey: Keys.logInFormKey,
+        buttonKey: Keys.logInSubmitKey,
         onSubmit: login,
       ),
     );
@@ -238,7 +225,7 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
           padding:
               const EdgeInsets.only(left: Dimensions.inputPaddingLeft, top: 5),
           child: AuthSubTextButton(
-            buttonKey: forgotPasswordKey,
+            buttonKey: Keys.logInForgotPasswordKey,
             onPressed: forgotPassword,
             label: 'Forgot Password?',
           ),

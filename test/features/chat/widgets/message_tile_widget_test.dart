@@ -1,12 +1,8 @@
 import 'package:faker/faker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:path/path.dart';
 import 'package:telware_cross_platform/core/constants/keys.dart';
-import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
-import 'package:telware_cross_platform/core/view/widget/highlight_text_widget.dart';
-import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/message_tile_widget.dart';
 
@@ -33,7 +29,6 @@ String _extractTextSpan(TextSpan textSpan) {
 }
 
 void main() {
-  Faker faker = Faker();
   group('Message Tile Widget Tests', () {
     testWidgets("renders message tile", (WidgetTester tester) async {
       MessageModel message = MessageModel(

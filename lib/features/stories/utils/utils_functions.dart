@@ -14,13 +14,14 @@ Future<Uint8List?> downloadImage(String? url) async {
       return response.bodyBytes; // Return image as bytes
     } else {
       if (kDebugMode) {
-        print('Failed to download image. Status code: ${response.statusCode}');
+        debugPrint(
+            'Failed to download image. Status code: ${response.statusCode}');
       }
       return null;
     }
   } catch (e) {
     if (kDebugMode) {
-      print('Error downloading image: $e');
+      debugPrint('Error downloading image: $e');
     }
     return null;
   }
@@ -40,7 +41,7 @@ Future<bool> uploadImage(File imageFile, String uploadUrl) async {
     return true;
   } catch (e) {
     if (kDebugMode) {
-      print('Error occurred: $e');
+      debugPrint('Error occurred: $e');
     }
     return false;
   }

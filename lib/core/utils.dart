@@ -1,7 +1,6 @@
 // common utility functions are added here
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:fpdart/fpdart.dart';
 import 'package:telware_cross_platform/core/classes/telware_toast.dart';
 import 'package:intl/intl.dart';
 
@@ -150,8 +149,9 @@ String formatTime(int seconds,
             : '$seconds seconds';
   }
   final hours = (seconds ~/ 3600).toString().padLeft(2, '0');
-  if (showHours)
+  if (showHours) {
     seconds %= 3600; // get the remaining seconds after calculating hours
+  }
   final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
   final secs = (seconds % 60).toString().padLeft(2, '0');
   return showHours ? '$hours:$minutes:$secs' : '$minutes:$secs';
@@ -189,8 +189,8 @@ IconData getMessageStateIcon(MessageModel message) {
 }
 
 List<MapEntry<int, int>> kmp(String text, String pattern) {
-  print(text);
-  print(pattern);
+  debugPrint(text);
+  debugPrint(pattern);
   final int n = text.length;
   final int m = pattern.length;
   if (m == 0) return const [];
@@ -209,12 +209,12 @@ List<MapEntry<int, int>> kmp(String text, String pattern) {
       j = lps[j - 1];
     }
     if (j == m) {
-      print("YES ${MapEntry(i - m, m)}");
+      debugPrint("YES ${MapEntry(i - m, m)}");
       matches.add(MapEntry(i - m, m));
       j = lps[j - 1];
     }
   }
-  print(matches);
+  debugPrint(matches.toString());
   return matches;
 }
 
@@ -225,10 +225,10 @@ List<int> _computeLPSArray(String pattern) {
   List<int> lps = List.filled(m, 0);
 
   while (i < m) {
-    if(pattern[i] == pattern[len]) {
+    if (pattern[i] == pattern[len]) {
       lps[i] = ++len;
       i++;
-    } else if(len != 0) {
+    } else if (len != 0) {
       len = lps[len - 1];
     } else {
       lps[i] = 0;

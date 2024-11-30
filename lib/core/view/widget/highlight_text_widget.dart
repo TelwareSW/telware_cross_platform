@@ -3,7 +3,8 @@ import 'package:telware_cross_platform/core/theme/palette.dart';
 
 class HighlightTextWidget extends StatelessWidget {
   final String text;
-  final List<MapEntry<int, int>> highlights;  // Each entry holds start index and length of highlight
+  final List<MapEntry<int, int>>
+      highlights; // Each entry holds start index and length of highlight
   final TextStyle normalStyle;
   final TextStyle highlightStyle;
 
@@ -18,7 +19,7 @@ class HighlightTextWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (highlights.length == 1 && highlights[0].key != 0) {
-      print(highlights);
+      debugPrint(highlights.toString());
     }
     List<TextSpan> textSpans = [];
     int start = 0;
@@ -28,7 +29,8 @@ class HighlightTextWidget extends StatelessWidget {
       int length = highlight.value;
 
       if (index > start) {
-        textSpans.add(TextSpan(text: text.substring(start, index), style: normalStyle));
+        textSpans.add(
+            TextSpan(text: text.substring(start, index), style: normalStyle));
       }
 
       String highlightedText = text.substring(index, index + length);

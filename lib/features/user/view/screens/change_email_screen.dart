@@ -1,33 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
-import 'package:go_router/go_router.dart';
-import 'package:lottie/lottie.dart';
-import 'package:phone_form_field/phone_form_field.dart';
 import 'package:telware_cross_platform/core/constants/keys.dart';
-import 'package:telware_cross_platform/core/models/signup_result.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/confirmation_dialog.dart';
 import 'package:telware_cross_platform/features/user/view_model/user_state.dart';
 import 'package:telware_cross_platform/features/user/view_model/user_view_model.dart';
 import 'package:vibration/vibration.dart';
-import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
-import 'package:telware_cross_platform/core/providers/sign_up_provider.dart';
-import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/responsive.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_floating_action_button.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/auth_phone_number.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/auth_sub_text_button.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/shake_my_auth_input.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/social_log_in.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
-import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
-import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
 
 class ChangeEmailScreen extends ConsumerStatefulWidget {
   static const String route = '/change-email';

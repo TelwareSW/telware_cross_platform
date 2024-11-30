@@ -69,7 +69,7 @@ class AppDrawer extends ConsumerWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                user?.phone ?? '+20 110 5035588',
+                user.phone ,
                 style: const TextStyle(
                     color: Palette.accentText, fontSize: Sizes.infoText),
               ),

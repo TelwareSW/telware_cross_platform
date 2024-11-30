@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/features/user/repository/user_local_repository.dart';
@@ -23,8 +24,6 @@ class ProfileInfoScreen extends ConsumerStatefulWidget {
 
 class _ProfileInfoScreen extends ConsumerState<ProfileInfoScreen> with SingleTickerProviderStateMixin {
   late final UserModel _user;
-  final firstNameShakeKey = GlobalKey<ShakeWidgetState>();
-  final lastNameShakeKey = GlobalKey<ShakeWidgetState>();
 
   late final TextEditingController _firstNameController;
   late final TextEditingController _secondNameController;
@@ -43,7 +42,7 @@ class _ProfileInfoScreen extends ConsumerState<ProfileInfoScreen> with SingleTic
     _secondNameController = TextEditingController(
       text: nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '',
     );
-    _bioController = TextEditingController(text: _user?.bio ?? '');
+    _bioController = TextEditingController(text: _user.bio);
 
     _firstNameController.addListener(_checkForChanges);
     _secondNameController.addListener(_checkForChanges);
@@ -71,8 +70,6 @@ class _ProfileInfoScreen extends ConsumerState<ProfileInfoScreen> with SingleTic
 
   @override
   Widget build(BuildContext context) {
-    final userState = ref.watch(userViewModelProvider);
-
     ref.listen<UserState>(userViewModelProvider, (previous, next) {
       if (next.type == UserStateType.success) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -104,16 +101,16 @@ class _ProfileInfoScreen extends ConsumerState<ProfileInfoScreen> with SingleTic
               settingsOptions: const [],
               actions: [
                 SettingsInputWidget(
-                  key: const ValueKey("first-name-input"),
+                  key: Keys.profileInfoFirstNameInput,
                   controller: _firstNameController,
                   placeholder: "First Name",
-                  shakeKey: firstNameShakeKey,
+                  shakeKey: Keys.profileInfoFirstNameShakeKey,
                 ),
                 SettingsInputWidget(
-                  key: const ValueKey("last-name-input"),
+                  key: Keys.profileInfoLastNameInput,
                   controller: _secondNameController,
                   placeholder: "Last Name",
-                  shakeKey: lastNameShakeKey,
+                  shakeKey: Keys.profileInfoLastNameShakeKey,
                 ),
               ],
             ),
@@ -130,7 +127,7 @@ class _ProfileInfoScreen extends ConsumerState<ProfileInfoScreen> with SingleTic
               settingsOptions: const [],
               actions: [
                 SettingsInputWidget(
-                  key: const ValueKey("bio-input"),
+                  key: Keys.profileInfoBioInput,
                   controller: _bioController,
                   placeholder: "Write about yourself...",
                   lettersCap: 70,
@@ -155,10 +152,10 @@ class _ProfileInfoScreen extends ConsumerState<ProfileInfoScreen> with SingleTic
 
   Future<void> _updateUserData() async {
     if (_firstNameController.text.isEmpty) {
-      return _shakeAndVibrate(firstNameShakeKey);
+      return _shakeAndVibrate(Keys.profileInfoFirstNameShakeKey);
     }
     if (_secondNameController.text.isEmpty) {
-      return _shakeAndVibrate(lastNameShakeKey);
+      return _shakeAndVibrate(Keys.profileInfoLastNameShakeKey);
     }
 
     final userViewModel = ref.read(userViewModelProvider.notifier);
