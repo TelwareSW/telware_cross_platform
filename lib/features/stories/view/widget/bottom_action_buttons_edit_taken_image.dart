@@ -14,14 +14,14 @@ class BottomActionButtonsEditTakenImage extends StatelessWidget {
   final String destination;
 
   const BottomActionButtonsEditTakenImage({
-    Key? key,
+    super.key,
     required this.cropImage,
     required this.discardChanges,
     required this.saveAndPostStory,
     required this.captionController,
     required this.ref,
     this.destination = 'story'
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

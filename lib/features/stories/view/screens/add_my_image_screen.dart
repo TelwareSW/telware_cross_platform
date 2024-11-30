@@ -24,7 +24,7 @@ class _AddMyImageScreenState extends State<AddMyImageScreen> {
 
   CameraController? _controller;
   Future<void>? _initializeControllerFuture;
-  String _selectedMode = 'Photo';
+  final String _selectedMode = 'Photo';
   int _currentCameraIndex = 0;
 
   @override

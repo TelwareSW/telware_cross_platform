@@ -24,11 +24,11 @@ class DevicesScreen extends ConsumerWidget {
     return Scaffold(
       appBar: const ToolbarWidget(title: "Devices"),
       body: sessionsAsync.when(
-        loading: () => Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(child: Text('Error: $error')),
         data: (sessions) {
           if (sessions.isEmpty) {
-            return Center(child: Text('No sessions available'));
+            return const Center(child: Text('No sessions available'));
           }
 
           return SingleChildScrollView(
@@ -51,7 +51,7 @@ class DevicesScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
-                SizedBox(height: 10,),
+                const SizedBox(height: 10,),
                 ...sessions.asMap().entries.map((entry) {
                   int sectionIndex = entry.key;
                   final section = entry.value;
@@ -108,7 +108,7 @@ class DevicesScreen extends ConsumerWidget {
                       ),
                     ],
                   );
-                }).toList(),
+                }),
               ],
             ),
           );
@@ -142,7 +142,7 @@ class AlertTerminateSessionConformation extends StatelessWidget {
           onPressed: () {
             Navigator.of(context).pop();
           },
-          child: Text('Cancel'),
+          child: const Text('Cancel'),
         ),
         TextButton(
           onPressed: () {
@@ -151,7 +151,7 @@ class AlertTerminateSessionConformation extends StatelessWidget {
           },
           child: Text(
             conformationText,
-            style: TextStyle(color: Colors.red),
+            style: const TextStyle(color: Colors.red),
           ),
         ),
       ],

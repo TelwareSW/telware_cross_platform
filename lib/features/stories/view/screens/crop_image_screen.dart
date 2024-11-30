@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:math';
-import 'dart:ui';
 import 'package:custom_image_crop/custom_image_crop.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,9 +11,9 @@ class CropImageScreen extends StatefulWidget {
   final String path;
 
   const CropImageScreen({
-    Key? key,
+    super.key,
     required this.path,
-  }) : super(key: key);
+  });
 
   @override
   _CropImageScreenState createState() => _CropImageScreenState();
@@ -24,7 +23,7 @@ class _CropImageScreenState extends State<CropImageScreen> {
   late CustomImageCropController controller;
   Color backGroundColor = Palette.secondary;
   CustomCropShape _currentShape = CustomCropShape.Circle;
-  CustomImageFit _imageFit = CustomImageFit.fillCropSpace;
+  final CustomImageFit _imageFit = CustomImageFit.fillCropSpace;
   final TextEditingController _widthController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
   final TextEditingController _radiusController = TextEditingController();
@@ -193,7 +192,7 @@ class _CropImageScreenState extends State<CropImageScreen> {
                       final stat = await fileEntity.stat();
                       final lastModified = stat.modified;
                       final expirationDate =
-                      DateTime.now().subtract(Duration(days: 7));
+                      DateTime.now().subtract(const Duration(days: 7));
                       if (lastModified.isBefore(expirationDate)) {
                         await fileEntity.delete();
                       }

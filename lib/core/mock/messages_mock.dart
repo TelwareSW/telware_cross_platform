@@ -21,7 +21,7 @@ List<MessageModel> generateFakeMessages() {
   final Random random = Random();
 
   // Starting date (7 days ago)
-  DateTime currentDate = DateTime.now().subtract(Duration(days: 7));
+  DateTime currentDate = DateTime.now().subtract(const Duration(days: 7));
 
   // List to store the generated messages
   List<MessageModel> generatedMessages = [];

@@ -31,7 +31,7 @@ class UserNameAndDateOfStory extends StatelessWidget {
                 : null,
           ),
           child: user?.userImage == null
-              ? Icon(
+              ? const Icon(
             Icons.person,
             size: 24, // Adjust icon size to fit nicely within the container
             color: Colors.grey, // Optional: Change the color to suit your theme

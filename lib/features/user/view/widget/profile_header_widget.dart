@@ -1,19 +1,10 @@
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
-import 'package:telware_cross_platform/features/auth/repository/auth_local_repository.dart';
-import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
-import 'package:telware_cross_platform/features/stories/repository/contacts_remote_repository.dart';
-import 'package:telware_cross_platform/features/stories/utils/utils_functions.dart';
-import 'package:telware_cross_platform/features/user/view_model/user_view_model.dart';
 
-import '../../../../core/models/user_model.dart';
-import '../../../stories/models/contact_model.dart';
-import '../../../stories/view_model/contact_view_model.dart';
 
 
 class ProfileHeader extends ConsumerWidget {

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
-import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/chat_screen.dart';

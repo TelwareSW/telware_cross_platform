@@ -5,12 +5,12 @@ import '../model/model.dart';
 import '../view/screens/devices_screen.dart';
 
 class DevicesViewModel extends StateNotifier<AsyncValue<List<Session>>> {
-  DevicesViewModel() : super(AsyncValue.loading());
+  DevicesViewModel() : super(const AsyncValue.loading());
 
 
   Future<void> fetchSessions(BuildContext context) async {
     try {
-      await Future.delayed(Duration(seconds: 2)); // Simulate network delay
+      await Future.delayed(const Duration(seconds: 2)); // Simulate network delay
       final sessions = [
         Session(
           title: "Current session",

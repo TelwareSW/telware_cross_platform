@@ -15,7 +15,6 @@ import '../../../../core/routes/routes.dart';
 import '../widget/bottom_action_buttons_edit_taken_image.dart';
 import '../widget/signature_pen.dart';
 import '../widget/story_caption_text_field.dart';
-import 'crop_image_screen.dart';
 
 class ShowTakenImageScreen extends ConsumerStatefulWidget {
   static const String route = '/show-taken-story';

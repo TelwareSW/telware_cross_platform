@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart'; // Import flutter_svg
 import 'package:intl/intl.dart';
-import 'package:lottie/lottie.dart';
 import 'package:telware_cross_platform/core/mock/messages_mock.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
@@ -84,7 +83,7 @@ class _ChatScreen extends State<ChatScreen> with WidgetsBindingObserver {
 
   // Scroll the chat view to the bottom
   void _scrollToBottom() {
-    Future.delayed(Duration(milliseconds: 100), () {
+    Future.delayed(const Duration(milliseconds: 100), () {
       if (_scrollController.hasClients) {
         _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
       }

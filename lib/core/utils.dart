@@ -149,8 +149,9 @@ String formatTime(int seconds,
             : '$seconds seconds';
   }
   final hours = (seconds ~/ 3600).toString().padLeft(2, '0');
-  if (showHours)
+  if (showHours) {
     seconds %= 3600; // get the remaining seconds after calculating hours
+  }
   final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
   final secs = (seconds % 60).toString().padLeft(2, '0');
   return showHours ? '$hours:$minutes:$secs' : '$minutes:$secs';

@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hive/hive.dart';
 import 'package:vibration/vibration.dart';
 
-import 'package:telware_cross_platform/core/constants/constant.dart';
 import 'package:telware_cross_platform/core/providers/sign_up_provider.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';

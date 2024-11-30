@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
@@ -75,7 +74,7 @@ class MessageTileWidget extends StatelessWidget {
                       style: const TextStyle(color: Palette.primaryText),
                     ),
                     SizedBox(width: isSentByMe ? 70.0 : 55.0),
-                    Text("")
+                    const Text("")
                   ],
                 )
               ],

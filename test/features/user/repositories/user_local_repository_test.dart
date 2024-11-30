@@ -9,7 +9,6 @@ import 'package:mockito/mockito.dart';
 import 'package:telware_cross_platform/core/mock/user_mock.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
-import 'package:telware_cross_platform/features/auth/repository/auth_local_repository.dart';
 import 'package:telware_cross_platform/features/user/repository/user_local_repository.dart';
 
 import 'user_local_repository_test.mocks.dart';

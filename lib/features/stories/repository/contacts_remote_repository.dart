@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
@@ -11,7 +10,6 @@ import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
 import 'package:telware_cross_platform/features/stories/models/story_model.dart';
 import 'package:http/http.dart' as http;
-import 'package:telware_cross_platform/core/constants/server_constants.dart';
 
 part 'contacts_remote_repository.g.dart';
 
@@ -27,7 +25,7 @@ class ContactsRemoteRepository {
 
   Future<List<ContactModel>> fetchContactsStoriesFromBackend() async {
     List<ContactModel> users = [];
-    if (USE_MOCK_DATA_STORIES == true) {
+    if (USE_MOCK_DATA_STORIES == false) {
       users = [
         ContactModel(
           stories: [

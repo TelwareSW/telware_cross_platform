@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 
@@ -10,12 +9,12 @@ class BottomInputBarWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       color: Palette.trinary,
       child: Row(
         children: [
           IconButton(
-            icon: Icon(Icons.insert_emoticon),
+            icon: const Icon(Icons.insert_emoticon),
             color: Palette.accentText,
             onPressed: () {},
           ),
@@ -45,14 +44,14 @@ class BottomInputBarWidget extends StatelessWidget {
                 children: [
                   if (text.text.isEmpty) ...[
                     IconButton(
-                      icon: Icon(Icons.attach_file),
+                      icon: const Icon(Icons.attach_file),
                       color: Palette.accentText,
                       onPressed: () {
                         // Handle file attachment
                       },
                     ),
                     IconButton(
-                      icon: Icon(Icons.mic),
+                      icon: const Icon(Icons.mic),
                       color: Palette.accentText,
                       onPressed: () {
                         // Handle mic
@@ -60,7 +59,7 @@ class BottomInputBarWidget extends StatelessWidget {
                     ),
                   ] else
                     IconButton(
-                      icon: Icon(Icons.send),
+                      icon: const Icon(Icons.send),
                       color: Palette.accent,
                       onPressed: () {
                         // Handle send action
