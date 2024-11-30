@@ -172,7 +172,7 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                     ],
                   ),
                 ),
-          if (isTextEmpty) ...[
+          if (widget.controller.text.isEmpty && isTextEmpty) ...[
             if (widget.isRecording || widget.isRecordingLocked) ...[
               if (!widget.isRecordingCompleted) ...[
                 const LottieViewer(
@@ -279,7 +279,8 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
               ),
             ],
           ],
-          if (widget.isRecordingCompleted || !isTextEmpty) ...[
+          if (widget.isRecordingCompleted ||
+              (widget.controller.text.isNotEmpty || !isTextEmpty)) ...[
             IconButton(
               padding: const EdgeInsets.only(left: 10),
               iconSize: 28,

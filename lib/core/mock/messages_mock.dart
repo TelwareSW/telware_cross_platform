@@ -58,7 +58,7 @@ Future<List<MessageModel>> generateFakeMessages() async {
     senderId: "John Doe",
     content: AudioContent(
       audioUrl: "dummy_audio_url",
-      duration: const Duration(minutes: 1, seconds: 20),
+      duration: const Duration(minutes: 1, seconds: 20).inSeconds,
       filePath: "assets/audio/test8.mp3",
     ),
     timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
@@ -74,7 +74,7 @@ Future<List<MessageModel>> generateFakeMessages() async {
     senderId: "John Doe",
     content: ImageContent(
       imageUrl: "assets/imgs/marwan.jpg",
-      file: imageFile,
+      filePath: imageFile.path,
     ),
     timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
     userStates: {},
@@ -86,8 +86,8 @@ Future<List<MessageModel>> generateFakeMessages() async {
     senderId: "John Doe",
     content: VideoContent(
       videoUrl: "assets/video/demo.mp4",
-      duration: const Duration(minutes: 1, seconds: 20),
-      file: videoFile,
+      duration: const Duration(minutes: 1, seconds: 20).inSeconds,
+      filePath: videoFile.path,
     ),
     timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
     userStates: {},

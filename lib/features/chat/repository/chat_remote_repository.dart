@@ -7,6 +7,7 @@ import 'package:telware_cross_platform/core/models/user_model.dart';
 
 class ChatRemoteRepository {
   final Dio _dio;
+
   ChatRemoteRepository({required Dio dio}) : _dio = dio;
 
   Future<
@@ -23,34 +24,33 @@ class ChatRemoteRepository {
         ),
       );
 
-      
+      debugPrint('!!! response: ${response.data}');
     } catch (e) {
       debugPrint(e.toString());
     }
     return (chats: <ChatModel>[], users: <UserModel>[], appError: null);
   }
 
-  Future<({
-    AppError? appError,
-    UserModel? otherUser
-  })> getOtherUser(String id) async {
+  Future<({AppError? appError, UserModel? otherUser})> getOtherUser(
+      String id) async {
     try {
-      return (appError: null, otherUser: userMock); 
+      return (appError: null, otherUser: userMock);
     } catch (e) {
-      debugPrint('!!! Faild to get other user data, ${e.toString()}'); 
-      return (appError: AppError('This User was not Found', code: 404), otherUser: null); 
+      debugPrint('!!! Faild to get other user data, ${e.toString()}');
+      return (
+        appError: AppError('This User was not Found', code: 404),
+        otherUser: null
+      );
     }
   }
 
-  Future<({
-    AppError? appError,
-    ChatModel? chat
-  })> getChat(String sessionID, String chatID) async {
+  Future<({AppError? appError, ChatModel? chat})> getChat(
+      String sessionID, String chatID) async {
     try {
-      return (appError: null, chat: null); 
+      return (appError: null, chat: null);
     } catch (e) {
-      debugPrint('!!! Faild to get other user data, ${e.toString()}'); 
-      return (appError: AppError('Chat was not found', code: 404), chat: null); 
+      debugPrint('!!! Faild to get other user data, ${e.toString()}');
+      return (appError: AppError('Chat was not found', code: 404), chat: null);
     }
   }
 }

@@ -6,9 +6,9 @@ import 'package:video_player/video_player.dart';
 import '../../../../core/theme/palette.dart';
 
 class VideoPlayerWidget extends StatefulWidget {
-  final XFile file;
+  final String filePath;
 
-  const VideoPlayerWidget({super.key, required this.file});
+  const VideoPlayerWidget({super.key, required this.filePath});
 
   @override
   State<VideoPlayerWidget> createState() => _VideoPlayerWidgetState();
@@ -23,7 +23,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.file(File(widget.file.path))
+    _controller = VideoPlayerController.file(File(widget.filePath))
       ..initialize().then((_) {
         setState(() {
           // Initialize durationCounter with total duration

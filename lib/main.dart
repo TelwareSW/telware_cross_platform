@@ -10,6 +10,7 @@ import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/app_theme.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
+import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
@@ -36,6 +37,13 @@ Future<void> init() async {
   Hive.registerAdapter(ChatTypeAdapter());
   Hive.registerAdapter(MessageStateAdapter());
   Hive.registerAdapter(MessageTypeAdapter());
+  Hive.registerAdapter(DeleteMessageTypeAdapter());
+  Hive.registerAdapter(MessageContentTypeAdapter());
+  Hive.registerAdapter(TextContentAdapter());
+  Hive.registerAdapter(AudioContentAdapter());
+  Hive.registerAdapter(ImageContentAdapter());
+  Hive.registerAdapter(VideoContentAdapter());
+  Hive.registerAdapter(DocumentContentAdapter());
 
   await Hive.initFlutter();
   await Hive.openBox<ContactModel>('contacts');

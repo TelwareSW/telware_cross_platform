@@ -89,8 +89,9 @@ class ChattingController {
     debugPrint('!!! newLoginInit called');
     if (USE_MOCK_DATA) {
       final mocker = ChatMockingService.instance;
-      final response = mocker.createMockedChats(20, _ref.read(tokenProvider)!);
-      // descinding sorting for the chats, based on last message
+      final response =
+          await mocker.createMockedChats(20, _ref.read(tokenProvider)!);
+      // descending sorting for the chats, based on last message
       response.chats.sort(
         (a, b) => b.messages[0].timestamp.compareTo(
           a.messages[0].timestamp,
@@ -114,7 +115,7 @@ class ChattingController {
     if (response.appError == null) {
       // todo(ahmed): for the notifier provider, return a state of fail
     } else {
-      // descinding sorting for the chats, based on last message
+      // descending sorting for the chats, based on last message
       response.chats.sort(
         (a, b) => b.messages[0].timestamp.compareTo(
           a.messages[0].timestamp,

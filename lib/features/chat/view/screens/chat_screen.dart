@@ -88,7 +88,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
     _getDir();
     _scrollToBottom();
-    _loadChatContent();
+    // _loadChatContent();
   }
 
   @override
@@ -99,13 +99,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     _playerController.dispose();
     WidgetsBinding.instance.removeObserver(this); // Remove the observer
     super.dispose();
-  }
-
-  _loadChatContent() async {
-    final messages = await generateFakeMessages();
-    chatContent = _generateChatContentWithDateLabels(messages);
-    _scrollToBottom();
-    setState(() {});
   }
 
   List<dynamic> _generateChatContentWithDateLabels(

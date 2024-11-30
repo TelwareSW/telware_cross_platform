@@ -49,6 +49,7 @@ class AudioPlayerWidgetState extends State<AudioPlayerWidget>
   @override
   void dispose() {
     controller.dispose();
+    widget.playerController.stopPlayer();
     super.dispose();
   }
 

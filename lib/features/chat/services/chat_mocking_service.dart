@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:faker/faker.dart';
+import 'package:telware_cross_platform/core/mock/messages_mock.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
@@ -105,22 +106,18 @@ class ChatMockingService {
     );
   }
 
-  ({List<ChatModel> chats, List<UserModel> users}) createMockedChats(
+  Future<({List<ChatModel> chats, List<UserModel> users})> createMockedChats(
     int count,
     String appUserId,
-  ) {
+  ) async {
     final faker = Faker();
 
     final users = createMockedUsers(count);
-    final chats = List.generate(count, (index) {
-      final msgs = createMockedMessages(
-        faker.randomGenerator.integer(25, min: 1),
-        users[index].id!,
-        appUserId,
-      );
+    final chatFutures = List.generate(count, (index) async {
+      final msgs = await generateFakeMessages();
       return createMockedChat(msgs, [users[index].id!, appUserId]);
     });
-
+    final chats = await Future.wait(chatFutures);
     return (chats: chats, users: users);
   }
 }

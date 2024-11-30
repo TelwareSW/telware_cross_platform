@@ -61,7 +61,7 @@ class MessageTileWidget extends StatelessWidget {
         constraints:
             BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
         decoration: BoxDecoration(
-          gradient: isSentByMe
+          gradient: !isSentByMe
               ? LinearGradient(
                   colors: [
                     Color.lerp(Colors.deepPurpleAccent, Colors.white, 0.2) ??
@@ -72,7 +72,7 @@ class MessageTileWidget extends StatelessWidget {
                   end: Alignment.bottomCenter,
                 )
               : null,
-          color: isSentByMe ? null : Palette.secondary,
+          color: !isSentByMe ? null : Palette.secondary,
           borderRadius: BorderRadius.circular(15),
         ),
         child: Stack(
@@ -103,7 +103,7 @@ class MessageTileWidget extends StatelessWidget {
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(15),
                             child: Image.file(
-                              File(messageModel.content?.toJson()["file"].path),
+                              File(messageModel.content?.toJson()["filePath"]),
                               fit: BoxFit.cover,
                             ),
                           )
@@ -113,8 +113,8 @@ class MessageTileWidget extends StatelessWidget {
                                 width: 200,
                                 height: 200,
                                 child: VideoPlayerWidget(
-                                    file:
-                                        messageModel.content?.toJson()["file"]))
+                                    filePath: messageModel.content
+                                        ?.toJson()["filePath"]))
                             : const SizedBox.shrink(),
             // The timestamp is always in the bottom-right corner if there's space
             Positioned(
@@ -129,7 +129,7 @@ class MessageTileWidget extends StatelessWidget {
                         formatTimestamp(messageModel.timestamp),
                         style: TextStyle(
                           fontSize: 11,
-                          color: isSentByMe
+                          color: !isSentByMe
                               ? Palette.primaryText
                               : Palette.inactiveSwitch,
                         ),

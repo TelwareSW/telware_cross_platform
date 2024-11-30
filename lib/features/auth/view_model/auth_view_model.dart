@@ -161,7 +161,7 @@ class AuthViewModel extends _$AuthViewModel {
 
         ref.read(authLocalRepositoryProvider).setToken(tokenMock);
         ref.read(tokenProvider.notifier).update((_) => tokenMock);
-        
+
         await ref.read(chattingControllerProvider).newLoginInit();
 
         state = AuthState.authenticated;
