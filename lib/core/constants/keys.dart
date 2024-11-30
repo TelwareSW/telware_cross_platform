@@ -69,6 +69,10 @@ class ChangeEmailKeys {
 }
 
 class ChatKeys {
+  static const ValueKey<String> chatSearchButton = ValueKey('chat-search-button');
+  static const ValueKey<String> chatSearchInput = ValueKey('chat-search-input');
+  static const ValueKey<String> chatSearchShowMode = ValueKey('chat-search-show-mode');
+  static const ValueKey<String> chatSearchDatePicker = ValueKey('chat-search-date-picker');
   static const ValueKey<String> chatTilePrefix = ValueKey('chat-tile-');
   static const ValueKey<String> chatMessagePrefix = ValueKey('chat-message-');
   static const ValueKey<String> chatNamePostfix = ValueKey('-name');

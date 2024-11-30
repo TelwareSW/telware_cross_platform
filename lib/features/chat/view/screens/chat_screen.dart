@@ -209,6 +209,7 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
           imageBytes: imageBytes,
         ) :
         TextField(
+          key: ChatKeys.chatSearchInput,
           autofocus: true,
           decoration: const InputDecoration(
             hintText: 'Search',
@@ -272,6 +273,7 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
                   ),
                 ),
                 const PopupMenuItem<String>(
+                  key: ChatKeys.chatSearchButton,
                   value: 'search',
                   padding: EdgeInsets.zero,
                   height: menuItemsHeight,
@@ -437,7 +439,8 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         IconButton(
-                          icon: Icon(Icons.edit_calendar),
+                          key: ChatKeys.chatSearchDatePicker,
+                          icon: const Icon(Icons.edit_calendar),
                           onPressed: () {
                             // Show the Cupertino Date Picker when the icon is pressed
                             DatePicker.showDatePicker(
@@ -476,7 +479,7 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
                           isShowAsList ?
                           '$_numberOfMatches result${_numberOfMatches != 1 ? 's' :''}' :
                           '$_currentMatch of $_numberOfMatches',
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Palette.primaryText,
                             fontWeight: FontWeight.w500
                           ),
@@ -489,6 +492,7 @@ class _ChatScreen extends ConsumerState<ChatScreen> with WidgetsBindingObserver 
                                 _toggleSearchDisplay();
                               },
                               child: Text(
+                                key: ChatKeys.chatSearchShowMode,
                                 isShowAsList ? 'Show as Chat' : 'Show as List',
                                 style: const TextStyle(
                                   color: Palette.accent,
