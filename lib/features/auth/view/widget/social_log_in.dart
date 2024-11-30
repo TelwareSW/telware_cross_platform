@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
 
@@ -29,12 +30,12 @@ class SocialLogIn extends ConsumerWidget {
             _socialButton(
               img: 'google-g-white.png',
               onTap: ref.read(authViewModelProvider.notifier).googleLogIn,
-              key: const Key('google-log-in'),
+              key: Keys.googleLogIn,
             ),
             _socialButton(
               img: 'github-icon-white.png',
               onTap: ref.read(authViewModelProvider.notifier).githubLogIn,
-              key: const Key('github-log-in'),
+              key: Keys.githubLogIn,
             ),
           ],
         )

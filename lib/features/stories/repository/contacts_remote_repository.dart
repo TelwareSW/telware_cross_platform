@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
@@ -207,7 +206,7 @@ class ContactsRemoteRepository {
       return response.statusCode == 201;
     } catch (e) {
       if (kDebugMode) {
-        print('Error occurred: $e');
+        debugPrint('Error occurred: $e');
       }
       return false;
     }
@@ -231,7 +230,7 @@ class ContactsRemoteRepository {
       return response.statusCode == 201;
     } catch (e) {
       if (kDebugMode) {
-        print('Error occurred: $e');
+        debugPrint('Error occurred: $e');
       }
       return false;
     }
@@ -248,7 +247,7 @@ class ContactsRemoteRepository {
       return response.statusCode == 204;
     } catch (e) {
       if (kDebugMode) {
-        print('Error occurred: $e');
+        debugPrint('Error occurred: $e');
       }
       return false;
     }
@@ -278,13 +277,12 @@ class ContactsRemoteRepository {
       return user;
     } catch (e) {
       if (kDebugMode) {
-        print('Error occurred: $e');
+        debugPrint('Error occurred: $e');
       }
       return null;
     }
   }
 
-  Future<bool> markStoryAsSeen(String storyId) async {
     String uploadUrl = '${dotenv.env['API_URL']}/stories/$storyId/views';
     var uri = Uri.parse(uploadUrl);
     var request = http.MultipartRequest('POST', uri);

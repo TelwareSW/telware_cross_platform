@@ -14,6 +14,7 @@ import 'package:telware_cross_platform/features/auth/repository/auth_local_repos
 import 'package:telware_cross_platform/features/auth/repository/auth_remote_repository.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
+import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 part 'auth_view_model.g.dart';
@@ -68,7 +69,6 @@ class AuthViewModel extends _$AuthViewModel {
     String? token = ref.read(tokenProvider);
     return token != null && token.isNotEmpty;
   }
-
 
   Future<SignupResult> signUp({
     required String email,
@@ -156,12 +156,15 @@ class AuthViewModel extends _$AuthViewModel {
 
     if (USE_MOCK_DATA) {
       if (email == userMock.email && password == userMockPassword) {
-        state = AuthState.authenticated;
         ref.read(authLocalRepositoryProvider).setUser(userMock);
         ref.read(userProvider.notifier).update((_) => userMock);
 
         ref.read(authLocalRepositoryProvider).setToken(tokenMock);
         ref.read(tokenProvider.notifier).update((_) => tokenMock);
+
+        await ref.read(chattingControllerProvider).newLoginInit();
+
+        state = AuthState.authenticated;
         return;
       } else {
         state = AuthState.fail('Invalid email or password');
@@ -179,12 +182,13 @@ class AuthViewModel extends _$AuthViewModel {
       } else {
         state = AuthState.fail(appError.error);
       }
-    }, (logInResponse) {
+    }, (logInResponse) async {
       ref.read(authLocalRepositoryProvider).setUser(logInResponse.user);
       ref.read(userProvider.notifier).update((_) => logInResponse.user);
 
       ref.read(authLocalRepositoryProvider).setToken(logInResponse.token);
       ref.read(tokenProvider.notifier).update((_) => logInResponse.token);
+      await ref.read(chattingControllerProvider).newLoginInit();
       state = AuthState.authenticated;
     });
   }
@@ -324,10 +328,9 @@ class AuthViewModel extends _$AuthViewModel {
     // try getting updated user data
     final response = await ref.read(authRemoteRepositoryProvider).getMe(token!);
 
-    response.match((appError) {
-    }, (user) {
+    response.match((appError) {}, (user) {
       debugPrint('** getMe is called\nuser supposed to have img');
-      print(user);
+      debugPrint(user.toString());
       ref.read(authLocalRepositoryProvider).setUser(user);
       ref.read(userProvider.notifier).update((_) => user);
     });

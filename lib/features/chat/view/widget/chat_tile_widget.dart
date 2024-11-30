@@ -1,12 +1,13 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
-import 'package:telware_cross_platform/core/models/user_model.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
-import 'package:telware_cross_platform/features/chat/view/screens/chat_screen.dart';
+import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/user/view/widget/avatar_generator.dart';
 
 class ChatTileWidget extends StatelessWidget {
@@ -25,16 +26,16 @@ class ChatTileWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final keyValue = (key as ValueKey).value;
     final imageBytes = chatModel.photoBytes;
     final hasDraft = chatModel.draft?.isNotEmpty ?? false;
     final isGroupChat = chatModel.type == ChatType.group;
-    final messageStateIcon = sentByUser ? Icon(getMessageStateIcon(displayMessage), size: 16, color: Palette.accent) : null;
     final unreadCount = _getUnreadMessageCount();
     final isMuted = chatModel.isMuted;
     final isMentioned = chatModel.isMentioned;
 
     return InkWell(
-      onTap: () { context.push(ChatScreen.route, extra: chatModel); },
+      onTap: () { context.push(Routes.chatScreen, extra: chatModel.id); },
       child: Container(
         color: Palette.secondary,
         child: Row(
@@ -42,6 +43,7 @@ class ChatTileWidget extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(right: 12.0, left: 12.0, top: 8.0, bottom: 8.0),
               child: CircleAvatar(
+                key: ValueKey("$keyValue${ChatKeys.chatAvatarPostfix.value}"),
                 radius: 28,
                 backgroundImage: imageBytes != null ? MemoryImage(imageBytes) : null,
                 backgroundColor: imageBytes == null ? Palette.primary : null,
@@ -69,6 +71,7 @@ class ChatTileWidget extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Text(
+                                key: ValueKey("$keyValue${ChatKeys.chatNamePostfix.value}"),
                                 chatModel.title,
                                 style: const TextStyle(
                                   color: Palette.primaryText,
@@ -80,20 +83,27 @@ class ChatTileWidget extends StatelessWidget {
                               ),
                             ),
                             if (isMuted)
-                              const Padding(
-                                padding: EdgeInsets.only(right: 2.0),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 2.0),
                                 child: Icon(
+                                  key: ValueKey("$keyValue${ChatKeys.chatTileMutePostfix.value}"),
                                   Icons.volume_off,
                                   size: 18,
                                   color: Palette.inactiveSwitch,
                                 ),
                               ),
-                            if (messageStateIcon != null)
+                            if (sentByUser)
                               Padding(
                                 padding: const EdgeInsets.only(right: 2.0),
-                                child: messageStateIcon,
+                                child: Icon(
+                                  key: ValueKey("$keyValue${ChatKeys.chatTileMessageStatusPostfix.value}"),
+                                  getMessageStateIcon(displayMessage),
+                                  size: 16,
+                                  color: Palette.accent,
+                                ),
                               ),
                             Text(
+                              key: ValueKey("$keyValue${ChatKeys.chatTileDisplayTimePostfix.value}"),
                               formatTimestamp(displayMessage.timestamp),
                               style: const TextStyle(
                                 color: Colors.grey,
@@ -110,6 +120,7 @@ class ChatTileWidget extends StatelessWidget {
                             // Displayed message content
                             Expanded(
                               child: RichText(
+                                key: ValueKey("$keyValue${ChatKeys.chatTileDisplayTextPostfix.value}"),
                                 text: TextSpan(
                                   style: const TextStyle(
                                     fontSize: 14,
@@ -118,7 +129,7 @@ class ChatTileWidget extends StatelessWidget {
                                   children: [
                                     TextSpan(
                                       text: hasDraft ? "Draft: "
-                                          : isGroupChat ? "${displayMessage.senderName.split(" ")[0]}: " : "",
+                                          : isGroupChat ? "${'John Doe'.split(" ")[0]}: " : "",
                                       style: TextStyle(
                                         color: hasDraft ? Palette.error
                                             : isGroupChat ? Palette.primaryText : Palette.accentText,
@@ -144,9 +155,10 @@ class ChatTileWidget extends StatelessWidget {
 
                             if (unreadCount > 0) ...[
                               if (isMentioned)
-                                const Padding(
-                                  padding: EdgeInsets.only(left: 8.0),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 8.0),
                                   child: Icon(
+                                    key: ValueKey("$keyValue${ChatKeys.chatTileMentionPostfix.value}"),
                                     Icons.alternate_email_rounded,
                                     size: 18,
                                     color: Palette.primary,
@@ -161,6 +173,7 @@ class ChatTileWidget extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(12.0),
                                   ),
                                   child: Text(
+                                    key: ValueKey("$keyValue${ChatKeys.chatTileDisplayUnreadCountPostfix.value}"),
                                     unreadCount.toString(),
                                     style: const TextStyle(
                                       color: Palette.primaryText,

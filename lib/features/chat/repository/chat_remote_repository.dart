@@ -41,4 +41,16 @@ class ChatRemoteRepository {
       return (appError: AppError('This User was not Found', code: 404), otherUser: null); 
     }
   }
+
+  Future<({
+    AppError? appError,
+    ChatModel? chat
+  })> getChat(String sessionID, String chatID) async {
+    try {
+      return (appError: null, chat: null); 
+    } catch (e) {
+      debugPrint('!!! Faild to get other user data, ${e.toString()}'); 
+      return (appError: AppError('Chat was not found', code: 404), chat: null); 
+    }
+  }
 }

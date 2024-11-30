@@ -131,7 +131,7 @@ class UserViewModel extends _$UserViewModel {
     if (USE_MOCK_DATA) {
       // Simulate a successful update with mock data
       final updatedUser =
-          userMock.copyWith(screenName: "$firstName $lastName", bio: newBio);
+          userMock.copyWith(screenFirstName: firstName, screenLastName: lastName, bio: newBio);
       ref.read(authLocalRepositoryProvider).setUser(updatedUser);
       ref.read(userProvider.notifier).update((_) => updatedUser);
       state = UserState.success('Screen name updated successfully');
@@ -156,7 +156,7 @@ class UserViewModel extends _$UserViewModel {
         final user = ref.read(userProvider);
         if (user != null) {
           final updatedUser =
-              user.copyWith(screenName: "$firstName $lastName", bio: newBio);
+              user.copyWith(screenFirstName: firstName, screenLastName: lastName, bio: newBio);
           ref.read(authLocalRepositoryProvider).setUser(updatedUser);
           ref.read(userProvider.notifier).update((_) => updatedUser);
         }

@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
+import 'package:telware_cross_platform/core/view/widget/highlight_text_widget.dart';
 
 class MessageTileWidget extends StatelessWidget {
   final MessageModel messageModel;
@@ -11,6 +13,7 @@ class MessageTileWidget extends StatelessWidget {
   final bool showInfo;
   final Color nameColor;
   final Color imageColor;
+  final List<MapEntry<int, int>> highlights;
 
   const MessageTileWidget({
     super.key,
@@ -19,6 +22,7 @@ class MessageTileWidget extends StatelessWidget {
     this.showInfo = false,
     this.nameColor = Palette.primary,
     this.imageColor = Palette.primary,
+    this.highlights = const []
   });
 
   // Function to format timestamp to "hh:mm AM/PM"
@@ -29,11 +33,13 @@ class MessageTileWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final keyValue = (key as ValueKey).value;
     Alignment messageAlignment = isSentByMe ? Alignment.centerRight : Alignment.centerLeft;
     IconData messageState = getMessageStateIcon(messageModel);
     Widget senderNameWidget = showInfo && !isSentByMe
         ? Text(
-      messageModel.senderName,
+      key: ValueKey('$keyValue${MessageKeys.messageSenderPostfix.value}'),
+      messageModel.senderId,
       style: TextStyle(
         fontWeight: FontWeight.bold,
         color: nameColor,
@@ -70,9 +76,20 @@ class MessageTileWidget extends StatelessWidget {
                 senderNameWidget,
                 Wrap(
                   children: [
-                    Text(
-                      messageModel.content ?? "",
-                      style: const TextStyle(color: Palette.primaryText),
+                    HighlightTextWidget(
+                      key: ValueKey('$keyValue${MessageKeys.messageContentPostfix.value}'),
+                      text: messageModel.content ?? "",
+                      normalStyle: const TextStyle(
+                        color: Palette.primaryText,
+                        fontSize: 16,
+                      ),
+                      highlightStyle: const TextStyle(
+                        color: Palette.primaryText,
+                        fontSize: 16,
+                        backgroundColor: Color.fromRGBO(
+                            246, 225, 2, 0.43)
+                      ),
+                      highlights: highlights
                     ),
                     SizedBox(width: isSentByMe ? 70.0 : 55.0),
                     Text("")
@@ -89,6 +106,7 @@ class MessageTileWidget extends StatelessWidget {
                   child: Row(
                     children: [
                       Text(
+                        key: ValueKey('$keyValue${MessageKeys.messageTimePostfix.value}'),
                         formatTimestamp(messageModel.timestamp),
                         style: TextStyle(
                           fontSize: 11,
@@ -98,6 +116,7 @@ class MessageTileWidget extends StatelessWidget {
                       if (isSentByMe) ...[
                         const SizedBox(width: 4),
                         Icon(
+                          key: ValueKey('$keyValue${MessageKeys.messageStatusPostfix.value}'),
                           messageState,
                           size: 12,
                           color: Palette.primaryText

@@ -1,15 +1,11 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
-import 'package:telware_cross_platform/core/mock/user_mock.dart';
-import 'package:telware_cross_platform/core/models/app_error.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
-import 'package:telware_cross_platform/features/auth/repository/auth_remote_repository.dart';
 import 'package:telware_cross_platform/features/user/repository/user_remote_repository.dart';
 
 import 'user_remote_repository_test.mocks.dart';

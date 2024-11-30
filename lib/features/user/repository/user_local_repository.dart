@@ -57,7 +57,9 @@ class UserLocalRepository {
     try {
       final user = _userBox.get('user');
       if (user != null) {
-        final updatedUser = user.copyWith(screenName: newScreenName);
+        final first = newScreenName.split(' ')[0];
+        final last = newScreenName.split(' ')[1];
+        final updatedUser = user.copyWith(screenFirstName: first, screenLastName: last);
         await _userBox.put('user', updatedUser);
       } else {
         return AppError("User not found.");

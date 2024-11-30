@@ -13,6 +13,7 @@ import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
+import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/user/view/widget/user_chats.dart';
 
 import 'chat_screen.dart';
@@ -26,7 +27,8 @@ class CreateChatScreen extends ConsumerStatefulWidget {
   ConsumerState<CreateChatScreen> createState() => _CreateChatScreen();
 }
 
-class _CreateChatScreen extends ConsumerState<CreateChatScreen> with TickerProviderStateMixin {
+class _CreateChatScreen extends ConsumerState<CreateChatScreen>
+    with TickerProviderStateMixin {
   late List<Map<String, dynamic>> fullUserChats;
   late List<Map<String, dynamic>> userChats;
   late List<Map<String, dynamic>> channelChats;
@@ -40,15 +42,14 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen> with TickerProvi
   void initState() {
     super.initState();
     _tabController = TabController(vsync: this, length: 9);
-    fullUserChats = <Map<String, dynamic>>[{"options": <Map<String, dynamic>>[]}];
-    _usersFuture = generateFakeUsers(
-        count: 20,
-        photoPaths: [
-          'assets/imgs/marwan.jpg',
-          'assets/imgs/ahmed.jpeg',
-          'assets/imgs/bishoy.jpeg'
-        ]
-    );
+    fullUserChats = <Map<String, dynamic>>[
+      {"options": <Map<String, dynamic>>[]}
+    ];
+    _usersFuture = generateFakeUsers(count: 20, photoPaths: [
+      'assets/imgs/marwan.jpg',
+      'assets/imgs/ahmed.jpeg',
+      'assets/imgs/bishoy.jpeg'
+    ]);
   }
 
   @override
@@ -74,10 +75,9 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen> with TickerProvi
           decoration: const InputDecoration(
             hintText: 'Search',
             hintStyle: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w400,
-              color: Palette.accentText
-            ),
+                fontSize: 18,
+                fontWeight: FontWeight.w400,
+                color: Palette.accentText),
             border: InputBorder.none,
             focusedBorder: InputBorder.none,
             enabledBorder: InputBorder.none,
@@ -85,9 +85,9 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen> with TickerProvi
           ),
           cursorColor: Palette.accent,
           style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w400,
-            color: Palette.primaryText          ),
+              fontSize: 18,
+              fontWeight: FontWeight.w400,
+              color: Palette.primaryText),
           onChanged: filterView,
         ),
         bottom: TabBar(
@@ -115,7 +115,8 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen> with TickerProvi
           ),
           unselectedLabelColor: Palette.accentText,
           physics: const BouncingScrollPhysics(),
-          labelPadding: const EdgeInsets.only(left: 18.0, right: 18.0, top: 2.0),
+          labelPadding:
+              const EdgeInsets.only(left: 18.0, right: 18.0, top: 2.0),
           tabs: const [
             Tab(text: 'Chats'),
             Tab(text: 'Channels'),
@@ -134,7 +135,8 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen> with TickerProvi
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
-              child: CircularProgressIndicator(), // Show a loading indicator while data is loading
+              child:
+                  CircularProgressIndicator(), // Show a loading indicator while data is loading
             );
           } else if (snapshot.hasError) {
             return Center(
@@ -211,9 +213,9 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen> with TickerProvi
   void _createNewChat(UserModel userInfo) {
     final myUser = ref.read(userProvider)!;
     ChatModel newChat = ChatModel(
-      title: userInfo.screenName,
+      title: '${userInfo.screenFirstName} ${userInfo.screenLastName}',
       userIds: [myUser.id!, userInfo.id!],
-      type: ChatType.oneToOne,
+      type: ChatType.private,
       messages: [],
       photo: userInfo.photo,
     );
@@ -230,11 +232,13 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen> with TickerProvi
 
     for (int i = 0; i < count; i++) {
       String username = faker.internet.userName();
-      String screenName = faker.person.name();
+      String screenFirstName = faker.person.firstName();
+      String screenLastName = faker.person.lastName();
       String email = faker.internet.email();
       String status = faker.lorem.sentence();
       String bio = faker.lorem.sentences(2).join(' ');
-      int maxFileSize = random.nextInt(50) * 1024 * 1024; // Random file size in MB
+      int maxFileSize =
+          random.nextInt(50) * 1024 * 1024; // Random file size in MB
       bool automaticDownloadEnable = random.nextBool();
       String lastSeenPrivacy = randomPrivacy();
       bool readReceiptsEnablePrivacy = random.nextBool();
@@ -254,7 +258,8 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen> with TickerProvi
 
       users.add(UserModel(
         username: username,
-        screenName: screenName,
+        screenFirstName: screenFirstName,
+        screenLastName: screenLastName,
         email: email,
         photo: photo,
         status: status,
@@ -274,7 +279,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen> with TickerProvi
 
     for (UserModel user in users) {
       var option = <String, dynamic>{
-        "text": user.screenName,
+        "text": user.screenFirstName,
         "imagePath": user.photo,
         "subtext": "last seen Nov 23 at 6:40 PM",
         "trailingFontSize": 13.0,
@@ -295,7 +300,10 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen> with TickerProvi
   }
 
   void filterView(String query) {
-    var filteredChats = <Map<String, dynamic>>[{"options": <Map<String, dynamic>>[]}];;
+    var filteredChats = <Map<String, dynamic>>[
+      {"options": <Map<String, dynamic>>[]}
+    ];
+    ;
     if (query.isEmpty) {
       filteredChats = List.from(fullUserChats);
     } else {

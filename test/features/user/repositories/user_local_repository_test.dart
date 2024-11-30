@@ -9,7 +9,6 @@ import 'package:mockito/mockito.dart';
 import 'package:telware_cross_platform/core/mock/user_mock.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
-import 'package:telware_cross_platform/features/auth/repository/auth_local_repository.dart';
 import 'package:telware_cross_platform/features/user/repository/user_local_repository.dart';
 
 import 'user_local_repository_test.mocks.dart';
@@ -112,12 +111,12 @@ void main() {
       when(mockUserBox.put('user', any)).thenAnswer((_) async {});
 
       final result =
-          await userLocalRepository.updateScreenName('New screen name');
+          await userLocalRepository.updateScreenName('New name');
 
       expect(result, isNull);
       verify(mockUserBox.get('user')).called(1);
       verify(mockUserBox.put(
-              'user', user.copyWith(screenName: 'New screen name')))
+              'user', user.copyWith(screenFirstName: 'New', screenLastName: 'name')))
           .called(1);
     });
 
@@ -138,13 +137,13 @@ void main() {
       when(mockUserBox.put('user', any)).thenThrow(Exception());
 
       final result =
-          await userLocalRepository.updateScreenName('New screen name');
+          await userLocalRepository.updateScreenName('New name');
 
       expect((result as AppError).error,
           "Couldn't update screen name. Try again later.");
       verify(mockUserBox.get('user')).called(1);
       verify(mockUserBox.put(
-              'user', user.copyWith(screenName: 'New screen name')))
+              'user', user.copyWith(screenFirstName: 'New', screenLastName: 'name')))
           .called(1);
     });
 

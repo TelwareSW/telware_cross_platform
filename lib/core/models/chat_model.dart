@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
+import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/stories/utils/utils_functions.dart';
 
 import '../constants/server_constants.dart';
@@ -9,15 +10,6 @@ import 'message_model.dart';
 
 part 'chat_model.g.dart';
 
-@HiveType(typeId: 5)
-enum ChatType {
-  @HiveField(0)
-  oneToOne,
-  @HiveField(1)
-  group,
-  @HiveField(2)
-  channel,
-}
 
 @HiveType(typeId: 4)
 class ChatModel {
@@ -200,7 +192,7 @@ class ChatModel {
       userIds: (map['userIds'] as List<dynamic>).cast<String>(),
       type: ChatType.values.firstWhere(
             (e) => e.toString().split('.').last == map['type'],
-        orElse: () => ChatType.oneToOne,
+        orElse: () => ChatType.private,
       ),
       photo: map['photo'] as String?,
       id: map['id'] as String?,
