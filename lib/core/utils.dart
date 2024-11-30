@@ -193,7 +193,7 @@ List<MapEntry<int, int>> kmp(String text, String pattern) {
   print(pattern);
   final int n = text.length;
   final int m = pattern.length;
-  if (m == 0) return const [MapEntry(0, 0)];
+  if (m == 0) return const [];
   List<int> lps = _computeLPSArray(pattern.toLowerCase());
   int i = 0; // index for text[]
   int j = 0; // index for pattern[]
