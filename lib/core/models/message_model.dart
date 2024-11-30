@@ -21,7 +21,6 @@ class MessageModel {
   @HiveField(2)
   final MessageContentType messageContentType;
   @HiveField(3)
-
   final MessageContent? content;
   @HiveField(4)
   final DateTime? autoDeleteTimestamp;
@@ -35,8 +34,6 @@ class MessageModel {
   Uint8List? photoBytes;
   @HiveField(9)
   final Map<String, MessageState> userStates;
-  @HiveField(8)
-  final MessageType messageType;
 
 //<editor-fold desc="Data Methods">
   MessageModel({

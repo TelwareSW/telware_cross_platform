@@ -16,7 +16,6 @@ import 'package:telware_cross_platform/features/chat/view/widget/audio_player_wi
 import 'package:telware_cross_platform/features/chat/view/widget/slide_to_cancel_widget.dart';
 
 class BottomInputBarWidget extends ConsumerStatefulWidget {
-
   final TextEditingController controller; // Accept controller as a parameter
   final RecorderController recorderController;
   final PlayerController playerController;
@@ -120,7 +119,7 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
           horizontal: widget.isRecordingCompleted ? 0 : 10, vertical: 0),

@@ -10,7 +10,6 @@ import 'package:faker/faker.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 
-
 // Faker function to generate a list of random MessageModel objects
 Future<List<MessageModel>> generateFakeMessages() async {
   // Sample messages
@@ -48,7 +47,6 @@ Future<List<MessageModel>> generateFakeMessages() async {
       messageContentType: MessageContentType.text,
       content:
           TextContent(sampleMessages[random.nextInt(sampleMessages.length)]),
-
       timestamp: currentDate.add(Duration(
         hours: random.nextInt(24),
         minutes: random.nextInt(60),
@@ -62,7 +60,7 @@ Future<List<MessageModel>> generateFakeMessages() async {
   MessageModel audioMessage = MessageModel(
     messageType: MessageType.normal,
     messageContentType: MessageContentType.audio,
-    senderId: "John Doe",
+    senderId: "11",
     content: AudioContent(
       audioUrl: "dummy_audio_url",
       duration: const Duration(minutes: 1, seconds: 20).inSeconds,
@@ -78,7 +76,7 @@ Future<List<MessageModel>> generateFakeMessages() async {
   MessageModel imageMessage = MessageModel(
     messageType: MessageType.normal,
     messageContentType: MessageContentType.image,
-    senderId: "John Doe",
+    senderId: "11",
     content: ImageContent(
       imageUrl: "assets/imgs/marwan.jpg",
       filePath: imageFile.path,
@@ -90,7 +88,7 @@ Future<List<MessageModel>> generateFakeMessages() async {
   MessageModel videoMessage = MessageModel(
     messageType: MessageType.normal,
     messageContentType: MessageContentType.video,
-    senderId: "John Doe",
+    senderId: "11",
     content: VideoContent(
       videoUrl: "assets/video/demo.mp4",
       duration: const Duration(minutes: 1, seconds: 20).inSeconds,

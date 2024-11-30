@@ -194,7 +194,6 @@ IconData getMessageStateIcon(MessageModel message) {
   return Icons.check;
 }
 
-
 List<double> generateDummyWaveform(int length) {
   return List<double>.generate(length, (i) {
     double randomValue =
@@ -218,6 +217,7 @@ Future<XFile> loadAssetAsXFile(String assetPath, String filename) async {
 
   // Return the temporary file as an XFile
   return XFile(tempFile.path);
+}
 
 List<MapEntry<int, int>> kmp(String text, String pattern) {
   debugPrint(text);

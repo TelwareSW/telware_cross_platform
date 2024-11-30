@@ -15,7 +15,6 @@ import 'package:video_player/video_player.dart';
 
 import 'package:telware_cross_platform/core/view/widget/highlight_text_widget.dart';
 
-
 class MessageTileWidget extends StatelessWidget {
   final MessageModel messageModel;
   final bool isSentByMe;
@@ -24,15 +23,14 @@ class MessageTileWidget extends StatelessWidget {
   final Color imageColor;
   final List<MapEntry<int, int>> highlights;
 
-  const MessageTileWidget({
-    super.key,
-    required this.messageModel,
-    required this.isSentByMe,
-    this.showInfo = false,
-    this.nameColor = Palette.primary,
-    this.imageColor = Palette.primary,
-    this.highlights = const []
-  });
+  const MessageTileWidget(
+      {super.key,
+      required this.messageModel,
+      required this.isSentByMe,
+      this.showInfo = false,
+      this.nameColor = Palette.primary,
+      this.imageColor = Palette.primary,
+      this.highlights = const []});
 
   // Function to format timestamp to "hh:mm AM/PM"
   String formatTimestamp(DateTime timestamp) {
@@ -43,18 +41,19 @@ class MessageTileWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final keyValue = (key as ValueKey).value;
-    Alignment messageAlignment = isSentByMe ? Alignment.centerRight : Alignment.centerLeft;
+    Alignment messageAlignment =
+        isSentByMe ? Alignment.centerRight : Alignment.centerLeft;
     IconData messageState = getMessageStateIcon(messageModel);
     Widget senderNameWidget = showInfo && !isSentByMe
         ? Text(
-      key: ValueKey('$keyValue${MessageKeys.messageSenderPostfix.value}'),
-      messageModel.senderId,
-      style: TextStyle(
-        fontWeight: FontWeight.bold,
-        color: nameColor,
-        fontSize: 12,
-      ),
-    )
+            key: ValueKey('$keyValue${MessageKeys.messageSenderPostfix.value}'),
+            messageModel.senderId,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: nameColor,
+              fontSize: 12,
+            ),
+          )
         : const SizedBox.shrink();
 
     return Align(
@@ -69,7 +68,7 @@ class MessageTileWidget extends StatelessWidget {
         constraints:
             BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
         decoration: BoxDecoration(
-          gradient: !isSentByMe
+          gradient: isSentByMe
               ? LinearGradient(
                   colors: [
                     Color.lerp(Colors.deepPurpleAccent, Colors.white, 0.2) ??
@@ -80,7 +79,7 @@ class MessageTileWidget extends StatelessWidget {
                   end: Alignment.bottomCenter,
                 )
               : null,
-          color: !isSentByMe ? null : Palette.secondary,
+          color: isSentByMe ? null : Palette.secondary,
           borderRadius: BorderRadius.circular(15),
         ),
         child: Stack(
@@ -93,22 +92,22 @@ class MessageTileWidget extends StatelessWidget {
                       Wrap(
                         children: [
                           HighlightTextWidget(
-                      key: ValueKey('$keyValue${MessageKeys.messageContentPostfix.value}'),
-                      text: messageModel.content ?? "",
-                      normalStyle: const TextStyle(
-                        color: Palette.primaryText,
-                        fontSize: 16,
-                      ),
-                      highlightStyle: const TextStyle(
-                        color: Palette.primaryText,
-                        fontSize: 16,
-                        backgroundColor: Color.fromRGBO(
-                            246, 225, 2, 0.43)
-                      ),
-                      highlights: highlights
-                    ),
-                    SizedBox(width: isSentByMe ? 70.0 : 55.0),
-                    Text("")
+                              key: ValueKey(
+                                  '$keyValue${MessageKeys.messageContentPostfix.value}'),
+                              text:
+                                  messageModel.content?.toJson()['text'] ?? "",
+                              normalStyle: const TextStyle(
+                                color: Palette.primaryText,
+                                fontSize: 16,
+                              ),
+                              highlightStyle: const TextStyle(
+                                  color: Palette.primaryText,
+                                  fontSize: 16,
+                                  backgroundColor:
+                                      Color.fromRGBO(246, 225, 2, 0.43)),
+                              highlights: highlights),
+                          SizedBox(width: isSentByMe ? 70.0 : 55.0),
+                          const Text("")
                         ],
                       )
                     ],
@@ -146,24 +145,22 @@ class MessageTileWidget extends StatelessWidget {
                   child: Row(
                     children: [
                       Text(
-                        key: ValueKey('$keyValue${MessageKeys.messageTimePostfix.value}'),
+                        key: ValueKey(
+                            '$keyValue${MessageKeys.messageTimePostfix.value}'),
                         formatTimestamp(messageModel.timestamp),
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 11,
-                          color: !isSentByMe
-                              ? Palette.primaryText
-                              : Palette.inactiveSwitch,
+                          color: Palette.primaryText,
                         ),
                       ),
                       if (isSentByMe) ...[
                         const SizedBox(width: 4),
-
                         Icon(
-                          key: ValueKey('$keyValue${MessageKeys.messageStatusPostfix.value}'),
-                          messageState,
-                          size: 12,
-                          color: Palette.primaryText
-                        ),
+                            key: ValueKey(
+                                '$keyValue${MessageKeys.messageStatusPostfix.value}'),
+                            messageState,
+                            size: 12,
+                            color: Palette.primaryText),
                       ]
                     ],
                   )),
