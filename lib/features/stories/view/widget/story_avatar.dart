@@ -19,7 +19,7 @@ class StoryAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('Building StoryAvatar...');
+    // debugPrint('Building StoryAvatar...');
 
     return GestureDetector(
       onTap: onTap,

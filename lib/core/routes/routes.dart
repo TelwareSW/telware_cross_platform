@@ -234,8 +234,8 @@ class Routes {
           GoRoute(
             path: Routes.chatScreen,
             builder: (context, state) {
-              final ChatModel chatModel = state.extra as ChatModel;
-              return ChatScreen(chatModel: chatModel);
+              final String chatId = state.extra as String;
+              return ChatScreen(chatId: chatId);
             }
           ),
           GoRoute(

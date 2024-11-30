@@ -1,3 +1,7 @@
+import 'package:hive/hive.dart';
+
+part 'chatting_enums.g.dart';
+
 enum EventType {
   sendMessage(event: 'SEND_MESSAGE'),
   sendAnnouncement(event: 'SEND_ANNOUNCEMENT'),
@@ -17,12 +21,26 @@ enum EventType {
   const EventType({required this.event});
 }
 
-enum DeleteMsgType {
-  sendMessage(name: 'only-me'),
-  sendAnnouncement(name: 'all')
-  ;
+@HiveType(typeId: 5)
+enum ChatType {
+  @HiveField(0)
+  private(type: 'private'),
+  @HiveField(1)
+  group(type: 'group'),
+  @HiveField(2)
+  channel(type: 'channel');
 
-  final String name;
+  static ChatType getType(String type) {
+    switch (type) {
+      case 'group':
+        return ChatType.group;
+      case 'channel':
+        return ChatType.channel;
+      default:
+        return ChatType.private;
+    }
+  }
 
-  const DeleteMsgType({required this.name});
+  final String type;
+  const ChatType({required this.type});
 }

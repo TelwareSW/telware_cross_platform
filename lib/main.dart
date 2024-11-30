@@ -10,6 +10,9 @@ import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/app_theme.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
+import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
+import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
+import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
 import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
 import 'package:telware_cross_platform/features/stories/models/story_model.dart';
 
@@ -26,11 +29,22 @@ Future<void> init() async {
   Hive.registerAdapter(ContactModelBlockAdapter());
   Hive.registerAdapter(ChatModelAdapter());
   Hive.registerAdapter(MessageModelAdapter());
+  Hive.registerAdapter(MessageEventAdapter());
+  Hive.registerAdapter(SendMessageEventAdapter());
+  Hive.registerAdapter(DeleteMessageEventAdapter());
+  Hive.registerAdapter(EditMessageEventAdapter());
+  Hive.registerAdapter(ChatTypeAdapter());
+  Hive.registerAdapter(MessageStateAdapter());
+  Hive.registerAdapter(MessageTypeAdapter());
+
   await Hive.initFlutter();
   await Hive.openBox<ContactModel>('contacts');
   await Hive.openBox<ContactModelBlock>('contacts-block');
   await Hive.openBox<String>('auth-token');
   await Hive.openBox<UserModel>('auth-user');
+  await Hive.openBox<List>('chats-box'); // List<ChatModel>
+  await Hive.openBox<List>('chatting-events-box'); // List<MessageEvent>
+  await Hive.openBox<Map>('other-users-box'); // Map<String, UserModel>
   await dotenv.load(fileName: "lib/.env");
 }
 
