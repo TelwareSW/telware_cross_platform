@@ -76,6 +76,8 @@ dependencies:
   socket_io_client: ^3.0.2
   custom_image_crop: ^0.0.13
   uuid: ^4.5.1
+  flutter_cupertino_datetime_picker: ^3.0.0
+
 
 
   flutter_svg: any

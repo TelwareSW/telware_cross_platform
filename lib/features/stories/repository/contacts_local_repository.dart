@@ -7,9 +7,9 @@ import '../utils/utils_functions.dart';
 
 part 'contacts_local_repository.g.dart';
 
-
 @Riverpod(keepAlive: true)
-ContactsLocalRepository contactsLocalRepository(ContactsLocalRepositoryRef ref) {
+ContactsLocalRepository contactsLocalRepository(
+    ContactsLocalRepositoryRef ref) {
   final userBox = Hive.box<ContactModel>('contacts');
   return ContactsLocalRepository(userBox);
 }
@@ -18,8 +18,6 @@ class ContactsLocalRepository {
   final Box<ContactModel> _userBox;
 
   ContactsLocalRepository(this._userBox);
-
-
 
   Future<void> saveContactsToHive(List<ContactModel> contacts) async {
     for (ContactModel contact in contacts) {
@@ -45,7 +43,7 @@ class ContactsLocalRepository {
       await _userBox.put(contact.userId, contactWithImage);
     } catch (e) {
       if (kDebugMode) {
-        print('Error updating contact in Hive: $e');
+        debugPrint('Error updating contact in Hive: $e');
       }
     }
   }
@@ -76,12 +74,12 @@ class ContactsLocalRepository {
         await _userBox.put(updatedContact.userId, updatedContact);
       } else {
         if (kDebugMode) {
-          print('User not found');
+          debugPrint('User not found');
         }
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Failed to update user in Hive: $e');
+        debugPrint('Failed to update user in Hive: $e');
       }
       throw Exception('Error updating user in Hive');
     }
@@ -95,16 +93,15 @@ class ContactsLocalRepository {
         for (var story in user.stories) {
           if (story.storyId == storyId) {
             story.storyContent = imageData;
-            break; 
+            break;
           }
         }
         await updateContactInHive(user);
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Error saving story image to Hive: $e');
+        debugPrint('Error saving story image to Hive: $e');
       }
     }
   }
 }
-

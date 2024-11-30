@@ -127,7 +127,7 @@ class _UserProfileScreen extends ConsumerState<UserProfileScreen> {
                       settingsOptions: const [],
                       actions: [
                         SettingsOptionWidget(
-                          text: _user.phone ?? "",
+                          text: _user.phone,
                           icon: null,
                           subtext: "Mobile",
                         ),

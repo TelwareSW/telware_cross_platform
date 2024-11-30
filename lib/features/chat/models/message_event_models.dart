@@ -1,7 +1,8 @@
 import 'dart:async';
 
+import 'package:hive/hive.dart';
 import 'package:telware_cross_platform/core/services/socket_service.dart';
-import 'package:telware_cross_platform/features/chat/models/enums.dart';
+import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 
 // todo: create the event classes here
@@ -18,13 +19,19 @@ import 'package:telware_cross_platform/features/chat/view_model/chatting_control
 // recieve msg/reply/draft
 // edit/delete msg
 
-abstract class MessageEvent {
+part 'message_event_models.g.dart';
+
+@HiveType(typeId: 7)
+class MessageEvent {
+  @HiveField(0)
   final dynamic payload;
-  final ChattingController _controller;
-  MessageEvent(this._controller, this.payload);
+
+  final ChattingController? _controller;
+
+  MessageEvent(this.payload, {ChattingController? controller}): _controller = controller;
 
   Future<bool> execute(SocketService socket,
-      {Duration timeout = const Duration(seconds: 10)});
+      {Duration timeout = const Duration(seconds: 10)}) async {return true;}
 
   Future<bool> _execute(
     SocketService socket,
@@ -50,10 +57,21 @@ abstract class MessageEvent {
 
     return completer.future;
   }
+
+  MessageEvent copyWith({
+    dynamic payload,
+    ChattingController? controller,
+  }) {
+    return SendMessageEvent(
+      payload ?? this.payload,
+      controller: controller ?? _controller,
+    );
+  }
 }
 
+@HiveType(typeId: 8)
 class SendMessageEvent extends MessageEvent {
-  SendMessageEvent(super._controller, super.payload);
+  SendMessageEvent(super.payload, {super.controller});
 
   @override
   Future<bool> execute(
@@ -66,21 +84,29 @@ class SendMessageEvent extends MessageEvent {
       ackCallback: (response, timer, completer) {
         if (!completer.isCompleted) {
           timer.cancel(); // Cancel the timeout timer
-          if (response['status'] == 'success') {
-            completer.complete(true);
-            // todo(moamen): confirm msg was sent
-            // _controller.confirmMsgSent()
-          } else {
-            completer.complete(false);
-          }
+          // todo(moamen): confirm msg was sent
+          // change from pending to sent
+          completer.complete(true);
         }
       },
     );
   }
+
+  @override
+  SendMessageEvent copyWith({
+    dynamic payload,
+    ChattingController? controller,
+  }) {
+    return SendMessageEvent(
+      payload ?? this.payload,
+      controller: controller ?? _controller,
+    );
+  }
 }
 
+@HiveType(typeId: 9)
 class DeleteMessageEvent extends MessageEvent {
-  DeleteMessageEvent(super._controller, super.payload);
+  DeleteMessageEvent(super.payload, {super.controller});
 
   @override
   Future<bool> execute(
@@ -93,19 +119,27 @@ class DeleteMessageEvent extends MessageEvent {
       ackCallback: (response, timer, completer) {
         if (!completer.isCompleted) {
           timer.cancel(); // Cancel the timeout timer
-          if (response['status'] == 'success') {
-            completer.complete(true);
-          } else {
-            completer.complete(false);
-          }
+          completer.complete(true);
         }
       },
     );
   }
+
+  @override
+  DeleteMessageEvent copyWith({
+    dynamic payload,
+    ChattingController? controller,
+  }) {
+    return DeleteMessageEvent(
+      payload ?? this.payload,
+      controller: controller ?? _controller,
+    );
+  }
 }
 
+@HiveType(typeId: 10)
 class EditMessageEvent extends MessageEvent {
-  EditMessageEvent(super._controller, super.payload);
+  EditMessageEvent(super.payload, {super.controller});
 
   @override
   Future<bool> execute(
@@ -118,13 +152,20 @@ class EditMessageEvent extends MessageEvent {
       ackCallback: (response, timer, completer) {
         if (!completer.isCompleted) {
           timer.cancel(); // Cancel the timeout timer
-          if (response['status'] == 'success') {
-            completer.complete(true);
-          } else {
-            completer.complete(false);
-          }
+          completer.complete(true);
         }
       },
+    );
+  }
+
+  @override
+  EditMessageEvent copyWith({
+    dynamic payload,
+    ChattingController? controller,
+  }) {
+    return EditMessageEvent(
+      payload ?? this.payload,
+      controller: controller ?? _controller,
     );
   }
 }

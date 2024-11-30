@@ -111,12 +111,12 @@ void main() {
       when(mockUserBox.put('user', any)).thenAnswer((_) async {});
 
       final result =
-          await userLocalRepository.updateScreenName('New screen name');
+          await userLocalRepository.updateScreenName('New name');
 
       expect(result, isNull);
       verify(mockUserBox.get('user')).called(1);
       verify(mockUserBox.put(
-              'user', user.copyWith(screenName: 'New screen name')))
+              'user', user.copyWith(screenFirstName: 'New', screenLastName: 'name')))
           .called(1);
     });
 
@@ -137,13 +137,13 @@ void main() {
       when(mockUserBox.put('user', any)).thenThrow(Exception());
 
       final result =
-          await userLocalRepository.updateScreenName('New screen name');
+          await userLocalRepository.updateScreenName('New name');
 
       expect((result as AppError).error,
           "Couldn't update screen name. Try again later.");
       verify(mockUserBox.get('user')).called(1);
       verify(mockUserBox.put(
-              'user', user.copyWith(screenName: 'New screen name')))
+              'user', user.copyWith(screenFirstName: 'New', screenLastName: 'name')))
           .called(1);
     });
 

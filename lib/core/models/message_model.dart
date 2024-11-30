@@ -2,44 +2,23 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
+import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/stories/utils/utils_functions.dart';
 
 import '../constants/server_constants.dart';
 
 part 'message_model.g.dart';
 
-enum MessageState {
-  sent,
-  read,
-}
-
-enum MessageType {
-  normal,
-  announcement,
-  forward;
-
-  static MessageType getType(String type) {
-    switch (type) {
-      case 'announcement':
-        return MessageType.announcement;
-      case 'forward':
-        return MessageType.forward;
-      default:
-        return MessageType.normal;
-    }
-  }
-}
-
 @HiveType(typeId: 6)
 class MessageModel {
   @HiveField(0)
-  final String senderName; // todo(ahmed): not needed
+  final String senderId;
   @HiveField(1)
   final String? content;
   @HiveField(2)
   final DateTime timestamp;
   @HiveField(3)
-  final Duration? autoDeleteDuration;
+  final DateTime? autoDeleteTimestamp;
   @HiveField(4)
   String? id;
   @HiveField(5)
@@ -48,12 +27,15 @@ class MessageModel {
   Uint8List? photoBytes;
   @HiveField(7)
   final Map<String, MessageState> userStates;
+  @HiveField(8)
+  final MessageType messageType;
 
   MessageModel({
-    required this.senderName,
+    this.autoDeleteTimestamp,
+    required this.messageType,
+    required this.senderId,
     this.content,
     required this.timestamp,
-    this.autoDeleteDuration,
     this.id,
     this.photo,
     this.photoBytes,
@@ -63,9 +45,8 @@ class MessageModel {
   Future<void> _setPhotoBytes() async {
     if (photo == null || photo!.isEmpty) return;
 
-    String url = photo!.startsWith('http')
-        ? photo!
-        : '$API_URL_PICTURES/$photo';
+    String url =
+        photo!.startsWith('http') ? photo! : '$API_URL_PICTURES/$photo';
 
     if (url.isEmpty) return;
 
@@ -92,9 +73,11 @@ class MessageModel {
   bool operator ==(covariant MessageModel other) {
     if (identical(this, other)) return true;
 
-    return other.senderName == senderName &&
+    return other.messageType == messageType &&
+        other.senderId == senderId &&
         other.content == content &&
         other.timestamp == timestamp &&
+        other.autoDeleteTimestamp == autoDeleteTimestamp &&
         other.id == id &&
         other.photo == photo &&
         other.photoBytes == photoBytes &&
@@ -103,62 +86,69 @@ class MessageModel {
 
   @override
   int get hashCode {
-    return senderName.hashCode ^
-    content.hashCode ^
-    timestamp.hashCode ^
-    id.hashCode ^
-    photo.hashCode ^
-    photoBytes.hashCode ^
-    userStates.hashCode;
+    return messageType.hashCode ^
+        autoDeleteTimestamp.hashCode ^
+        senderId.hashCode ^
+        content.hashCode ^
+        timestamp.hashCode ^
+        id.hashCode ^
+        photo.hashCode ^
+        photoBytes.hashCode ^
+        userStates.hashCode;
   }
 
   @override
   String toString() {
     return ('MessageModel(\n'
-        'senderName: $senderName,\n'
+        'senderId: $senderId,\n'
         'content: $content,\n'
         'timestamp: $timestamp,\n'
-        'autoDeleteDuration: $autoDeleteDuration,\n'
+        'autoDeleteTimestamp: $autoDeleteTimestamp,\n'
         'id: $id,\n'
         'photo: $photo,\n'
         'userStates: $userStates,\n'
+        'messageType: ${messageType.name},\n'
         'isPhotoBytesSet: ${photoBytes != null}\n'
         ')');
   }
 
   MessageModel copyWith({
-    String? senderName,
+    String? senderId,
     String? content,
     DateTime? timestamp,
-    Duration? autoDeleteDuration,
+    DateTime? autoDeleteTimestamp,
     String? id,
     String? photo,
     Uint8List? photoBytes,
     Map<String, MessageState>? userStates,
+    MessageType? messageType,
   }) {
     return MessageModel(
-      senderName: senderName ?? this.senderName,
+      senderId: senderId ?? this.senderId,
       content: content ?? this.content,
       timestamp: timestamp ?? this.timestamp,
-      autoDeleteDuration: autoDeleteDuration ?? this.autoDeleteDuration,
+      autoDeleteTimestamp: autoDeleteTimestamp ?? this.autoDeleteTimestamp,
       id: id ?? this.id,
       photo: photo ?? this.photo,
       photoBytes: photoBytes ?? this.photoBytes,
       userStates: userStates ?? Map.from(this.userStates),
+      messageType: messageType ?? this.messageType
     );
   }
 
   Map<String, dynamic> toMap({bool forSender = false}) {
     final map = <String, dynamic>{
-      'senderName': senderName,
+      'senderId': senderId,
       'content': content,
       'timestamp': timestamp.toIso8601String(),
-      'autoDeleteDuration': autoDeleteDuration?.inSeconds,
+      'autoDeleteTimestamp': autoDeleteTimestamp?.microsecondsSinceEpoch,
       'id': id,
       'photo': photo,
       'userStates': forSender
-          ? userStates.map((key, value) => MapEntry(key, value.toString().split('.').last))
+          ? userStates.map(
+              (key, value) => MapEntry(key, value.toString().split('.').last))
           : null,
+      'messageType': messageType.name
     };
 
     return map;
@@ -166,19 +156,20 @@ class MessageModel {
 
   static Future<MessageModel> fromMap(Map<String, dynamic> map) async {
     final message = MessageModel(
-      senderName: map['senderName'] as String,
-      content: map['content'] as String?,
+      senderId: map['senderId'] as String,
+      content: map['content'] as String,
       timestamp: DateTime.parse(map['timestamp'] as String),
-      autoDeleteDuration: map['autoDeleteDuration'] != null
-          ? Duration(seconds: map['autoDeleteDuration'] as int)
-          : null,
-      id: map['id'] as String?,
+      id: map['messageId'] as String?,
       photo: map['photo'] as String?,
+      messageType: MessageType.getType(map['messageType']),
+      autoDeleteTimestamp: map['autoDeleteTimeStamp'] != null
+          ? DateTime.parse(map['autoDeleteTimeStamp'])
+          : null,
       userStates: (map['userStates'] as Map<String, dynamic>?)?.map(
-            (key, value) => MapEntry(
+        (key, value) => MapEntry(
           key,
           MessageState.values.firstWhere(
-                (e) => e.toString().split('.').last == value,
+            (e) => e.toString().split('.').last == value,
             orElse: () => MessageState.sent,
           ),
         ),
@@ -188,5 +179,6 @@ class MessageModel {
     return message;
   }
 
-  String toJson({bool forSender = false}) => json.encode(toMap(forSender: forSender));
+  String toJson({bool forSender = false}) =>
+      json.encode(toMap(forSender: forSender));
 }

@@ -7,18 +7,18 @@ import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
 
 class ChatLocalRepository {
-  final Box<List<ChatModel>> _chatsBox;
-  final Box<List<MessageEvent>> _eventsBox;
-  final Box<Map<String, UserModel>> _otherUsersBox;
+  final Box<List> _chatsBox;
+  final Box<List> _eventsBox;
+  final Box<Map> _otherUsersBox;
 
   static const String _eventsBoxKey = 'eventsQueue';
-  static const String _chatsBoxKey = 'eventsQueue';
+  static const String _chatsBoxKey = 'chatsList';
   static const String _otherUsersBoxKey = 'otherUsers';
 
   ChatLocalRepository({
-    required Box<List<ChatModel>> chatsBox,
-    required Box<List<MessageEvent>> eventsBox,
-    required Box<Map<String, UserModel>> otherUsersBox,
+    required Box<List> chatsBox,
+    required Box<List> eventsBox,
+    required Box<Map> otherUsersBox,
   })  : _chatsBox = chatsBox,
         _eventsBox = eventsBox,
         _otherUsersBox = otherUsersBox;
@@ -26,11 +26,13 @@ class ChatLocalRepository {
   /////////////////////////////////////
   // set chats
   Future<bool> setChats(List<ChatModel> list) async {
+    debugPrint('!!! set chats locally called');
     try {
       await _chatsBox.put(_chatsBoxKey, list);
       return true;
     } catch (e) {
       debugPrint('!!! exception on saving the chats list');
+      debugPrint(e.toString());
       return false;
     }
   }
@@ -38,25 +40,32 @@ class ChatLocalRepository {
   // get chats
   List<ChatModel> getChats() {
     final list = _chatsBox.get(_chatsBoxKey, defaultValue: []);
-    return list ?? [];
+    final chats =
+        list?.map((element) => element as ChatModel).toList() ?? <ChatModel>[];
+    return chats;
   }
 
   /////////////////////////////////////
   // get other users
   Future<bool> setOtherUsers(Map<String, UserModel> otherUsers) async {
     try {
-      await _otherUsersBox.put(_otherUsersBox, otherUsers);
+      await _otherUsersBox.put(_otherUsersBoxKey, otherUsers);
       return true;
     } catch (e) {
       debugPrint('!!! exception on saving the other users list');
+      debugPrint(e.toString());
       return false;
     }
   }
 
   Map<String, UserModel> getOtherUsers() {
-    return _otherUsersBox
-            .get(_otherUsersBoxKey, defaultValue: <String, UserModel>{}) ??
-        <String, UserModel>{};
+    final map = _otherUsersBox
+        .get(_otherUsersBoxKey, defaultValue: <String, UserModel>{});
+    final otherUsersMap =
+        map?.map((key, value) => MapEntry(key as String, value as UserModel)) ??
+            <String, UserModel>{};
+
+    return otherUsersMap;
   }
 
   /////////////////////////////////////
@@ -76,7 +85,9 @@ class ChatLocalRepository {
   // get event queue
   Queue<MessageEvent> getEventQueue() {
     final list = _eventsBox.get(_eventsBoxKey, defaultValue: []);
-    final queue = Queue<MessageEvent>.from(list ?? []);
+    final eventsList =
+        list?.map((element) => element as MessageEvent).toList() ?? <MessageEvent>[];
+    final queue = Queue<MessageEvent>.from(eventsList);
     return queue;
   }
 }

@@ -205,7 +205,7 @@ class ContactsRemoteRepository {
       return response.statusCode == 201;
     } catch (e) {
       if (kDebugMode) {
-        print('Error occurred: $e');
+        debugPrint('Error occurred: $e');
       }
       return false;
     }
@@ -229,7 +229,7 @@ class ContactsRemoteRepository {
       return response.statusCode == 201;
     } catch (e) {
       if (kDebugMode) {
-        print('Error occurred: $e');
+        debugPrint('Error occurred: $e');
       }
       return false;
     }
@@ -246,7 +246,7 @@ class ContactsRemoteRepository {
       return response.statusCode == 204;
     } catch (e) {
       if (kDebugMode) {
-        print('Error occurred: $e');
+        debugPrint('Error occurred: $e');
       }
       return false;
     }
@@ -276,7 +276,7 @@ class ContactsRemoteRepository {
       return user;
     } catch (e) {
       if (kDebugMode) {
-        print('Error occurred: $e');
+        debugPrint('Error occurred: $e');
       }
       return null;
     }

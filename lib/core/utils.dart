@@ -187,3 +187,64 @@ IconData getMessageStateIcon(MessageModel message) {
   }
   return Icons.check;
 }
+
+List<MapEntry<int, int>> kmp(String text, String pattern) {
+  debugPrint(text);
+  debugPrint(pattern);
+  final int n = text.length;
+  final int m = pattern.length;
+  if (m == 0) return const [];
+  List<int> lps = _computeLPSArray(pattern.toLowerCase());
+  int i = 0; // index for text[]
+  int j = 0; // index for pattern[]
+  List<MapEntry<int, int>> matches = [];
+
+  while (i < n) {
+    if (text[i].toLowerCase() == pattern[j].toLowerCase()) {
+      i++;
+      j++;
+    } else if (j == 0) {
+      i++;
+    } else {
+      j = lps[j - 1];
+    }
+    if (j == m) {
+      debugPrint("YES ${MapEntry(i - m, m)}");
+      matches.add(MapEntry(i - m, m));
+      j = lps[j - 1];
+    }
+  }
+  debugPrint(matches.toString());
+  return matches;
+}
+
+List<int> _computeLPSArray(String pattern) {
+  final int m = pattern.length;
+  int len = 0; // length of the previous longest prefix suffix
+  int i = 1; // the loop variable
+  List<int> lps = List.filled(m, 0);
+
+  while (i < m) {
+    if (pattern[i] == pattern[len]) {
+      lps[i] = ++len;
+      i++;
+    } else if (len != 0) {
+      len = lps[len - 1];
+    } else {
+      lps[i] = 0;
+      i++;
+    }
+  }
+
+  return lps;
+}
+
+String getRandomImagePath() {
+  final Random random = Random();
+  final List<String> paths = [
+    'assets/imgs/marwan.jpg',
+    'assets/imgs/ahmed.jpeg',
+    'assets/imgs/bishoy.jpeg'
+  ];
+  return paths[random.nextInt(3)];
+}
