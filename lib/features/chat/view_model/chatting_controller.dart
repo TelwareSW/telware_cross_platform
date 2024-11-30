@@ -64,7 +64,8 @@ class ChattingController {
 
   Future<void> getUserChats() async {
     // todo: make use of the return of this
-    _remoteRepository.getUserChats(_ref.read(tokenProvider)!);
+    _remoteRepository.getUserChats(
+        _ref.read(tokenProvider)!, _ref.read(userProvider)!.id!);
   }
 
   Future<void> init() async {
@@ -109,17 +110,20 @@ class ChattingController {
       return;
     }
 
-    final response =
-        await _remoteRepository.getUserChats(_ref.read(tokenProvider)!);
+    final response = await _remoteRepository.getUserChats(
+        _ref.read(tokenProvider)!, _ref.read(userProvider)!.id!);
 
-    if (response.appError == null) {
+    if (response.appError != null) {
       // todo(ahmed): for the notifier provider, return a state of fail
     } else {
       // descending sorting for the chats, based on last message
       response.chats.sort(
-        (a, b) => b.messages[0].timestamp.compareTo(
-          a.messages[0].timestamp,
-        ),
+        (a, b) {
+          if (a.messages.isEmpty || b.messages.isEmpty) {
+            return 0;
+          }
+          return b.messages[0].timestamp.compareTo(a.messages[0].timestamp);
+        },
       );
 
       final otherUsersMap = <String, UserModel>{
@@ -213,7 +217,7 @@ class ChattingController {
 
   Future<UserModel> getOtherUser(String id) async {
     // todo: call the remote repo and get the other user from server
-    _remoteRepository.getOtherUser(id);
+    _remoteRepository.getOtherUser(_ref.read(tokenProvider)!, id);
     return userMock;
   }
 
