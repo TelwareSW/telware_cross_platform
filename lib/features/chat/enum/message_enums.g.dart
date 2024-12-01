@@ -106,16 +106,18 @@ class MessageContentTypeAdapter extends TypeAdapter<MessageContentType> {
       case 1:
         return MessageContentType.image;
       case 2:
-        return MessageContentType.gif;
+        return MessageContentType.emoji;
       case 3:
-        return MessageContentType.sticker;
+        return MessageContentType.gif;
       case 4:
-        return MessageContentType.audio;
+        return MessageContentType.sticker;
       case 5:
-        return MessageContentType.video;
+        return MessageContentType.audio;
       case 6:
-        return MessageContentType.file;
+        return MessageContentType.video;
       case 7:
+        return MessageContentType.file;
+      case 8:
         return MessageContentType.link;
       default:
         return MessageContentType.text;
@@ -131,23 +133,26 @@ class MessageContentTypeAdapter extends TypeAdapter<MessageContentType> {
       case MessageContentType.image:
         writer.writeByte(1);
         break;
-      case MessageContentType.gif:
+      case MessageContentType.emoji:
         writer.writeByte(2);
         break;
-      case MessageContentType.sticker:
+      case MessageContentType.gif:
         writer.writeByte(3);
         break;
-      case MessageContentType.audio:
+      case MessageContentType.sticker:
         writer.writeByte(4);
         break;
-      case MessageContentType.video:
+      case MessageContentType.audio:
         writer.writeByte(5);
         break;
-      case MessageContentType.file:
+      case MessageContentType.video:
         writer.writeByte(6);
         break;
-      case MessageContentType.link:
+      case MessageContentType.file:
         writer.writeByte(7);
+        break;
+      case MessageContentType.link:
+        writer.writeByte(8);
         break;
     }
   }

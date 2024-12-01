@@ -26,19 +26,16 @@ class TextContent extends MessageContent {
 @HiveType(typeId: 16)
 class AudioContent extends MessageContent {
   @HiveField(0)
-  final String audioUrl;
+  final String? audioUrl;
   @HiveField(1)
-  final int duration;
+  final int? duration;
   @HiveField(2)
   final String? filePath;
   @HiveField(3)
   final List<double>? waveformData;
 
   AudioContent(
-      {required this.audioUrl,
-      required this.duration,
-      this.filePath,
-      this.waveformData});
+      {this.audioUrl, this.duration, this.filePath, this.waveformData});
 
   @override
   Map<String, dynamic> toJson() => {
@@ -55,14 +52,17 @@ class DocumentContent extends MessageContent {
   @HiveField(0)
   final String fileName;
   @HiveField(1)
-  final String fileUrl;
+  final String? fileUrl;
+  @HiveField(2)
+  final String? filePath;
 
-  DocumentContent(this.fileName, this.fileUrl);
+  DocumentContent({required this.fileName, this.fileUrl, this.filePath});
 
   @override
   Map<String, dynamic> toJson() => {
         'fileName': fileName,
         'fileUrl': fileUrl,
+        'filePath': filePath,
       };
 }
 
@@ -70,14 +70,13 @@ class DocumentContent extends MessageContent {
 @HiveType(typeId: 18)
 class ImageContent extends MessageContent {
   @HiveField(0)
-  final String imageUrl;
+  final String? imageUrl;
   @HiveField(1)
   final Uint8List? imageBytes;
   @HiveField(2)
-  final String filePath;
+  final String? filePath;
 
-  ImageContent(
-      {required this.imageUrl, this.imageBytes, required this.filePath});
+  ImageContent({this.imageUrl, this.imageBytes, this.filePath});
 
   @override
   Map<String, dynamic> toJson() =>
@@ -88,19 +87,76 @@ class ImageContent extends MessageContent {
 @HiveType(typeId: 19)
 class VideoContent extends MessageContent {
   @HiveField(0)
-  final String videoUrl;
+  final String? videoUrl;
   @HiveField(1)
-  final int duration;
+  final int? duration;
   @HiveField(2)
-  final String filePath;
+  final String? filePath;
 
-  VideoContent(
-      {required this.videoUrl, required this.duration, required this.filePath});
+  VideoContent({this.videoUrl, this.duration, this.filePath});
 
   @override
   Map<String, dynamic> toJson() => {
         'videoUrl': videoUrl,
         'duration': duration,
+        'filePath': filePath,
+      };
+}
+
+// for emoji, gifs and stickers
+@HiveType(typeId: 20)
+class EmojiContent extends MessageContent {
+  @HiveField(0)
+  final String? emojiUrl;
+  @HiveField(1)
+  final String? emojiName;
+  @HiveField(2)
+  final String? filePath;
+
+  EmojiContent({this.emojiUrl, this.emojiName, this.filePath});
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'mediaUrl': emojiUrl,
+        'mediaType': emojiName,
+        'filePath': filePath,
+      };
+}
+
+@HiveType(typeId: 21)
+class GIFContent extends MessageContent {
+  @HiveField(0)
+  final String? gifUrl;
+  @HiveField(1)
+  final String? gifName;
+  @HiveField(2)
+  final String? filePath;
+
+  GIFContent({this.gifUrl, this.gifName, this.filePath});
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'mediaUrl': gifUrl,
+        'mediaType': gifName,
+        'filePath': filePath,
+      };
+}
+
+@HiveType(typeId: 22)
+class StickerContent extends MessageContent {
+  @HiveField(0)
+  final String? stickerUrl;
+  @HiveField(1)
+  final String? stickerName;
+  @HiveField(2)
+  final String? filePath;
+
+  StickerContent({this.stickerUrl, this.stickerName, this.filePath});
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'mediaUrl': stickerUrl,
+        'mediaType': stickerName,
         'filePath': filePath,
       };
 }

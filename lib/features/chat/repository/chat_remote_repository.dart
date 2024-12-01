@@ -2,8 +2,11 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
+import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
+import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
+import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 
 class ChatRemoteRepository {
   final Dio _dio;
@@ -27,11 +30,13 @@ class ChatRemoteRepository {
 
       final chatData = response.data['data']['chats'] as List;
       final memberData = response.data['data']['members'] as List;
+      final lastMessageData = response.data['data']['lastMessages'] as List;
 
       Map<String, UserModel> userMap = {};
+      Map<String, MessageModel> lastMessageMap = {};
       for (var member in memberData) {
-        userMap[member['_id']] = UserModel(
-          id: member['_id'],
+        userMap[member['id']] = UserModel(
+          id: member['id'],
           username: member['username'],
           screenFirstName: member['screenFirstName'],
           screenLastName: member['screenLastName'],
@@ -50,17 +55,85 @@ class ChatRemoteRepository {
           email: '',
         );
       }
+      // TODO: should contain is what is the type of the message content
+      // I will assume that the response will contain the status of the message for each user of the chat containing this message.
+      // They should also return the url of the sticker, gif, emoji
+      // They should also send the type of message eg. normal ,forward, etc .
+      for (var message in lastMessageData) {
+        final lastMessage = message['lastMessage'];
+
+        Map<String, MessageState> userStates = {};
+        MessageContentType contentType =
+            MessageContentType.getType(lastMessage['contentType'] ?? 'text');
+        MessageContent? content;
+
+        final Map<String, String> userStatesMap =
+            lastMessage['userStates'] ?? {};
+
+        for (var entry in userStatesMap.entries) {
+          userStates[entry.key] = MessageState.getType(entry.value);
+        }
+
+        switch (contentType.content) {
+          case 'text':
+          case 'link':
+            content = TextContent(lastMessage['content']);
+            break;
+          case 'image':
+            content = ImageContent();
+            break;
+          case 'video':
+            content = VideoContent();
+            break;
+          case 'audio':
+            content = AudioContent();
+            break;
+          case 'document':
+            content = DocumentContent(
+                fileName: lastMessage['fileName'] ?? "UnknownFile");
+            break;
+          case 'sticker':
+            content = StickerContent(
+                stickerUrl: lastMessage['stickerUrl'] ?? "UnknownSticker");
+            break;
+          case 'gif':
+            content = GIFContent(gifUrl: lastMessage['gifUrl'] ?? "UnknownGif");
+            break;
+          case 'emoji':
+            content = EmojiContent(
+                emojiUrl: lastMessage['emojiUrl'] ?? "UnknownEmoji");
+            break;
+          default:
+            debugPrint('!!! Unknown content type: ${contentType.content}');
+            continue;
+        }
+        lastMessageMap[message['chatId']] = MessageModel(
+          id: lastMessage['id'],
+          senderId: lastMessage['senderId'],
+          messageContentType: contentType,
+          messageType: MessageType.getType(lastMessage['type'] ?? 'unknown'),
+          content: content,
+          timestamp: lastMessage['timestamp'] == null
+              ? DateTime.parse(lastMessage['timestamp'])
+              : DateTime.now(),
+          userStates: userStates,
+        );
+      }
 
       // Iterate through chats and map users
       for (var chat in chatData) {
-        final chatID = chat['_id'];
+        final chatID = chat['id'];
 
         final members = (chat['members'] as List).cast<String>();
 
         // Create list of user IDs excluding current user
         final otherUserIDs = members.where((id) => id != userID).toList();
         final otherUsers = otherUserIDs.map((id) => userMap[id]).toList();
+        final List<MessageModel> messages =
+            lastMessageMap[chatID] == null ? [] : [lastMessageMap[chatID]!];
+
         String chatTitle = 'Invalid Chat';
+
         if (chat['type'] == 'private') {
           chatTitle = otherUsers[0]?.username ?? 'Private Chat';
         } else if (chat['type'] == 'group') {
@@ -69,15 +142,17 @@ class ChatRemoteRepository {
           chatTitle = 'Channel';
         } else {
           chatTitle = 'My Chat';
+          chatTitle = 'My Chat';
         }
+
         // Create chat model
+        // Contains the last message only
         final chatModel = ChatModel(
           id: chatID,
           title: chatTitle,
           userIds: members,
           type: ChatType.getType(chat['type']),
-          // Messages are fetched later
-          messages: [],
+          messages: messages,
         );
 
         chats.add(chatModel);
