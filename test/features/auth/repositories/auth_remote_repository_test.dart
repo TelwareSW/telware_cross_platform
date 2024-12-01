@@ -218,7 +218,7 @@ void main() {
               ));
 
       final result = await authRemoteRepository.getMe('session-id');
-      debugPrint(userMock.toMap().toString());
+      debugPrint(mockUsers[0].toMap().toString());
       
       expect(result.isRight(), true);
       result.fold(

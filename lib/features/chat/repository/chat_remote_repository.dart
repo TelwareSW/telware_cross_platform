@@ -144,5 +144,38 @@ class ChatRemoteRepository {
     }
   }
 
+  Future<({AppError? appError, ChatModel? chat})> createChat(
+      String sessionID, String name, String type, List<String> memberIDs) async {
+    try {
+      final response = await _dio.post(
+        '/chats',
+        data: {
+          'name': name,
+          'type': type,
+          'members': memberIDs,
+        },
+        options: Options(headers: {'X-Session-Token': sessionID}),
+      );
+
+      final chatData = response.data['data'];
+
+      final chatID = chatData['_id'];
+      final members = (chatData['members'] as List).cast<String>();
+
+      final chatModel = ChatModel(
+        id: chatID,
+        title: name,
+        userIds: members,
+        type: ChatType.getType(type),
+        messages: [],
+      );
+
+      return (appError: null, chat: chatModel);
+    } catch (e) {
+      debugPrint('!!! Failed to create chat, ${e.toString()}');
+      return (appError: AppError('Failed to create chat', code: 500), chat: null);
+    }
+  }
+
 // TODO Implement Fetch Messages
 }

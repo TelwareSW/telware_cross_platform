@@ -215,4 +215,17 @@ class ChatModel {
   }
 
   String toJson() => json.encode(toMap());
+
+  String getChatTypeString() {
+    switch (type) {
+      case ChatType.private:
+        return 'private';
+      case ChatType.group:
+        return 'group';
+      case ChatType.channel:
+        return 'channel';
+      default:
+        return 'unknown';
+    }
+  }
 }

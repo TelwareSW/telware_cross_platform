@@ -188,6 +188,9 @@ String formatTimestamp(DateTime timestamp) {
 }
 
 IconData getMessageStateIcon(MessageModel message) {
+  if (message.id == null) {
+    return Icons.access_time;
+  }
   if (message.isReadByAll()) {
     return Icons.done_all;
   }
