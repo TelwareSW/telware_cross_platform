@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
+import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/chat_tile_widget.dart';
@@ -37,9 +38,11 @@ void main() {
       MessageModel message = MessageModel(
         id: '1',
         senderId: '1',
-        content: 'Hello',
+        messageContentType: MessageContentType.text,
+        content: TextContent('Hello'),
         timestamp: DateTime.now(),
         messageType: MessageType.normal,
+        userStates: {},
       );
       const index = '0';
       await tester.pumpWidget(
@@ -81,7 +84,9 @@ void main() {
       MessageModel message = MessageModel(
         id: '1',
         senderId: '1',
-        content: 'Hello',
+        messageContentType: MessageContentType.text,
+        content: TextContent('Hello'),
+        userStates: {},
         timestamp: DateTime.now(),
         messageType: MessageType.normal,
       );
@@ -125,6 +130,9 @@ void main() {
           ),
         ),
       );
+
+      final String content = message.content?.toJson()['text'];
+
       for (int i = 0; i < 3; i++) {
         expect(find.byKey(ValueKey('${ChatKeys.chatTilePrefix.value}$i')), findsOneWidget,
             reason: 'Expected chat tile to render.');
@@ -133,15 +141,15 @@ void main() {
       }
       Finder displayedTextFind = find.byKey(ValueKey('${ChatKeys.chatTilePrefix.value}1${ChatKeys.chatTileDisplayTextPostfix.value}'));
       RichText displayedTextWidget = tester.firstWidget(displayedTextFind);
-      expect(extractTextFromRichText(displayedTextWidget), '${'John Doe'.split(" ")[0]}: ${message.content}',
+      expect(extractTextFromRichText(displayedTextWidget), '${'John Doe'.split(" ")[0]}: $content',
           reason: 'Expected chat message to render with sender ID in group chat ${chats[1].type}.');
       displayedTextFind = find.byKey(ValueKey('${ChatKeys.chatTilePrefix.value}0${ChatKeys.chatTileDisplayTextPostfix.value}'));
       displayedTextWidget = tester.firstWidget(displayedTextFind);
-      expect(extractTextFromRichText(displayedTextWidget), message.content,
+      expect(extractTextFromRichText(displayedTextWidget), content,
           reason: 'Expected chat message to render normally in private chat.');
       displayedTextFind = find.byKey(ValueKey('${ChatKeys.chatTilePrefix.value}2${ChatKeys.chatTileDisplayTextPostfix.value}'));
       displayedTextWidget = tester.firstWidget(displayedTextFind);
-      expect(extractTextFromRichText(displayedTextWidget), message.content,
+      expect(extractTextFromRichText(displayedTextWidget), content,
           reason: 'Expected chat message to render normally in channel chat.');
     });
 
@@ -149,9 +157,11 @@ void main() {
       MessageModel message = MessageModel(
         id: '1',
         senderId: '1',
-        content: 'Hello',
+        messageContentType: MessageContentType.text,
+        content: TextContent('Hello'),
         timestamp: DateTime.now(),
         messageType: MessageType.normal,
+        userStates: {},
       );
       ChatModel chat = ChatModel(
         id: faker.guid.guid(),
@@ -187,9 +197,11 @@ void main() {
       MessageModel message = MessageModel(
         id: '1',
         senderId: '1',
-        content: 'Hello',
+        messageContentType: MessageContentType.text,
+        content: TextContent('Hello'),
         timestamp: DateTime.now(),
         messageType: MessageType.normal,
+        userStates: {},
       );
       await tester.pumpWidget(
         MaterialApp(

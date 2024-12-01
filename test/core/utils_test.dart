@@ -264,6 +264,7 @@ void main() {
       final timestamp = DateTime.now().subtract(const Duration(days: 366));
       final expectedFormat = DateFormat('dd.MM.yy').format(timestamp);
       expect(formatTimestamp(timestamp), expectedFormat);
+
     });
   });
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
+import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/message_tile_widget.dart';
 
@@ -33,7 +34,9 @@ void main() {
       MessageModel message = MessageModel(
         id: '1',
         senderId: '1',
-        content: 'Hello',
+        messageContentType: MessageContentType.text,
+        content: TextContent('Hello'),
+        userStates: {},
         timestamp: DateTime.now(),
         messageType: MessageType.normal,
       );
@@ -64,7 +67,9 @@ void main() {
       MessageModel message = MessageModel(
         id: '1',
         senderId: '1',
-        content: 'Hello',
+        messageContentType: MessageContentType.text,
+        content: TextContent('Hello'),
+        userStates: {},
         timestamp: DateTime.now(),
         messageType: MessageType.normal,
       );
@@ -88,7 +93,7 @@ void main() {
       );
       expect(richTextFinder, findsOneWidget);
       final RichText richText = tester.firstWidget(richTextFinder) as RichText;
-      expect(extractTextFromRichText(richText), message.content,
+      expect(extractTextFromRichText(richText), message.content?.toJson()['text'],
           reason: "Expected message content to render as rich text");
     });
 
@@ -96,7 +101,9 @@ void main() {
       MessageModel message = MessageModel(
         id: '1',
         senderId: '1',
-        content: 'Hello',
+        messageContentType: MessageContentType.text,
+        content: TextContent('Hello'),
+        userStates: {},
         timestamp: DateTime.now(),
         messageType: MessageType.normal,
       );
@@ -131,7 +138,9 @@ void main() {
       MessageModel message = MessageModel(
         id: '1',
         senderId: '1',
-        content: 'Hello',
+        messageContentType: MessageContentType.text,
+        content: TextContent('Hello'),
+        userStates: {},
         timestamp: DateTime.now(),
         messageType: MessageType.normal,
       );

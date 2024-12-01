@@ -93,3 +93,111 @@ class MessageTypeAdapter extends TypeAdapter<MessageType> {
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
+
+class MessageContentTypeAdapter extends TypeAdapter<MessageContentType> {
+  @override
+  final int typeId = 13;
+
+  @override
+  MessageContentType read(BinaryReader reader) {
+    switch (reader.readByte()) {
+      case 0:
+        return MessageContentType.text;
+      case 1:
+        return MessageContentType.image;
+      case 2:
+        return MessageContentType.gif;
+      case 3:
+        return MessageContentType.sticker;
+      case 4:
+        return MessageContentType.audio;
+      case 5:
+        return MessageContentType.video;
+      case 6:
+        return MessageContentType.file;
+      case 7:
+        return MessageContentType.link;
+      default:
+        return MessageContentType.text;
+    }
+  }
+
+  @override
+  void write(BinaryWriter writer, MessageContentType obj) {
+    switch (obj) {
+      case MessageContentType.text:
+        writer.writeByte(0);
+        break;
+      case MessageContentType.image:
+        writer.writeByte(1);
+        break;
+      case MessageContentType.gif:
+        writer.writeByte(2);
+        break;
+      case MessageContentType.sticker:
+        writer.writeByte(3);
+        break;
+      case MessageContentType.audio:
+        writer.writeByte(4);
+        break;
+      case MessageContentType.video:
+        writer.writeByte(5);
+        break;
+      case MessageContentType.file:
+        writer.writeByte(6);
+        break;
+      case MessageContentType.link:
+        writer.writeByte(7);
+        break;
+    }
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is MessageContentTypeAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class DeleteMessageTypeAdapter extends TypeAdapter<DeleteMessageType> {
+  @override
+  final int typeId = 14;
+
+  @override
+  DeleteMessageType read(BinaryReader reader) {
+    switch (reader.readByte()) {
+      case 0:
+        return DeleteMessageType.onlyMe;
+      case 1:
+        return DeleteMessageType.all;
+      default:
+        return DeleteMessageType.onlyMe;
+    }
+  }
+
+  @override
+  void write(BinaryWriter writer, DeleteMessageType obj) {
+    switch (obj) {
+      case DeleteMessageType.onlyMe:
+        writer.writeByte(0);
+        break;
+      case DeleteMessageType.all:
+        writer.writeByte(1);
+        break;
+    }
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DeleteMessageTypeAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
