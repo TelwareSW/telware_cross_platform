@@ -195,19 +195,22 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       userStates: {},
     );
     _messageController.clear();
-    _updateChatMessages([...chatContent, newMessage]);
-    ref.read(chattingControllerProvider).sendMsg(
-      content: newMessage.content!,
-      msgType: newMessage.messageType,
-      contentType: newMessage.messageContentType,
-      chatType: ChatType.private,
-      chatModel: chatModel,
-    ).then((_) {
-      List<MessageModel> messages = ref.watch(chatProvider(chatModel!.id!))?.messages ?? [];
+    _updateChatMessages([...?chatModel?.messages, newMessage]);
+    ref
+        .read(chattingControllerProvider)
+        .sendMsg(
+          content: newMessage.content!,
+          msgType: newMessage.messageType,
+          contentType: newMessage.messageContentType,
+          chatType: ChatType.private,
+          chatModel: chatModel,
+        )
+        .then((_) {
+      List<MessageModel> messages =
+          ref.watch(chatProvider(chatModel!.id!))?.messages ?? [];
       _updateChatMessages(messages);
       _scrollToBottom();
     });
-
   }
 
   //--------------------------------Recording--------------------------------
