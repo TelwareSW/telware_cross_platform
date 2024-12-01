@@ -13,18 +13,38 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout the code
         uses: actions/checkout@v2
+
       - name: Install and set Flutter version
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.24.3'
+
       - name: Create .env file
         run: |
           echo "${{ secrets.ENV_CONTENT }}" > lib/.env
+
       - name: Install dependencies
         run: flutter pub get
+
       - name: Run tests
         run: flutter test --coverage
+
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: Install and set Flutter version
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.3'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run Flutter analyze
+        run: flutter analyze
