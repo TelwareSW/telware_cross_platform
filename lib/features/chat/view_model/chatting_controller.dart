@@ -164,6 +164,15 @@ class ChattingController {
     if (chatID == null && userID == null) {
       throw Exception('specify the chatID, or userID in case of new chats');
     }
+    // todo: (marwan) I assumed we should send the message locally then when the user become online or the server is working
+    // we send the unsent messages
+    // todo: handle new chats case ----------------------------------!
+    _ref
+        .read(chatsViewModelProvider.notifier)
+
+        .addSentMessage(content, chatID!, msgType, contentType);
+
+    _localRepository.setChats(_ref.read(chatsViewModelProvider));
 
     final msgEvent = SendMessageEvent({
       'chatId': chatID ?? userID,
@@ -175,14 +184,6 @@ class ChattingController {
     }, controller: this);
 
     _eventHandler.addEvent(msgEvent);
-
-    // todo: handle new chats case ----------------------------------!
-    _ref
-        .read(chatsViewModelProvider.notifier)
-
-        .addSentMessage(content, chatID!, msgType, contentType);
-
-    _localRepository.setChats(_ref.read(chatsViewModelProvider));
   }
 
   void receiveMsg(String chatID, MessageModel msg) {

@@ -19,11 +19,13 @@ class BottomInputBarWidget extends ConsumerStatefulWidget {
   final TextEditingController controller; // Accept controller as a parameter
   final RecorderController recorderController;
   final PlayerController playerController;
+  final String? chatID;
   final void Function(BuildContext) startRecording;
   final void Function() stopRecording;
   final void Function() deleteRecording;
   final void Function() cancelRecording;
   final void Function() lockRecording;
+  final void Function(WidgetRef) sendMessage;
   final void Function(double) lockRecordingDrag;
   final bool isRecordingLocked;
   final bool isRecording;
@@ -32,6 +34,8 @@ class BottomInputBarWidget extends ConsumerStatefulWidget {
 
   const BottomInputBarWidget({
     super.key,
+    this.chatID,
+    required this.sendMessage,
     required this.controller,
     required this.recorderController,
     required this.playerController,
@@ -287,6 +291,7 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
               icon: const Icon(Icons.send),
               color: Palette.accent,
               onPressed: () {
+                widget.sendMessage(ref);
                 if (widget.isRecordingCompleted) {
                   //TODO: Send the recorded audio
                   widget.deleteRecording();
@@ -299,13 +304,4 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
     );
   }
 
-  //TODO: Implement the sendMsg method with another types of messages
-  void sendMsg(WidgetRef ref) {
-    ref.read(chattingControllerProvider).sendMsg(
-          content: TextContent(widget.controller.text),
-          msgType: MessageType.normal,
-          contentType: MessageContentType.text,
-          chatType: ChatType.private,
-        );
-  }
 }

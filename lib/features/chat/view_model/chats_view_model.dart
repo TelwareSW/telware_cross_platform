@@ -66,7 +66,7 @@ class ChatsViewModel extends _$ChatsViewModel {
 
     );
 
-    chat!.messages.insert(0, msg);
+    chat!.messages.add(msg);
     _moveChatToFront(chatID);
   }
 
