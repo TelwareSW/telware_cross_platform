@@ -127,4 +127,17 @@ class ChatsViewModel extends _$ChatsViewModel {
       state.insert(0, chat);
     }
   }
+
+  void muteChat(String chatID, int muteUntilSeconds) {
+    final chat = _chatsMap[chatID];
+    DateTime muteUntil = muteUntilSeconds == -1
+        ? DateTime.now().add(const Duration(days: 365 * 100))
+        : DateTime.now().add(Duration(seconds: muteUntilSeconds));
+    chat!.copyWith(isMuted: true, muteUntil: muteUntil);
+  }
+
+  void unmuteChat(String chatID) {
+    final chat = _chatsMap[chatID];
+    chat!.copyWith(isMuted: false, muteUntil: null);
+  }
 }

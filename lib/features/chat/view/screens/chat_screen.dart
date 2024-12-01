@@ -73,6 +73,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   bool isRecordingPaused = false;
   bool isLoading = true;
   bool isTextEmpty = true;
+  bool showMuteOptions = false;
   double _lockRecordingDragPosition = 0;
   final lockPath = "assets/json/passcode_lock.json";
   String? path;
@@ -209,6 +210,22 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       _scrollToBottom();
     });
 
+  }
+
+  void _setChatMute(DateTime? muteUntil) {
+    if (muteUntil == null) {
+      ref.read(chattingControllerProvider).unmuteChat(chatModel!.id!).then((_) {
+        setState(() {
+          chatModel = chatModel!.copyWith(isMuted: false, muteUntil: null);
+        });
+      });
+    } else {
+      ref.read(chattingControllerProvider).muteChat(chatModel!.id!, muteUntil).then((_) {
+        setState(() {
+          chatModel = chatModel!.copyWith(isMuted: true, muteUntil: muteUntil);
+        });
+      });
+    }
   }
 
   //--------------------------------Recording--------------------------------
@@ -446,6 +463,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
   @override
   Widget build(BuildContext context) {
+    final popupMenu = buildPopupMenu();
     final chatModel = widget.chatModel ?? ref.watch(chatProvider(widget.chatId))!;
     final type = chatModel.type;
     final String title = chatModel.title;
@@ -456,7 +474,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     final imageBytes = chatModel.photoBytes;
     final photo = chatModel.photo;
     final chatID = chatModel.id;
-    const menuItemsHeight = 45.0;
     var messagesIndex = 0;
 
     return Scaffold(
@@ -510,81 +527,10 @@ class _ChatScreen extends ConsumerState<ChatScreen>
           if (!isSearching)
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert),
-              onSelected: (String value) {
-                if (value == 'search') {
-                  _enableSearching();
-                } else {
-                  showToastMessage("No Bueno");
-                }
-              },
+              onSelected: _handlePopupMenuSelection,
               color: Palette.secondary,
               padding: EdgeInsets.zero,
-              itemBuilder: (BuildContext context) {
-                return [
-                  const PopupMenuItem<String>(
-                    value: 'mute-options',
-                    padding: EdgeInsets.zero,
-                    height: menuItemsHeight,
-                    child: PopupMenuItemWidget(
-                        icon: Icons.volume_up_rounded,
-                        text: 'Mute',
-                        trailing: Icon(
-                          Icons.arrow_forward_ios_rounded,
-                          color: Palette.inactiveSwitch,
-                          size: 16,
-                        )),
-                  ),
-                  const PopupMenuDivider(
-                    height: 10,
-                  ),
-                  const PopupMenuItem<String>(
-                    value: 'video-call',
-                    padding: EdgeInsets.zero,
-                    height: menuItemsHeight,
-                    child: PopupMenuItemWidget(
-                      icon: Icons.videocam_outlined,
-                      text: 'Video Call',
-                    ),
-                  ),
-                  const PopupMenuItem<String>(
-                    key: ChatKeys.chatSearchButton,
-                    value: 'search',
-                    padding: EdgeInsets.zero,
-                    height: menuItemsHeight,
-                    child: PopupMenuItemWidget(
-                      icon: Icons.search,
-                      text: 'Search',
-                    ),
-                  ),
-                  const PopupMenuItem<String>(
-                    value: 'change-wallpaper',
-                    padding: EdgeInsets.zero,
-                    height: menuItemsHeight,
-                    child: PopupMenuItemWidget(
-                      icon: Icons.wallpaper_rounded,
-                      text: 'Change Wallpaper',
-                    ),
-                  ),
-                  const PopupMenuItem<String>(
-                    value: 'clear-history',
-                    padding: EdgeInsets.zero,
-                    height: menuItemsHeight,
-                    child: PopupMenuItemWidget(
-                      icon: Icons.cleaning_services,
-                      text: 'Clear History',
-                    ),
-                  ),
-                  const PopupMenuItem<String>(
-                    value: 'delete-chat',
-                    padding: EdgeInsets.zero,
-                    height: menuItemsHeight,
-                    child: PopupMenuItemWidget(
-                      icon: Icons.delete_outline,
-                      text: 'Delete Chat',
-                    ),
-                  ),
-                ];
-              },
+              itemBuilder: popupMenu,
             ),
         ],
       ),
@@ -721,7 +667,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                     isRecordingLocked: isRecordingLocked,
                     isRecordingPaused: isRecordingPaused,
                     lockRecordingDrag: _lockRecordingDrag,
-                  )
+                )
               else
                 Container(
                   color: Palette.trinary,
@@ -931,6 +877,202 @@ class _ChatScreen extends ConsumerState<ChatScreen>
         ],
       )
     );
+  }
+
+  void _handlePopupMenuSelection(String value) {
+    switch (value) {
+      // case 'no-close':
+      //   break;
+      case 'search':
+        _enableSearching();
+        break;
+      case 'mute-chat':
+        showMuteOptions = false;
+        DatePicker.showDatePicker(
+          context,
+          pickerTheme: const DateTimePickerTheme(
+            backgroundColor: Palette.secondary,
+            itemTextStyle: TextStyle(
+              color: Palette.primaryText,
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+            ),
+            confirm: Text(
+              'Confirm',
+              style: TextStyle(
+                color: Palette.primary,
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          pickerMode: DateTimePickerMode.time,
+          minDateTime: DateTime.now(),
+          maxDateTime: DateTime.now().add(const Duration(days: 365)),
+          initialDateTime: DateTime.now(),
+          dateFormat: 'dd-MMMM-yyyy',
+          locale: DateTimePickerLocale.en_us,
+          onConfirm: (date, time) {
+            _setChatMute(date);
+          },
+        );
+        break;
+      case 'unmute-chat':
+        _setChatMute(null);
+        break;
+      case 'mute-chat-forever':
+        showMuteOptions = false;
+        _setChatMute(DateTime.now().add(const Duration(days: 365 * 10)));
+      default:
+        showToastMessage("No Bueno");
+    }
+  }
+
+  PopupMenuItemBuilder<String> buildPopupMenu() {
+    const double menuItemsHeight = 45.0;
+
+    return (BuildContext context) {
+      if (showMuteOptions) {
+        return [
+          PopupMenuItem<String>(
+              value: 'no-close',
+              padding: EdgeInsets.zero,
+              height: menuItemsHeight,
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    showMuteOptions = false;
+                  });
+                },
+                child: const PopupMenuItemWidget(
+                  icon: Icons.arrow_back,
+                  text: 'Back',
+                ),
+              )
+          ),
+          const PopupMenuItem<String>(
+            value: 'disable-sound',
+            padding: EdgeInsets.zero,
+            height: menuItemsHeight,
+            child: PopupMenuItemWidget(
+              icon: Icons.music_off_outlined,
+              text: 'Disable sound',
+            ),
+          ),
+          const PopupMenuItem<String>(
+            key: ChatKeys.chatSearchButton,
+            value: 'mute-chat',
+            padding: EdgeInsets.zero,
+            height: menuItemsHeight,
+            child: PopupMenuItemWidget(
+              icon: Icons.notifications_paused_outlined,
+              text: 'Mute for...',
+            ),
+          ),
+          const PopupMenuItem<String>(
+            value: 'customize-chat',
+            padding: EdgeInsets.zero,
+            height: menuItemsHeight,
+            child: PopupMenuItemWidget(
+              icon: Icons.tune_outlined,
+              text: 'Customize',
+            ),
+          ),
+          const PopupMenuItem<String>(
+            value: 'mute-chat-forever',
+            padding: EdgeInsets.zero,
+            height: menuItemsHeight,
+            child: PopupMenuItemWidget(
+              icon: Icons.volume_off_outlined,
+              text: 'Mute Forever',
+            ),
+          ),
+        ];
+      }
+      return [
+        if (chatModel!.isMuted)
+          const PopupMenuItem<String>(
+            value: 'unmute-chat',
+            padding: EdgeInsets.zero,
+            height: menuItemsHeight,
+            child: PopupMenuItemWidget(
+                icon: Icons.volume_off_outlined,
+                text: 'Unmute',
+            )
+          )
+        else
+          PopupMenuItem<String>(
+            value: 'no-close',
+            padding: EdgeInsets.zero,
+            height: menuItemsHeight,
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  showMuteOptions = true;
+                });
+              },
+              child: const PopupMenuItemWidget(
+                  icon: Icons.volume_up_rounded,
+                  text: 'Mute',
+                  trailing: Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    color: Palette.inactiveSwitch,
+                    size: 16,
+                  )
+              ),
+            ),
+          ),
+        const PopupMenuDivider(
+          height: 10,
+        ),
+        const PopupMenuItem<String>(
+          value: 'video-call',
+          padding: EdgeInsets.zero,
+          height: menuItemsHeight,
+          child: PopupMenuItemWidget(
+            icon: Icons.videocam_outlined,
+            text: 'Video Call',
+          ),
+        ),
+        const PopupMenuItem<String>(
+          key: ChatKeys.chatSearchButton,
+          value: 'search',
+          padding: EdgeInsets.zero,
+          height: menuItemsHeight,
+          child: PopupMenuItemWidget(
+            icon: Icons.search,
+            text: 'Search',
+          ),
+        ),
+        const PopupMenuItem<String>(
+          value: 'change-wallpaper',
+          padding: EdgeInsets.zero,
+          height: menuItemsHeight,
+          child: PopupMenuItemWidget(
+            icon: Icons.wallpaper_rounded,
+            text: 'Change Wallpaper',
+          ),
+        ),
+        const PopupMenuItem<String>(
+          value: 'clear-history',
+          padding: EdgeInsets.zero,
+          height: menuItemsHeight,
+          child: PopupMenuItemWidget(
+            icon: Icons.cleaning_services,
+            text: 'Clear History',
+          ),
+        ),
+        const PopupMenuItem<String>(
+          value: 'delete-chat',
+          padding: EdgeInsets.zero,
+          height: menuItemsHeight,
+          child: PopupMenuItemWidget(
+            icon: Icons.delete_outline,
+            text: 'Delete Chat',
+          ),
+        ),
+      ];
+    };
   }
 
   String getRandomLottieAnimation() {

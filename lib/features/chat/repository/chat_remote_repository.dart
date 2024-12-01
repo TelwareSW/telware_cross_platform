@@ -177,5 +177,45 @@ class ChatRemoteRepository {
     }
   }
 
+  Future<({AppError? appError})> muteChat(
+      String sessionID, String chatID, int muteUntil) async {
+    try {
+      final response = await _dio.post(
+        '/chats/mute/:$chatID',
+        data: {
+          'duration': muteUntil,
+        },
+        options: Options(headers: {'X-Session-Token': sessionID}),
+      );
+
+      if (response.statusCode == 200) {
+        return (appError: null);
+      } else {
+        return (appError: AppError('Failed to mute chat', code: response.statusCode));
+      }
+    } catch (e) {
+      debugPrint('!!! Failed to mute chat, ${e.toString()}');
+      return (appError: AppError('Failed to mute chat', code: 500));
+    }
+  }
+
+  Future<({AppError? appError})> unmuteChat(String sessionID, String chatID) async {
+    try {
+      final response = await _dio.post(
+        '/chats/unmute/:$chatID',
+        options: Options(headers: {'X-Session-Token': sessionID}),
+      );
+
+      if (response.statusCode == 200) {
+        return (appError: null);
+      } else {
+        return (appError: AppError('Failed to unmute chat', code: response.statusCode));
+      }
+    } catch (e) {
+      debugPrint('!!! Failed to unmute chat, ${e.toString()}');
+      return (appError: AppError('Failed to unmute chat', code: 500));
+    }
+  }
+
 // TODO Implement Fetch Messages
 }
