@@ -50,6 +50,11 @@ class ChatsViewModel extends _$ChatsViewModel {
     _chatsMap = <String, ChatModel>{for (var chat in chats) chat.id!: chat};
   }
 
+  void addChat(ChatModel chat) {
+    state.insert(0, chat);
+    _chatsMap[chat.id!] = chat;
+  }
+
   void addSentMessage(MessageContent content, String chatID,
       MessageType msgType, MessageContentType msgContentType) {
     final chat = _chatsMap[chatID];

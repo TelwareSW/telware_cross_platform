@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
 import 'package:flutter/foundation.dart';
+import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
 
 part 'user_remote_repository.g.dart';
@@ -25,6 +26,34 @@ class UserRemoteRepository {
 
   Future<String?> _getSessionId() async {
     return _ref.read(tokenProvider);
+  }
+
+  // fetch users
+  Future<Either<AppError, List<UserModel>>> fetchUsers() async {
+    try {
+      final sessionId = await _getSessionId();
+      final response = await _dio.get(
+        '/users',
+        options: Options(
+          headers: {'X-Session-Token': sessionId},
+        ),
+      );
+      if (response.statusCode! >= 400) {
+        final String message = response.data?['message'] ?? 'Unexpected Error';
+        return Left(AppError(message));
+      }
+
+
+      final List<dynamic> users = response.data?['data']['users'] ?? [];
+      var filteredUsers = await Future.wait(
+        (users).map((user) => UserModel.fromMap(user)).toList());
+      return Right(filteredUsers);
+    } on DioException catch (dioException) {
+      return Left(handleDioException(dioException));
+    } catch (error) {
+      debugPrint('Fetch Users error:\n${error.toString()}');
+      return Left(AppError("Couldn't fetch users now. Please, try again later."));
+    }
   }
 
   Future<Either<AppError, void>> changeNumber({

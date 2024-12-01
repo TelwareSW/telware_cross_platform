@@ -150,36 +150,44 @@ class ChattingController {
   /// Send a text message.
   /// Must specify either the chatID or userID in case of new chat,
   /// otherwise, it will throw an error
-  void sendMsg({
-
+  Future<void> sendMsg({
     required MessageContent content,
-
     required MessageType msgType,
     required MessageContentType contentType,
     required ChatType chatType,
-    String? chatID,
+    ChatModel? chatModel,
     String? userID,
-  }) {
-    // todo: handle new chats case
-    if (chatID == null && userID == null) {
-      throw Exception('specify the chatID, or userID in case of new chats');
+  }) async {
+    String? chatID = chatModel?.id;
+    bool isChatNew = chatID == null;
+
+    if (chatID == null && chatModel != null) {
+      // Create a new chat if chatID is null
+      final response = await _remoteRepository.createChat(
+        _ref.read(tokenProvider)!,
+        chatModel.title,
+        chatModel.getChatTypeString(),
+        chatModel.userIds,
+      );
+
+      if (response.appError != null) {
+        debugPrint('Error: Could not create the chat');
+      } else {
+        chatID = response.chat!.id;
+        chatModel.id = chatID;
+        _ref.read(chatsViewModelProvider.notifier).addChat(response.chat!);
+      }
     }
-    // todo: (marwan) I assumed we should send the message locally then when the user become online or the server is working
-    // we send the unsent messages
-    // todo: handle new chats case ----------------------------------!
-    _ref
-        .read(chatsViewModelProvider.notifier)
 
-        .addSentMessage(content, chatID!, msgType, contentType);
-
+    _ref.read(chatsViewModelProvider.notifier).addSentMessage(content, chatID!, msgType, contentType);
     _localRepository.setChats(_ref.read(chatsViewModelProvider));
 
     final msgEvent = SendMessageEvent({
-      'chatId': chatID ?? userID,
+      'chatId': chatID,
       'content': content,
       'contentType': contentType.content,
       'senderId': _ref.read(userProvider)!.id,
-      'isFirstTime': chatID == null,
+      'isFirstTime': isChatNew,
       'chatType': chatType.type
     }, controller: this);
 
@@ -238,7 +246,7 @@ class ChattingController {
 
     _remoteRepository.getOtherUser(_ref.read(tokenProvider)!, id);
 
-    return userMock;
+    return mockUsers[0];
   }
 
   void restoreOtherUsers(Map<String, UserModel> otherUsers) {
