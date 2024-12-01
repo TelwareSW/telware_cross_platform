@@ -186,17 +186,28 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
   //TODO: Implement the sendMsg method with another types of messages
   void _sendMessage(WidgetRef ref) {
-    ref.read(chattingControllerProvider).sendMsg(
-          content: TextContent(_messageController.text),
-          msgType: MessageType.normal,
-          contentType: MessageContentType.text,
-          chatType: ChatType.private,
-          chatID: widget.chatId,
-        );
+    MessageModel newMessage = MessageModel(
+      senderId: ref.read(userProvider)!.id!,
+      messageContentType: MessageContentType.text,
+      content: TextContent(_messageController.text),
+      timestamp: DateTime.now(),
+      messageType: MessageType.normal,
+      userStates: {},
+    );
     _messageController.clear();
-    List<MessageModel> messages =
-        ref.watch(chatProvider(widget.chatId))?.messages ?? [];
-    _updateChatMessages(messages);
+    _updateChatMessages([...chatContent, newMessage]);
+    ref.read(chattingControllerProvider).sendMsg(
+      content: newMessage.content!,
+      msgType: newMessage.messageType,
+      contentType: newMessage.messageContentType,
+      chatType: ChatType.private,
+      chatModel: chatModel,
+    ).then((_) {
+      List<MessageModel> messages = ref.watch(chatProvider(chatModel!.id!))?.messages ?? [];
+      _updateChatMessages(messages);
+      _scrollToBottom();
+    });
+
   }
 
   //--------------------------------Recording--------------------------------

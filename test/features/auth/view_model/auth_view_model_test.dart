@@ -38,8 +38,8 @@ void main() {
       ],
     );
 
-    provideDummy<Either<AppError, UserModel>>(Right(userMock));
-    provideDummy<Either<AppError, AuthResponseModel>>(Right(AuthResponseModel(token: 'test-token', user: userMock)));
+    provideDummy<Either<AppError, UserModel>>(Right(mockUsers[0]));
+    provideDummy<Either<AppError, AuthResponseModel>>(Right(AuthResponseModel(token: 'test-token', user: mockUsers[0])));
     provideDummy<Either<AppError, UserModel>>(Left(AppError('Error')));
 
     authViewModel = container.read(authViewModelProvider.notifier);
@@ -51,7 +51,7 @@ void main() {
     test('init initializes the state correctly', () async {
       when(mockAuthLocalRepository.getToken()).thenReturn('test-token');
       when(mockAuthRemoteRepository.getMe('test-token')).thenAnswer(
-        (_) async => Right(userMock),
+        (_) async => Right(mockUsers[0]),
       );
 
       await authViewModel.init();
@@ -77,7 +77,7 @@ void main() {
       when(mockAuthRemoteRepository.getMe('test-token')).thenAnswer(
         (_) async => Left(AppError('Error')),
       );
-      when(mockAuthLocalRepository.getMe()).thenReturn(userMock);
+      when(mockAuthLocalRepository.getMe()).thenReturn(mockUsers[0]);
 
       await authViewModel.init();
 
@@ -178,7 +178,7 @@ void main() {
         password: anyNamed('password'),
       )).thenAnswer((_) async => Right(AuthResponseModel(
         token: 'test-token',
-        user: userMock,
+        user: mockUsers[0],
       )));
 
       await authViewModel.login(

@@ -39,7 +39,7 @@ class AuthViewModel extends _$AuthViewModel {
     }
 
     if (USE_MOCK_DATA) {
-      final user = userMock;
+      final user = mockUsers[0];
       ref.read(userProvider.notifier).update((_) => user);
       state = AuthState.authenticated;
       return;
@@ -110,8 +110,8 @@ class AuthViewModel extends _$AuthViewModel {
 
     if (USE_MOCK_DATA) {
       state = AuthState.verified;
-      ref.read(authLocalRepositoryProvider).setUser(userMock);
-      ref.read(userProvider.notifier).update((_) => userMock);
+      ref.read(authLocalRepositoryProvider).setUser(mockUsers[0]);
+      ref.read(userProvider.notifier).update((_) => mockUsers[0]);
 
       ref.read(authLocalRepositoryProvider).setToken(tokenMock);
       ref.read(tokenProvider.notifier).update((_) => tokenMock);
@@ -155,9 +155,20 @@ class AuthViewModel extends _$AuthViewModel {
     state = AuthState.loading;
 
     if (USE_MOCK_DATA) {
-      if (email == userMock.email && password == userMockPassword) {
-        ref.read(authLocalRepositoryProvider).setUser(userMock);
-        ref.read(userProvider.notifier).update((_) => userMock);
+      if (email == mockUsers[0].email && password == userMockPassword) {
+        ref.read(authLocalRepositoryProvider).setUser(mockUsers[0]);
+        ref.read(userProvider.notifier).update((_) => mockUsers[0]);
+
+        ref.read(authLocalRepositoryProvider).setToken(tokenMock);
+        ref.read(tokenProvider.notifier).update((_) => tokenMock);
+
+        await ref.read(chattingControllerProvider).newLoginInit();
+
+        state = AuthState.authenticated;
+        return;
+      } else if (email == mockUsers[1].email && password == otherUserMockPassword) {
+        ref.read(authLocalRepositoryProvider).setUser(mockUsers[1]);
+        ref.read(userProvider.notifier).update((_) => mockUsers[1]);
 
         ref.read(authLocalRepositoryProvider).setToken(tokenMock);
         ref.read(tokenProvider.notifier).update((_) => tokenMock);
@@ -319,7 +330,7 @@ class AuthViewModel extends _$AuthViewModel {
     String? token = ref.read(tokenProvider);
 
     if (USE_MOCK_DATA) {
-      final user = userMock;
+      final user = mockUsers[0];
       ref.read(userProvider.notifier).update((_) => user);
       state = AuthState.authenticated;
       return;

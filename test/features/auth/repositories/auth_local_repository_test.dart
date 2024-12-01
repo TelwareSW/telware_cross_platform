@@ -59,7 +59,7 @@ void main() {
     });
 
     test('setUser stores the user in the box', () async {
-      final user = userMock;
+      final user = mockUsers[0];
       when(mockUserBox.put('user', user)).thenAnswer((_) async => Future.value());
 
       await authLocalRepository.setUser(user);
@@ -68,7 +68,7 @@ void main() {
     });
 
     test('getMe retrieves the user from the box', () {
-      final user = userMock;
+      final user = mockUsers[0];
       when(mockUserBox.get('user')).thenReturn(user);
 
       final result = authLocalRepository.getMe();
@@ -119,7 +119,7 @@ void main() {
     });
 
     test('setUser and getMe maintain data integrity', () async {
-      final user = userMock;
+      final user = mockUsers[0];
       when(mockUserBox.put('user', user)).thenAnswer((_) async => Future.value());
       when(mockUserBox.get('user')).thenReturn(user);
 
