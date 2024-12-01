@@ -4,6 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
+
+import 'package:telware_cross_platform/core/models/user_model.dart';
+
 import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
 
 class ChatLocalRepository {

@@ -19,6 +19,7 @@ ContactsRemoteRepository contactsRemoteRepository(
 
 class ContactsRemoteRepository {
   final ProviderRef _ref;
+
   ContactsRemoteRepository(this._ref);
 
   Future<List<ContactModel>> fetchContactsFromBackend() async {

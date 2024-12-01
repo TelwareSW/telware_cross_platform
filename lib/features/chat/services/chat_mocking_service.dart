@@ -1,9 +1,12 @@
 import 'dart:math';
 
 import 'package:faker/faker.dart';
+import 'package:telware_cross_platform/core/mock/messages_mock.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
+import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
+
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
@@ -58,7 +61,8 @@ class ChatMockingService {
           faker.randomGenerator.boolean() ? otherUserId : appUserId;
       return MessageModel(
         senderId: senderId,
-        content: faker.lorem.sentence(),
+        messageContentType: MessageContentType.text,
+        content: TextContent(faker.lorem.sentence()),
         timestamp: DateTime.now().subtract(Duration(minutes: index)),
         messageType: MessageType.normal,
         userStates: {
@@ -68,7 +72,7 @@ class ChatMockingService {
       );
     });
   }
-  
+
   // Helper method to get a random message state
   MessageState _getRandomMessageState() {
     final Random random = Random();
@@ -83,6 +87,12 @@ class ChatMockingService {
     }
   }
 
+  ChatType _getRandomChatType() {
+    final Random random = Random();
+    const List<ChatType> chatTypes = ChatType.values;
+    return chatTypes[random.nextInt(chatTypes.length)];
+  }
+
   ChatModel createMockedChat(List<MessageModel> messages, List<String> users) {
     final faker = Faker();
 
@@ -90,7 +100,7 @@ class ChatMockingService {
       id: faker.guid.guid(),
       title: faker.lorem.words(3).join(' '),
       userIds: users,
-      type: ChatType.private,
+      type: _getRandomChatType(),
       messages: messages,
       description: faker.lorem.sentence(),
       lastMessageTimestamp:
@@ -98,25 +108,22 @@ class ChatMockingService {
       isArchived: faker.randomGenerator.boolean(),
       isMuted: faker.randomGenerator.boolean(),
       isMentioned: faker.randomGenerator.boolean(),
-      draft: faker.randomGenerator.boolean() ? faker.lorem.sentence() : null,
+      draft: faker.randomGenerator.integer(10) < 3 ? faker.lorem.sentence() : "",
     );
   }
 
-  ({List<ChatModel> chats, List<UserModel> users}) createMockedChats(
+  Future<({List<ChatModel> chats, List<UserModel> users})> createMockedChats(
     int count,
     String appUserId,
-  ) {
+  ) async {
     final faker = Faker();
 
     final users = createMockedUsers(count);
-    final chats = List.generate(count, (index) {
-      final msgs = createMockedMessages(
-        faker.randomGenerator.integer(25, min: 1),
-        users[index].id!,
-        appUserId,
-      );
+    final chatFutures = List.generate(count, (index) async {
+      final msgs = await generateFakeMessages();
       return createMockedChat(msgs, [users[index].id!, appUserId]);
     });
+    final chats = await Future.wait(chatFutures);
 
     return (chats: chats, users: users);
   }

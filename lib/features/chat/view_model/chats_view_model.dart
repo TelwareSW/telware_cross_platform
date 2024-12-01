@@ -3,6 +3,9 @@ import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
+
+import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
+
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 
@@ -11,7 +14,9 @@ part 'chats_view_model.g.dart';
 @Riverpod(keepAlive: true)
 class ChatsViewModel extends _$ChatsViewModel {
   /// The state of the class, respembels a sorted list
-  /// of chats, based on the timesatmp of the latest msg
+
+  /// of chats, based on the timestamp of the latest msg
+
   /// in them
 
   Map<String, ChatModel> _chatsMap = <String, ChatModel>{};
@@ -45,7 +50,8 @@ class ChatsViewModel extends _$ChatsViewModel {
     _chatsMap = <String, ChatModel>{for (var chat in chats) chat.id!: chat};
   }
 
-  void addSentMessage(String content, String chatID, MessageType msgType) {
+  void addSentMessage(MessageContent content, String chatID,
+      MessageType msgType, MessageContentType msgContentType) {
     final chat = _chatsMap[chatID];
     // todo(ahmed): make sure that new chats are added to the map first
     // I mean, new chats from the backend
@@ -54,10 +60,13 @@ class ChatsViewModel extends _$ChatsViewModel {
       senderId: ref.read(userProvider)!.id!,
       timestamp: DateTime.now(),
       content: content,
+      messageContentType: msgContentType,
       messageType: msgType,
+      userStates: {},
+
     );
 
-    chat!.messages.insert(0, msg);
+    chat!.messages.add(msg);
     _moveChatToFront(chatID);
   }
 
@@ -85,7 +94,9 @@ class ChatsViewModel extends _$ChatsViewModel {
     }
   }
 
-  void editMessage(String msgID, String chatID, String content) {
+
+  void editMessage(String msgID, String chatID, MessageContent content) {
+
     final chat = _chatsMap[chatID];
     // Find the msg with the specified ID
     final msgIndex = chat!.messages.indexWhere((msg) => msg.id == msgID);

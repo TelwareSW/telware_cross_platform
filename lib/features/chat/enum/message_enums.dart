@@ -23,6 +23,7 @@ enum MessageState {
   }
 
   final String text;
+
   const MessageState({required this.text});
 }
 
@@ -45,19 +46,29 @@ enum MessageType {
         return MessageType.normal;
     }
   }
-  
+
   final String text;
+
   const MessageType({required this.text});
 }
 
+@HiveType(typeId: 13)
 enum MessageContentType {
+  @HiveField(0)
   text(content: 'text'),
+  @HiveField(1)
   image(content: 'image'),
+  @HiveField(2)
   gif(content: 'GIF'),
+  @HiveField(3)
   sticker(content: 'sticker'),
+  @HiveField(4)
   audio(content: 'audio'),
+  @HiveField(5)
   video(content: 'video'),
+  @HiveField(6)
   file(content: 'file'),
+  @HiveField(7)
   link(content: 'link');
 
   static MessageContentType getType(String type) {
@@ -82,13 +93,19 @@ enum MessageContentType {
   }
 
   final String content;
+
   const MessageContentType({required this.content});
 }
 
+@HiveType(typeId: 14)
 enum DeleteMessageType {
+  @HiveField(0)
   onlyMe(text: 'only-me'),
+  @HiveField(1)
   all(text: 'all');
 
   final String text;
+
   const DeleteMessageType({required this.text});
 }
+

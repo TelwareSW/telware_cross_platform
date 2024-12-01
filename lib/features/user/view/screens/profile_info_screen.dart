@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:go_router/go_router.dart';
+
 import 'package:telware_cross_platform/core/constants/keys.dart';
+
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/features/user/repository/user_local_repository.dart';
@@ -24,6 +26,10 @@ class ProfileInfoScreen extends ConsumerStatefulWidget {
 
 class _ProfileInfoScreen extends ConsumerState<ProfileInfoScreen> with SingleTickerProviderStateMixin {
   late final UserModel _user;
+
+  final firstNameShakeKey = GlobalKey<ShakeWidgetState>();
+  final lastNameShakeKey = GlobalKey<ShakeWidgetState>();
+
 
   late final TextEditingController _firstNameController;
   late final TextEditingController _secondNameController;

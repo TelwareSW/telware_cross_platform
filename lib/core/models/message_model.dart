@@ -3,6 +3,9 @@ import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
+
+import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
+
 import 'package:telware_cross_platform/features/stories/utils/utils_functions.dart';
 
 import '../constants/server_constants.dart';
@@ -14,33 +17,37 @@ class MessageModel {
   @HiveField(0)
   final String senderId;
   @HiveField(1)
-  final String? content;
-  @HiveField(2)
-  final DateTime timestamp;
-  @HiveField(3)
-  final DateTime? autoDeleteTimestamp;
-  @HiveField(4)
-  String? id;
-  @HiveField(5)
-  final String? photo;
-  @HiveField(6)
-  Uint8List? photoBytes;
-  @HiveField(7)
-  final Map<String, MessageState> userStates;
-  @HiveField(8)
   final MessageType messageType;
+  @HiveField(2)
+  final MessageContentType messageContentType;
+  @HiveField(3)
+  final MessageContent? content;
+  @HiveField(4)
+  final DateTime? autoDeleteTimestamp;
+  @HiveField(5)
+  final DateTime timestamp;
+  @HiveField(6)
+  String? id;
+  @HiveField(7)
+  final String? photo;
+  @HiveField(8)
+  Uint8List? photoBytes;
+  @HiveField(9)
+  final Map<String, MessageState> userStates;
 
+//<editor-fold desc="Data Methods">
   MessageModel({
     this.autoDeleteTimestamp,
-    required this.messageType,
     required this.senderId,
+    required this.messageType,
+    required this.messageContentType,
     this.content,
     required this.timestamp,
     this.id,
     this.photo,
     this.photoBytes,
-    Map<String, MessageState>? userStates,
-  }) : userStates = userStates ?? {};
+    required this.userStates,
+  });
 
   Future<void> _setPhotoBytes() async {
     if (photo == null || photo!.isEmpty) return;
@@ -74,6 +81,7 @@ class MessageModel {
     if (identical(this, other)) return true;
 
     return other.messageType == messageType &&
+        other.messageContentType == messageContentType &&
         other.senderId == senderId &&
         other.content == content &&
         other.timestamp == timestamp &&
@@ -87,6 +95,7 @@ class MessageModel {
   @override
   int get hashCode {
     return messageType.hashCode ^
+        messageContentType.hashCode ^
         autoDeleteTimestamp.hashCode ^
         senderId.hashCode ^
         content.hashCode ^
@@ -108,13 +117,14 @@ class MessageModel {
         'photo: $photo,\n'
         'userStates: $userStates,\n'
         'messageType: ${messageType.name},\n'
+        'messageContentType: ${messageContentType.name},\n'
         'isPhotoBytesSet: ${photoBytes != null}\n'
         ')');
   }
 
   MessageModel copyWith({
     String? senderId,
-    String? content,
+    MessageContent? content,
     DateTime? timestamp,
     DateTime? autoDeleteTimestamp,
     String? id,
@@ -122,6 +132,7 @@ class MessageModel {
     Uint8List? photoBytes,
     Map<String, MessageState>? userStates,
     MessageType? messageType,
+    MessageContentType? messageContentType,
   }) {
     return MessageModel(
       senderId: senderId ?? this.senderId,
@@ -132,7 +143,8 @@ class MessageModel {
       photo: photo ?? this.photo,
       photoBytes: photoBytes ?? this.photoBytes,
       userStates: userStates ?? Map.from(this.userStates),
-      messageType: messageType ?? this.messageType
+      messageType: messageType ?? this.messageType,
+      messageContentType: messageContentType ?? this.messageContentType,
     );
   }
 
@@ -148,7 +160,8 @@ class MessageModel {
           ? userStates.map(
               (key, value) => MapEntry(key, value.toString().split('.').last))
           : null,
-      'messageType': messageType.name
+      'messageType': messageType.name,
+      'messageContentType': messageContentType.name
     };
 
     return map;
@@ -157,15 +170,16 @@ class MessageModel {
   static Future<MessageModel> fromMap(Map<String, dynamic> map) async {
     final message = MessageModel(
       senderId: map['senderId'] as String,
-      content: map['content'] as String,
+      content: map['content'] as MessageContent?,
       timestamp: DateTime.parse(map['timestamp'] as String),
       id: map['messageId'] as String?,
       photo: map['photo'] as String?,
       messageType: MessageType.getType(map['messageType']),
+      messageContentType: MessageContentType.getType(map['messageContentType']),
       autoDeleteTimestamp: map['autoDeleteTimeStamp'] != null
           ? DateTime.parse(map['autoDeleteTimeStamp'])
           : null,
-      userStates: (map['userStates'] as Map<String, dynamic>?)?.map(
+      userStates: (map['userStates'] as Map<String, dynamic>?)!.map(
         (key, value) => MapEntry(
           key,
           MessageState.values.firstWhere(

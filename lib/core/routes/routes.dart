@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/models/chat_model.dart';
 
 import 'package:telware_cross_platform/core/view/screen/splash_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/change_number_form_screen.dart';
@@ -233,6 +234,9 @@ class Routes {
           GoRoute(
             path: Routes.chatScreen,
             builder: (context, state) {
+              if (state.extra is ChatModel) {
+                return ChatScreen(chatModel: state.extra as ChatModel);
+              }
               final String chatId = state.extra as String;
               return ChatScreen(chatId: chatId);
             }
