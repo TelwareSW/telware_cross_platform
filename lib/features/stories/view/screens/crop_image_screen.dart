@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 
+import '../../../../core/constants/keys.dart';
+
 class CropImageScreen extends StatefulWidget {
   static const String route = '/cropImageScreen';
   final String path;
@@ -115,37 +117,37 @@ class _CropImageScreenState extends State<CropImageScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               IconButton(
-                  key: const ValueKey('refresh_key'),
+                  key: Keys.refreshImageCropScreen,
                   icon: const Icon(Icons.refresh), onPressed: controller.reset),
               IconButton(
-                  key: const ValueKey('zoom_in_key'),
+                  key: Keys.zoomInImageCropScreen,
                   icon: const Icon(Icons.zoom_in),
                   onPressed: () =>
                       controller.addTransition(CropImageData(scale: 1.33))),
               IconButton(
-                  key: const ValueKey('zoom_out_key'),
+                  key: Keys.zoomOutImageCropScreen,
                   icon: const Icon(Icons.zoom_out),
                   onPressed: () =>
                       controller.addTransition(CropImageData(scale: 0.75))),
               IconButton(
-                  key: const ValueKey('rotate_left_key'),
+                  key: Keys.rotateLeftImageCropScreen,
                   icon: const Icon(Icons.rotate_left),
                   onPressed: () =>
                       controller.addTransition(CropImageData(angle: -pi / 4))),
               IconButton(
-                  key: const ValueKey('rotate_right_key'),
+                  key: Keys.rotateRightImageCropScreen,
                   icon: const Icon(Icons.rotate_right),
                   onPressed: () =>
                       controller.addTransition(CropImageData(angle: pi / 4))),
               PopupMenuButton(
-                key: const ValueKey('popup_menu_key'),
+                key: Keys.popupMenuImageCropScreen,
                 icon: const Icon(Icons.crop_original),
                 onSelected: _changeCropShape,
                 itemBuilder: (BuildContext context) {
                   return CustomCropShape.values.map(
                     (shape) {
                       return PopupMenuItem(
-                        key: ValueKey('popup_menu_item_${shape.name}'),
+                        key: ValueKey('${Keys.popupMenuItemImageCropScreen}${shape.name}'),
                         value: shape,
                         child: getShapeIcon(shape),
                       );
@@ -154,7 +156,7 @@ class _CropImageScreenState extends State<CropImageScreen> {
                 },
               ),
               IconButton(
-                key: const ValueKey('change_color_key'),
+                key: Keys.changeColorImageCropScreen,
                 icon: const Icon(
                   Icons.color_lens_sharp,
                 ),
@@ -165,7 +167,7 @@ class _CropImageScreenState extends State<CropImageScreen> {
                 },
               ),
               IconButton(
-                key: const ValueKey('submit_crop_key'),
+                key: Keys.submitCropImageCropScreen,
                 icon: const Icon(
                   Icons.crop,
                   color: Colors.green,

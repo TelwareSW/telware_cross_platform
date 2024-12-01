@@ -9,6 +9,8 @@ import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/user/view/widget/avatar_generator.dart';
 
+import '../../../../core/routes/routes.dart';
+
 class ChatTileWidget extends StatelessWidget {
   const ChatTileWidget({
     super.key,

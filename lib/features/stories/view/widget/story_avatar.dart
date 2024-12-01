@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
+import '../../../../core/constants/keys.dart';
 import '../../../../core/theme/palette.dart';
 import '../../models/story_model.dart';
 
@@ -14,7 +15,7 @@ class StoryAvatar extends StatelessWidget {
     required this.screenType,
     required this.onTap,
     this.showBorder = true,
-  }):super(key: ValueKey('${user.userId}_$screenType'));
+  }):super(key: ValueKey('${Keys.storyAvatarPrefix}${user.userId}_$screenType'));
 
   @override
   Widget build(BuildContext context) {
