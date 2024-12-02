@@ -137,7 +137,6 @@ class ChatsViewModel extends _$ChatsViewModel {
     }
   }
 
-
   void updateMessageFilePath(String chatID, String msgID, String filePath) {
     final chat = _chatsMap[chatID];
     // Find the msg with the specified ID
@@ -154,6 +153,7 @@ class ChatsViewModel extends _$ChatsViewModel {
       content = (content as AudioContent).copyWith(filePath: filePath);
       chat.messages[msgIndex].copyWith(content: content);
     }
+  }
 
   void muteChat(String chatID, int muteUntilSeconds) {
     final chat = _chatsMap[chatID];
@@ -166,6 +166,5 @@ class ChatsViewModel extends _$ChatsViewModel {
   void unmuteChat(String chatID) {
     final chat = _chatsMap[chatID];
     chat!.copyWith(isMuted: false, muteUntil: null);
-
   }
 }

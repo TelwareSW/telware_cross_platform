@@ -105,7 +105,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       _messageController.text = chatModel!.draft ?? "";
       final messages = chatModel?.messages ?? [];
       _updateChatMessages(messages);
-    // _scrollToBottom();
+      // _scrollToBottom();
       if (widget.forwardedMessages != null) {
         _sendForwardedMessages();
       }
@@ -233,8 +233,9 @@ class _ChatScreen extends ConsumerState<ChatScreen>
         debugPrint("Try to send a media without a file path");
         return;
       } else {
-        mediaUrl =
-            await ref.read(chattingControllerProvider).uploadMedia(filePath);
+        mediaUrl = await ref
+            .read(chattingControllerProvider)
+            .uploadMedia(filePath, contentType);
         if (mediaUrl == null) {
           showToastMessage(
               "Failed to upload the media check your connection or try again later");
@@ -589,62 +590,64 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     return Scaffold(
         appBar: selectedMessages.isEmpty
             ? AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              if (isShowAsList) {
-                setState(() {
-                  isShowAsList = false;
-                });
-              } else if (isSearching) {
-                setState(() {
-                  isSearching = false;
-                  _messageMatches.clear();
-                });
-              } else {
-                Navigator.pop(context);
-              }
-            },
-          ),
-          title: !isSearching
-              ? ChatHeaderWidget(
-                  title: title,
-                  subtitle: subtitle,
-                  photo: photo,
-                  imageBytes: imageBytes,
-                )
-              : TextField(
-                  key: ChatKeys.chatSearchInput,
-                  autofocus: true,
-                  decoration: const InputDecoration(
-                    hintText: 'Search',
-                    hintStyle: TextStyle(
-                        color: Palette.accentText, fontWeight: FontWeight.w400),
-                    border: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                  ),
-                  onSubmitted: _searchForText,
-                  onChanged: (value) => {
-                    if (isShowAsList)
-                      {
-                        setState(() {
-                          isShowAsList = false;
-                        })
-                      }
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () {
+                    if (isShowAsList) {
+                      setState(() {
+                        isShowAsList = false;
+                      });
+                    } else if (isSearching) {
+                      setState(() {
+                        isSearching = false;
+                        _messageMatches.clear();
+                      });
+                    } else {
+                      Navigator.pop(context);
+                    }
                   },
                 ),
-          actions: [
-            if (!isSearching)
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert),
-                onSelected: _handlePopupMenuSelection,
-                color: Palette.secondary,
-                padding: EdgeInsets.zero,
-                itemBuilder: popupMenu,
-              ),
-          ],
-        ): AppBar(
+                title: !isSearching
+                    ? ChatHeaderWidget(
+                        title: title,
+                        subtitle: subtitle,
+                        photo: photo,
+                        imageBytes: imageBytes,
+                      )
+                    : TextField(
+                        key: ChatKeys.chatSearchInput,
+                        autofocus: true,
+                        decoration: const InputDecoration(
+                          hintText: 'Search',
+                          hintStyle: TextStyle(
+                              color: Palette.accentText,
+                              fontWeight: FontWeight.w400),
+                          border: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                        ),
+                        onSubmitted: _searchForText,
+                        onChanged: (value) => {
+                          if (isShowAsList)
+                            {
+                              setState(() {
+                                isShowAsList = false;
+                              })
+                            }
+                        },
+                      ),
+                actions: [
+                  if (!isSearching)
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert),
+                      onSelected: _handlePopupMenuSelection,
+                      color: Palette.secondary,
+                      padding: EdgeInsets.zero,
+                      itemBuilder: popupMenu,
+                    ),
+                ],
+              )
+            : AppBar(
                 backgroundColor: Palette.secondary,
                 leading: GestureDetector(
                   onTap: () {
@@ -770,7 +773,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                               ),
                             )
                           : SingleChildScrollView(
-                            reverse: true,
+                              reverse: true,
                               controller:
                                   _scrollController, // Use the ScrollController
                               child: Padding(
@@ -819,20 +822,19 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                           if (selectedMessages.contains(item))
                                             const SizedBox(width: 10),
                                           MessageTileWidget(
-                                        key: ValueKey(
-                                            '${MessageKeys.messagePrefix}${messagesIndex++}'),
-                                        messageModel: item,
-                                        isSentByMe: item.senderId ==
-                                            ref.read(userProvider)!.id,
-                                        showInfo: type == ChatType.group,
-                                        highlights: _messageMatches[index] ??
-                                            const [MapEntry(0, 0)],
-
-                                        onDownloadTap: (String? filePath) {
-                                          onMediaDownloaded(
-                                              filePath, item.id, chatID);
-                                        },
-
+                                            key: ValueKey(
+                                                '${MessageKeys.messagePrefix}${messagesIndex++}'),
+                                            messageModel: item,
+                                            isSentByMe: item.senderId ==
+                                                ref.read(userProvider)!.id,
+                                            showInfo: type == ChatType.group,
+                                            highlights:
+                                                _messageMatches[index] ??
+                                                    const [MapEntry(0, 0)],
+                                            onDownloadTap: (String? filePath) {
+                                              onMediaDownloaded(
+                                                  filePath, item.id, chatID);
+                                            },
                                             onReply: (message) {
                                               setState(() {
                                                 replyMessage = message;
@@ -863,7 +865,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                             },
                                           ),
                                         ],
-
                                       );
                                     } else {
                                       return const SizedBox.shrink();
@@ -1038,8 +1039,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
             ),
             pinnedMessages.isNotEmpty
                 ? Positioned(
-                    top:
-                        0, // Adjust this to position the widget from the top of the screen
+                    top: 0,
+                    // Adjust this to position the widget from the top of the screen
                     left: 0,
                     right: 0,
                     child: Container(
@@ -1490,4 +1491,3 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     return lottieAnimations[randomIndex];
   }
 }
-
