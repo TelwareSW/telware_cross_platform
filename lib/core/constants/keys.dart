@@ -77,6 +77,9 @@ class ChangeEmailKeys {
 }
 
 class ChatKeys {
+  static String chatTilePrefixSubvalue = DateTime.now().millisecondsSinceEpoch.toString();
+  static void resetChatTilePrefixSubvalue() => chatTilePrefixSubvalue = DateTime.now().millisecondsSinceEpoch.toString();
+  
   static const ValueKey<String> chatSearchButton = ValueKey('chat-search-button');
   static const ValueKey<String> chatMuteButton = ValueKey('chat-mute-button');
   static const ValueKey<String> chatSearchInput = ValueKey('chat-search-input');

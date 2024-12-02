@@ -46,12 +46,14 @@ void main() {
           home: Scaffold(
             body: MessageTileWidget(
               key: ValueKey("${ChatKeys.chatTilePrefix.value}$index"),
+              chatId: '',
               messageModel: message,
               isSentByMe: false,
-              onReply: (MessageModel) {},
-              onLongPress: (MessageModel) {},
+              onReply: (messageModel) {},
+              onLongPress: (messageModel) {},
               onPress: () {},
-              onPin: (MessageModel) {},
+              onPin: (messageModel) {},
+              onDelete: (msgId,_, messageType) {},
             ),
           ),
         ),
@@ -91,12 +93,14 @@ void main() {
           home: Scaffold(
             body: MessageTileWidget(
               key: ValueKey("${ChatKeys.chatTilePrefix.value}$index"),
+              chatId: '',
               messageModel: message,
               isSentByMe: false,
               onReply: (MessageModel) {},
               onLongPress: (MessageModel) {},
               onPress: () {},
               onPin: (MessageModel) {},
+              onDelete: (msgId,_, messageType) {},
             ),
           ),
         ),
@@ -133,21 +137,25 @@ void main() {
             children: [
               MessageTileWidget(
                 key: ValueKey("${ChatKeys.chatTilePrefix.value}0"),
+                chatId: '',
                 messageModel: message,
                 isSentByMe: true,
                 onReply: (MessageModel) {},
                 onLongPress: (MessageModel) {},
                 onPress: () {},
                 onPin: (MessageModel) {},
+              onDelete: (msgId,_, messageType) {},
               ),
               MessageTileWidget(
                 key: ValueKey("${ChatKeys.chatTilePrefix.value}1"),
+                chatId: '',
                 messageModel: message,
                 isSentByMe: false,
                 onReply: (MessageModel) {},
                 onLongPress: (MessageModel) {},
                 onPress: () {},
                 onPin: (MessageModel) {},
+              onDelete: (msgId,_, messageType) {},
               ),
             ],
           )),
@@ -184,6 +192,7 @@ void main() {
             children: [
               MessageTileWidget(
                 key: ValueKey("${ChatKeys.chatTilePrefix.value}0"),
+                chatId: '',
                 messageModel: message,
                 isSentByMe: false,
                 showInfo: true,
@@ -191,9 +200,11 @@ void main() {
                 onLongPress: (MessageModel) {},
                 onPress: () {},
                 onPin: (MessageModel) {},
+              onDelete: (msgId,_, messageType) {},
               ),
               MessageTileWidget(
                 key: ValueKey("${ChatKeys.chatTilePrefix.value}1"),
+                chatId: '',
                 messageModel: message,
                 isSentByMe: false,
                 showInfo: false,
@@ -201,9 +212,11 @@ void main() {
                 onLongPress: (MessageModel) {},
                 onPress: () {},
                 onPin: (MessageModel) {},
+              onDelete: (msgId,_, messageType) {},
               ),
               MessageTileWidget(
                 key: ValueKey("${ChatKeys.chatTilePrefix.value}2"),
+                chatId: '',
                 messageModel: message,
                 isSentByMe: true,
                 showInfo: true,
@@ -211,6 +224,7 @@ void main() {
                 onLongPress: (MessageModel) {},
                 onPress: () {},
                 onPin: (MessageModel) {},
+                onDelete: (msgId, _, messageType) {}
               ),
             ],
           )),

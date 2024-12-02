@@ -1,13 +1,13 @@
 // Base class for all message contents
 import 'dart:typed_data';
 
-import 'package:camera/camera.dart';
 import 'package:hive/hive.dart';
 
 part 'message_content.g.dart'; // Part file for generated code
 
 abstract class MessageContent {
   Map<String, dynamic> toJson(); // For serialization
+  String getContent();
 }
 
 // For Text Messages
@@ -20,6 +20,11 @@ class TextContent extends MessageContent {
 
   @override
   Map<String, dynamic> toJson() => {'text': text};
+
+  @override
+  String getContent() {
+    return text;    
+  }
 }
 
 // For Audio Messages
@@ -44,6 +49,11 @@ class AudioContent extends MessageContent {
         'filePath': filePath,
         'waveformData': waveformData,
       };
+
+  @override
+  String getContent() {
+    return '';
+  }
 }
 
 // For Document Messages (PDFs, Docs)
@@ -64,6 +74,11 @@ class DocumentContent extends MessageContent {
         'fileUrl': fileUrl,
         'filePath': filePath,
       };
+
+  @override
+  String getContent() {
+    return '';
+  }
 }
 
 // For Image Messages
@@ -81,6 +96,11 @@ class ImageContent extends MessageContent {
   @override
   Map<String, dynamic> toJson() =>
       {'imageUrl': imageUrl, 'imageBytes': imageBytes, "filePath": filePath};
+
+  @override
+  String getContent() {
+    return '';
+  }
 }
 
 // For Video Messages
@@ -101,6 +121,11 @@ class VideoContent extends MessageContent {
         'duration': duration,
         'filePath': filePath,
       };
+
+  @override
+  String getContent() {
+    return '';
+  }
 }
 
 // for emoji, gifs and stickers
@@ -121,6 +146,11 @@ class EmojiContent extends MessageContent {
         'mediaType': emojiName,
         'filePath': filePath,
       };
+
+  @override
+  String getContent() {
+    return '';
+  }
 }
 
 @HiveType(typeId: 21)
@@ -140,6 +170,11 @@ class GIFContent extends MessageContent {
         'mediaType': gifName,
         'filePath': filePath,
       };
+
+  @override
+  String getContent() {
+    return '';
+  }
 }
 
 @HiveType(typeId: 22)
@@ -159,4 +194,9 @@ class StickerContent extends MessageContent {
         'mediaType': stickerName,
         'filePath': filePath,
       };
+
+  @override
+  String getContent() {
+    return '';
+  }
 }

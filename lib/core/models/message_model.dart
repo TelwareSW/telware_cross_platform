@@ -36,6 +36,8 @@ class MessageModel {
   final Map<String, MessageState> userStates; // userID -> state of the message
   @HiveField(10)
   final bool isPinned;
+  @HiveField(11)
+  final String localId;
 
 //<editor-fold desc="Data Methods">
   MessageModel({
@@ -50,6 +52,7 @@ class MessageModel {
     this.photoBytes,
     required this.userStates,
     this.isPinned=false,
+    this.localId = ''
   });
 
   Future<void> _setPhotoBytes() async {
@@ -92,6 +95,7 @@ class MessageModel {
         other.id == id &&
         other.photo == photo &&
         other.photoBytes == photoBytes &&
+        other.localId == localId &&
         other.userStates == userStates;
   }
 
@@ -106,6 +110,7 @@ class MessageModel {
         id.hashCode ^
         photo.hashCode ^
         photoBytes.hashCode ^
+        localId.hashCode ^
         userStates.hashCode;
   }
 
@@ -122,6 +127,7 @@ class MessageModel {
         'messageType: ${messageType.name},\n'
         'messageContentType: ${messageContentType.name},\n'
         'isPhotoBytesSet: ${photoBytes != null}\n'
+        'localId: $localId\n'
         ')');
   }
 
@@ -136,6 +142,7 @@ class MessageModel {
     Map<String, MessageState>? userStates,
     MessageType? messageType,
     MessageContentType? messageContentType,
+    String? localId
   }) {
     return MessageModel(
       senderId: senderId ?? this.senderId,
@@ -148,6 +155,7 @@ class MessageModel {
       userStates: userStates ?? Map.from(this.userStates),
       messageType: messageType ?? this.messageType,
       messageContentType: messageContentType ?? this.messageContentType,
+      localId: localId ?? this.localId
     );
   }
 
@@ -164,7 +172,8 @@ class MessageModel {
               (key, value) => MapEntry(key, value.toString().split('.').last))
           : null,
       'messageType': messageType.name,
-      'messageContentType': messageContentType.name
+      'messageContentType': messageContentType.name,
+      'localId': localId
     };
 
     return map;

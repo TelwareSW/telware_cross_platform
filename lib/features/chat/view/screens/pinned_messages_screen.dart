@@ -340,6 +340,7 @@ class _PinnedMessagesScreen extends ConsumerState<PinnedMessagesScreen>
                                 if (selectedMessages.contains(item))
                                   const SizedBox(width: 10),
                                 MessageTileWidget(
+                                  chatId: chatModel.id!,
                                   key: ValueKey(
                                       '${MessageKeys
                                           .messagePrefix}${messagesIndex++}'),
@@ -377,6 +378,9 @@ class _PinnedMessagesScreen extends ConsumerState<PinnedMessagesScreen>
                                           : selectedMessages
                                           .add(message);
                                     });
+                                  },
+                                  onDelete: (msgId, _, message) {
+                                    
                                   },
                                 ),
                               ],

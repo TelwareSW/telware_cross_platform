@@ -217,9 +217,11 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
                                             TextSpan(
                                               text: hasDraft
                                                   ? "Draft: "
-                                                  : isGroupChat
-                                                      ? "$senderName: "
-                                                      : "",
+                                                  : !isGroupChat
+                                                      ? ""
+                                                      : sentByUser
+                                                          ? "You: "
+                                                          : "$senderName: ",
                                               style: TextStyle(
                                                 color: hasDraft
                                                     ? Palette.error

@@ -19,13 +19,15 @@ class ChatsList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    debugPrint('Building chats_list...');
     final chatsList = ref.watch(chatsViewModelProvider);
+    debugPrint('Building chats_list...');
+    ChatKeys.resetChatTilePrefixSubvalue();
+
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (BuildContext context, int index) {
           return _delegate(
-            ValueKey(ChatKeys.chatTilePrefix.value + index.toString()),
+            ValueKey(ChatKeys.chatTilePrefix.value + ChatKeys.chatTilePrefixSubvalue + index.toString()),
             chatsList[index],
             ref.read(userProvider)!.id!,
           );
@@ -49,12 +51,12 @@ class ChatsList extends ConsumerWidget {
       )),
       userStates: {},
     );
-    final message = chat.messages.isNotEmpty ? chat.messages[0] : fakeMessage;
+    final message = chat.messages.isNotEmpty ? chat.messages.last : fakeMessage;
     return ChatTileWidget(
       key: key,
       chatModel: chat,
       displayMessage: message,
-      sentByUser: message.senderId != userID,
+      sentByUser: message.senderId == userID,
       senderID: message.senderId,
     );
   }
