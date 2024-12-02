@@ -1,4 +1,3 @@
-
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -9,7 +8,6 @@ import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
-
 
 import 'package:telware_cross_platform/features/chat/view/widget/chat_tile_widget.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
@@ -37,8 +35,7 @@ class ChatsList extends ConsumerWidget {
     );
   }
 
-
-  Widget _delegate(ValueKey key,ChatModel chat, String userID) {
+  Widget _delegate(ValueKey key, ChatModel chat, String userID) {
     final Random random = Random();
     DateTime currentDate = DateTime.now().subtract(const Duration(days: 7));
     final MessageModel fakeMessage = MessageModel(
@@ -53,12 +50,12 @@ class ChatsList extends ConsumerWidget {
       userStates: {},
     );
     final message = chat.messages.isNotEmpty ? chat.messages[0] : fakeMessage;
-
     return ChatTileWidget(
-         key: key,
+      key: key,
       chatModel: chat,
       displayMessage: message,
       sentByUser: message.senderId != userID,
+      senderID: message.senderId,
     );
   }
 }

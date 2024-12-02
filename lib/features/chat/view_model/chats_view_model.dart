@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
@@ -31,11 +32,13 @@ class ChatsViewModel extends _$ChatsViewModel {
     _otherUsers = otherUsers;
   }
 
-  Future<UserModel> getUser(String ID) async {
+  Future<UserModel?> getUser(String ID) async {
     var user = _otherUsers[ID];
-
     if (user == null) {
       user = await ref.read(chattingControllerProvider).getOtherUser(ID);
+      if (user == null) {
+        return null;
+      }
       _otherUsers[ID] = user;
       // todo: ask the controller to restore the other users map in the local storage
       ref.read(chattingControllerProvider).restoreOtherUsers(_otherUsers);
@@ -68,7 +71,6 @@ class ChatsViewModel extends _$ChatsViewModel {
       messageContentType: msgContentType,
       messageType: msgType,
       userStates: {},
-
     );
 
     chat!.messages.add(msg);
@@ -99,9 +101,7 @@ class ChatsViewModel extends _$ChatsViewModel {
     }
   }
 
-
   void editMessage(String msgID, String chatID, MessageContent content) {
-
     final chat = _chatsMap[chatID];
     // Find the msg with the specified ID
     final msgIndex = chat!.messages.indexWhere((msg) => msg.id == msgID);
