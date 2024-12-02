@@ -31,12 +31,6 @@ class SocketService {
       'auth': {'sessionId': sessionId}
     });
 
-    // _socket = io('https://api.testing.telware.tech/', OptionBuilder()
-    // // .setTransports(['websocket']) // For Flutter or Dart VM
-    // .disableAutoConnect() // Optional: Disable auto-connection
-    // .setExtraHeaders({'query': {'userId': userId}, 'auth': {'sessionId': sessionId}}) // Optional: Extra headers
-    // .build());
-
     _socket.connect();
 
     _socket.onConnect((_) {
