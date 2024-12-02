@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mime/mime.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:telware_cross_platform/core/constants/constant.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
-import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
-import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
-import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
-import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
@@ -21,11 +20,15 @@ class BottomInputBarWidget extends ConsumerStatefulWidget {
   final PlayerController playerController;
   final String? chatID;
   final void Function(BuildContext) startRecording;
-  final void Function() stopRecording;
+  final Future<String?> Function() stopRecording;
   final void Function() deleteRecording;
   final void Function() cancelRecording;
   final void Function() lockRecording;
-  final void Function(WidgetRef) sendMessage;
+  final void Function(
+      {required String contentType,
+      String? filePath,
+      required WidgetRef ref,
+      bool? getRecordingPath}) sendMessage;
   final void Function(double) lockRecordingDrag;
   final bool isRecordingLocked;
   final bool isRecording;
@@ -105,20 +108,50 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
     });
   }
 
-  List<XFile> mediaFiles = [];
+  List<String> mediaFiles = [];
 
   Future<void> _loadMediaFiles() async {
     mediaFiles.clear(); // Clear previous files
-    const int maxFiles = 10;
-    const int maxSizeInBytes = 5 * 1024 * 1024; // 5MB
-    final List<XFile> media = await ImagePicker().pickMultipleMedia();
+    const int maxFiles = MAX_SELECTED_FILES; // Maximum file count
+    const int maxSizeInBytes = MAX_FILE_SIZE;
+
+    final List<XFile> media =
+        await ImagePicker().pickMultipleMedia(limit: maxFiles);
+    final Directory appDir =
+        await getApplicationDocumentsDirectory(); // Local storage directory
+
     for (var mediaFile in media) {
-      final file = File(mediaFile.path);
+      final File file = File(mediaFile.path);
+
       if (await file.length() <= maxSizeInBytes &&
           mediaFiles.length < maxFiles) {
-        mediaFiles.add(mediaFile);
+        // Get the filename and create a new file path in local storage
+        final String fileName = mediaFile.name; // Extract file name
+        final String localPath = '${appDir.path}/$fileName'; // Destination path
+        String? mimeType = lookupMimeType(file.path);
+        debugPrint('Local path: $localPath');
+        // Save the file locally
+        await file.copy(localPath);
+        // Determine the content type based on the MIME type
+        String contentType = 'unknown';
+        if (mimeType != null) {
+          if (mimeType.startsWith('image/')) {
+            contentType = 'image';
+          } else if (mimeType.startsWith('video/')) {
+            contentType = 'video';
+          } else if (mimeType.startsWith('audio/')) {
+            contentType = 'audio';
+          }
+        }
+
+        widget.sendMessage(
+            ref: ref, contentType: contentType, filePath: localPath);
+
+        // Add to the mediaFiles list with the updated local path
+        mediaFiles.add(localPath);
       }
     }
+
     setState(() {});
   }
 
@@ -252,9 +285,16 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
             if (!widget.isRecordingCompleted) ...[
               GestureDetector(
                 onLongPress: () => widget.startRecording(context),
-                onLongPressUp: () {
+                onLongPressUp: () async {
                   if (widget.isRecordingLocked) {
                     return;
+                  }
+                  String? recordingPath = await widget.stopRecording();
+                  if (recordingPath != null) {
+                    widget.sendMessage(
+                        ref: ref,
+                        contentType: 'audio',
+                        filePath: recordingPath);
                   }
                   widget.cancelRecording();
                 },
@@ -291,10 +331,13 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
               icon: const Icon(Icons.send),
               color: Palette.accent,
               onPressed: () {
-                widget.sendMessage(ref);
                 if (widget.isRecordingCompleted) {
                   //TODO: Send the recorded audio
-                  widget.deleteRecording();
+                  widget.sendMessage(
+                      ref: ref, contentType: 'audio', getRecordingPath: true);
+                  widget.cancelRecording();
+                } else {
+                  widget.sendMessage(ref: ref, contentType: 'text');
                 }
               },
             ),
@@ -303,5 +346,4 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
       ),
     );
   }
-
 }

@@ -75,7 +75,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   bool isTextEmpty = true;
   double _lockRecordingDragPosition = 0;
   final lockPath = "assets/json/passcode_lock.json";
-  String? path;
+  String? recordingPath;
   late Directory appDirectory;
 
   //----------------------------------------------------------------------------
@@ -185,11 +185,43 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   }
 
   //TODO: Implement the sendMsg method with another types of messages
-  void _sendMessage(WidgetRef ref) {
+  void _sendMessage(
+      {required WidgetRef ref,
+      required String contentType,
+      String? filePath,
+      bool? getRecordingPath}) {
+    MessageContentType messageContentType =
+        MessageContentType.getType(contentType);
+    MessageContent content;
+    switch (contentType) {
+      case 'text':
+        content = TextContent(_messageController.text);
+        break;
+      case 'image':
+        content = ImageContent(filePath: filePath);
+        break;
+      case 'video':
+        content = VideoContent(filePath: filePath);
+        break;
+      case 'audio':
+        if (getRecordingPath == true && filePath == null) {
+          if (recordingPath == null) {
+            showToastMessage("Recording has no path");
+            return;
+          }
+          content = AudioContent(filePath: recordingPath!);
+        } else {
+          content = AudioContent(filePath: filePath);
+        }
+        break;
+      default:
+        content = TextContent(_messageController.text);
+    }
+
     MessageModel newMessage = MessageModel(
       senderId: ref.read(userProvider)!.id!,
-      messageContentType: MessageContentType.text,
-      content: TextContent(_messageController.text),
+      messageContentType: messageContentType,
+      content: content,
       timestamp: DateTime.now(),
       messageType: MessageType.normal,
       userStates: {},
@@ -216,7 +248,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   //--------------------------------Recording--------------------------------
   void _getDir() async {
     appDirectory = await getApplicationDocumentsDirectory();
-    path = "${appDirectory.path}/recording.m4a";
+    recordingPath = "${appDirectory.path}/recording.m4a";
     isLoading = false;
     setState(() {});
   }
@@ -234,7 +266,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
   void _pauseRecording() async {
     if (isRecordingPaused) {
-      _recorderController.record(path: path);
+      _recorderController.record(path: recordingPath);
     } else {
       _recorderController.pause();
     }
@@ -250,13 +282,14 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   }
 
   void _deleteRecording() {
-    if (path == null) {
+    if (recordingPath == null) {
       debugPrint("No recording to delete");
       return;
     }
-    if (File(path!).existsSync()) {
-      File(path!).deleteSync();
-      path = null;
+    if (File(recordingPath!).existsSync()) {
+      File(recordingPath!).deleteSync();
+      debugPrint("Recording deleted at $recordingPath");
+      recordingPath = null;
       isRecording = false;
       isRecordingLocked = false;
       isRecordingPaused = false;
@@ -287,7 +320,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
   void _record() async {
     try {
-      await _recorderController.record(path: path); // Path is optional
+      await _recorderController.record(path: recordingPath); // Path is optional
       debugPrint("Recording started");
     } catch (e) {
       debugPrint(e.toString());
@@ -300,28 +333,30 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     }
   }
 
-  void _stopRecording() async {
+  Future<String?> _stopRecording() async {
     try {
-      path = await _recorderController.stop(false);
+      recordingPath = await _recorderController.stop(false);
       _recorderController.reset();
 
-      if (path != null) {
+      if (recordingPath != null) {
         isRecordingCompleted = true;
         isRecording = false;
         isRecordingPaused = false;
         setState(() {});
         await _playerController.preparePlayer(
-          path: path!,
+          path: recordingPath!,
           shouldExtractWaveform: true,
           noOfSamples: 500,
           volume: 1.0,
         );
-        debugPrint(path);
-        debugPrint("Recorded file size: ${File(path!).lengthSync()}");
+        debugPrint(recordingPath);
+        debugPrint("Recorded file size: ${File(recordingPath!).lengthSync()}");
+        return recordingPath!;
       }
     } catch (e) {
       debugPrint(e.toString());
     }
+    return recordingPath;
   }
 
   void _startRecording(context) async {
@@ -921,8 +956,15 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                             isRecordingLocked ? Icons.send : Icons.mic,
                           ),
                           color: Colors.white,
-                          onPressed: () {
-                            _cancelRecording();
+                          onPressed: () async {
+                            if (isRecording) {
+                              String? filePath = await _stopRecording();
+                              _sendMessage(
+                                  ref: ref,
+                                  contentType: 'audio',
+                                  filePath: filePath);
+                              _cancelRecording();
+                            }
                           },
                         ),
                       ),

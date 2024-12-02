@@ -12,13 +12,13 @@ import 'package:telware_cross_platform/core/utils.dart';
 
 class AudioMessageWidget extends StatefulWidget {
   final String filePath;
-  final int duration;
+  final int? duration;
   final double borderRadius;
 
   const AudioMessageWidget(
       {super.key,
       this.borderRadius = 30,
-      required this.duration,
+      this.duration,
       required this.filePath});
 
   @override
@@ -32,6 +32,7 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
   late AnimationController controller;
   final progressStep = 0.15;
   int durationCounter = -1;
+  int currentDuration = 0;
   Timer? _timer;
   List<double> waveformData = [];
 
@@ -63,7 +64,7 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
   void startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (isPlaying) {
-        if (durationCounter < widget.duration) {
+        if (durationCounter < currentDuration) {
           durationCounter++;
           setState(() {});
         } else {
@@ -74,16 +75,19 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
   }
 
   Future<void> loadAudioFile() async {
-    ByteData data = await rootBundle.load(widget.filePath);
-    Directory tempDir = await getTemporaryDirectory();
-    File tempFile = File('${tempDir.path}/test8.wav');
-    await tempFile.writeAsBytes(data.buffer.asUint8List(), flush: true);
     await playerController.preparePlayer(
-      path: tempFile.path,
+      path: widget.filePath,
       shouldExtractWaveform: false,
       noOfSamples: 500,
       volume: 1.0,
     );
+    currentDuration = widget.duration ??
+        await playerController.getDuration(DurationType.max) ~/ 1000;
+
+    if (currentDuration < 0) {
+      currentDuration = 0;
+    }
+    setState(() {});
   }
 
   @override
@@ -195,7 +199,7 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
                     Text(
                       formatTime(durationCounter != -1
                           ? durationCounter
-                          : widget.duration),
+                          : currentDuration),
                       style: const TextStyle(
                         color: Palette.primaryText,
                         fontSize: 15,

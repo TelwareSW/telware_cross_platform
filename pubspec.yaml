@@ -80,6 +80,8 @@ dependencies:
   flutter_svg: ^2.0.16
   flutter_sliding_up_panel: ^2.1.1
   flutter_cupertino_datetime_picker: ^3.0.0
+  mime: ^1.0.0
+  just_audio: ^0.9.42
 
 
 dev_dependencies:
