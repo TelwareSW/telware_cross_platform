@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/download_widget.dart';
 
 class ImageMessageWidget extends StatelessWidget {
@@ -19,7 +20,7 @@ class ImageMessageWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(15),
-      child: filePath == null
+      child: filePath == null || !doesFileExistSync(filePath!)
           ? SizedBox(
               width: 200,
               height: 200,

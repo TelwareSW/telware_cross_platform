@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
@@ -27,7 +28,13 @@ class DownloadWidgetState extends State<DownloadWidget> {
 
   Future<void> _handelTap() async {
     if (widget.url == null) {
+      debugPrint('DownloadWidgetState._handelTap: URL is null');
       showToastMessage('File has been deleted ask the sender to resend it');
+      return;
+    }
+    if (USE_MOCK_DATA) {
+      debugPrint('DownloadWidgetState._handelTap: ${widget.url}');
+      widget.onTap(widget.url);
       return;
     }
     String? filePath = await downloadAndSaveFile(widget.url);

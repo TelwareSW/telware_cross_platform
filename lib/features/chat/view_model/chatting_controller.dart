@@ -259,13 +259,13 @@ class ChattingController {
     if (USE_MOCK_DATA) {
       switch (contentType) {
         case 'image':
-          return 'https://picsum.photos/200/300';
+          return 'assets/images/moamen.jpeg';
         case 'video':
-          return 'https://www.sample-videos.com/audio/mp3/crowd-cheering.mp4';
+          return 'assets/video/demo.mp4';
         case 'audio':
-          return 'https://www.sample-videos.com/audio/mp3/crowd-cheering.mp3';
+          return 'assets/audio/test8.mp3';
         case 'file':
-          return 'https://www.sample-videos.com/doc/Sample-doc-file-100kb.doc';
+          return 'assets/docs/Async Js Requirment.pdf';
         default:
           return null;
       }

@@ -6,6 +6,8 @@ import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/download_widget.dart';
 
+import '../../utils/chat_utils.dart';
+
 class DocumentMessageWidget extends StatefulWidget {
   final String? filePath;
   final void Function(String?) onDownloadTap;
@@ -69,7 +71,7 @@ class DocumentMessageWidgetState extends State<DocumentMessageWidget> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          widget.filePath == null
+          widget.filePath == null || !doesFileExistSync(widget.filePath!)
               ? DownloadWidget(
                   onTap: widget.onDownloadTap,
                   url: widget.url,

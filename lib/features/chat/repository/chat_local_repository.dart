@@ -3,11 +3,14 @@ import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
+import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 
-import 'package:telware_cross_platform/core/models/user_model.dart';
+import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
+import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 
 import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
+import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
 
 class ChatLocalRepository {
   final Box<List> _chatsBox;
@@ -31,7 +34,7 @@ class ChatLocalRepository {
   Future<bool> setChats(List<ChatModel> list) async {
     debugPrint('!!! set chats locally called');
     try {
-      await _chatsBox.put(_chatsBoxKey, list);
+      await _chatsBox.put(_chatsBoxKey, updateMessagesFilePath(list));
       return true;
     } catch (e) {
       debugPrint('!!! exception on saving the chats list');
@@ -45,6 +48,8 @@ class ChatLocalRepository {
     final list = _chatsBox.get(_chatsBoxKey, defaultValue: []);
     final chats =
         list?.map((element) => element as ChatModel).toList() ?? <ChatModel>[];
+    //set the chats with the updated messages
+    setChats(updateMessagesFilePath(chats));
     return chats;
   }
 

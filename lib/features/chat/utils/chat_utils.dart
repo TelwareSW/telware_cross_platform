@@ -1,8 +1,15 @@
 import 'dart:io';
+import 'package:faker/faker.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:telware_cross_platform/core/models/chat_model.dart';
+import 'package:telware_cross_platform/core/models/message_model.dart';
+import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
+import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import '../../../core/constants/server_constants.dart';
 import 'package:flutter/foundation.dart';
+import 'package:dio/dio.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 Future<String?> downloadAndSaveFile(String? url) async {
   if (url == null || url.isEmpty) {
@@ -40,4 +47,113 @@ Future<String?> downloadAndSaveFile(String? url) async {
     debugPrint('Error downloading file: $e');
     return null;
   }
+}
+
+Future<void> downloadFile(String url, String fileName) async {
+  // Request storage permission
+  var status = await Permission.storage.request();
+  if (status.isGranted) {
+    try {
+      // Get device's download directory
+      Directory? directory = await getExternalStorageDirectory();
+      String filePath = '${directory!.path}/$fileName';
+
+      // Download the file using Dio
+      Dio dio = Dio();
+      await dio.download(
+        url,
+        filePath,
+        onReceiveProgress: (received, total) {
+          if (total != -1) {
+            debugPrint(
+                '${(received / total * 100).toStringAsFixed(0)}%'); // Progress percentage
+          }
+        },
+      );
+
+      debugPrint('File downloaded to: $filePath');
+    } catch (e) {
+      debugPrint('Download error: $e');
+    }
+  } else {
+    debugPrint('Permission denied');
+  }
+}
+
+bool doesFileExistSync(String filePath) {
+  final file = File(filePath);
+  return file.existsSync();
+}
+
+/////////////////////////////////////
+// update file path
+//TODO MUST BE UPDATED WHEN ADDING OTHER CHAT TYPES
+List<ChatModel> updateMessagesFilePath(List<ChatModel> chats) {
+  // loop over chat messages and check if they are a media and if they are check if the file exists
+  // if not set the file path to null
+  bool isUpdated = false;
+  for (var i = 0; i < chats.length; i++) {
+    List<MessageModel> updatedMessages = [];
+    for (var j = 0; j < chats[i].messages.length; j++) {
+      var message = chats[i].messages[j];
+
+      if (message.messageContentType != MessageContentType.text) {
+        switch (message.messageContentType) {
+          case MessageContentType.image:
+            final imageContent = message.content as ImageContent;
+            if (imageContent.filePath != null &&
+                !doesFileExistSync(imageContent.filePath!)) {
+              debugPrint('!!! image content: ${imageContent.filePath}');
+              debugPrint("!!! file does not exist");
+              isUpdated = true;
+              message = message.copyWith(
+                  content: imageContent.copyWith(filePath: null));
+            }
+            break;
+
+          case MessageContentType.video:
+            final videoContent = message.content as VideoContent;
+            if (videoContent.filePath != null &&
+                !doesFileExistSync(videoContent.filePath!)) {
+              isUpdated = true;
+              message = message.copyWith(
+                  content: videoContent.copyWith(filePath: null));
+            }
+            break;
+
+          case MessageContentType.audio:
+            final audioContent = message.content as AudioContent;
+            if (audioContent.filePath != null &&
+                !doesFileExistSync(audioContent.filePath!)) {
+              isUpdated = true;
+              message = message.copyWith(
+                  content: audioContent.copyWith(filePath: null));
+            }
+            break;
+
+          case MessageContentType.file:
+            final mediaContent = message.content as DocumentContent;
+            if (mediaContent.filePath != null &&
+                !doesFileExistSync(mediaContent.filePath!)) {
+              isUpdated = true;
+              message = message.copyWith(
+                  content: mediaContent.copyWith(filePath: null));
+            }
+            break;
+
+          default:
+            break;
+        }
+      }
+      updatedMessages.add(message);
+    }
+    // Update the chat with the modified messages
+    chats[i] = chats[i].copyWith(messages: updatedMessages);
+  }
+
+  return chats;
+}
+
+String getUniqueMessageId() {
+  return faker.guid.guid();
 }

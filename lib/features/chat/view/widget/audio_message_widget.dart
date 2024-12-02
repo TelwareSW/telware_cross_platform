@@ -11,6 +11,8 @@ import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/download_widget.dart';
 
+import '../../utils/chat_utils.dart';
+
 class AudioMessageWidget extends StatefulWidget {
   final String? filePath;
   final String? url;
@@ -147,7 +149,7 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
             borderRadius:
                 BorderRadius.circular(widget.borderRadius), // Set border radius
           ),
-          child: widget.filePath == null
+          child: widget.filePath == null || !doesFileExistSync(widget.filePath!)
               ? DownloadWidget(onTap: widget.onDownloadTap, url: widget.url)
               : Align(
                   alignment: Alignment.center,

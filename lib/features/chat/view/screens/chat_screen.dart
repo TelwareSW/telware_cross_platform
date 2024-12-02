@@ -1,7 +1,6 @@
 import 'dart:math';
 import 'dart:io';
 import 'package:audio_waveforms/audio_waveforms.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -13,6 +12,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter_cupertino_datetime_picker/flutter_cupertino_datetime_picker.dart';
 import 'package:telware_cross_platform/core/constants/keys.dart';
+import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
@@ -24,6 +24,7 @@ import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/providers/chat_provider.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/popup_menu_item_widget.dart';
+import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/pinned_messages_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/bottom_input_bar_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/chat_header_widget.dart';
@@ -298,6 +299,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       List<MessageModel> messages =
           ref.watch(chatProvider(chatModel!.id!))?.messages ?? [];
       _updateChatMessages(messages);
+      debugPrint(" ${messages.toString()}");
       // _scrollToBottom();
     });
   }
@@ -488,12 +490,17 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   //-------------------------------Media----------------------------------------
 
   void onMediaDownloaded(String? filePath, String? messageId, String? chatId) {
+    if (!USE_MOCK_DATA) return;
     if (filePath == null) {
       showToastMessage('File has been deleted ask the sender to resend it');
       return;
     }
-    if (messageId == null || chatId == null) {
-      showToastMessage('Message ID or Chat ID is missing');
+    if (messageId == null) {
+      showToastMessage('Message ID is missing');
+      return;
+    }
+    if (chatId == null) {
+      showToastMessage('Chat ID is missing');
       return;
     }
     debugPrint("Downloaded file path: $filePath");
@@ -655,31 +662,32 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                       selectedMessages = [];
                     });
                   },
-                  child: Icon(Icons.close),
+                  child: const Icon(Icons.close),
                 ),
                 title: Row(
                   children: [
                     // Number
                     Text(
                       selectedMessages.length.toString(),
-                      style: TextStyle(color: Colors.white, fontSize: 18),
+                      style: const TextStyle(color: Colors.white, fontSize: 18),
                     ),
-                    Spacer(),
+                    const Spacer(),
                     // Copy icon
                     IconButton(
-                      icon: Icon(Icons.copy, color: Colors.white),
+                      icon: const Icon(Icons.copy, color: Colors.white),
                       onPressed: () {},
                     ),
                     // Share icon
                     IconButton(
-                      icon: Icon(FontAwesomeIcons.share, color: Colors.white),
+                      icon: const Icon(FontAwesomeIcons.share,
+                          color: Colors.white),
                       onPressed: () {
                         context.push(CreateChatScreen.route);
                       },
                     ),
                     // Delete icon
                     IconButton(
-                      icon: Icon(Icons.delete, color: Colors.white),
+                      icon: const Icon(Icons.delete, color: Colors.white),
                       onPressed: () {
                         // TODO call delete function
                       },
@@ -728,7 +736,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                     horizontal: 24.0),
                                 padding: const EdgeInsets.all(22.0),
                                 decoration: BoxDecoration(
-                                  color: const Color.fromRGBO(4, 86, 57, 0.30),
+                                  color: Color.fromRGBO(4, 86, 57, 0.30),
                                   borderRadius: BorderRadius.circular(16.0),
                                   boxShadow: const [
                                     BoxShadow(
@@ -889,7 +897,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                   Container(
                     color: Palette.secondary,
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 5, vertical: 8),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -1046,8 +1055,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                     child: Container(
                       color: Palette
                           .secondary, // Example background color for the widget
-                      padding:
-                          EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 5),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -1110,7 +1119,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                       ),
                     ),
                   )
-                : SizedBox(),
+                : const SizedBox(),
             isRecording || isRecordingLocked
                 ? AnimatedPositioned(
                     bottom: 90,
