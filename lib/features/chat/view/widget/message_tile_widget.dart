@@ -1,6 +1,8 @@
 import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:telware_cross_platform/core/constants/keys.dart';
@@ -16,6 +18,9 @@ import 'package:video_player/video_player.dart';
 
 import 'package:telware_cross_platform/core/view/widget/highlight_text_widget.dart';
 
+import '../screens/create_chat_screen.dart';
+import 'floating_menu_overlay.dart';
+
 class MessageTileWidget extends StatelessWidget {
   final MessageModel messageModel;
   final bool isSentByMe;
@@ -23,15 +28,24 @@ class MessageTileWidget extends StatelessWidget {
   final Color nameColor;
   final Color imageColor;
   final List<MapEntry<int, int>> highlights;
+  final Function(MessageModel) onReply;
+  final Function(MessageModel) onLongPress;
+  final Function(MessageModel) onPin;
+  final Function()? onPress;
 
-  const MessageTileWidget(
-      {super.key,
-      required this.messageModel,
-      required this.isSentByMe,
-      this.showInfo = false,
-      this.nameColor = Palette.primary,
-      this.imageColor = Palette.primary,
-      this.highlights = const []});
+  const MessageTileWidget({
+    super.key,
+    required this.messageModel,
+    required this.isSentByMe,
+    this.showInfo = false,
+    this.nameColor = Palette.primary,
+    this.imageColor = Palette.primary,
+    this.highlights = const [],
+    required this.onReply,
+    required this.onLongPress,
+    required this.onPress,
+    required this.onPin,
+  });
 
   // Function to format timestamp to "hh:mm AM/PM"
   String formatTimestamp(DateTime timestamp) {
@@ -49,6 +63,46 @@ class MessageTileWidget extends StatelessWidget {
 
     return Align(
       alignment: messageAlignment,
+      child: GestureDetector(
+        onLongPress: () {
+          onLongPress(messageModel);
+        },
+        onTap: onPress == null
+            ? () {
+                late OverlayEntry overlayEntry;
+                overlayEntry = OverlayEntry(
+                  builder: (context) => FloatingMenuOverlay(
+                    onDismiss: () {
+                      overlayEntry.remove();
+                    },
+                    onReply: () {
+                      overlayEntry.remove();
+                      onReply(messageModel);
+                    },
+                    onCopy: () {
+                      overlayEntry.remove();
+                    },
+                    onForward: () {
+                      overlayEntry.remove();
+                      context.push(CreateChatScreen.route);
+                    },
+                    onPin: () {
+                      overlayEntry.remove();
+                      onPin(messageModel);
+                    },
+                    onEdit: () {
+                      overlayEntry.remove();
+                    },
+                    onDelete: () {
+                      overlayEntry.remove();
+                    }, pinned: messageModel.isPinned,
+                  ),
+                );
+                Overlay.of(context).insert(overlayEntry);
+              }
+            : () {
+                onLongPress(messageModel);
+              },
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 5),
         padding: EdgeInsets.all(
@@ -164,7 +218,7 @@ class MessageTileWidget extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ));
   }
 }
 

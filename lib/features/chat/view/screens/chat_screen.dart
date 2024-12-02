@@ -5,6 +5,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -22,6 +24,7 @@ import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/providers/chat_provider.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/popup_menu_item_widget.dart';
+import 'package:telware_cross_platform/features/chat/view/screens/pinned_messages_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/bottom_input_bar_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/chat_header_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/date_label_widget.dart';
@@ -30,12 +33,18 @@ import 'package:telware_cross_platform/features/chat/view_model/chatting_control
 import 'package:vibration/vibration.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
 
+import '../../../../core/routes/routes.dart';
+import '../widget/reply_widget.dart';
+import 'create_chat_screen.dart';
+
 class ChatScreen extends ConsumerStatefulWidget {
   static const String route = '/chat';
   final String chatId;
   final ChatModel? chatModel;
+  final List<MessageModel>? forwardedMessages;
 
-  const ChatScreen({super.key, this.chatId = "", this.chatModel});
+  const ChatScreen(
+      {super.key, this.chatId = "", this.chatModel, this.forwardedMessages});
 
   @override
   ConsumerState<ChatScreen> createState() => _ChatScreen();
@@ -47,6 +56,10 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   late String _chosenAnimation;
+  MessageModel? replyMessage;
+  List<MessageModel> selectedMessages = [];
+  List<MessageModel> pinnedMessages = [];
+  int indexInPinnedMessage = 0;
 
   late ChatModel? chatModel;
   bool isSearching = false;
@@ -93,7 +106,10 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       _messageController.text = chatModel!.draft ?? "";
       final messages = chatModel?.messages ?? [];
       _updateChatMessages(messages);
-      // _scrollToBottom();
+    // _scrollToBottom();
+      if (widget.forwardedMessages != null) {
+        _sendForwardedMessages();
+      }
     });
     _chosenAnimation = getRandomLottieAnimation();
     _getDir();
@@ -183,6 +199,23 @@ class _ChatScreen extends ConsumerState<ChatScreen>
         _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
       }
     });
+  }
+
+  // Send the Forwarded Messages
+  void _sendForwardedMessages() {
+    for (MessageModel message in widget.forwardedMessages!) {
+      ref.read(chattingControllerProvider).sendMsg(
+            content: TextContent(message.content as String),
+            msgType: MessageType.normal,
+            contentType: MessageContentType.text,
+            chatType: ChatType.private,
+            chatModel: widget.chatModel,
+          );
+      _messageController.clear();
+      List<MessageModel> messages =
+          ref.watch(chatProvider(widget.chatId))?.messages ?? [];
+      _updateChatMessages(messages);
+    }
   }
 
   //TODO: Implement the sendMsg method with another types of messages
@@ -481,10 +514,12 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     final imageBytes = chatModel.photoBytes;
     final photo = chatModel.photo;
     final chatID = chatModel.id;
+    const menuItemsHeight = 45.0;
     var messagesIndex = 0;
 
     return Scaffold(
-        appBar: AppBar(
+        appBar: selectedMessages.isEmpty
+            ? AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
@@ -540,7 +575,46 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                 itemBuilder: popupMenu,
               ),
           ],
-        ),
+        ): AppBar(
+                backgroundColor: Palette.secondary,
+                leading: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      selectedMessages = [];
+                    });
+                  },
+                  child: Icon(Icons.close),
+                ),
+                title: Row(
+                  children: [
+                    // Number
+                    Text(
+                      selectedMessages.length.toString(),
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                    Spacer(),
+                    // Copy icon
+                    IconButton(
+                      icon: Icon(Icons.copy, color: Colors.white),
+                      onPressed: () {},
+                    ),
+                    // Share icon
+                    IconButton(
+                      icon: Icon(FontAwesomeIcons.share, color: Colors.white),
+                      onPressed: () {
+                        context.push(CreateChatScreen.route);
+                      },
+                    ),
+                    // Delete icon
+                    IconButton(
+                      icon: Icon(Icons.delete, color: Colors.white),
+                      onPressed: () {
+                        // TODO call delete function
+                      },
+                    ),
+                  ],
+                ),
+              ),
         body: Stack(
           children: [
             // Chat content area (with background SVG)
@@ -639,7 +713,43 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                     if (item is DateLabelWidget) {
                                       return item;
                                     } else if (item is MessageModel) {
-                                      return MessageTileWidget(
+                                      return Row(
+                                        mainAxisAlignment: item.senderId ==
+                                                ref.read(userProvider)!.id
+                                            ? selectedMessages.isNotEmpty
+                                                ? MainAxisAlignment.spaceBetween
+                                                : MainAxisAlignment.end
+                                            : MainAxisAlignment.start,
+                                        children: [
+                                          if (selectedMessages
+                                              .isNotEmpty) // Show check icon only if selected
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                    color: Colors.white,
+                                                    width: 1), // White border
+                                              ),
+                                              child: CircleAvatar(
+                                                radius: 12,
+                                                backgroundColor:
+                                                    selectedMessages.contains(
+                                                                item) ==
+                                                            true
+                                                        ? Colors.green
+                                                        : Colors.transparent,
+                                                child: selectedMessages
+                                                            .contains(item) ==
+                                                        true
+                                                    ? const Icon(Icons.check,
+                                                        color: Colors.white,
+                                                        size: 16)
+                                                    : const SizedBox(),
+                                              ),
+                                            ),
+                                          if (selectedMessages.contains(item))
+                                            const SizedBox(width: 10),
+                                          MessageTileWidget(
                                         key: ValueKey(
                                             '${MessageKeys.messagePrefix}${messagesIndex++}'),
                                         messageModel: item,
@@ -648,6 +758,36 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                         showInfo: type == ChatType.group,
                                         highlights: _messageMatches[index] ??
                                             const [MapEntry(0, 0)],
+                                            onReply: (message) {
+                                              setState(() {
+                                                replyMessage = message;
+                                              });
+                                            },
+                                            onPin: (message) {
+                                              setState(() {
+                                                pinnedMessages.contains(message)
+                                                    ? pinnedMessages
+                                                        .remove(message)
+                                                    : pinnedMessages
+                                                        .add(message);
+                                              });
+                                            },
+                                            onPress: selectedMessages.isEmpty
+                                                ? null
+                                                : () {},
+                                            onLongPress: (message) {
+                                              setState(() {
+                                                replyMessage = null;
+                                                selectedMessages
+                                                        .contains(message)
+                                                    ? selectedMessages
+                                                        .remove(message)
+                                                    : selectedMessages
+                                                        .add(message);
+                                              });
+                                            },
+                                          ),
+                                        ],
                                       );
                                     } else {
                                       return const SizedBox.shrink();
@@ -657,8 +797,73 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                               ),
                             ),
                 ),
-                // The input bar at the bottom
-                if (!isSearching)
+                if (replyMessage != null)
+                  ReplyWidget(
+                    message: replyMessage!,
+                    onDiscard: () {
+                      setState(() {
+                        replyMessage = null;
+                      });
+                    },
+                  )
+                else
+                  const SizedBox(),
+                if (selectedMessages.isNotEmpty)
+                  Container(
+                    color: Palette.secondary,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                replyMessage = selectedMessages[0];
+                                selectedMessages = [];
+                              });
+                            },
+                            child: Row(
+                              children: [
+                                selectedMessages.length == 1
+                                    ? const Icon(
+                                        Icons.reply,
+                                      )
+                                    : const SizedBox(),
+                                const SizedBox(
+                                  width: 5,
+                                ),
+                                selectedMessages.length == 1
+                                    ? const Text(
+                                        'Reply',
+                                        style: TextStyle(color: Colors.white),
+                                      )
+                                    : const SizedBox(),
+                              ],
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              context.push(CreateChatScreen.route);
+                            },
+                            child: const Row(
+                              children: [
+                                Icon(FontAwesomeIcons.share),
+                                SizedBox(
+                                  width: 5,
+                                ),
+                                Text(
+                                  'Forward',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  )
+                else if (!isSearching)
                   BottomInputBarWidget(
                     controller: _messageController,
                     recorderController: _recorderController,
@@ -754,6 +959,80 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                   ),
               ],
             ),
+            pinnedMessages.isNotEmpty
+                ? Positioned(
+                    top:
+                        0, // Adjust this to position the widget from the top of the screen
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      color: Palette
+                          .secondary, // Example background color for the widget
+                      padding:
+                          EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Column(
+                                children: List.generate(pinnedMessages.length,
+                                    (index) {
+                                  return Container(
+                                    height: 40 / pinnedMessages.length,
+                                    padding: const EdgeInsets.all(1.0),
+                                    margin: const EdgeInsets.all(1.0),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blueAccent,
+                                      borderRadius: BorderRadius.circular(8.0),
+                                    ),
+                                  );
+                                }),
+                              ),
+                              const SizedBox(
+                                width: 8,
+                              ),
+                              const Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Pinned Message',
+                                    style: TextStyle(
+                                        color: Palette.primary, fontSize: 12),
+                                  ),
+                                  Text(
+                                    // pinnedMessages[indexInPinnedMessage].content as String,
+                                    'Content placeholder',
+                                    style: TextStyle(fontSize: 12),
+                                  )
+                                ],
+                              ),
+                            ],
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              List<String> senderIds = [];
+                              for (var message in pinnedMessages) {
+                                senderIds.add(message.senderId);
+                              }
+                              ChatModel newChat = ChatModel(
+                                  title: 'pinnedMessages',
+                                  userIds: senderIds,
+                                  type: ChatType.group,
+                                  messages: pinnedMessages);
+                              context.push(Routes.pinnedMessagesScreen,
+                                  extra: newChat);
+                            },
+                            child: const Icon(
+                              Icons.menu_open_outlined,
+                              color: Palette.accentText,
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  )
+                : SizedBox(),
             isRecording || isRecordingLocked
                 ? AnimatedPositioned(
                     bottom: 90,
@@ -1127,3 +1406,4 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     return lottieAnimations[randomIndex];
   }
 }
+

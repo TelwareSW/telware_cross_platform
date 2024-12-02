@@ -7,8 +7,6 @@ import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 
 import 'package:faker/faker.dart';
-import 'package:telware_cross_platform/core/models/message_model.dart';
-import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 
 randomizeMessageContentType() {
   final Random random = Random();
