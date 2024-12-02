@@ -85,12 +85,14 @@ class SendMessageEvent extends MessageEvent {
     Duration timeout = const Duration(seconds: 10),
   }) async {
     debugPrint('!!! Sending event statrted');
+    print(payload as Map<String, dynamic>);
 
     return await _execute(
       socket,
-      EventType.deleteMessage.event,
+      EventType.sendMessage.event,
       ackCallback: (res, timer, completer) {
         final response = res as Map<String, dynamic>;
+        debugPrint('### I got a response ${response['success'].toString()}');
         if (!completer.isCompleted) {
           timer.cancel(); // Cancel the timer on acknowledgment
           if (response['success'].toString() == 'true') {
