@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:telware_cross_platform/core/services/socket_service.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
@@ -25,13 +26,18 @@ part 'message_event_models.g.dart';
 class MessageEvent {
   @HiveField(0)
   final dynamic payload;
+  @HiveField(1)
+  final dynamic identifier;
 
   final ChattingController? _controller;
 
-  MessageEvent(this.payload, {ChattingController? controller}): _controller = controller;
+  MessageEvent(this.payload, {ChattingController? controller, this.identifier}): _controller = controller;
 
   Future<bool> execute(SocketService socket,
-      {Duration timeout = const Duration(seconds: 10)}) async {return true;}
+      {Duration timeout = const Duration(seconds: 10)}) async {
+        debugPrint('!!! this is the one excuted');
+        return true;
+      }
 
   Future<bool> _execute(
     SocketService socket,
@@ -71,22 +77,28 @@ class MessageEvent {
 
 @HiveType(typeId: 8)
 class SendMessageEvent extends MessageEvent {
-  SendMessageEvent(super.payload, {super.controller});
+  SendMessageEvent(super.payload, {super.controller, super.identifier});
 
   @override
   Future<bool> execute(
     SocketService socket, {
     Duration timeout = const Duration(seconds: 10),
   }) async {
+    debugPrint('!!! Sending event statrted');
+
     return await _execute(
       socket,
       EventType.deleteMessage.event,
-      ackCallback: (response, timer, completer) {
+      ackCallback: (res, timer, completer) {
+        final response = res as Map<String, dynamic>;
         if (!completer.isCompleted) {
-          timer.cancel(); // Cancel the timeout timer
-          // todo(moamen): confirm msg was sent
-          // change from pending to sent
-          completer.complete(true);
+          timer.cancel(); // Cancel the timer on acknowledgment
+          if (response['success'].toString() == 'true') {
+            _controller!.updateMessageId(response['res']['messageId'], identifier);
+            completer.complete(true);
+          } else {
+            completer.complete(false);
+          }
         }
       },
     );
@@ -106,7 +118,7 @@ class SendMessageEvent extends MessageEvent {
 
 @HiveType(typeId: 9)
 class DeleteMessageEvent extends MessageEvent {
-  DeleteMessageEvent(super.payload, {super.controller});
+  DeleteMessageEvent(super.payload, {super.controller, super.identifier});
 
   @override
   Future<bool> execute(
@@ -139,7 +151,7 @@ class DeleteMessageEvent extends MessageEvent {
 
 @HiveType(typeId: 10)
 class EditMessageEvent extends MessageEvent {
-  EditMessageEvent(super.payload, {super.controller});
+  EditMessageEvent(super.payload, {super.controller, super.identifier});
 
   @override
   Future<bool> execute(

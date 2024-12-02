@@ -18,15 +18,18 @@ class MessageEventAdapter extends TypeAdapter<MessageEvent> {
     };
     return MessageEvent(
       fields[0] as dynamic,
+      identifier: fields[1] as dynamic,
     );
   }
 
   @override
   void write(BinaryWriter writer, MessageEvent obj) {
     writer
-      ..writeByte(1)
+      ..writeByte(2)
       ..writeByte(0)
-      ..write(obj.payload);
+      ..write(obj.payload)
+      ..writeByte(1)
+      ..write(obj.identifier);
   }
 
   @override
@@ -52,15 +55,18 @@ class SendMessageEventAdapter extends TypeAdapter<SendMessageEvent> {
     };
     return SendMessageEvent(
       fields[0] as dynamic,
+      identifier: fields[1] as dynamic,
     );
   }
 
   @override
   void write(BinaryWriter writer, SendMessageEvent obj) {
     writer
-      ..writeByte(1)
+      ..writeByte(2)
       ..writeByte(0)
-      ..write(obj.payload);
+      ..write(obj.payload)
+      ..writeByte(1)
+      ..write(obj.identifier);
   }
 
   @override
@@ -86,15 +92,18 @@ class DeleteMessageEventAdapter extends TypeAdapter<DeleteMessageEvent> {
     };
     return DeleteMessageEvent(
       fields[0] as dynamic,
+      identifier: fields[1] as dynamic,
     );
   }
 
   @override
   void write(BinaryWriter writer, DeleteMessageEvent obj) {
     writer
-      ..writeByte(1)
+      ..writeByte(2)
       ..writeByte(0)
-      ..write(obj.payload);
+      ..write(obj.payload)
+      ..writeByte(1)
+      ..write(obj.identifier);
   }
 
   @override
@@ -120,15 +129,18 @@ class EditMessageEventAdapter extends TypeAdapter<EditMessageEvent> {
     };
     return EditMessageEvent(
       fields[0] as dynamic,
+      identifier: fields[1] as dynamic,
     );
   }
 
   @override
   void write(BinaryWriter writer, EditMessageEvent obj) {
     writer
-      ..writeByte(1)
+      ..writeByte(2)
       ..writeByte(0)
-      ..write(obj.payload);
+      ..write(obj.payload)
+      ..writeByte(1)
+      ..write(obj.identifier);
   }
 
   @override
