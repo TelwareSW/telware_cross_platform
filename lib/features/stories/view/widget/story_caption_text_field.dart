@@ -5,12 +5,12 @@ import 'package:flutter/material.dart';
 class StoryCaptionField extends StatelessWidget {
   final TextEditingController controller;
 
-  const StoryCaptionField({Key? key, required this.controller}) : super(key: key);
+  const StoryCaptionField({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 15),
+      padding: const EdgeInsets.only(bottom: 15),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20.0),
         child: BackdropFilter(
@@ -30,8 +30,8 @@ class StoryCaptionField extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10.0),
                   borderSide: BorderSide.none,
                 ),
-                hintStyle: TextStyle(color: Colors.white54),
-                contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
+                hintStyle: const TextStyle(color: Colors.white54),
+                contentPadding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
               ),
             ),
           ),
