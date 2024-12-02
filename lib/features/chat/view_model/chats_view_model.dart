@@ -127,4 +127,22 @@ class ChatsViewModel extends _$ChatsViewModel {
       state.insert(0, chat);
     }
   }
+
+  void updateMessageFilePath(String chatID, String msgID, String filePath) {
+    final chat = _chatsMap[chatID];
+    // Find the msg with the specified ID
+    final msgIndex = chat!.messages.indexWhere((msg) => msg.id == msgID);
+
+    if (msgIndex != -1) {
+      MessageContent? content = chat.messages[msgIndex].content;
+      if (content == null ||
+          chat.messages[msgIndex].messageContentType ==
+              MessageContentType.text) {
+        return;
+      }
+      debugPrint("Updating the file path to $filePath");
+      content = (content as AudioContent).copyWith(filePath: filePath);
+      chat.messages[msgIndex].copyWith(content: content);
+    }
+  }
 }

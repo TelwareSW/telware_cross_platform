@@ -9,17 +9,22 @@ import 'package:lottie/lottie.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
+import 'package:telware_cross_platform/features/chat/view/widget/download_widget.dart';
 
 class AudioMessageWidget extends StatefulWidget {
-  final String filePath;
+  final String? filePath;
+  final String? url;
   final int? duration;
   final double borderRadius;
+  final void Function(String?) onDownloadTap;
 
   const AudioMessageWidget(
       {super.key,
       this.borderRadius = 30,
       this.duration,
-      required this.filePath});
+      this.filePath,
+      required this.onDownloadTap,
+      this.url});
 
   @override
   AudioMessageWidgetState createState() => AudioMessageWidgetState();
@@ -75,8 +80,11 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
   }
 
   Future<void> loadAudioFile() async {
+    if (widget.filePath == null) {
+      return;
+    }
     await playerController.preparePlayer(
-      path: widget.filePath,
+      path: widget.filePath!,
       shouldExtractWaveform: false,
       noOfSamples: 500,
       volume: 1.0,
@@ -139,24 +147,26 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
             borderRadius:
                 BorderRadius.circular(widget.borderRadius), // Set border radius
           ),
-          child: Align(
-            alignment: Alignment.center,
-            child: GestureDetector(
-              onTap: () {
-                _startOrStopPlaying();
-              },
-              child: Lottie.asset(
-                "assets/json/play_pause_message.json",
-                controller: controller,
-                onLoaded: (composition) {
-                  controller.duration = composition.duration;
-                },
-                width: 30,
-                height: 30,
-                decoder: LottieComposition.decodeGZip,
-              ),
-            ),
-          ),
+          child: widget.filePath == null
+              ? DownloadWidget(onTap: widget.onDownloadTap, url: widget.url)
+              : Align(
+                  alignment: Alignment.center,
+                  child: GestureDetector(
+                    onTap: () {
+                      _startOrStopPlaying();
+                    },
+                    child: Lottie.asset(
+                      "assets/json/play_pause_message.json",
+                      controller: controller,
+                      onLoaded: (composition) {
+                        controller.duration = composition.duration;
+                      },
+                      width: 30,
+                      height: 30,
+                      decoder: LottieComposition.decodeGZip,
+                    ),
+                  ),
+                ),
         ),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,

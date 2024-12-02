@@ -17,11 +17,11 @@ import 'package:telware_cross_platform/features/chat/view/widget/slide_to_cancel
 class BottomInputBarWidget extends ConsumerStatefulWidget {
   final TextEditingController controller; // Accept controller as a parameter
   final RecorderController recorderController;
-  final PlayerController playerController;
   final String? chatID;
   final void Function(BuildContext) startRecording;
   final Future<String?> Function() stopRecording;
   final void Function() deleteRecording;
+  final void Function() resetRecording;
   final void Function() cancelRecording;
   final void Function() lockRecording;
   final void Function(
@@ -30,6 +30,7 @@ class BottomInputBarWidget extends ConsumerStatefulWidget {
       required WidgetRef ref,
       bool? getRecordingPath}) sendMessage;
   final void Function(double) lockRecordingDrag;
+  final String? audioFilePath;
   final bool isRecordingLocked;
   final bool isRecording;
   final bool isRecordingCompleted;
@@ -41,17 +42,18 @@ class BottomInputBarWidget extends ConsumerStatefulWidget {
     required this.sendMessage,
     required this.controller,
     required this.recorderController,
-    required this.playerController,
     required this.startRecording,
     required this.stopRecording,
+    required this.cancelRecording,
     required this.isRecording,
     required this.isRecordingCompleted,
     required this.deleteRecording,
-    required this.cancelRecording,
+    required this.resetRecording,
     required this.lockRecording,
     required this.isRecordingLocked,
     required this.lockRecordingDrag,
     required this.isRecordingPaused,
+    this.audioFilePath,
   });
 
   @override
@@ -61,7 +63,6 @@ class BottomInputBarWidget extends ConsumerStatefulWidget {
 
 class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
   bool isTextEmpty = true;
-
   int elapsedTime = 0; // Track the elapsed time in seconds
   double _dragPosition = 0;
   final double _cancelThreshold = 100.0; // Drag threshold for complete fade
@@ -82,7 +83,8 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
     if (oldWidget.isRecording != widget.isRecording ||
         oldWidget.isRecordingCompleted != widget.isRecordingCompleted ||
         oldWidget.isRecordingLocked != widget.isRecordingLocked ||
-        oldWidget.isRecordingPaused != widget.isRecordingPaused) {
+        oldWidget.isRecordingPaused != widget.isRecordingPaused ||
+        oldWidget.audioFilePath != widget.audioFilePath) {
       setState(() {});
     }
   }
@@ -117,12 +119,20 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
 
     final List<XFile> media =
         await ImagePicker().pickMultipleMedia(limit: maxFiles);
+    if (media.length >= maxFiles) {
+      showToastMessage('You can only select up to $maxFiles files');
+      return;
+    }
     final Directory appDir =
         await getApplicationDocumentsDirectory(); // Local storage directory
 
     for (var mediaFile in media) {
       final File file = File(mediaFile.path);
-
+      if (await file.length() > maxSizeInBytes) {
+        showToastMessage(
+            'File size exceeds the limit of ${maxSizeInBytes / 1024 / 1024} MB');
+        continue;
+      }
       if (await file.length() <= maxSizeInBytes &&
           mediaFiles.length < maxFiles) {
         // Get the filename and create a new file path in local storage
@@ -130,6 +140,7 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
         final String localPath = '${appDir.path}/$fileName'; // Destination path
         String? mimeType = lookupMimeType(file.path);
         debugPrint('Local path: $localPath');
+        debugPrint('MIME type: $mimeType');
         // Save the file locally
         await file.copy(localPath);
         // Determine the content type based on the MIME type
@@ -141,6 +152,8 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
             contentType = 'video';
           } else if (mimeType.startsWith('audio/')) {
             contentType = 'audio';
+          } else if (mimeType.startsWith('application/')) {
+            contentType = 'file';
           }
         }
 
@@ -243,7 +256,7 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                     ),
                   ),
                   AudioPlayerWidget(
-                    playerController: widget.playerController,
+                    filePath: widget.audioFilePath!,
                     duration: elapsedTime,
                   ),
                 ] else ...[
@@ -292,11 +305,12 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                   String? recordingPath = await widget.stopRecording();
                   if (recordingPath != null) {
                     widget.sendMessage(
-                        ref: ref,
-                        contentType: 'audio',
-                        filePath: recordingPath);
+                      ref: ref,
+                      contentType: 'audio',
+                      filePath: recordingPath,
+                    );
                   }
-                  widget.cancelRecording();
+                  widget.resetRecording();
                 },
                 onLongPressMoveUpdate: (details) {
                   if (details.localPosition.dx.abs() > _cancelThreshold) {
@@ -335,7 +349,7 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                   //TODO: Send the recorded audio
                   widget.sendMessage(
                       ref: ref, contentType: 'audio', getRecordingPath: true);
-                  widget.cancelRecording();
+                  widget.resetRecording();
                 } else {
                   widget.sendMessage(ref: ref, contentType: 'text');
                 }

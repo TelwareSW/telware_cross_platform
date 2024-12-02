@@ -7,7 +7,7 @@ part of 'chatting_controller.dart';
 // **************************************************************************
 
 String _$chattingControllerHash() =>
-    r'26c90b053759b0e5e8954ba1ad4409e2229c34d6';
+    r'8e297693ce95237abb439338816c80b0ec9172b3';
 
 /// See also [chattingController].
 @ProviderFor(chattingController)

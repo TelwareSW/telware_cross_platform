@@ -7,7 +7,10 @@ import 'package:hive/hive.dart';
 part 'message_content.g.dart'; // Part file for generated code
 
 abstract class MessageContent {
-  Map<String, dynamic> toJson(); // For serialization
+  Map<String, dynamic> toJson();
+
+  MessageContent copyWith();
+// For serialization
 }
 
 // For Text Messages
@@ -20,6 +23,15 @@ class TextContent extends MessageContent {
 
   @override
   Map<String, dynamic> toJson() => {'text': text};
+
+  @override
+  TextContent copyWith({
+    String? text,
+  }) {
+    return TextContent(
+      text ?? this.text,
+    );
+  }
 }
 
 // For Audio Messages
@@ -44,6 +56,21 @@ class AudioContent extends MessageContent {
         'filePath': filePath,
         'waveformData': waveformData,
       };
+
+  @override
+  AudioContent copyWith({
+    String? audioUrl,
+    int? duration,
+    String? filePath,
+    List<double>? waveformData,
+  }) {
+    return AudioContent(
+      audioUrl: audioUrl ?? this.audioUrl,
+      duration: duration ?? this.duration,
+      filePath: filePath ?? this.filePath,
+      waveformData: waveformData ?? this.waveformData,
+    );
+  }
 }
 
 // For Document Messages (PDFs, Docs)
@@ -64,6 +91,19 @@ class DocumentContent extends MessageContent {
         'fileUrl': fileUrl,
         'filePath': filePath,
       };
+
+  @override
+  DocumentContent copyWith({
+    String? fileName,
+    String? fileUrl,
+    String? filePath,
+  }) {
+    return DocumentContent(
+      fileName: fileName ?? this.fileName,
+      fileUrl: fileUrl ?? this.fileUrl,
+      filePath: filePath ?? this.filePath,
+    );
+  }
 }
 
 // For Image Messages
@@ -81,6 +121,19 @@ class ImageContent extends MessageContent {
   @override
   Map<String, dynamic> toJson() =>
       {'imageUrl': imageUrl, 'imageBytes': imageBytes, "filePath": filePath};
+
+  @override
+  ImageContent copyWith({
+    String? imageUrl,
+    Uint8List? imageBytes,
+    String? filePath,
+  }) {
+    return ImageContent(
+      imageUrl: imageUrl ?? this.imageUrl,
+      imageBytes: imageBytes ?? this.imageBytes,
+      filePath: filePath ?? this.filePath,
+    );
+  }
 }
 
 // For Video Messages
@@ -101,6 +154,19 @@ class VideoContent extends MessageContent {
         'duration': duration,
         'filePath': filePath,
       };
+
+  @override
+  VideoContent copyWith({
+    String? videoUrl,
+    int? duration,
+    String? filePath,
+  }) {
+    return VideoContent(
+      videoUrl: videoUrl ?? this.videoUrl,
+      duration: duration ?? this.duration,
+      filePath: filePath ?? this.filePath,
+    );
+  }
 }
 
 // for emoji, gifs and stickers
@@ -121,6 +187,19 @@ class EmojiContent extends MessageContent {
         'mediaType': emojiName,
         'filePath': filePath,
       };
+
+  @override
+  EmojiContent copyWith({
+    String? emojiUrl,
+    String? emojiName,
+    String? filePath,
+  }) {
+    return EmojiContent(
+      emojiUrl: emojiUrl ?? this.emojiUrl,
+      emojiName: emojiName ?? this.emojiName,
+      filePath: filePath ?? this.filePath,
+    );
+  }
 }
 
 @HiveType(typeId: 21)
@@ -140,6 +219,19 @@ class GIFContent extends MessageContent {
         'mediaType': gifName,
         'filePath': filePath,
       };
+
+  @override
+  GIFContent copyWith({
+    String? gifUrl,
+    String? gifName,
+    String? filePath,
+  }) {
+    return GIFContent(
+      gifUrl: gifUrl ?? this.gifUrl,
+      gifName: gifName ?? this.gifName,
+      filePath: filePath ?? this.filePath,
+    );
+  }
 }
 
 @HiveType(typeId: 22)
@@ -159,4 +251,17 @@ class StickerContent extends MessageContent {
         'mediaType': stickerName,
         'filePath': filePath,
       };
+
+  @override
+  StickerContent copyWith({
+    String? stickerUrl,
+    String? stickerName,
+    String? filePath,
+  }) {
+    return StickerContent(
+      stickerUrl: stickerUrl ?? this.stickerUrl,
+      stickerName: stickerName ?? this.stickerName,
+      filePath: filePath ?? this.filePath,
+    );
+  }
 }

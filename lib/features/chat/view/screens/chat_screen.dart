@@ -65,7 +65,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   // TODO: This works only on mobile if you tried to run it on web it will throw an error
 
   late final RecorderController _recorderController;
-  final PlayerController _playerController = PlayerController();
   String? musicFile;
   bool isRecording = false;
   bool isRecordingCompleted = false;
@@ -110,7 +109,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     _messageController.dispose();
     _scrollController.dispose(); // Dispose of the ScrollController
     _recorderController.dispose();
-    _playerController.dispose();
     WidgetsBinding.instance.removeObserver(this); // Remove the observer
     super.dispose();
   }
@@ -189,19 +187,37 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       {required WidgetRef ref,
       required String contentType,
       String? filePath,
-      bool? getRecordingPath}) {
+      bool? getRecordingPath}) async {
     MessageContentType messageContentType =
         MessageContentType.getType(contentType);
     MessageContent content;
+    bool needUploadMedia = contentType != 'text';
+    String? mediaUrl;
+    // Upload the media file before sending the message
+    if (needUploadMedia) {
+      if (filePath == null) {
+        debugPrint("Try to send a media without a file path");
+        return;
+      } else {
+        mediaUrl =
+            await ref.read(chattingControllerProvider).uploadMedia(filePath);
+        if (mediaUrl == null) {
+          showToastMessage(
+              "Failed to upload the media check your connection or try again later");
+          return;
+        }
+        debugPrint("Media uploaded successfully with url: $mediaUrl");
+      }
+    }
     switch (contentType) {
       case 'text':
         content = TextContent(_messageController.text);
         break;
       case 'image':
-        content = ImageContent(filePath: filePath);
+        content = ImageContent(filePath: filePath, imageUrl: mediaUrl);
         break;
       case 'video':
-        content = VideoContent(filePath: filePath);
+        content = VideoContent(filePath: filePath, videoUrl: mediaUrl);
         break;
       case 'audio':
         if (getRecordingPath == true && filePath == null) {
@@ -209,14 +225,20 @@ class _ChatScreen extends ConsumerState<ChatScreen>
             showToastMessage("Recording has no path");
             return;
           }
-          content = AudioContent(filePath: recordingPath!);
+          content = AudioContent(filePath: recordingPath!, audioUrl: mediaUrl);
         } else {
-          content = AudioContent(filePath: filePath);
+          content = AudioContent(filePath: filePath, audioUrl: mediaUrl);
         }
         break;
+      case 'file':
+        content = DocumentContent(
+            filePath: filePath,
+            fileName: filePath!.split('/').last,
+            fileUrl: mediaUrl);
       default:
         content = TextContent(_messageController.text);
     }
+    // TODO : Handle media attribute in the request of sending a message
 
     MessageModel newMessage = MessageModel(
       senderId: ref.read(userProvider)!.id!,
@@ -281,6 +303,15 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     setState(() {});
   }
 
+  void _resetRecording() {
+    isRecording = false;
+    isRecordingLocked = false;
+    isRecordingPaused = false;
+    isRecordingCompleted = false;
+    recordingPath = null;
+    setState(() {});
+  }
+
   void _deleteRecording() {
     if (recordingPath == null) {
       debugPrint("No recording to delete");
@@ -289,38 +320,27 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     if (File(recordingPath!).existsSync()) {
       File(recordingPath!).deleteSync();
       debugPrint("Recording deleted at $recordingPath");
-      recordingPath = null;
-      isRecording = false;
-      isRecordingLocked = false;
-      isRecordingPaused = false;
-      isRecordingCompleted = false;
-      setState(() {});
+      _resetRecording();
     }
   }
 
-  void _cancelRecording() {
-    //TODO : check for memory leaks
-    _recorderController.stop(true);
-    isRecording = false;
-    isRecordingLocked = false;
-    isRecordingPaused = false;
-    isRecordingCompleted = false;
-    setState(() {});
-  }
-
-  void _pickFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
-    if (result != null) {
-      musicFile = result.files.single.path;
-      setState(() {});
-    } else {
-      debugPrint("File not picked");
+  void _cancelRecording() async {
+    if (isRecording) {
+      String? path = await _recorderController.stop(true);
+      if (path != null) {
+        if (File(path).existsSync()) {
+          File(path).deleteSync();
+          debugPrint("Recording deleted at $path");
+        }
+        debugPrint("Recording canceled");
+      }
+      _resetRecording();
     }
   }
 
   void _record() async {
     try {
-      await _recorderController.record(path: recordingPath); // Path is optional
+      await _recorderController.record(); // Path is optional
       debugPrint("Recording started");
     } catch (e) {
       debugPrint(e.toString());
@@ -333,6 +353,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     }
   }
 
+  //wait for sending will not set the isRecording to false and you will have to set it manually
+  // or call cancel recording to reset every thing
   Future<String?> _stopRecording() async {
     try {
       recordingPath = await _recorderController.stop(false);
@@ -343,20 +365,15 @@ class _ChatScreen extends ConsumerState<ChatScreen>
         isRecording = false;
         isRecordingPaused = false;
         setState(() {});
-        await _playerController.preparePlayer(
-          path: recordingPath!,
-          shouldExtractWaveform: true,
-          noOfSamples: 500,
-          volume: 1.0,
-        );
         debugPrint(recordingPath);
         debugPrint("Recorded file size: ${File(recordingPath!).lengthSync()}");
         return recordingPath!;
       }
     } catch (e) {
       debugPrint(e.toString());
+      return null;
     }
-    return recordingPath;
+    return null;
   }
 
   void _startRecording(context) async {
@@ -415,6 +432,23 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
   //----------------------------------------------------------------------------
   //-------------------------------Media----------------------------------------
+
+  void onMediaDownloaded(String? filePath, String? messageId, String? chatId) {
+    if (filePath == null) {
+      showToastMessage('File has been deleted ask the sender to resend it');
+      return;
+    }
+    if (messageId == null || chatId == null) {
+      showToastMessage('Message ID or Chat ID is missing');
+      return;
+    }
+    debugPrint("Downloaded file path: $filePath");
+    debugPrint("Message ID: $messageId");
+    debugPrint("Chat ID: $chatId");
+    ref
+        .read(chattingControllerProvider)
+        .editMessageFilePath(chatId, messageId, filePath);
+  }
 
   void _searchForText(searchText) async {
     Map<int, List<MapEntry<int, int>>> messageMatches = {};
@@ -733,6 +767,10 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                         showInfo: type == ChatType.group,
                                         highlights: _messageMatches[index] ??
                                             const [MapEntry(0, 0)],
+                                        onDownloadTap: (String? filePath) {
+                                          onMediaDownloaded(
+                                              filePath, item.id, chatID);
+                                        },
                                       );
                                     } else {
                                       return const SizedBox.shrink();
@@ -747,12 +785,12 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                   BottomInputBarWidget(
                     controller: _messageController,
                     recorderController: _recorderController,
-                    playerController: _playerController,
                     chatID: chatID,
                     sendMessage: _sendMessage,
                     startRecording: _startRecording,
                     stopRecording: _stopRecording,
                     deleteRecording: _deleteRecording,
+                    resetRecording: _resetRecording,
                     cancelRecording: _cancelRecording,
                     lockRecording: _lockRecording,
                     isRecording: isRecording,
@@ -760,6 +798,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                     isRecordingLocked: isRecordingLocked,
                     isRecordingPaused: isRecordingPaused,
                     lockRecordingDrag: _lockRecordingDrag,
+                    audioFilePath: recordingPath,
                   )
                 else
                   Container(

@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
@@ -219,8 +222,8 @@ class ChatRemoteRepository {
     }
   }
 
-  Future<({AppError? appError, ChatModel? chat})> createChat(
-      String sessionID, String name, String type, List<String> memberIDs) async {
+  Future<({AppError? appError, ChatModel? chat})> createChat(String sessionID,
+      String name, String type, List<String> memberIDs) async {
     try {
       final response = await _dio.post(
         '/chats',
@@ -248,7 +251,38 @@ class ChatRemoteRepository {
       return (appError: null, chat: chatModel);
     } catch (e) {
       debugPrint('!!! Failed to create chat, ${e.toString()}');
-      return (appError: AppError('Failed to create chat', code: 500), chat: null);
+      return (
+        appError: AppError('Failed to create chat', code: 500),
+        chat: null
+      );
+    }
+  }
+
+  Future<({AppError? appError, String? url})> uploadMedia(
+      String sessionID, String filePath) async {
+    try {
+      final multipartFile = await MultipartFile.fromFile(filePath);
+      final mediaData = FormData.fromMap({
+        'file': multipartFile,
+      });
+      final response = await _dio.post(
+        '/chats/media',
+        data: mediaData,
+        options: Options(headers: {'X-Session-Token': sessionID}),
+      );
+
+      debugPrint("upload media response: ${response.data}");
+
+      return (
+        appError: null,
+        url: response.data['data']['mediaFileName'] as String?
+      );
+    } catch (e) {
+      debugPrint('!!! Failed to upload media, ${e.toString()}');
+      return (
+        appError: AppError('Failed to upload media', code: 500),
+        url: null
+      );
     }
   }
 

@@ -82,6 +82,7 @@ dependencies:
   flutter_cupertino_datetime_picker: ^3.0.0
   mime: ^1.0.0
   just_audio: ^0.9.42
+  open_file: ^3.5.10
 
 
 dev_dependencies:

@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:telware_cross_platform/core/constants/keys.dart';
@@ -9,6 +8,8 @@ import 'package:telware_cross_platform/core/utils.dart';
 
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/audio_message_widget.dart';
+import 'package:telware_cross_platform/features/chat/view/widget/document_message_widget.dart';
+import 'package:telware_cross_platform/features/chat/view/widget/image_message_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/video_player_widget.dart';
 import 'package:video_player/video_player.dart';
 
@@ -21,6 +22,7 @@ class MessageTileWidget extends StatelessWidget {
   final Color nameColor;
   final Color imageColor;
   final List<MapEntry<int, int>> highlights;
+  final void Function(String?) onDownloadTap;
 
   const MessageTileWidget(
       {super.key,
@@ -29,7 +31,8 @@ class MessageTileWidget extends StatelessWidget {
       this.showInfo = false,
       this.nameColor = Palette.primary,
       this.imageColor = Palette.primary,
-      this.highlights = const []});
+      this.highlights = const [],
+      required this.onDownloadTap});
 
   // Function to format timestamp to "hh:mm AM/PM"
   String formatTimestamp(DateTime timestamp) {
@@ -114,15 +117,17 @@ class MessageTileWidget extends StatelessWidget {
                 : messageModel.messageContentType == MessageContentType.audio
                     ? AudioMessageWidget(
                         duration: messageModel.content?.toJson()["duration"],
-                        filePath: messageModel.content?.toJson()["filePath"])
+                        filePath: messageModel.content?.toJson()["filePath"],
+                        url: messageModel.content?.toJson()["audioUrl"],
+                        onDownloadTap: onDownloadTap,
+                      )
                     : messageModel.messageContentType ==
                             MessageContentType.image
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(15),
-                            child: Image.file(
-                              File(messageModel.content?.toJson()["filePath"]),
-                              fit: BoxFit.cover,
-                            ),
+                        ? ImageMessageWidget(
+                            onDownloadTap: onDownloadTap,
+                            filePath:
+                                messageModel.content?.toJson()["filePath"],
+                            url: messageModel.content?.toJson()["audioUrl"],
                           )
                         : messageModel.messageContentType ==
                                 MessageContentType.video
@@ -130,9 +135,23 @@ class MessageTileWidget extends StatelessWidget {
                                 width: 200,
                                 height: 200,
                                 child: VideoPlayerWidget(
+                                    url: messageModel.content
+                                        ?.toJson()["audioUrl"],
+                                    onDownloadTap: onDownloadTap,
                                     filePath: messageModel.content
-                                        ?.toJson()["filePath"]))
-                            : const SizedBox.shrink(),
+                                        ?.toJson()["filePath"]),
+                              )
+                            : messageModel.messageContentType ==
+                                    MessageContentType.file
+                                ? DocumentMessageWidget(
+                                    url: messageModel.content
+                                        ?.toJson()["audioUrl"],
+                                    onDownloadTap: onDownloadTap,
+                                    filePath: messageModel.content
+                                        ?.toJson()["filePath"],
+                                    openOptions: () {},
+                                  )
+                                : const SizedBox.shrink(),
             // The timestamp is always in the bottom-right corner if there's space
             Positioned(
               bottom: 0,

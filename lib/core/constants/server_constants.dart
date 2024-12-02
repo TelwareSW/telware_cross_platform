@@ -10,8 +10,19 @@ final String GITHUB_AUTH_URL = API_URL + dotenv.env['GITHUB_AUTH_URL']!;
 final BASE_OPTIONS = BaseOptions(
   baseUrl: API_URL,
   contentType: 'application/json',
-  connectTimeout: const Duration(seconds: 5), // 5 seconds
-  receiveTimeout: const Duration(seconds: 3), // 3 seconds
-  sendTimeout: const Duration(seconds: 3),    // 3 seconds
+  connectTimeout: const Duration(seconds: 5),
+  // 5 seconds
+  receiveTimeout: const Duration(seconds: 3),
+  // 3 seconds
+  sendTimeout: const Duration(seconds: 3), // 3 seconds
 );
-    
+
+final CHAT_BASE_OPTIONS = BaseOptions(
+  baseUrl: API_URL,
+  contentType: 'application/json',
+  connectTimeout: const Duration(seconds: 5),
+  // 5 seconds
+  receiveTimeout: const Duration(seconds: 100),
+  // 3 seconds
+  sendTimeout: const Duration(seconds: 100), // 3 seconds
+);

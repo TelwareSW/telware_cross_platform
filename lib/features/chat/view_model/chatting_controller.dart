@@ -31,7 +31,7 @@ part 'chatting_controller.g.dart';
 @Riverpod(keepAlive: true)
 ChattingController chattingController(Ref ref) {
   final remoteRepo = ChatRemoteRepository(
-    dio: Dio(BASE_OPTIONS),
+    dio: Dio(CHAT_BASE_OPTIONS),
   );
 
   final localRepo = ChatLocalRepository(
@@ -175,8 +175,9 @@ class ChattingController {
       }
     }
 
-
-    _ref.read(chatsViewModelProvider.notifier).addSentMessage(content, chatID!, msgType, contentType);
+    _ref
+        .read(chatsViewModelProvider.notifier)
+        .addSentMessage(content, chatID!, msgType, contentType);
     _localRepository.setChats(_ref.read(chatsViewModelProvider));
 
     final msgEvent = SendMessageEvent({
@@ -237,7 +238,6 @@ class ChattingController {
     return response.chat!;
   }
 
-
   Future<UserModel?> getOtherUser(String id) async {
     UserModel? user =
         await _remoteRepository.getOtherUser(_ref.read(tokenProvider)!, id);
@@ -246,5 +246,23 @@ class ChattingController {
 
   void restoreOtherUsers(Map<String, UserModel> otherUsers) {
     _localRepository.setOtherUsers(otherUsers);
+  }
+
+  Future<String?> uploadMedia(String filePath) async {
+    final response = await _remoteRepository.uploadMedia(
+        _ref.read(tokenProvider)!, filePath);
+    if (response.appError != null) {
+      debugPrint('Error: Could not create the media');
+    } else {
+      return response.url;
+    }
+    return null;
+  }
+
+  void editMessageFilePath(String chatID, String msgID, String newFilePath) {
+    _ref
+        .read(chatsViewModelProvider.notifier)
+        .updateMessageFilePath(chatID, msgID, newFilePath);
+    _localRepository.setChats(_ref.read(chatsViewModelProvider));
   }
 }
