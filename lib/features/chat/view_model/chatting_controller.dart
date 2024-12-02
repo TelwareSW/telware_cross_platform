@@ -80,6 +80,9 @@ class ChattingController {
 
     // get the users list from local
     final otherUsers = _localRepository.getOtherUsers();
+    String ids = '';
+    otherUsers.forEach((key, _) => ids += '$key\n');
+    debugPrint('!!! OtherUsers Map ID\'s: $ids');
     _ref.read(chatsViewModelProvider.notifier).setOtherUsers(otherUsers);
 
     // get the events and give it to the handler from local
@@ -94,7 +97,7 @@ class ChattingController {
       final mocker = ChatMockingService.instance;
 
       final response =
-          await mocker.createMockedChats(20, _ref.read(tokenProvider)!);
+          await mocker.createMockedChats(20, _ref.read(userProvider)!.id!);
       // descending sorting for the chats, based on last message
 
       response.chats.sort(
@@ -106,6 +109,11 @@ class ChattingController {
       final otherUsersMap = <String, UserModel>{
         for (var user in response.users) user.id!: user
       };
+
+      String ids = '';
+      otherUsersMap.forEach((key, _) => ids += '$key\n');
+      debugPrint('!!! OtherUsers Map created ID\'s: $ids');
+
 
       debugPrint((await _localRepository.setChats(response.chats)).toString());
 
@@ -248,6 +256,7 @@ class ChattingController {
     _localRepository.setOtherUsers(otherUsers);
   }
 
+
   Future<String?> uploadMedia(String filePath) async {
     final response = await _remoteRepository.uploadMedia(
         _ref.read(tokenProvider)!, filePath);
@@ -264,5 +273,56 @@ class ChattingController {
         .read(chatsViewModelProvider.notifier)
         .updateMessageFilePath(chatID, msgID, newFilePath);
     _localRepository.setChats(_ref.read(chatsViewModelProvider));
+
+  Future<void> muteChat(String chatID, DateTime? muteUntil) async {
+    // Get muteUntil in seconds from today
+    final muteUntilSeconds = muteUntil!.difference(DateTime.now()).inSeconds > 10 * 365 * 24 * 60 * 60
+        ? -1 : muteUntil.difference(DateTime.now()).inSeconds;
+
+    if (USE_MOCK_DATA) {
+      final chats = _localRepository.getChats();
+      final chat = chats.firstWhere((element) => element.id == chatID);
+      final updatedChat = chat.copyWith(isMuted: true, muteUntil: muteUntil);
+      final updatedChats = chats.map((e) => e.id == chatID ? updatedChat : e).toList();
+      _localRepository.setChats(updatedChats);
+      return;
+    }
+
+    final response = await _remoteRepository.muteChat(
+      _ref.read(tokenProvider)!,
+      chatID,
+      muteUntilSeconds
+    );
+
+    if (response.appError != null) {
+      debugPrint('Error: Could not mute the chat');
+    } else {
+      _ref.read(chatsViewModelProvider.notifier).muteChat(chatID, muteUntilSeconds);
+      _localRepository.setChats(_ref.read(chatsViewModelProvider));
+    }
+  }
+
+  Future<void> unmuteChat(String chatID) async {
+    if (USE_MOCK_DATA) {
+      final chats = _localRepository.getChats();
+      final chat = chats.firstWhere((element) => element.id == chatID);
+      final updatedChat = chat.copyWith(isMuted: false, muteUntil: null);
+      final updatedChats = chats.map((e) => e.id == chatID ? updatedChat : e).toList();
+      _localRepository.setChats(updatedChats);
+      return;
+    }
+
+    final response = await _remoteRepository.unmuteChat(
+      _ref.read(tokenProvider)!,
+      chatID,
+    );
+
+    if (response.appError != null) {
+      debugPrint('Error: Could not unmute the chat');
+    } else {
+      _ref.read(chatsViewModelProvider.notifier).unmuteChat(chatID);
+      _localRepository.setChats(_ref.read(chatsViewModelProvider));
+    }
+
   }
 }

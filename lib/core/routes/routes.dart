@@ -34,6 +34,7 @@ import 'package:telware_cross_platform/features/user/view/screens/self_destruct_
 import 'package:telware_cross_platform/features/user/view/screens/settings_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/user_profile_screen.dart';
 
+import '../../features/chat/view/screens/pinned_messages_screen.dart';
 import '../../features/stories/view/screens/crop_image_screen.dart';
 import '../../features/user/view/screens/devices_screen.dart';
 
@@ -66,6 +67,7 @@ class Routes {
   static const String selfDestructTimer = SelfDestructScreen.route;
   static const String changeEmail = ChangeEmailScreen.route;
   static const String chatScreen = ChatScreen.route;
+  static const String pinnedMessagesScreen = PinnedMessagesScreen.route;
   static const String cropImageScreen = CropImageScreen.route;
   static const String createChatScreen = CreateChatScreen.route;
 
@@ -240,6 +242,16 @@ class Routes {
               final String chatId = state.extra as String;
               return ChatScreen(chatId: chatId);
             }
+          ),
+          GoRoute(
+              path: Routes.pinnedMessagesScreen,
+              builder: (context, state) {
+                if (state.extra is ChatModel) {
+                  return PinnedMessagesScreen(chatModel: state.extra as ChatModel);
+                }
+                final String chatId = state.extra as String;
+                return PinnedMessagesScreen(chatId: chatId);
+              }
           ),
           GoRoute(
               path: Routes.cropImageScreen,

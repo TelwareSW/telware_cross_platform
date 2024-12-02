@@ -7,8 +7,6 @@ import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 
 import 'package:faker/faker.dart';
-import 'package:telware_cross_platform/core/models/message_model.dart';
-import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 
 randomizeMessageContentType() {
   final Random random = Random();
@@ -58,20 +56,20 @@ randomizeMessageContent(MessageContentType contentType) async {
         filePath: "assets/audio/test8.mp3",
       );
     case MessageContentType.video:
-      XFile videoFile = await loadAssetAsXFile("assets/video/demo.mp4", "demo.mp4");
+      XFile videoFile =
+          await loadAssetAsXFile("assets/video/demo.mp4", "demo.mp4");
       return VideoContent(
-      videoUrl: "assets/video/demo.mp4",
-      duration: const Duration(minutes: 1, seconds: 20).inSeconds,
-      filePath: videoFile.path,
+        videoUrl: "assets/video/demo.mp4",
+        duration: const Duration(minutes: 1, seconds: 20).inSeconds,
+        filePath: videoFile.path,
       );
     default:
       return TextContent(sampleMessages[random.nextInt(sampleMessages.length)]);
   }
 }
 
-
-Future<List<MessageModel>> generateFakeMessages() async {
-
+Future<List<MessageModel>> generateFakeMessages(
+    int count, String secondUserID, String appUserID) async {
   // Random generator
   final Random random = Random();
 
@@ -87,9 +85,10 @@ Future<List<MessageModel>> generateFakeMessages() async {
     currentDate = currentDate.add(Duration(days: random.nextInt(3)));
     MessageContentType contentType = randomizeMessageContentType();
     MessageContent content = await randomizeMessageContent(contentType);
+    final senderId = faker.randomGenerator.boolean() ? secondUserID : appUserID;
     // Create a new message
     MessageModel message = MessageModel(
-      senderId: random.nextBool() ? '11' : faker.guid.guid(),
+      senderId: senderId,
       messageType: MessageType.normal,
       messageContentType: contentType,
       content: content,
@@ -97,7 +96,10 @@ Future<List<MessageModel>> generateFakeMessages() async {
         hours: random.nextInt(24),
         minutes: random.nextInt(60),
       )),
-      userStates: {},
+      userStates: {
+        secondUserID: getRandomMessageState(),
+        appUserID: getRandomMessageState(),
+      },
     );
 
     // Add the generated message to the list
@@ -105,4 +107,17 @@ Future<List<MessageModel>> generateFakeMessages() async {
   }
 
   return generatedMessages;
+}
+
+MessageState getRandomMessageState() {
+  final Random random = Random();
+  final int stateIndex = random.nextInt(3); // 0, 1, or 2
+  switch (stateIndex) {
+    case 0:
+      return MessageState.sent;
+    case 1:
+      return MessageState.read;
+    default:
+      return MessageState.sent;
+  }
 }
