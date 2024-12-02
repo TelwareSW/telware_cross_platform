@@ -172,6 +172,7 @@ class ChatRemoteRepository {
 
 // Fetch user details
   Future<UserModel?> getOtherUser(String sessionId, String userID) async {
+    debugPrint('!!! The Other userID: $userID');
     try {
       final response = await _dio.get(
         '/users/$userID',
@@ -203,8 +204,9 @@ class ChatRemoteRepository {
         // Assuming photoBytes are handled separately
         id: data['id'] ?? 'unknown_id',
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint('Failed to fetch user details: ${e.toString()}');
+      debugPrint('Stack trace: $stackTrace');
       return null;
     }
   }
@@ -249,6 +251,46 @@ class ChatRemoteRepository {
     } catch (e) {
       debugPrint('!!! Failed to create chat, ${e.toString()}');
       return (appError: AppError('Failed to create chat', code: 500), chat: null);
+    }
+  }
+
+  Future<({AppError? appError})> muteChat(
+      String sessionID, String chatID, int muteUntil) async {
+    try {
+      final response = await _dio.post(
+        '/chats/mute/:$chatID',
+        data: {
+          'duration': muteUntil,
+        },
+        options: Options(headers: {'X-Session-Token': sessionID}),
+      );
+
+      if (response.statusCode == 200) {
+        return (appError: null);
+      } else {
+        return (appError: AppError('Failed to mute chat', code: response.statusCode));
+      }
+    } catch (e) {
+      debugPrint('!!! Failed to mute chat, ${e.toString()}');
+      return (appError: AppError('Failed to mute chat', code: 500));
+    }
+  }
+
+  Future<({AppError? appError})> unmuteChat(String sessionID, String chatID) async {
+    try {
+      final response = await _dio.post(
+        '/chats/unmute/:$chatID',
+        options: Options(headers: {'X-Session-Token': sessionID}),
+      );
+
+      if (response.statusCode == 200) {
+        return (appError: null);
+      } else {
+        return (appError: AppError('Failed to unmute chat', code: response.statusCode));
+      }
+    } catch (e) {
+      debugPrint('!!! Failed to unmute chat, ${e.toString()}');
+      return (appError: AppError('Failed to unmute chat', code: 500));
     }
   }
 

@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
+import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 
 import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
@@ -33,8 +35,15 @@ class ChatsViewModel extends _$ChatsViewModel {
   }
 
   Future<UserModel?> getUser(String ID) async {
+    if (ID == ref.read(userProvider)!.id) {
+      return ref.read(userProvider);
+    }
+
     var user = _otherUsers[ID];
     if (user == null) {
+      if (USE_MOCK_DATA) {
+        debugPrint('!!!** can\'t find a mocked user: $ID');
+      }
       user = await ref.read(chattingControllerProvider).getOtherUser(ID);
       if (user == null) {
         return null;
@@ -126,5 +135,18 @@ class ChatsViewModel extends _$ChatsViewModel {
       // Insert the chat at the front of the list
       state.insert(0, chat);
     }
+  }
+
+  void muteChat(String chatID, int muteUntilSeconds) {
+    final chat = _chatsMap[chatID];
+    DateTime muteUntil = muteUntilSeconds == -1
+        ? DateTime.now().add(const Duration(days: 365 * 100))
+        : DateTime.now().add(Duration(seconds: muteUntilSeconds));
+    chat!.copyWith(isMuted: true, muteUntil: muteUntil);
+  }
+
+  void unmuteChat(String chatID) {
+    final chat = _chatsMap[chatID];
+    chat!.copyWith(isMuted: false, muteUntil: null);
   }
 }
