@@ -37,6 +37,8 @@ class MessageModel {
   @HiveField(10)
   final bool isPinned;
   @HiveField(11)
+  final String? parentMessage;
+  @HiveField(12)
   final String localId;
 
 //<editor-fold desc="Data Methods">
@@ -52,6 +54,7 @@ class MessageModel {
     this.photoBytes,
     required this.userStates,
     this.isPinned=false,
+    this.parentMessage,
     this.localId = ''
   });
 
