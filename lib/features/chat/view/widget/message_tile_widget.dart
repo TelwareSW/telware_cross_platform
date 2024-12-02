@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
@@ -10,6 +11,7 @@ import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/audio_message_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/video_player_widget.dart';
+import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 import 'package:video_player/video_player.dart';
 
 import 'package:telware_cross_platform/core/view/widget/highlight_text_widget.dart';
@@ -43,17 +45,7 @@ class MessageTileWidget extends StatelessWidget {
     Alignment messageAlignment =
         isSentByMe ? Alignment.centerRight : Alignment.centerLeft;
     IconData messageState = getMessageStateIcon(messageModel);
-    Widget senderNameWidget = showInfo && !isSentByMe
-        ? Text(
-            key: ValueKey('$keyValue${MessageKeys.messageSenderPostfix.value}'),
-            messageModel.senderId,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: nameColor,
-              fontSize: 12,
-            ),
-          )
-        : const SizedBox.shrink();
+    // final String otherUserName = ;
 
     return Align(
       alignment: messageAlignment,
@@ -87,7 +79,13 @@ class MessageTileWidget extends StatelessWidget {
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      senderNameWidget,
+                      SenderNameWidget(
+                        keyValue,
+                        nameColor,
+                        showInfo: showInfo,
+                        isSentByMe: isSentByMe,
+                        userId: messageModel.senderId,
+                      ),
                       Wrap(
                         children: [
                           HighlightTextWidget(
@@ -167,5 +165,63 @@ class MessageTileWidget extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class SenderNameWidget extends ConsumerStatefulWidget {
+  final bool showInfo, isSentByMe;
+  final String userId;
+  final dynamic keyValue;
+  final Color nameColor;
+  const SenderNameWidget(
+    this.keyValue,
+    this.nameColor, {
+    super.key,
+    required this.showInfo,
+    required this.isSentByMe,
+    required this.userId,
+  });
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _SenderNameWidgetState();
+}
+
+class _SenderNameWidgetState extends ConsumerState<SenderNameWidget> {
+  bool showName = false;
+  String otherUserName = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _getName();
+  }
+
+  Future<void> _getName() async {
+    if (widget.showInfo && !widget.isSentByMe) {
+      final user = (await ref
+          .read(chatsViewModelProvider.notifier)
+          .getUser(widget.userId));
+      setState(() {
+        otherUserName = '${user!.screenFirstName} ${user.screenLastName}';
+        showName = true;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget senderNameWidget = showName
+        ? Text(
+            key: ValueKey(
+                '${widget.keyValue}${MessageKeys.messageSenderPostfix.value}'),
+            otherUserName,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: widget.nameColor,
+              fontSize: 12,
+            ),
+          )
+        : const SizedBox.shrink();
+    return senderNameWidget;
   }
 }

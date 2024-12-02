@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
+import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/services/socket_service.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
@@ -35,7 +36,7 @@ class EventHandler {
   }
 
   Future<void> _processQueue() async {
-    if (_isProcessing) return; // Avoid multiple loops
+    if (_isProcessing || USE_MOCK_DATA) return; // Avoid multiple loops
 
     _isProcessing = true;
 
