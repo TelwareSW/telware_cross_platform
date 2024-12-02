@@ -82,8 +82,6 @@ dependencies:
   flutter_cupertino_datetime_picker: ^3.0.0
 
 
-
-  flutter_svg: any
 dev_dependencies:
   flutter_test:
     sdk: flutter
