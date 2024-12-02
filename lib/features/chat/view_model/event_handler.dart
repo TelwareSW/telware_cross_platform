@@ -11,7 +11,7 @@ import 'package:telware_cross_platform/features/chat/view_model/chatting_control
 class EventHandler {
   final ChattingController _chattingController;
   final SocketService _socket;
-  late final Queue<MessageEvent> _queue;
+  Queue<MessageEvent> _queue;
 
   bool _isProcessing = false; // Flag to control processing loop
   bool _stopRequested = false; // Flag to request stopping the loop
@@ -85,7 +85,7 @@ class EventHandler {
     required ChattingController controller,
     required SocketService socket,
   })  : _chattingController = controller,
-        _socket = socket;
+        _socket = socket, _queue = Queue();
 
   // Singleton instance
   static EventHandler? _instance;

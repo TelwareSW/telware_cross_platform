@@ -172,6 +172,7 @@ class ChatRemoteRepository {
 
 // Fetch user details
   Future<UserModel?> getOtherUser(String sessionId, String userID) async {
+    debugPrint('!!! The Other userID: $userID');
     try {
       final response = await _dio.get(
         '/users/$userID',
@@ -203,8 +204,9 @@ class ChatRemoteRepository {
         // Assuming photoBytes are handled separately
         id: data['id'] ?? 'unknown_id',
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint('Failed to fetch user details: ${e.toString()}');
+      debugPrint('Stack trace: $stackTrace');
       return null;
     }
   }

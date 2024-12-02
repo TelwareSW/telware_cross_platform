@@ -39,7 +39,7 @@ class ChatsList extends ConsumerWidget {
     final Random random = Random();
     DateTime currentDate = DateTime.now().subtract(const Duration(days: 7));
     final MessageModel fakeMessage = MessageModel(
-      senderId: random.nextBool() ? "John Doe" : "Jane Smith",
+      senderId: userID,
       messageType: MessageType.normal,
       messageContentType: MessageContentType.text,
       content: TextContent("Hello! This is a fake message."),

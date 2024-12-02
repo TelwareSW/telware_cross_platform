@@ -80,6 +80,9 @@ class ChattingController {
 
     // get the users list from local
     final otherUsers = _localRepository.getOtherUsers();
+    String ids = '';
+    otherUsers.forEach((key, _) => ids += '$key\n');
+    debugPrint('!!! OtherUsers Map ID\'s: $ids');
     _ref.read(chatsViewModelProvider.notifier).setOtherUsers(otherUsers);
 
     // get the events and give it to the handler from local
@@ -94,7 +97,7 @@ class ChattingController {
       final mocker = ChatMockingService.instance;
 
       final response =
-          await mocker.createMockedChats(20, _ref.read(tokenProvider)!);
+          await mocker.createMockedChats(20, _ref.read(userProvider)!.id!);
       // descending sorting for the chats, based on last message
 
       response.chats.sort(
@@ -106,6 +109,11 @@ class ChattingController {
       final otherUsersMap = <String, UserModel>{
         for (var user in response.users) user.id!: user
       };
+
+      String ids = '';
+      otherUsersMap.forEach((key, _) => ids += '$key\n');
+      debugPrint('!!! OtherUsers Map created ID\'s: $ids');
+
 
       debugPrint((await _localRepository.setChats(response.chats)).toString());
 

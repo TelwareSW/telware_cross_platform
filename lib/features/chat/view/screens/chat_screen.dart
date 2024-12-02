@@ -93,11 +93,11 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       _messageController.text = chatModel!.draft ?? "";
       final messages = chatModel?.messages ?? [];
       _updateChatMessages(messages);
-      _scrollToBottom();
+      // _scrollToBottom();
     });
     _chosenAnimation = getRandomLottieAnimation();
     _getDir();
-    _scrollToBottom();
+    // _scrollToBottom();
     _recorderController = RecorderController()
       ..androidEncoder = AndroidEncoder.aac
       ..androidOutputFormat = AndroidOutputFormat.aac_adts
@@ -150,7 +150,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     super.didChangeMetrics();
     if (_scrollController.hasClients && _isAtBottom()) {
       // When the keyboard is shown and the user is at the bottom, scroll to the bottom
-      _scrollToBottom();
+      // _scrollToBottom();
     }
   }
 
@@ -210,7 +210,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       List<MessageModel> messages =
           ref.watch(chatProvider(chatModel!.id!))?.messages ?? [];
       _updateChatMessages(messages);
-      _scrollToBottom();
+      // _scrollToBottom();
     });
   }
 
@@ -627,6 +627,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                               ),
                             )
                           : SingleChildScrollView(
+                            reverse: true,
                               controller:
                                   _scrollController, // Use the ScrollController
                               child: Padding(

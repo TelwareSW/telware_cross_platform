@@ -43,7 +43,7 @@ class ChatMockingService {
       picturePrivacy: 'Everyone',
       invitePermissionsPrivacy: 'Everyone',
       phone: faker.phoneNumber.us(),
-      id: '11',
+      id: faker.guid.guid(),
     );
   }
 
@@ -120,7 +120,7 @@ class ChatMockingService {
 
     final users = createMockedUsers(count);
     final chatFutures = List.generate(count, (index) async {
-      final msgs = await generateFakeMessages();
+      final msgs = await generateFakeMessages(faker.randomGenerator.integer(30, min: 1), users[index].id!, appUserId);
       return createMockedChat(msgs, [users[index].id!, appUserId]);
     });
     final chats = await Future.wait(chatFutures);
