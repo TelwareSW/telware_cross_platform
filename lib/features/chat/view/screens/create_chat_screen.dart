@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:faker/faker.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,7 +13,9 @@ import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
+import 'package:telware_cross_platform/features/user/repository/user_remote_repository.dart';
 import 'package:telware_cross_platform/features/user/view/widget/user_chats.dart';
+import 'package:telware_cross_platform/features/user/view_model/user_view_model.dart';
 
 import 'chat_screen.dart';
 
@@ -37,6 +38,8 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
   final TextEditingController searchController = TextEditingController();
 
   late Future<List<UserModel>> _usersFuture;
+  List<UserModel>? _userContent;
+  bool _isUserContentSet = false;
 
   @override
   void initState() {
@@ -45,17 +48,29 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
     fullUserChats = <Map<String, dynamic>>[
       {"options": <Map<String, dynamic>>[]}
     ];
-    _usersFuture = generateFakeUsers(count: 20, photoPaths: [
-      'assets/imgs/marwan.jpg',
-      'assets/imgs/ahmed.jpeg',
-      'assets/imgs/bishoy.jpeg'
-    ]);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        _usersFuture = ref.read(userViewModelProvider.notifier).fetchUsers();
+      });
+    });
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  void _createNewChat(UserModel userInfo) {
+    final myUser = ref.read(userProvider)!;
+    ChatModel newChat = ChatModel(
+      title: '${userInfo.screenFirstName} ${userInfo.screenLastName}',
+      userIds: [myUser.id!, userInfo.id!],
+      type: ChatType.private,
+      messages: [],
+      photo: userInfo.photo,
+    );
+    context.push(ChatScreen.route, extra: newChat);
   }
 
   @override
@@ -154,6 +169,10 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
               ),
             );
           } else {
+            if (!_isUserContentSet) {
+              userChats = _generateUsersList(snapshot.data!);
+              _isUserContentSet = true;
+            }
             return TabBarView(
               controller: _tabController,
               children: List.generate(9, (index) {
@@ -210,76 +229,13 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
     );
   }
 
-  void _createNewChat(UserModel userInfo) {
-    final myUser = ref.read(userProvider)!;
-    ChatModel newChat = ChatModel(
-      title: '${userInfo.screenFirstName} ${userInfo.screenLastName}',
-      userIds: [myUser.id!, userInfo.id!],
-      type: ChatType.private,
-      messages: [],
-      photo: userInfo.photo,
-    );
-    context.push(ChatScreen.route, extra: newChat);
-  }
-
-  Future<List<UserModel>> generateFakeUsers({
-    int count = 20,
-    List<String>? photoPaths,
-  }) async {
-    final faker = Faker();
-    final random = Random();
-    List<UserModel> users = [];
-
-    for (int i = 0; i < count; i++) {
-      String username = faker.internet.userName();
-      String screenFirstName = faker.person.firstName();
-      String screenLastName = faker.person.lastName();
-      String email = faker.internet.email();
-      String status = faker.lorem.sentence();
-      String bio = faker.lorem.sentences(2).join(' ');
-      int maxFileSize =
-          random.nextInt(50) * 1024 * 1024; // Random file size in MB
-      bool automaticDownloadEnable = random.nextBool();
-      String lastSeenPrivacy = randomPrivacy();
-      bool readReceiptsEnablePrivacy = random.nextBool();
-      String storiesPrivacy = randomPrivacy();
-      String picturePrivacy = randomPrivacy();
-      String invitePermissionsPrivacy = randomPrivacy();
-      String phone = faker.phoneNumber.us();
-
-      String? photo = photoPaths != null && photoPaths.isNotEmpty
-          ? photoPaths[random.nextInt(photoPaths.length)]
-          : null;
-
-      Uint8List? photoBytes;
-      if (photo != null) {
-        photoBytes = await loadAssetImageBytes(photo);
-      }
-
-      users.add(UserModel(
-        username: username,
-        screenFirstName: screenFirstName,
-        screenLastName: screenLastName,
-        email: email,
-        photo: photo,
-        status: status,
-        bio: bio,
-        maxFileSize: maxFileSize,
-        automaticDownloadEnable: automaticDownloadEnable,
-        lastSeenPrivacy: lastSeenPrivacy,
-        readReceiptsEnablePrivacy: readReceiptsEnablePrivacy,
-        storiesPrivacy: storiesPrivacy,
-        picturePrivacy: picturePrivacy,
-        invitePermissionsPrivacy: invitePermissionsPrivacy,
-        phone: phone,
-        photoBytes: photoBytes,
-        id: faker.guid.guid(),
-      ));
-    }
-
+  List<Map<String, dynamic>> _generateUsersList(List<UserModel> users) {
+    UserModel myUser = ref.read(userProvider)!;
     for (UserModel user in users) {
+      if (user.id == myUser.id) continue;
       var option = <String, dynamic>{
-        "text": user.screenFirstName,
+        "avatar": true,
+        "text": '${user.screenFirstName} ${user.screenLastName}',
         "imagePath": user.photo,
         "subtext": "last seen Nov 23 at 6:40 PM",
         "trailingFontSize": 13.0,
@@ -296,14 +252,14 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
       fullUserChats[0]["options"].add(option);
       userChats = fullUserChats;
     }
-    return users;
+    return userChats;
   }
 
   void filterView(String query) {
+
     var filteredChats = <Map<String, dynamic>>[
       {"options": <Map<String, dynamic>>[]}
     ];
-    ;
     if (query.isEmpty) {
       filteredChats = List.from(fullUserChats);
     } else {
@@ -330,4 +286,5 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
       return null; // Return null if image loading fails
     }
   }
+
 }

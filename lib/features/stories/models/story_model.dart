@@ -94,4 +94,17 @@ class StoryModel {
       storyCaption.hashCode ^
       const ListEquality().hash(seenIds) ^
       (storyContent?.hashCode ?? 0);
+
+  factory StoryModel.fromJson(Map<String, dynamic> json) {
+    return StoryModel(
+      storyId: json['_id'] ?? '',
+      isSeen: json['views'] != null && json['views'].isNotEmpty,
+      createdAt: DateTime.parse(json['timestamp'] ?? DateTime.now().toIso8601String()),
+      seenIds: (json['views'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      storyContentType: 'image',
+      storyContentUrl: json['content'],
+      storyCaption: json['caption'] ?? '',
+      storyContent: null,
+    );
+  }
 }

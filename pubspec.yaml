@@ -82,7 +82,6 @@ dependencies:
   flutter_cupertino_datetime_picker: ^3.0.0
 
 
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -104,6 +103,7 @@ dev_dependencies:
     sdk: flutter
 
 
+  riverpod: any
 flutter_launcher_icons:
   image_path: "assets/icon/app_icon_white.png"
 

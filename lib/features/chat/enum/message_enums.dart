@@ -59,22 +59,26 @@ enum MessageContentType {
   @HiveField(1)
   image(content: 'image'),
   @HiveField(2)
-  gif(content: 'GIF'),
+  emoji(content: 'emoji'),
   @HiveField(3)
-  sticker(content: 'sticker'),
+  gif(content: 'GIF'),
   @HiveField(4)
-  audio(content: 'audio'),
+  sticker(content: 'sticker'),
   @HiveField(5)
-  video(content: 'video'),
+  audio(content: 'audio'),
   @HiveField(6)
-  file(content: 'file'),
+  video(content: 'video'),
   @HiveField(7)
+  file(content: 'file'),
+  @HiveField(8)
   link(content: 'link');
 
   static MessageContentType getType(String type) {
     switch (type) {
       case 'image':
         return MessageContentType.image;
+      case 'emoji':
+        return MessageContentType.emoji;
       case 'GIF':
         return MessageContentType.gif;
       case 'sticker':
@@ -108,4 +112,3 @@ enum DeleteMessageType {
 
   const DeleteMessageType({required this.text});
 }
-

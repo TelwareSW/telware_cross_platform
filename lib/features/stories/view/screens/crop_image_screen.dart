@@ -1,20 +1,21 @@
 import 'dart:io';
 import 'dart:math';
-import 'dart:ui';
 import 'package:custom_image_crop/custom_image_crop.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 
+import '../../../../core/constants/keys.dart';
+
 class CropImageScreen extends StatefulWidget {
   static const String route = '/cropImageScreen';
   final String path;
 
   const CropImageScreen({
-    Key? key,
+    super.key,
     required this.path,
-  }) : super(key: key);
+  });
 
   @override
   _CropImageScreenState createState() => _CropImageScreenState();
@@ -24,7 +25,7 @@ class _CropImageScreenState extends State<CropImageScreen> {
   late CustomImageCropController controller;
   Color backGroundColor = Palette.secondary;
   CustomCropShape _currentShape = CustomCropShape.Circle;
-  CustomImageFit _imageFit = CustomImageFit.fillCropSpace;
+  final CustomImageFit _imageFit = CustomImageFit.fillCropSpace;
   final TextEditingController _widthController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
   final TextEditingController _radiusController = TextEditingController();
@@ -116,30 +117,37 @@ class _CropImageScreenState extends State<CropImageScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               IconButton(
+                  key: Keys.refreshImageCropScreen,
                   icon: const Icon(Icons.refresh), onPressed: controller.reset),
               IconButton(
+                  key: Keys.zoomInImageCropScreen,
                   icon: const Icon(Icons.zoom_in),
                   onPressed: () =>
                       controller.addTransition(CropImageData(scale: 1.33))),
               IconButton(
+                  key: Keys.zoomOutImageCropScreen,
                   icon: const Icon(Icons.zoom_out),
                   onPressed: () =>
                       controller.addTransition(CropImageData(scale: 0.75))),
               IconButton(
+                  key: Keys.rotateLeftImageCropScreen,
                   icon: const Icon(Icons.rotate_left),
                   onPressed: () =>
                       controller.addTransition(CropImageData(angle: -pi / 4))),
               IconButton(
+                  key: Keys.rotateRightImageCropScreen,
                   icon: const Icon(Icons.rotate_right),
                   onPressed: () =>
                       controller.addTransition(CropImageData(angle: pi / 4))),
               PopupMenuButton(
+                key: Keys.popupMenuImageCropScreen,
                 icon: const Icon(Icons.crop_original),
                 onSelected: _changeCropShape,
                 itemBuilder: (BuildContext context) {
                   return CustomCropShape.values.map(
                     (shape) {
                       return PopupMenuItem(
+                        key: ValueKey('${Keys.popupMenuItemImageCropScreen}${shape.name}'),
                         value: shape,
                         child: getShapeIcon(shape),
                       );
@@ -148,6 +156,7 @@ class _CropImageScreenState extends State<CropImageScreen> {
                 },
               ),
               IconButton(
+                key: Keys.changeColorImageCropScreen,
                 icon: const Icon(
                   Icons.color_lens_sharp,
                 ),
@@ -158,6 +167,7 @@ class _CropImageScreenState extends State<CropImageScreen> {
                 },
               ),
               IconButton(
+                key: Keys.submitCropImageCropScreen,
                 icon: const Icon(
                   Icons.crop,
                   color: Colors.green,
@@ -174,8 +184,7 @@ class _CropImageScreenState extends State<CropImageScreen> {
                   String filePath = '$directoryPath/$fileName';
 
                   // Write the file
-                  final file =
-                      await File(filePath).writeAsBytes(croppedFile!.bytes);
+                  await File(filePath).writeAsBytes(croppedFile!.bytes);
 
                   // Optional: Clean up old files to save space
                   final directory = Directory(directoryPath);
@@ -185,15 +194,17 @@ class _CropImageScreenState extends State<CropImageScreen> {
                       final stat = await fileEntity.stat();
                       final lastModified = stat.modified;
                       final expirationDate =
-                          DateTime.now().subtract(Duration(days: 7));
+                      DateTime.now().subtract(const Duration(days: 7));
                       if (lastModified.isBefore(expirationDate)) {
                         await fileEntity.delete();
                       }
                     }
                   }
-                  Navigator.pop(context, file);
+
+                  // Pass the file path instead of the File object
+                  Navigator.pop(context, filePath);
                 },
-              ),
+              )
             ],
           ),
           if (_currentShape == CustomCropShape.Ratio) ...[

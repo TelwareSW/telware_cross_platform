@@ -201,7 +201,7 @@ class UserModel {
 
   static Future<UserModel> fromMap(Map<String, dynamic> map) async {
     String first = (map['screenFirstName'] as String?) ?? '';
-    String last = (map['screenFirstName'] as String?) ?? '';
+    String last = (map['screenLastName'] as String?) ?? '';
     if (first.isEmpty) {
       first = 'No';
       last = 'Name';
@@ -211,16 +211,16 @@ class UserModel {
       screenFirstName: first,
       screenLastName: last,
       email: (map['email'] as String?) ?? '',
-      photo: map['photo'] != null ? map['photo'] as String : null,
+      photo: map['photo'] != null && map['photo'] != "" ? map['photo'] as String : null,
       status: map['status'] as String,
       bio: map['bio'] as String,
-      maxFileSize: map['maxFileSize'] as int,
-      automaticDownloadEnable: map['automaticDownloadEnable'] as bool,
-      lastSeenPrivacy: map['lastSeenPrivacy'] as String,
-      readReceiptsEnablePrivacy: map['readReceiptsEnablePrivacy'] as bool,
-      storiesPrivacy: map['storiesPrivacy'] as String,
-      picturePrivacy: map['picturePrivacy'] as String,
-      invitePermissionsPrivacy: map['invitePermessionsPrivacy'] as String,
+      maxFileSize: map['maxFileSize'] ?? 0,
+      automaticDownloadEnable: map['automaticDownloadEnable'] ?? false,
+      lastSeenPrivacy: map['lastSeenPrivacy'] ?? '',
+      readReceiptsEnablePrivacy: map['readReceiptsEnablePrivacy'] ?? false,
+      storiesPrivacy: map['storiesPrivacy'] ?? '',
+      picturePrivacy: map['picturePrivacy'] ?? '',
+      invitePermissionsPrivacy: map['invitePermissionsPrivacy'] ?? '',
       phone: (map['phoneNumber'] as String?) ?? '',
       id: map['id'] as String,
     );

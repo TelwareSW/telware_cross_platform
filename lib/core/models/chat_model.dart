@@ -41,6 +41,8 @@ class ChatModel {
   final bool isMentioned;
   @HiveField(13)
   final List<MessageModel> messages;
+  @HiveField(14)
+  final DateTime? muteUntil; // Add this field
 
   ChatModel({
     required this.title,
@@ -57,6 +59,7 @@ class ChatModel {
     this.isMentioned = false,
     this.draft,
     required this.messages,
+    this.muteUntil, // Initialize this field
   });
 
   Future<void> _setPhotoBytes() async {
@@ -93,9 +96,10 @@ class ChatModel {
         other.lastMessageTimestamp == lastMessageTimestamp &&
         other.isArchived == isArchived &&
         other.isMuted == isMuted &&
+        other.muteUntil == muteUntil &&
         other.draft == draft &&
         other.isMentioned == isMentioned &&
-        other.messages == messages; // Compare the messages list
+        other.messages == messages;
   }
 
   @override
@@ -146,9 +150,10 @@ class ChatModel {
     DateTime? lastMessageTimestamp,
     bool? isArchived,
     bool? isMuted,
+    DateTime? muteUntil, // Add this parameter
     String? draft,
     bool? isMentioned,
-    List<MessageModel>? messages, // Add this for message copy
+    List<MessageModel>? messages,
   }) {
     return ChatModel(
       title: title ?? this.title,
@@ -162,9 +167,10 @@ class ChatModel {
       lastMessageTimestamp: lastMessageTimestamp ?? this.lastMessageTimestamp,
       isArchived: isArchived ?? this.isArchived,
       isMuted: isMuted ?? this.isMuted,
+      muteUntil: muteUntil ?? this.muteUntil, // Copy this field
       draft: draft ?? this.draft,
       isMentioned: isMentioned ?? this.isMentioned,
-      messages: messages ?? this.messages, // Handle messages copy
+      messages: messages ?? this.messages,
     );
   }
 
@@ -180,9 +186,10 @@ class ChatModel {
       'lastMessageTimestamp': lastMessageTimestamp?.toIso8601String(),
       'isArchived': isArchived,
       'isMuted': isMuted,
+      'muteUntil': muteUntil?.toIso8601String(), // Add this field
       'draft': draft,
       'isMentioned': isMentioned,
-      'messages': messages.map((message) => message.toMap()).toList(), // Convert messages to Map
+      'messages': messages.map((message) => message.toMap()).toList(),
     };
   }
 
@@ -202,17 +209,34 @@ class ChatModel {
           ? DateTime.parse(map['lastMessageTimestamp'] as String)
           : null,
       isArchived: map['isArchived'] as bool? ?? false,
-      isMuted: map['isMuted'] as bool? ?? false,
+      isMuted: (map['isMuted'] as bool? ?? false) || (map['muteUntil'] as bool? ?? false),
+      muteUntil: map['muteUntil'] != ''
+          ? (map['muteUntil'] == '-1'
+          ? DateTime.now().add(const Duration(days: 365 * 100))
+          : DateTime.now().add(Duration(seconds: map['muteUntil'] as int))) : null,
       draft: map['draft'] as String?,
       isMentioned: map['isMentioned'] as bool? ?? false,
       messages: await Future.wait(
           (map['messages'] as List<dynamic>)
               .map((msg) async => await MessageModel.fromMap(msg as Map<String, dynamic>))
-      ), // Deserialize messages
+      ),
     );
     await chat._setPhotoBytes();
     return chat;
   }
 
   String toJson() => json.encode(toMap());
+
+  String getChatTypeString() {
+    switch (type) {
+      case ChatType.private:
+        return 'private';
+      case ChatType.group:
+        return 'group';
+      case ChatType.channel:
+        return 'channel';
+      default:
+        return 'unknown';
+    }
+  }
 }

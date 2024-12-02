@@ -4,12 +4,14 @@ import 'dart:io';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/core/mock/user_mock.dart';
+import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_local_repository.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_remote_repository.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
 import 'package:telware_cross_platform/features/stories/repository/contacts_remote_repository.dart';
+import 'package:telware_cross_platform/features/user/repository/user_local_repository.dart';
 import 'package:telware_cross_platform/features/user/view_model/user_state.dart';
 import 'package:telware_cross_platform/features/user/repository/user_remote_repository.dart';
 
@@ -45,12 +47,34 @@ class UserViewModel extends _$UserViewModel {
     );
   }
 
+  Future<List<UserModel>> fetchUsers() async {
+    state = UserState.loading;
+
+    if (USE_MOCK_DATA) {
+      state = UserState.success('Users fetched successfully');
+      return mockUsers;
+    }
+
+    final response = await ref.read(userRemoteRepositoryProvider).fetchUsers();
+
+    return response.fold(
+          (appError) {
+        state = UserState.fail(appError.error);
+        return [];
+      },
+          (users) {
+        state = UserState.success('Users fetched successfully');
+        return users;
+      },
+    );
+  }
+
   Future<void> updatePhoneNumber(String newPhoneNumber) async {
     state = UserState.loading;
 
     if (USE_MOCK_DATA) {
       // Simulate a successful update with mock data
-      final updatedUser = userMock.copyWith(phone: newPhoneNumber);
+      final updatedUser = mockUsers[0].copyWith(phone: newPhoneNumber);
       ref
           .read(authLocalRepositoryProvider)
           .setUser(updatedUser); // Persist the change
@@ -90,7 +114,7 @@ class UserViewModel extends _$UserViewModel {
 
     if (USE_MOCK_DATA) {
       // Simulate a successful update with mock data
-      final updatedUser = userMock.copyWith(bio: newBio);
+      final updatedUser = mockUsers[0].copyWith(bio: newBio);
       ref
           .read(authLocalRepositoryProvider)
           .setUser(updatedUser); // Persist the change
@@ -131,7 +155,7 @@ class UserViewModel extends _$UserViewModel {
     if (USE_MOCK_DATA) {
       // Simulate a successful update with mock data
       final updatedUser =
-          userMock.copyWith(screenFirstName: firstName, screenLastName: lastName, bio: newBio);
+          mockUsers[0].copyWith(screenFirstName: firstName, screenLastName: lastName, bio: newBio);
       ref.read(authLocalRepositoryProvider).setUser(updatedUser);
       ref.read(userProvider.notifier).update((_) => updatedUser);
       state = UserState.success('Screen name updated successfully');
@@ -170,7 +194,7 @@ class UserViewModel extends _$UserViewModel {
 
     if (USE_MOCK_DATA) {
       // Simulate a successful update with mock data
-      final updatedUser = userMock.copyWith(email: newEmail);
+      final updatedUser = mockUsers[0].copyWith(email: newEmail);
       ref.read(authLocalRepositoryProvider).setUser(updatedUser);
       ref.read(userProvider.notifier).update((_) => updatedUser);
       state = UserState.success('Email updated successfully');
@@ -203,7 +227,7 @@ class UserViewModel extends _$UserViewModel {
 
     if (USE_MOCK_DATA) {
       // Simulate a successful update with mock data
-      final updatedUser = userMock.copyWith(username: newUsername);
+      final updatedUser = mockUsers[0].copyWith(username: newUsername);
       ref.read(authLocalRepositoryProvider).setUser(updatedUser);
       ref.read(userProvider.notifier).update((_) => updatedUser);
       state = UserState.success('Username updated successfully');
@@ -284,7 +308,7 @@ class UserViewModel extends _$UserViewModel {
 
     if (USE_MOCK_DATA) {
       // Simulate a successful update with mock data
-      final updatedUser = userMock.copyWith(lastSeenPrivacy: newPrivacy);
+      final updatedUser = mockUsers[0].copyWith(lastSeenPrivacy: newPrivacy);
       ref.read(authLocalRepositoryProvider).setUser(updatedUser);
       ref.read(userProvider.notifier).update((_) => updatedUser);
       state = UserState.success('Last seen privacy updated successfully');
@@ -317,7 +341,7 @@ class UserViewModel extends _$UserViewModel {
 
     if (USE_MOCK_DATA) {
       // Simulate a successful update with mock data
-      final updatedUser = userMock.copyWith(picturePrivacy: newPrivacy);
+      final updatedUser = mockUsers[0].copyWith(picturePrivacy: newPrivacy);
       ref.read(authLocalRepositoryProvider).setUser(updatedUser);
       ref.read(userProvider.notifier).update((_) => updatedUser);
       state = UserState.success('Profile photo privacy updated successfully');
@@ -351,7 +375,7 @@ class UserViewModel extends _$UserViewModel {
     if (USE_MOCK_DATA) {
       // Simulate a successful update with mock data
       final updatedUser =
-          userMock.copyWith(invitePermissionsPrivacy: newPermissions);
+          mockUsers[0].copyWith(invitePermissionsPrivacy: newPermissions);
       ref.read(authLocalRepositoryProvider).setUser(updatedUser);
       ref.read(userProvider.notifier).update((_) => updatedUser);
       state = UserState.success('Invite permissions updated successfully');

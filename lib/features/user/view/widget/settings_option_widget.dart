@@ -32,6 +32,8 @@ class SettingsOptionWidget extends StatelessWidget {
   final bool? avatar;
   final VoidCallback? onTap;
 
+  static final Map<String, Color> _colorCache = {};
+
   const SettingsOptionWidget({
     super.key,
     this.trailingIconKey,
@@ -61,6 +63,8 @@ class SettingsOptionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Color avatarBackgroundColor = _colorCache.putIfAbsent(text, () => getRandomColor());
+
     return Padding(
         padding: const EdgeInsets.symmetric(
             horizontal: Dimensions.optionsHorizontalPad,
@@ -105,7 +109,7 @@ class SettingsOptionWidget extends StatelessWidget {
                 padding: const EdgeInsets.only(right: 16),
                 child: AvatarGenerator(
                   name: text,
-                  backgroundColor: getRandomColor(),
+                  backgroundColor: avatarBackgroundColor,
                   size: imageWidth,
                 ),
               ),

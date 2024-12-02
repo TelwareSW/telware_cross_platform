@@ -33,7 +33,7 @@ class MessageModel {
   @HiveField(8)
   Uint8List? photoBytes;
   @HiveField(9)
-  final Map<String, MessageState> userStates;
+  final Map<String, MessageState> userStates; // userID -> state of the message
   @HiveField(10)
   final bool isPinned;
 

@@ -1,7 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
+import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 
 import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
@@ -31,11 +34,20 @@ class ChatsViewModel extends _$ChatsViewModel {
     _otherUsers = otherUsers;
   }
 
-  Future<UserModel> getUser(String ID) async {
-    var user = _otherUsers[ID];
+  Future<UserModel?> getUser(String ID) async {
+    if (ID == ref.read(userProvider)!.id) {
+      return ref.read(userProvider);
+    }
 
+    var user = _otherUsers[ID];
     if (user == null) {
+      if (USE_MOCK_DATA) {
+        debugPrint('!!!** can\'t find a mocked user: $ID');
+      }
       user = await ref.read(chattingControllerProvider).getOtherUser(ID);
+      if (user == null) {
+        return null;
+      }
       _otherUsers[ID] = user;
       // todo: ask the controller to restore the other users map in the local storage
       ref.read(chattingControllerProvider).restoreOtherUsers(_otherUsers);
@@ -48,6 +60,11 @@ class ChatsViewModel extends _$ChatsViewModel {
     state = chats;
     _chatsMap.clear();
     _chatsMap = <String, ChatModel>{for (var chat in chats) chat.id!: chat};
+  }
+
+  void addChat(ChatModel chat) {
+    state.insert(0, chat);
+    _chatsMap[chat.id!] = chat;
   }
 
   void addSentMessage(MessageContent content, String chatID,
@@ -63,7 +80,6 @@ class ChatsViewModel extends _$ChatsViewModel {
       messageContentType: msgContentType,
       messageType: msgType,
       userStates: {},
-
     );
 
     chat!.messages.add(msg);
@@ -94,9 +110,7 @@ class ChatsViewModel extends _$ChatsViewModel {
     }
   }
 
-
   void editMessage(String msgID, String chatID, MessageContent content) {
-
     final chat = _chatsMap[chatID];
     // Find the msg with the specified ID
     final msgIndex = chat!.messages.indexWhere((msg) => msg.id == msgID);
@@ -121,5 +135,18 @@ class ChatsViewModel extends _$ChatsViewModel {
       // Insert the chat at the front of the list
       state.insert(0, chat);
     }
+  }
+
+  void muteChat(String chatID, int muteUntilSeconds) {
+    final chat = _chatsMap[chatID];
+    DateTime muteUntil = muteUntilSeconds == -1
+        ? DateTime.now().add(const Duration(days: 365 * 100))
+        : DateTime.now().add(Duration(seconds: muteUntilSeconds));
+    chat!.copyWith(isMuted: true, muteUntil: muteUntil);
+  }
+
+  void unmuteChat(String chatID) {
+    final chat = _chatsMap[chatID];
+    chat!.copyWith(isMuted: false, muteUntil: null);
   }
 }

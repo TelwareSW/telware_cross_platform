@@ -68,7 +68,6 @@ class ChattingController {
     // todo: make use of the return of this
     _remoteRepository.getUserChats(
         _ref.read(tokenProvider)!, _ref.read(userProvider)!.id!);
-
   }
 
   Future<void> init() async {
@@ -81,13 +80,15 @@ class ChattingController {
 
     // get the users list from local
     final otherUsers = _localRepository.getOtherUsers();
+    String ids = '';
+    otherUsers.forEach((key, _) => ids += '$key\n');
+    debugPrint('!!! OtherUsers Map ID\'s: $ids');
     _ref.read(chatsViewModelProvider.notifier).setOtherUsers(otherUsers);
 
     // get the events and give it to the handler from local
     final events = _localRepository.getEventQueue();
     final newEvents = events.map((e) => e.copyWith(controller: this));
     _eventHandler.init(Queue<MessageEvent>.from(newEvents.toList()));
-
   }
 
   Future<void> newLoginInit() async {
@@ -96,7 +97,7 @@ class ChattingController {
       final mocker = ChatMockingService.instance;
 
       final response =
-          await mocker.createMockedChats(20, _ref.read(tokenProvider)!);
+          await mocker.createMockedChats(20, _ref.read(userProvider)!.id!);
       // descending sorting for the chats, based on last message
 
       response.chats.sort(
@@ -109,6 +110,11 @@ class ChattingController {
         for (var user in response.users) user.id!: user
       };
 
+      String ids = '';
+      otherUsersMap.forEach((key, _) => ids += '$key\n');
+      debugPrint('!!! OtherUsers Map created ID\'s: $ids');
+
+
       debugPrint((await _localRepository.setChats(response.chats)).toString());
 
       debugPrint(
@@ -117,7 +123,6 @@ class ChattingController {
       debugPrint('!!! ended the newLoginInit mock');
       return;
     }
-
 
     final response = await _remoteRepository.getUserChats(
         _ref.read(tokenProvider)!, _ref.read(userProvider)!.id!);
@@ -133,7 +138,6 @@ class ChattingController {
           }
           return b.messages[0].timestamp.compareTo(a.messages[0].timestamp);
         },
-
       );
 
       final otherUsersMap = <String, UserModel>{
@@ -144,42 +148,51 @@ class ChattingController {
       _localRepository.setOtherUsers(otherUsersMap);
       debugPrint('!!! ended the newLoginInit');
     }
-
   }
 
   /// Send a text message.
   /// Must specify either the chatID or userID in case of new chat,
   /// otherwise, it will throw an error
-  void sendMsg({
 
+  Future<void> sendMsg({
     required MessageContent content,
-
     required MessageType msgType,
     required MessageContentType contentType,
     required ChatType chatType,
-    String? chatID,
+    ChatModel? chatModel,
     String? userID,
-  }) {
-    // todo: handle new chats case
-    if (chatID == null && userID == null) {
-      throw Exception('specify the chatID, or userID in case of new chats');
+  }) async {
+    String? chatID = chatModel?.id;
+    bool isChatNew = chatID == null;
+
+    if (chatID == null && chatModel != null) {
+      // Create a new chat if chatID is null
+      final response = await _remoteRepository.createChat(
+        _ref.read(tokenProvider)!,
+        chatModel.title,
+        chatModel.getChatTypeString(),
+        chatModel.userIds,
+      );
+
+      if (response.appError != null) {
+        debugPrint('Error: Could not create the chat');
+      } else {
+        chatID = response.chat!.id;
+        chatModel.id = chatID;
+        _ref.read(chatsViewModelProvider.notifier).addChat(response.chat!);
+      }
     }
-    // todo: (marwan) I assumed we should send the message locally then when the user become online or the server is working
-    // we send the unsent messages
-    // todo: handle new chats case ----------------------------------!
-    _ref
-        .read(chatsViewModelProvider.notifier)
 
-        .addSentMessage(content, chatID!, msgType, contentType);
 
+    _ref.read(chatsViewModelProvider.notifier).addSentMessage(content, chatID!, msgType, contentType);
     _localRepository.setChats(_ref.read(chatsViewModelProvider));
 
     final msgEvent = SendMessageEvent({
-      'chatId': chatID ?? userID,
+      'chatId': chatID,
       'content': content,
       'contentType': contentType.content,
       'senderId': _ref.read(userProvider)!.id,
-      'isFirstTime': chatID == null,
+      'isFirstTime': isChatNew,
       'chatType': chatType.type
     }, controller: this);
 
@@ -209,7 +222,6 @@ class ChattingController {
   // edit a message
 
   void editMsg(String msgID, String chatID, MessageContent content) {
-
     final msgEvent = DeleteMessageEvent({
       'chatId': chatID,
       'senderId': _ref.read(userProvider)!.id,
@@ -225,7 +237,7 @@ class ChattingController {
     _localRepository.setChats(_ref.read(chatsViewModelProvider));
   }
 
-  // recieve a message
+  // receive a message
 
   Future<ChatModel> getChat(String chatID) async {
     final sessionID = _ref.read(tokenProvider);
@@ -233,15 +245,65 @@ class ChattingController {
     return response.chat!;
   }
 
-  Future<UserModel> getOtherUser(String id) async {
-    // todo: call the remote repo and get the other user from server
 
-    _remoteRepository.getOtherUser(_ref.read(tokenProvider)!, id);
-
-    return userMock;
+  Future<UserModel?> getOtherUser(String id) async {
+    UserModel? user =
+        await _remoteRepository.getOtherUser(_ref.read(tokenProvider)!, id);
+    return user;
   }
 
   void restoreOtherUsers(Map<String, UserModel> otherUsers) {
     _localRepository.setOtherUsers(otherUsers);
+  }
+
+  Future<void> muteChat(String chatID, DateTime? muteUntil) async {
+    // Get muteUntil in seconds from today
+    final muteUntilSeconds = muteUntil!.difference(DateTime.now()).inSeconds > 10 * 365 * 24 * 60 * 60
+        ? -1 : muteUntil.difference(DateTime.now()).inSeconds;
+
+    if (USE_MOCK_DATA) {
+      final chats = _localRepository.getChats();
+      final chat = chats.firstWhere((element) => element.id == chatID);
+      final updatedChat = chat.copyWith(isMuted: true, muteUntil: muteUntil);
+      final updatedChats = chats.map((e) => e.id == chatID ? updatedChat : e).toList();
+      _localRepository.setChats(updatedChats);
+      return;
+    }
+
+    final response = await _remoteRepository.muteChat(
+      _ref.read(tokenProvider)!,
+      chatID,
+      muteUntilSeconds
+    );
+
+    if (response.appError != null) {
+      debugPrint('Error: Could not mute the chat');
+    } else {
+      _ref.read(chatsViewModelProvider.notifier).muteChat(chatID, muteUntilSeconds);
+      _localRepository.setChats(_ref.read(chatsViewModelProvider));
+    }
+  }
+
+  Future<void> unmuteChat(String chatID) async {
+    if (USE_MOCK_DATA) {
+      final chats = _localRepository.getChats();
+      final chat = chats.firstWhere((element) => element.id == chatID);
+      final updatedChat = chat.copyWith(isMuted: false, muteUntil: null);
+      final updatedChats = chats.map((e) => e.id == chatID ? updatedChat : e).toList();
+      _localRepository.setChats(updatedChats);
+      return;
+    }
+
+    final response = await _remoteRepository.unmuteChat(
+      _ref.read(tokenProvider)!,
+      chatID,
+    );
+
+    if (response.appError != null) {
+      debugPrint('Error: Could not unmute the chat');
+    } else {
+      _ref.read(chatsViewModelProvider.notifier).unmuteChat(chatID);
+      _localRepository.setChats(_ref.read(chatsViewModelProvider));
+    }
   }
 }

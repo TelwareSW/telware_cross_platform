@@ -86,6 +86,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   bool isRecordingPaused = false;
   bool isLoading = true;
   bool isTextEmpty = true;
+  bool showMuteOptions = false;
   double _lockRecordingDragPosition = 0;
   final lockPath = "assets/json/passcode_lock.json";
   String? path;
@@ -105,14 +106,14 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       _messageController.text = chatModel!.draft ?? "";
       final messages = chatModel?.messages ?? [];
       _updateChatMessages(messages);
-      _scrollToBottom();
+    // _scrollToBottom();
       if (widget.forwardedMessages != null) {
         _sendForwardedMessages();
       }
     });
     _chosenAnimation = getRandomLottieAnimation();
     _getDir();
-    _scrollToBottom();
+    // _scrollToBottom();
     _recorderController = RecorderController()
       ..androidEncoder = AndroidEncoder.aac
       ..androidOutputFormat = AndroidOutputFormat.aac_adts
@@ -165,7 +166,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     super.didChangeMetrics();
     if (_scrollController.hasClients && _isAtBottom()) {
       // When the keyboard is shown and the user is at the bottom, scroll to the bottom
-      _scrollToBottom();
+      // _scrollToBottom();
     }
   }
 
@@ -219,17 +220,50 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
   //TODO: Implement the sendMsg method with another types of messages
   void _sendMessage(WidgetRef ref) {
-    ref.read(chattingControllerProvider).sendMsg(
-          content: TextContent(_messageController.text),
-          msgType: MessageType.normal,
-          contentType: MessageContentType.text,
-          chatType: ChatType.private,
-          chatID: widget.chatId,
-        );
+    MessageModel newMessage = MessageModel(
+      senderId: ref.read(userProvider)!.id!,
+      messageContentType: MessageContentType.text,
+      content: TextContent(_messageController.text),
+      timestamp: DateTime.now(),
+      messageType: MessageType.normal,
+      userStates: {},
+    );
     _messageController.clear();
-    List<MessageModel> messages =
-        ref.watch(chatProvider(widget.chatId))?.messages ?? [];
-    _updateChatMessages(messages);
+    _updateChatMessages([...?chatModel?.messages, newMessage]);
+    ref
+        .read(chattingControllerProvider)
+        .sendMsg(
+          content: newMessage.content!,
+          msgType: newMessage.messageType,
+          contentType: newMessage.messageContentType,
+          chatType: ChatType.private,
+          chatModel: chatModel,
+        )
+        .then((_) {
+      List<MessageModel> messages =
+          ref.watch(chatProvider(chatModel!.id!))?.messages ?? [];
+      _updateChatMessages(messages);
+      // _scrollToBottom();
+    });
+  }
+
+  void _setChatMute(DateTime? muteUntil) {
+    if (muteUntil == null) {
+      ref.read(chattingControllerProvider).unmuteChat(chatModel!.id!).then((_) {
+        setState(() {
+          chatModel = chatModel!.copyWith(isMuted: false, muteUntil: null);
+        });
+      });
+    } else {
+      ref
+          .read(chattingControllerProvider)
+          .muteChat(chatModel!.id!, muteUntil)
+          .then((_) {
+        setState(() {
+          chatModel = chatModel!.copyWith(isMuted: true, muteUntil: muteUntil);
+        });
+      });
+    }
   }
 
   //--------------------------------Recording--------------------------------
@@ -468,6 +502,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
   @override
   Widget build(BuildContext context) {
+    final popupMenu = buildPopupMenu();
     final chatModel =
         widget.chatModel ?? ref.watch(chatProvider(widget.chatId))!;
     final type = chatModel.type;
@@ -485,135 +520,62 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     return Scaffold(
         appBar: selectedMessages.isEmpty
             ? AppBar(
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () {
-                    if (isShowAsList) {
-                      setState(() {
-                        isShowAsList = false;
-                      });
-                    } else if (isSearching) {
-                      setState(() {
-                        isSearching = false;
-                        _messageMatches.clear();
-                      });
-                    } else {
-                      Navigator.pop(context);
-                    }
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              if (isShowAsList) {
+                setState(() {
+                  isShowAsList = false;
+                });
+              } else if (isSearching) {
+                setState(() {
+                  isSearching = false;
+                  _messageMatches.clear();
+                });
+              } else {
+                Navigator.pop(context);
+              }
+            },
+          ),
+          title: !isSearching
+              ? ChatHeaderWidget(
+                  title: title,
+                  subtitle: subtitle,
+                  photo: photo,
+                  imageBytes: imageBytes,
+                )
+              : TextField(
+                  key: ChatKeys.chatSearchInput,
+                  autofocus: true,
+                  decoration: const InputDecoration(
+                    hintText: 'Search',
+                    hintStyle: TextStyle(
+                        color: Palette.accentText, fontWeight: FontWeight.w400),
+                    border: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                  ),
+                  onSubmitted: _searchForText,
+                  onChanged: (value) => {
+                    if (isShowAsList)
+                      {
+                        setState(() {
+                          isShowAsList = false;
+                        })
+                      }
                   },
                 ),
-                title: !isSearching
-                    ? ChatHeaderWidget(
-                        title: title,
-                        subtitle: subtitle,
-                        photo: photo,
-                        imageBytes: imageBytes,
-                      )
-                    : TextField(
-                        key: ChatKeys.chatSearchInput,
-                        autofocus: true,
-                        decoration: const InputDecoration(
-                          hintText: 'Search',
-                          hintStyle: TextStyle(
-                              color: Palette.accentText,
-                              fontWeight: FontWeight.w400),
-                          border: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                        ),
-                        onSubmitted: _searchForText,
-                        onChanged: (value) => {
-                          if (isShowAsList)
-                            {
-                              setState(() {
-                                isShowAsList = false;
-                              })
-                            }
-                        },
-                      ),
-                actions: [
-                  if (!isSearching)
-                    PopupMenuButton<String>(
-                      icon: const Icon(Icons.more_vert),
-                      onSelected: (String value) {
-                        if (value == 'search') {
-                          _enableSearching();
-                        } else {
-                          showToastMessage("No Bueno");
-                        }
-                      },
-                      color: Palette.secondary,
-                      padding: EdgeInsets.zero,
-                      itemBuilder: (BuildContext context) {
-                        return [
-                          const PopupMenuItem<String>(
-                            value: 'mute-options',
-                            padding: EdgeInsets.zero,
-                            height: menuItemsHeight,
-                            child: PopupMenuItemWidget(
-                                icon: Icons.volume_up_rounded,
-                                text: 'Mute',
-                                trailing: Icon(
-                                  Icons.arrow_forward_ios_rounded,
-                                  color: Palette.inactiveSwitch,
-                                  size: 16,
-                                )),
-                          ),
-                          const PopupMenuDivider(
-                            height: 10,
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'video-call',
-                            padding: EdgeInsets.zero,
-                            height: menuItemsHeight,
-                            child: PopupMenuItemWidget(
-                              icon: Icons.videocam_outlined,
-                              text: 'Video Call',
-                            ),
-                          ),
-                          const PopupMenuItem<String>(
-                            key: ChatKeys.chatSearchButton,
-                            value: 'search',
-                            padding: EdgeInsets.zero,
-                            height: menuItemsHeight,
-                            child: PopupMenuItemWidget(
-                              icon: Icons.search,
-                              text: 'Search',
-                            ),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'change-wallpaper',
-                            padding: EdgeInsets.zero,
-                            height: menuItemsHeight,
-                            child: PopupMenuItemWidget(
-                              icon: Icons.wallpaper_rounded,
-                              text: 'Change Wallpaper',
-                            ),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'clear-history',
-                            padding: EdgeInsets.zero,
-                            height: menuItemsHeight,
-                            child: PopupMenuItemWidget(
-                              icon: Icons.cleaning_services,
-                              text: 'Clear History',
-                            ),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'delete-chat',
-                            padding: EdgeInsets.zero,
-                            height: menuItemsHeight,
-                            child: PopupMenuItemWidget(
-                              icon: Icons.delete_outline,
-                              text: 'Delete Chat',
-                            ),
-                          ),
-                        ];
-                      },
-                    ),
-                ],
-              )
-            : AppBar(
+          actions: [
+            if (!isSearching)
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert),
+                onSelected: _handlePopupMenuSelection,
+                color: Palette.secondary,
+                padding: EdgeInsets.zero,
+                itemBuilder: popupMenu,
+              ),
+          ],
+        ): AppBar(
                 backgroundColor: Palette.secondary,
                 leading: GestureDetector(
                   onTap: () {
@@ -739,6 +701,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                               ),
                             )
                           : SingleChildScrollView(
+                            reverse: true,
                               controller:
                                   _scrollController, // Use the ScrollController
                               child: Padding(
@@ -787,15 +750,14 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                           if (selectedMessages.contains(item))
                                             const SizedBox(width: 10),
                                           MessageTileWidget(
-                                            key: ValueKey(
-                                                '${MessageKeys.messagePrefix}${messagesIndex++}'),
-                                            messageModel: item,
-                                            isSentByMe: item.senderId ==
-                                                ref.read(userProvider)!.id,
-                                            showInfo: type == ChatType.group,
-                                            highlights:
-                                                _messageMatches[index] ??
-                                                    const [MapEntry(0, 0)],
+                                        key: ValueKey(
+                                            '${MessageKeys.messagePrefix}${messagesIndex++}'),
+                                        messageModel: item,
+                                        isSentByMe: item.senderId ==
+                                            ref.read(userProvider)!.id,
+                                        showInfo: type == ChatType.group,
+                                        highlights: _messageMatches[index] ??
+                                            const [MapEntry(0, 0)],
                                             onReply: (message) {
                                               setState(() {
                                                 replyMessage = message;
@@ -1053,8 +1015,13 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                               for (var message in pinnedMessages) {
                                 senderIds.add(message.senderId);
                               }
-                              ChatModel newChat = ChatModel(title: 'pinnedMessages', userIds: senderIds, type: ChatType.group, messages: pinnedMessages);
-                              context.push(Routes.pinnedMessagesScreen, extra: newChat);
+                              ChatModel newChat = ChatModel(
+                                  title: 'pinnedMessages',
+                                  userIds: senderIds,
+                                  type: ChatType.group,
+                                  messages: pinnedMessages);
+                              context.push(Routes.pinnedMessagesScreen,
+                                  extra: newChat);
                             },
                             child: const Icon(
                               Icons.menu_open_outlined,
@@ -1195,6 +1162,199 @@ class _ChatScreen extends ConsumerState<ChatScreen>
         ));
   }
 
+  void _handlePopupMenuSelection(String value) {
+    switch (value) {
+      // case 'no-close':
+      //   break;
+      case 'search':
+        _enableSearching();
+        break;
+      case 'mute-chat':
+        showMuteOptions = false;
+        DatePicker.showDatePicker(
+          context,
+          pickerTheme: const DateTimePickerTheme(
+            backgroundColor: Palette.secondary,
+            itemTextStyle: TextStyle(
+              color: Palette.primaryText,
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+            ),
+            confirm: Text(
+              'Confirm',
+              style: TextStyle(
+                color: Palette.primary,
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          pickerMode: DateTimePickerMode.time,
+          minDateTime: DateTime.now(),
+          maxDateTime: DateTime.now().add(const Duration(days: 365)),
+          initialDateTime: DateTime.now(),
+          dateFormat: 'dd-MMMM-yyyy',
+          locale: DateTimePickerLocale.en_us,
+          onConfirm: (date, time) {
+            _setChatMute(date);
+          },
+        );
+        break;
+      case 'unmute-chat':
+        _setChatMute(null);
+        break;
+      case 'mute-chat-forever':
+        showMuteOptions = false;
+        _setChatMute(DateTime.now().add(const Duration(days: 365 * 10)));
+      default:
+        showToastMessage("No Bueno");
+    }
+  }
+
+  PopupMenuItemBuilder<String> buildPopupMenu() {
+    const double menuItemsHeight = 45.0;
+
+    return (BuildContext context) {
+      if (showMuteOptions) {
+        return [
+          PopupMenuItem<String>(
+              value: 'no-close',
+              padding: EdgeInsets.zero,
+              height: menuItemsHeight,
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    showMuteOptions = false;
+                  });
+                },
+                child: const PopupMenuItemWidget(
+                  icon: Icons.arrow_back,
+                  text: 'Back',
+                ),
+              )),
+          const PopupMenuItem<String>(
+            value: 'disable-sound',
+            padding: EdgeInsets.zero,
+            height: menuItemsHeight,
+            child: PopupMenuItemWidget(
+              icon: Icons.music_off_outlined,
+              text: 'Disable sound',
+            ),
+          ),
+          const PopupMenuItem<String>(
+            key: ChatKeys.chatSearchButton,
+            value: 'mute-chat',
+            padding: EdgeInsets.zero,
+            height: menuItemsHeight,
+            child: PopupMenuItemWidget(
+              icon: Icons.notifications_paused_outlined,
+              text: 'Mute for...',
+            ),
+          ),
+          const PopupMenuItem<String>(
+            value: 'customize-chat',
+            padding: EdgeInsets.zero,
+            height: menuItemsHeight,
+            child: PopupMenuItemWidget(
+              icon: Icons.tune_outlined,
+              text: 'Customize',
+            ),
+          ),
+          const PopupMenuItem<String>(
+            value: 'mute-chat-forever',
+            padding: EdgeInsets.zero,
+            height: menuItemsHeight,
+            child: PopupMenuItemWidget(
+              icon: Icons.volume_off_outlined,
+              text: 'Mute Forever',
+            ),
+          ),
+        ];
+      }
+      return [
+        if (chatModel!.isMuted)
+          const PopupMenuItem<String>(
+              value: 'unmute-chat',
+              padding: EdgeInsets.zero,
+              height: menuItemsHeight,
+              child: PopupMenuItemWidget(
+                icon: Icons.volume_off_outlined,
+                text: 'Unmute',
+              ))
+        else
+          PopupMenuItem<String>(
+            value: 'no-close',
+            padding: EdgeInsets.zero,
+            height: menuItemsHeight,
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  showMuteOptions = true;
+                });
+              },
+              child: const PopupMenuItemWidget(
+                  icon: Icons.volume_up_rounded,
+                  text: 'Mute',
+                  trailing: Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    color: Palette.inactiveSwitch,
+                    size: 16,
+                  )),
+            ),
+          ),
+        const PopupMenuDivider(
+          height: 10,
+        ),
+        const PopupMenuItem<String>(
+          value: 'video-call',
+          padding: EdgeInsets.zero,
+          height: menuItemsHeight,
+          child: PopupMenuItemWidget(
+            icon: Icons.videocam_outlined,
+            text: 'Video Call',
+          ),
+        ),
+        const PopupMenuItem<String>(
+          key: ChatKeys.chatSearchButton,
+          value: 'search',
+          padding: EdgeInsets.zero,
+          height: menuItemsHeight,
+          child: PopupMenuItemWidget(
+            icon: Icons.search,
+            text: 'Search',
+          ),
+        ),
+        const PopupMenuItem<String>(
+          value: 'change-wallpaper',
+          padding: EdgeInsets.zero,
+          height: menuItemsHeight,
+          child: PopupMenuItemWidget(
+            icon: Icons.wallpaper_rounded,
+            text: 'Change Wallpaper',
+          ),
+        ),
+        const PopupMenuItem<String>(
+          value: 'clear-history',
+          padding: EdgeInsets.zero,
+          height: menuItemsHeight,
+          child: PopupMenuItemWidget(
+            icon: Icons.cleaning_services,
+            text: 'Clear History',
+          ),
+        ),
+        const PopupMenuItem<String>(
+          value: 'delete-chat',
+          padding: EdgeInsets.zero,
+          height: menuItemsHeight,
+          child: PopupMenuItemWidget(
+            icon: Icons.delete_outline,
+            text: 'Delete Chat',
+          ),
+        ),
+      ];
+    };
+  }
+
   String getRandomLottieAnimation() {
     // List of Lottie animation paths
     List<String> lottieAnimations = [
@@ -1246,3 +1406,4 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     return lottieAnimations[randomIndex];
   }
 }
+

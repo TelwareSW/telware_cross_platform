@@ -78,6 +78,7 @@ class ChangeEmailKeys {
 
 class ChatKeys {
   static const ValueKey<String> chatSearchButton = ValueKey('chat-search-button');
+  static const ValueKey<String> chatMuteButton = ValueKey('chat-mute-button');
   static const ValueKey<String> chatSearchInput = ValueKey('chat-search-input');
   static const ValueKey<String> chatSearchShowMode = ValueKey('chat-search-show-mode');
   static const ValueKey<String> chatSearchDatePicker = ValueKey('chat-search-date-picker');
@@ -145,6 +146,20 @@ class Keys {
 
   // SettingsScreen
   static const settingsSetProfilePhotoOptions = ValueKey("set-profile-photo-option");
+
+  // CropImageScreen
+  static const refreshImageCropScreen = ValueKey('refresh_key');
+  static const zoomInImageCropScreen = ValueKey('zoom_in_key');
+  static const zoomOutImageCropScreen = ValueKey('zoom_out_key');
+  static const rotateLeftImageCropScreen = ValueKey('rotate_left_key');
+  static const rotateRightImageCropScreen = ValueKey('rotate_right_key');
+  static const popupMenuImageCropScreen = ValueKey('popup_menu_key');
+  static const popupMenuItemImageCropScreen = ValueKey('popup_menu_item_');
+  static const changeColorImageCropScreen = ValueKey('change_color_key');
+  static const submitCropImageCropScreen = ValueKey('submit_crop_key');
+
+  // Stories
+  static const storyAvatarPrefix = ValueKey('story_avatar_');
 
   Keys._();
 }

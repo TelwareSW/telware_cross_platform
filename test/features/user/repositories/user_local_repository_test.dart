@@ -34,7 +34,7 @@ void main() {
 
   group('UserLocalRepository', () {
     test('changeNumber should update phone number', () async {
-      final user = userMock;
+      final user = mockUsers[0];
       when(mockUserBox.get('user')).thenReturn(user);
       when(mockUserBox.put('user', any)).thenAnswer((_) async {});
 
@@ -57,7 +57,7 @@ void main() {
     });
 
     test('changeNumber should return AppError if error occurs', () async {
-      final user = userMock;
+      final user = mockUsers[0];
       when(mockUserBox.get('user')).thenReturn(user);
       when(mockUserBox.put('user', any)).thenThrow(Exception());
 
@@ -71,7 +71,7 @@ void main() {
     });
 
     test('updateBio should update bio', () async {
-      final user = userMock;
+      final user = mockUsers[0];
       when(mockUserBox.get('user')).thenReturn(user);
       when(mockUserBox.put('user', any)).thenAnswer((_) async {});
 
@@ -93,7 +93,7 @@ void main() {
     });
 
     test('updateBio should return AppError if error occurs', () async {
-      final user = userMock;
+      final user = mockUsers[0];
       when(mockUserBox.get('user')).thenReturn(user);
       when(mockUserBox.put('user', any)).thenThrow(Exception());
 
@@ -106,7 +106,7 @@ void main() {
     });
 
     test('updateScreenName should update screen name', () async {
-      final user = userMock;
+      final user = mockUsers[0];
       when(mockUserBox.get('user')).thenReturn(user);
       when(mockUserBox.put('user', any)).thenAnswer((_) async {});
 
@@ -132,7 +132,7 @@ void main() {
     });
 
     test('updateScreenName should return AppError if error occurs', () async {
-      final user = userMock;
+      final user = mockUsers[0];
       when(mockUserBox.get('user')).thenReturn(user);
       when(mockUserBox.put('user', any)).thenThrow(Exception());
 
@@ -148,7 +148,7 @@ void main() {
     });
 
     test('changeUsername should update username', () async {
-      final user = userMock;
+      final user = mockUsers[0];
       when(mockUserBox.get('user')).thenReturn(user);
       when(mockUserBox.put('user', any)).thenAnswer((_) async {});
 
@@ -171,7 +171,7 @@ void main() {
     });
 
     test('changeUsername should return AppError if error occurs', () async {
-      final user = userMock;
+      final user = mockUsers[0];
       when(mockUserBox.get('user')).thenReturn(user);
       when(mockUserBox.put('user', any)).thenThrow(Exception());
 
@@ -187,7 +187,7 @@ void main() {
     test(
         'checkUsernameUniqueness should return Right(true) if username is unique',
         () {
-      final user = userMock;
+      final user = mockUsers[0];
       when(mockUserBox.get('user')).thenReturn(user);
 
       final result =
@@ -200,7 +200,7 @@ void main() {
     test(
         'checkUsernameUniqueness should return Left(AppError) if username is not unique',
         () {
-      final user = userMock;
+      final user = mockUsers[0];
       when(mockUserBox.get('user')).thenReturn(user);
 
       final result = userLocalRepository.checkUsernameUniqueness(user.username);
@@ -225,7 +225,7 @@ void main() {
   });
 
   test('setUser stores the user in the box', () async {
-    final user = userMock;
+    final user = mockUsers[0];
     when(mockUserBox.put('user', user)).thenAnswer((_) async => Future.value());
 
     await userLocalRepository.setUser(user);
@@ -234,7 +234,7 @@ void main() {
   });
 
   test('getMe retrieves the user from the box', () {
-    final user = userMock;
+    final user = mockUsers[0];
     when(mockUserBox.get('user')).thenReturn(user);
 
     final result = userLocalRepository.getUser();
