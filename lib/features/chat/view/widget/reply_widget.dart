@@ -33,7 +33,7 @@ class ReplyWidget extends ConsumerWidget {
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: FutureBuilder<UserModel>(
+              child: FutureBuilder<UserModel?>(
                 future: ref
                     .read(chatsViewModelProvider.notifier)
                     .getUser(message.senderId),
@@ -72,7 +72,7 @@ class ReplyWidget extends ConsumerWidget {
                         message.messageContentType == MessageContentType.text
                             ? message.content?.toJson()['text'] ?? ""
                             : 'Photo',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                           color: Palette.accentText,

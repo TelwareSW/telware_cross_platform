@@ -209,7 +209,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
             msgType: MessageType.normal,
             contentType: MessageContentType.text,
             chatType: ChatType.private,
-            chatID: widget.chatId,
+            chatModel: widget.chatModel,
           );
       _messageController.clear();
       List<MessageModel> messages =
