@@ -25,8 +25,8 @@ class SocketService {
     debugPrint(sessionId);
 
     _socket = io(serverUrl, <String, dynamic>{
-      'autoConnect': false,
-      'transports': ['websocket'],
+      // 'autoConnect': false,
+      "transports": ["websocket"],
       'query': {'userId': userId},
       'auth': {'sessionId': sessionId}
     });
@@ -34,7 +34,7 @@ class SocketService {
     _socket.connect();
 
     _socket.onConnect((_) {
-      debugPrint('Connected to server');
+      debugPrint('### Connected to server');
       onConnect();
     });
 
