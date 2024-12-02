@@ -31,13 +31,14 @@ class ChatModelAdapter extends TypeAdapter<ChatModel> {
       isMentioned: fields[12] as bool,
       draft: fields[11] as String?,
       messages: (fields[13] as List).cast<MessageModel>(),
+      muteUntil: fields[14] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, ChatModel obj) {
     writer
-      ..writeByte(14)
+      ..writeByte(15)
       ..writeByte(0)
       ..write(obj.title)
       ..writeByte(1)
@@ -65,7 +66,9 @@ class ChatModelAdapter extends TypeAdapter<ChatModel> {
       ..writeByte(12)
       ..write(obj.isMentioned)
       ..writeByte(13)
-      ..write(obj.messages);
+      ..write(obj.messages)
+      ..writeByte(14)
+      ..write(obj.muteUntil);
   }
 
   @override

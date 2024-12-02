@@ -34,6 +34,8 @@ class MessageModel {
   Uint8List? photoBytes;
   @HiveField(9)
   final Map<String, MessageState> userStates; // userID -> state of the message
+  @HiveField(10)
+  final bool isPinned;
 
 //<editor-fold desc="Data Methods">
   MessageModel({
@@ -47,6 +49,7 @@ class MessageModel {
     this.photo,
     this.photoBytes,
     required this.userStates,
+    this.isPinned=false,
   });
 
   Future<void> _setPhotoBytes() async {

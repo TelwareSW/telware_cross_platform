@@ -27,13 +27,14 @@ class MessageModelAdapter extends TypeAdapter<MessageModel> {
       photo: fields[7] as String?,
       photoBytes: fields[8] as Uint8List?,
       userStates: (fields[9] as Map).cast<String, MessageState>(),
+      isPinned: fields[10] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, MessageModel obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.senderId)
       ..writeByte(1)
@@ -53,7 +54,9 @@ class MessageModelAdapter extends TypeAdapter<MessageModel> {
       ..writeByte(8)
       ..write(obj.photoBytes)
       ..writeByte(9)
-      ..write(obj.userStates);
+      ..write(obj.userStates)
+      ..writeByte(10)
+      ..write(obj.isPinned);
   }
 
   @override
