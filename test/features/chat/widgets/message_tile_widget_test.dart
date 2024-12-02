@@ -48,22 +48,34 @@ void main() {
               key: ValueKey("${ChatKeys.chatTilePrefix.value}$index"),
               messageModel: message,
               isSentByMe: false,
+              onReply: (MessageModel) {},
+              onLongPress: (MessageModel) {},
+              onPress: () {},
+              onPin: (MessageModel) {},
             ),
           ),
         ),
       );
 
-      expect(find.byKey(ValueKey("${ChatKeys.chatTilePrefix.value}$index")), findsOneWidget,
+      expect(find.byKey(ValueKey("${ChatKeys.chatTilePrefix.value}$index")),
+          findsOneWidget,
           reason: "Expected message tile to render");
 
-      expect(find.byKey(ValueKey("${ChatKeys.chatTilePrefix.value}$index${MessageKeys.messageContentPostfix.value}")), findsOneWidget,
+      expect(
+          find.byKey(ValueKey(
+              "${ChatKeys.chatTilePrefix.value}$index${MessageKeys.messageContentPostfix.value}")),
+          findsOneWidget,
           reason: "Expected message content to render");
 
-      expect(find.byKey(ValueKey("${ChatKeys.chatTilePrefix.value}$index${MessageKeys.messageTimePostfix.value}")), findsOneWidget,
+      expect(
+          find.byKey(ValueKey(
+              "${ChatKeys.chatTilePrefix.value}$index${MessageKeys.messageTimePostfix.value}")),
+          findsOneWidget,
           reason: "Expected message timestamp to render");
     });
 
-    testWidgets("renders message tile with rich text", (WidgetTester tester) async {
+    testWidgets("renders message tile with rich text",
+        (WidgetTester tester) async {
       MessageModel message = MessageModel(
         id: '1',
         senderId: '1',
@@ -81,23 +93,30 @@ void main() {
               key: ValueKey("${ChatKeys.chatTilePrefix.value}$index"),
               messageModel: message,
               isSentByMe: false,
+              onReply: (MessageModel) {},
+              onLongPress: (MessageModel) {},
+              onPress: () {},
+              onPin: (MessageModel) {},
             ),
           ),
         ),
       );
 
-      final Finder highlightTextFinder = find.byKey(ValueKey("${ChatKeys.chatTilePrefix.value}$index${MessageKeys.messageContentPostfix.value}"));
+      final Finder highlightTextFinder = find.byKey(ValueKey(
+          "${ChatKeys.chatTilePrefix.value}$index${MessageKeys.messageContentPostfix.value}"));
       final Finder richTextFinder = find.descendant(
         of: highlightTextFinder,
         matching: find.byType(RichText),
       );
       expect(richTextFinder, findsOneWidget);
       final RichText richText = tester.firstWidget(richTextFinder) as RichText;
-      expect(extractTextFromRichText(richText), message.content?.toJson()['text'],
+      expect(
+          extractTextFromRichText(richText), message.content?.toJson()['text'],
           reason: "Expected message content to render as rich text");
     });
 
-    testWidgets("renders message tile with message status if sent by user", (WidgetTester tester) async {
+    testWidgets("renders message tile with message status if sent by user",
+        (WidgetTester tester) async {
       MessageModel message = MessageModel(
         id: '1',
         senderId: '1',
@@ -110,31 +129,45 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Column(
-              children: [
-                MessageTileWidget(
-                  key: ValueKey("${ChatKeys.chatTilePrefix.value}0"),
-                  messageModel: message,
-                  isSentByMe: true,
-                ),
-                MessageTileWidget(
-                  key: ValueKey("${ChatKeys.chatTilePrefix.value}1"),
-                  messageModel: message,
-                  isSentByMe: false,
-                ),
-              ],
-            )
-          ),
+              body: Column(
+            children: [
+              MessageTileWidget(
+                key: ValueKey("${ChatKeys.chatTilePrefix.value}0"),
+                messageModel: message,
+                isSentByMe: true,
+                onReply: (MessageModel) {},
+                onLongPress: (MessageModel) {},
+                onPress: () {},
+                onPin: (MessageModel) {},
+              ),
+              MessageTileWidget(
+                key: ValueKey("${ChatKeys.chatTilePrefix.value}1"),
+                messageModel: message,
+                isSentByMe: false,
+                onReply: (MessageModel) {},
+                onLongPress: (MessageModel) {},
+                onPress: () {},
+                onPin: (MessageModel) {},
+              ),
+            ],
+          )),
         ),
       );
 
-      expect(find.byKey(ValueKey("${ChatKeys.chatTilePrefix.value}0${MessageKeys.messageStatusPostfix.value}")), findsOneWidget,
+      expect(
+          find.byKey(ValueKey(
+              "${ChatKeys.chatTilePrefix.value}0${MessageKeys.messageStatusPostfix.value}")),
+          findsOneWidget,
           reason: "Expected message status to render");
-      expect(find.byKey(ValueKey("${ChatKeys.chatTilePrefix.value}1${MessageKeys.messageStatusPostfix.value}")), findsNothing,
+      expect(
+          find.byKey(ValueKey(
+              "${ChatKeys.chatTilePrefix.value}1${MessageKeys.messageStatusPostfix.value}")),
+          findsNothing,
           reason: "Expected message status to not render");
     });
 
-    testWidgets("renders message sender if enabled", (WidgetTester tester) async {
+    testWidgets("renders message sender if enabled",
+        (WidgetTester tester) async {
       MessageModel message = MessageModel(
         id: '1',
         senderId: '1',
@@ -147,37 +180,57 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Column(
-              children: [
-                MessageTileWidget(
-                  key: ValueKey("${ChatKeys.chatTilePrefix.value}0"),
-                  messageModel: message,
-                  isSentByMe: false,
-                  showInfo: true,
-                ),
-                MessageTileWidget(
-                  key: ValueKey("${ChatKeys.chatTilePrefix.value}1"),
-                  messageModel: message,
-                  isSentByMe: false,
-                  showInfo: false,
-                ),
-                MessageTileWidget(
-                  key: ValueKey("${ChatKeys.chatTilePrefix.value}2"),
-                  messageModel: message,
-                  isSentByMe: true,
-                  showInfo: true,
-                ),
-              ],
-            )
-          ),
+              body: Column(
+            children: [
+              MessageTileWidget(
+                key: ValueKey("${ChatKeys.chatTilePrefix.value}0"),
+                messageModel: message,
+                isSentByMe: false,
+                showInfo: true,
+                onReply: (MessageModel) {},
+                onLongPress: (MessageModel) {},
+                onPress: () {},
+                onPin: (MessageModel) {},
+              ),
+              MessageTileWidget(
+                key: ValueKey("${ChatKeys.chatTilePrefix.value}1"),
+                messageModel: message,
+                isSentByMe: false,
+                showInfo: false,
+                onReply: (MessageModel) {},
+                onLongPress: (MessageModel) {},
+                onPress: () {},
+                onPin: (MessageModel) {},
+              ),
+              MessageTileWidget(
+                key: ValueKey("${ChatKeys.chatTilePrefix.value}2"),
+                messageModel: message,
+                isSentByMe: true,
+                showInfo: true,
+                onReply: (MessageModel) {},
+                onLongPress: (MessageModel) {},
+                onPress: () {},
+                onPin: (MessageModel) {},
+              ),
+            ],
+          )),
         ),
       );
 
-      expect(find.byKey(ValueKey("${ChatKeys.chatTilePrefix.value}0${MessageKeys.messageSenderPostfix.value}")), findsOneWidget,
+      expect(
+          find.byKey(ValueKey(
+              "${ChatKeys.chatTilePrefix.value}0${MessageKeys.messageSenderPostfix.value}")),
+          findsOneWidget,
           reason: "Expected message sender to render");
-      expect(find.byKey(ValueKey("${ChatKeys.chatTilePrefix.value}1${MessageKeys.messageSenderPostfix.value}")), findsNothing,
+      expect(
+          find.byKey(ValueKey(
+              "${ChatKeys.chatTilePrefix.value}1${MessageKeys.messageSenderPostfix.value}")),
+          findsNothing,
           reason: "Expected message sender to not render");
-      expect(find.byKey(ValueKey("${ChatKeys.chatTilePrefix.value}2${MessageKeys.messageSenderPostfix.value}")), findsNothing,
+      expect(
+          find.byKey(ValueKey(
+              "${ChatKeys.chatTilePrefix.value}2${MessageKeys.messageSenderPostfix.value}")),
+          findsNothing,
           reason: "Expected message sender to not render");
     });
   });

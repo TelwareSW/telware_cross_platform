@@ -27,15 +27,23 @@ class MessageTileWidget extends StatelessWidget {
   final Color imageColor;
   final List<MapEntry<int, int>> highlights;
   final Function(MessageModel) onReply;
+  final Function(MessageModel) onLongPress;
+  final Function(MessageModel) onPin;
+  final Function()? onPress;
 
-  const MessageTileWidget(
-      {super.key,
-      required this.messageModel,
-      required this.isSentByMe,
-      this.showInfo = false,
-      this.nameColor = Palette.primary,
-      this.imageColor = Palette.primary,
-      this.highlights = const [], required this.onReply});
+  const MessageTileWidget({
+    super.key,
+    required this.messageModel,
+    required this.isSentByMe,
+    this.showInfo = false,
+    this.nameColor = Palette.primary,
+    this.imageColor = Palette.primary,
+    this.highlights = const [],
+    required this.onReply,
+    required this.onLongPress,
+    required this.onPress,
+    required this.onPin,
+  });
 
   // Function to format timestamp to "hh:mm AM/PM"
   String formatTimestamp(DateTime timestamp) {
@@ -60,50 +68,57 @@ class MessageTileWidget extends StatelessWidget {
             ),
           )
         : const SizedBox.shrink();
-
     return Align(
       alignment: messageAlignment,
       child: GestureDetector(
-        onTap: () {
-          late OverlayEntry overlayEntry;
-          overlayEntry = OverlayEntry(
-            builder: (context) => FloatingMenuOverlay(
-              onDismiss: () {
-                overlayEntry.remove();
-              },
-              onReply: () {
-                overlayEntry.remove();
-                onReply(messageModel);
-              },
-              onCopy: () {
-                overlayEntry.remove();
-              },
-              onForward: () {
-                overlayEntry.remove();
-                context.push(CreateChatScreen.route);
-              },
-              onPin: () {
-                overlayEntry.remove();
-              },
-              onEdit: () {
-                overlayEntry.remove();
-              },
-              onDelete: () {
-                overlayEntry.remove();
-              },
-            ),
-          );
-          Overlay.of(context).insert(overlayEntry);
+        onLongPress: () {
+          onLongPress(messageModel);
         },
+        onTap: onPress == null
+            ? () {
+                late OverlayEntry overlayEntry;
+                overlayEntry = OverlayEntry(
+                  builder: (context) => FloatingMenuOverlay(
+                    onDismiss: () {
+                      overlayEntry.remove();
+                    },
+                    onReply: () {
+                      overlayEntry.remove();
+                      onReply(messageModel);
+                    },
+                    onCopy: () {
+                      overlayEntry.remove();
+                    },
+                    onForward: () {
+                      overlayEntry.remove();
+                      context.push(CreateChatScreen.route);
+                    },
+                    onPin: () {
+                      overlayEntry.remove();
+                      onPin(messageModel);
+                    },
+                    onEdit: () {
+                      overlayEntry.remove();
+                    },
+                    onDelete: () {
+                      overlayEntry.remove();
+                    }, pinned: messageModel.isPinned,
+                  ),
+                );
+                Overlay.of(context).insert(overlayEntry);
+              }
+            : () {
+                onLongPress(messageModel);
+              },
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 5),
-          padding: EdgeInsets.all(
-              messageModel.messageContentType == MessageContentType.image ||
-                      messageModel.messageContentType == MessageContentType.video
-                  ? 3
-                  : 12),
-          constraints:
-              BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+          padding: EdgeInsets.all(messageModel.messageContentType ==
+                      MessageContentType.image ||
+                  messageModel.messageContentType == MessageContentType.video
+              ? 3
+              : 12),
+          constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.75),
           decoration: BoxDecoration(
             gradient: isSentByMe
                 ? LinearGradient(
@@ -131,8 +146,8 @@ class MessageTileWidget extends StatelessWidget {
                             HighlightTextWidget(
                                 key: ValueKey(
                                     '$keyValue${MessageKeys.messageContentPostfix.value}'),
-                                text:
-                                    messageModel.content?.toJson()['text'] ?? "",
+                                text: messageModel.content?.toJson()['text'] ??
+                                    "",
                                 normalStyle: const TextStyle(
                                   color: Palette.primaryText,
                                   fontSize: 16,
@@ -158,7 +173,8 @@ class MessageTileWidget extends StatelessWidget {
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(15),
                               child: Image.file(
-                                File(messageModel.content?.toJson()["filePath"]),
+                                File(
+                                    messageModel.content?.toJson()["filePath"]),
                                 fit: BoxFit.cover,
                               ),
                             )
@@ -181,6 +197,7 @@ class MessageTileWidget extends StatelessWidget {
                     // Add some space above the timestamp
                     child: Row(
                       children: [
+                        messageModel.isPinned ? const Icon(Icons.push_pin):const SizedBox(),
                         Text(
                           key: ValueKey(
                               '$keyValue${MessageKeys.messageTimePostfix.value}'),

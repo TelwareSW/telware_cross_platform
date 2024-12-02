@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 
 class FloatingMenuOverlay extends StatelessWidget {
@@ -9,6 +10,7 @@ class FloatingMenuOverlay extends StatelessWidget {
   final VoidCallback onPin;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final bool pinned;
 
   const FloatingMenuOverlay({
     super.key,
@@ -19,6 +21,7 @@ class FloatingMenuOverlay extends StatelessWidget {
     required this.onPin,
     required this.onEdit,
     required this.onDelete,
+    required this.pinned,
   });
 
   @override
@@ -94,13 +97,13 @@ class FloatingMenuOverlay extends StatelessWidget {
                             onTap: onCopy,
                           ),
                           ListTile(
-                            leading: const Icon(Icons.forward),
+                            leading: const Icon(FontAwesomeIcons.share),
                             title: const Text('Forward'),
                             onTap: onForward,
                           ),
                           ListTile(
-                            leading: const Icon(Icons.push_pin),
-                            title: const Text('Pin'),
+                            leading: Icon(Icons.push_pin_outlined) ,
+                            title: pinned ? const Text('Unpin') : const Text('Pin'),
                             onTap: onPin,
                           ),
                           ListTile(
