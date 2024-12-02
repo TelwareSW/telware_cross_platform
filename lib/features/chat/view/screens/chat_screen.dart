@@ -222,7 +222,10 @@ class _ChatScreen extends ConsumerState<ChatScreen>
         });
       });
     } else {
-      ref.read(chattingControllerProvider).muteChat(chatModel!.id!, muteUntil).then((_) {
+      ref
+          .read(chattingControllerProvider)
+          .muteChat(chatModel!.id!, muteUntil)
+          .then((_) {
         setState(() {
           chatModel = chatModel!.copyWith(isMuted: true, muteUntil: muteUntil);
         });
@@ -531,63 +534,64 @@ class _ChatScreen extends ConsumerState<ChatScreen>
             if (!isSearching)
               PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert),
-              onSelected: _handlePopupMenuSelection,
-              color: Palette.secondary,
-              padding: EdgeInsets.zero,
-              itemBuilder: popupMenu,
-            ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          // Chat content area (with background SVG)
-          Positioned.fill(
-            child: SvgPicture.asset(
-              'assets/svg/default_pattern.svg',
-              fit: BoxFit.cover,
-              colorFilter: const ColorFilter.mode(
-                Palette.trinary,
-                BlendMode.srcIn,
+                onSelected: _handlePopupMenuSelection,
+                color: Palette.secondary,
+                padding: EdgeInsets.zero,
+                itemBuilder: popupMenu,
+              ),
+          ],
+        ),
+        body: Stack(
+          children: [
+            // Chat content area (with background SVG)
+            Positioned.fill(
+              child: SvgPicture.asset(
+                'assets/svg/default_pattern.svg',
+                fit: BoxFit.cover,
+                colorFilter: const ColorFilter.mode(
+                  Palette.trinary,
+                  BlendMode.srcIn,
+                ),
               ),
             ),
-          ),
-          Column(
-            children: [
-              Expanded(
-                child: isShowAsList
-                    ? Container(
-                  color: Palette.background,
-                  child: Column(
-                    children: _messageIndices.map((index) {
-                      MessageModel msg = chatContent[index];
-                      return SettingsOptionWidget(
-                        imagePath: getRandomImagePath(),
-                        text: msg.senderId,
-                        subtext: msg.content?.toJson()['text'] ?? "",
-                        onTap: () => {
-                          // TODO (Mo): Create scroll to msg
-                        },
-                      );
-                    }).toList(),
-                  ),
-                )
-                    : chatContent.isEmpty
-                    ? Center(
-                  child: Container(
-                    width: 210,
-                    margin: const EdgeInsets.symmetric(
-                        horizontal: 24.0),
-                    padding: const EdgeInsets.all(22.0),
-                    decoration: BoxDecoration(
-                      color: const Color.fromRGBO(4, 86, 57, 0.30),
-                      borderRadius: BorderRadius.circular(16.0),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 4.0,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
+            Column(
+              children: [
+                Expanded(
+                  child: isShowAsList
+                      ? Container(
+                          color: Palette.background,
+                          child: Column(
+                            children: _messageIndices.map((index) {
+                              MessageModel msg = chatContent[index];
+                              return SettingsOptionWidget(
+                                imagePath: getRandomImagePath(),
+                                text: msg.senderId,
+                                subtext: msg.content?.toJson()['text'] ?? "",
+                                onTap: () => {
+                                  // TODO (Mo): Create scroll to msg
+                                },
+                              );
+                            }).toList(),
+                          ),
+                        )
+                      : chatContent.isEmpty
+                          ? Center(
+                              child: Container(
+                                width: 210,
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 24.0),
+                                padding: const EdgeInsets.all(22.0),
+                                decoration: BoxDecoration(
+                                  color: const Color.fromRGBO(4, 86, 57, 0.30),
+                                  borderRadius: BorderRadius.circular(16.0),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Colors.black26,
+                                      blurRadius: 4.0,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -670,36 +674,36 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                     isRecordingLocked: isRecordingLocked,
                     isRecordingPaused: isRecordingPaused,
                     lockRecordingDrag: _lockRecordingDrag,
-                )
-              else
-                Container(
-                  color: Palette.trinary,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        key: ChatKeys.chatSearchDatePicker,
-                        icon: const Icon(Icons.edit_calendar),
-                        onPressed: () {
-                          // Show the Cupertino Date Picker when the icon is pressed
-                          DatePicker.showDatePicker(
-                            context,
-                            pickerTheme: const DateTimePickerTheme(
-                              backgroundColor: Palette.secondary,
-                              itemTextStyle: TextStyle(
-                                color: Palette.primaryText,
-                                fontSize: 20,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              confirm: Text(
-                                'Jump to date',
-                                style: TextStyle(
-                                  color: Palette.primary,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
+                  )
+                else
+                  Container(
+                    color: Palette.trinary,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          key: ChatKeys.chatSearchDatePicker,
+                          icon: const Icon(Icons.edit_calendar),
+                          onPressed: () {
+                            // Show the Cupertino Date Picker when the icon is pressed
+                            DatePicker.showDatePicker(
+                              context,
+                              pickerTheme: const DateTimePickerTheme(
+                                backgroundColor: Palette.secondary,
+                                itemTextStyle: TextStyle(
+                                  color: Palette.primaryText,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
                                 ),
+                                confirm: Text(
+                                  'Jump to date',
+                                  style: TextStyle(
+                                    color: Palette.primary,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                                 cancel: null,
                               ),
@@ -947,8 +951,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                   icon: Icons.arrow_back,
                   text: 'Back',
                 ),
-              )
-          ),
+              )),
           const PopupMenuItem<String>(
             value: 'disable-sound',
             padding: EdgeInsets.zero,
@@ -991,14 +994,13 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       return [
         if (chatModel!.isMuted)
           const PopupMenuItem<String>(
-            value: 'unmute-chat',
-            padding: EdgeInsets.zero,
-            height: menuItemsHeight,
-            child: PopupMenuItemWidget(
+              value: 'unmute-chat',
+              padding: EdgeInsets.zero,
+              height: menuItemsHeight,
+              child: PopupMenuItemWidget(
                 icon: Icons.volume_off_outlined,
                 text: 'Unmute',
-            )
-          )
+              ))
         else
           PopupMenuItem<String>(
             value: 'no-close',
@@ -1017,8 +1019,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                     Icons.arrow_forward_ios_rounded,
                     color: Palette.inactiveSwitch,
                     size: 16,
-                  )
-              ),
+                  )),
             ),
           ),
         const PopupMenuDivider(
