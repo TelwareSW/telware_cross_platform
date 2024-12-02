@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -134,7 +133,6 @@ class MessageTileWidget extends StatelessWidget {
                                     filePath: messageModel.content
                                         ?.toJson()["filePath"]))
                             : const SizedBox.shrink(),
-
             // The timestamp is always in the bottom-right corner if there's space
             Positioned(
               bottom: 0,

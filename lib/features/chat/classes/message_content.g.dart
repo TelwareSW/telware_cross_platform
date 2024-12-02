@@ -51,8 +51,8 @@ class AudioContentAdapter extends TypeAdapter<AudioContent> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return AudioContent(
-      audioUrl: fields[0] as String,
-      duration: fields[1] as int,
+      audioUrl: fields[0] as String?,
+      duration: fields[1] as int?,
       filePath: fields[2] as String?,
       waveformData: (fields[3] as List?)?.cast<double>(),
     );
@@ -94,19 +94,22 @@ class DocumentContentAdapter extends TypeAdapter<DocumentContent> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return DocumentContent(
-      fields[0] as String,
-      fields[1] as String,
+      fileName: fields[0] as String,
+      fileUrl: fields[1] as String?,
+      filePath: fields[2] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, DocumentContent obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.fileName)
       ..writeByte(1)
-      ..write(obj.fileUrl);
+      ..write(obj.fileUrl)
+      ..writeByte(2)
+      ..write(obj.filePath);
   }
 
   @override
@@ -131,9 +134,9 @@ class ImageContentAdapter extends TypeAdapter<ImageContent> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return ImageContent(
-      imageUrl: fields[0] as String,
+      imageUrl: fields[0] as String?,
       imageBytes: fields[1] as Uint8List?,
-      filePath: fields[2] as String,
+      filePath: fields[2] as String?,
     );
   }
 
@@ -171,9 +174,9 @@ class VideoContentAdapter extends TypeAdapter<VideoContent> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return VideoContent(
-      videoUrl: fields[0] as String,
-      duration: fields[1] as int,
-      filePath: fields[2] as String,
+      videoUrl: fields[0] as String?,
+      duration: fields[1] as int?,
+      filePath: fields[2] as String?,
     );
   }
 
@@ -196,6 +199,126 @@ class VideoContentAdapter extends TypeAdapter<VideoContent> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is VideoContentAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class EmojiContentAdapter extends TypeAdapter<EmojiContent> {
+  @override
+  final int typeId = 20;
+
+  @override
+  EmojiContent read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return EmojiContent(
+      emojiUrl: fields[0] as String?,
+      emojiName: fields[1] as String?,
+      filePath: fields[2] as String?,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, EmojiContent obj) {
+    writer
+      ..writeByte(3)
+      ..writeByte(0)
+      ..write(obj.emojiUrl)
+      ..writeByte(1)
+      ..write(obj.emojiName)
+      ..writeByte(2)
+      ..write(obj.filePath);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is EmojiContentAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class GIFContentAdapter extends TypeAdapter<GIFContent> {
+  @override
+  final int typeId = 21;
+
+  @override
+  GIFContent read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return GIFContent(
+      gifUrl: fields[0] as String?,
+      gifName: fields[1] as String?,
+      filePath: fields[2] as String?,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, GIFContent obj) {
+    writer
+      ..writeByte(3)
+      ..writeByte(0)
+      ..write(obj.gifUrl)
+      ..writeByte(1)
+      ..write(obj.gifName)
+      ..writeByte(2)
+      ..write(obj.filePath);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is GIFContentAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class StickerContentAdapter extends TypeAdapter<StickerContent> {
+  @override
+  final int typeId = 22;
+
+  @override
+  StickerContent read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return StickerContent(
+      stickerUrl: fields[0] as String?,
+      stickerName: fields[1] as String?,
+      filePath: fields[2] as String?,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, StickerContent obj) {
+    writer
+      ..writeByte(3)
+      ..writeByte(0)
+      ..write(obj.stickerUrl)
+      ..writeByte(1)
+      ..write(obj.stickerName)
+      ..writeByte(2)
+      ..write(obj.filePath);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is StickerContentAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

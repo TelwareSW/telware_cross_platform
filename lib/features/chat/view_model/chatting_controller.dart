@@ -68,7 +68,6 @@ class ChattingController {
     // todo: make use of the return of this
     _remoteRepository.getUserChats(
         _ref.read(tokenProvider)!, _ref.read(userProvider)!.id!);
-
   }
 
   Future<void> init() async {
@@ -87,7 +86,6 @@ class ChattingController {
     final events = _localRepository.getEventQueue();
     final newEvents = events.map((e) => e.copyWith(controller: this));
     _eventHandler.init(Queue<MessageEvent>.from(newEvents.toList()));
-
   }
 
   Future<void> newLoginInit() async {
@@ -118,7 +116,6 @@ class ChattingController {
       return;
     }
 
-
     final response = await _remoteRepository.getUserChats(
         _ref.read(tokenProvider)!, _ref.read(userProvider)!.id!);
 
@@ -133,7 +130,6 @@ class ChattingController {
           }
           return b.messages[0].timestamp.compareTo(a.messages[0].timestamp);
         },
-
       );
 
       final otherUsersMap = <String, UserModel>{
@@ -144,12 +140,12 @@ class ChattingController {
       _localRepository.setOtherUsers(otherUsersMap);
       debugPrint('!!! ended the newLoginInit');
     }
-
   }
 
   /// Send a text message.
   /// Must specify either the chatID or userID in case of new chat,
   /// otherwise, it will throw an error
+
   Future<void> sendMsg({
     required MessageContent content,
     required MessageType msgType,
@@ -178,6 +174,7 @@ class ChattingController {
         _ref.read(chatsViewModelProvider.notifier).addChat(response.chat!);
       }
     }
+
 
     _ref.read(chatsViewModelProvider.notifier).addSentMessage(content, chatID!, msgType, contentType);
     _localRepository.setChats(_ref.read(chatsViewModelProvider));
@@ -217,7 +214,6 @@ class ChattingController {
   // edit a message
 
   void editMsg(String msgID, String chatID, MessageContent content) {
-
     final msgEvent = DeleteMessageEvent({
       'chatId': chatID,
       'senderId': _ref.read(userProvider)!.id,
@@ -233,7 +229,7 @@ class ChattingController {
     _localRepository.setChats(_ref.read(chatsViewModelProvider));
   }
 
-  // recieve a message
+  // receive a message
 
   Future<ChatModel> getChat(String chatID) async {
     final sessionID = _ref.read(tokenProvider);
@@ -241,12 +237,11 @@ class ChattingController {
     return response.chat!;
   }
 
-  Future<UserModel> getOtherUser(String id) async {
-    // todo: call the remote repo and get the other user from server
 
-    _remoteRepository.getOtherUser(_ref.read(tokenProvider)!, id);
-
-    return mockUsers[0];
+  Future<UserModel?> getOtherUser(String id) async {
+    UserModel? user =
+        await _remoteRepository.getOtherUser(_ref.read(tokenProvider)!, id);
+    return user;
   }
 
   void restoreOtherUsers(Map<String, UserModel> otherUsers) {

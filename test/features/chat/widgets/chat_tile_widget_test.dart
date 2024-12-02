@@ -1,5 +1,6 @@
 import 'package:faker/faker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
@@ -46,41 +47,61 @@ void main() {
       );
       const index = '0';
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ChatTileWidget(
-              key: ValueKey("${ChatKeys.chatTilePrefix.value}$index"),
-              chatModel: ChatModel(
-                id: faker.guid.guid(),
-                title: 'Chat 1',
-                messages: [message],
-                userIds: [faker.guid.guid()],
-                type: ChatType.private,
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: ChatTileWidget(
+                key: ValueKey("${ChatKeys.chatTilePrefix.value}$index"),
+                chatModel: ChatModel(
+                  id: faker.guid.guid(),
+                  title: 'Chat 1',
+                  messages: [message],
+                  userIds: [faker.guid.guid()],
+                  type: ChatType.private,
+                ),
+                displayMessage: message,
+                sentByUser: false,
+                senderID: message.senderId,
               ),
-              displayMessage: message,
-              sentByUser: false,
             ),
           ),
         ),
       );
-      expect(find.byKey(ValueKey(ChatKeys.chatTilePrefix.value +
-          index)), findsOneWidget,
+
+      // Allow FutureBuilder to complete
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(ValueKey(ChatKeys.chatTilePrefix.value + index)),
+          findsOneWidget,
           reason: 'Expected chat tile to render.');
-      expect(find.byKey(ValueKey(ChatKeys.chatTilePrefix.value +
-          index + ChatKeys.chatNamePostfix.value)), findsOneWidget,
+      expect(
+          find.byKey(ValueKey(ChatKeys.chatTilePrefix.value +
+              index +
+              ChatKeys.chatNamePostfix.value)),
+          findsOneWidget,
           reason: 'Expected chat title to render.');
-      expect(find.byKey(ValueKey(ChatKeys.chatTilePrefix.value +
-          index + ChatKeys.chatTileDisplayTextPostfix.value)), findsOneWidget,
+      expect(
+          find.byKey(ValueKey(ChatKeys.chatTilePrefix.value +
+              index +
+              ChatKeys.chatTileDisplayTextPostfix.value)),
+          findsOneWidget,
           reason: 'Expected chat message to render.');
-      expect(find.byKey(ValueKey(ChatKeys.chatTilePrefix.value +
-          index + ChatKeys.chatAvatarPostfix.value)), findsOneWidget,
+      expect(
+          find.byKey(ValueKey(ChatKeys.chatTilePrefix.value +
+              index +
+              ChatKeys.chatAvatarPostfix.value)),
+          findsOneWidget,
           reason: 'Expected chat avatar to render.');
-      expect(find.byKey(ValueKey(ChatKeys.chatTilePrefix.value +
-          index + ChatKeys.chatTileDisplayTimePostfix.value)), findsOneWidget,
+      expect(
+          find.byKey(ValueKey(ChatKeys.chatTilePrefix.value +
+              index +
+              ChatKeys.chatTileDisplayTimePostfix.value)),
+          findsOneWidget,
           reason: 'Expected chat time to render.');
     });
 
-    testWidgets("renders chat tile with different chat types", (WidgetTester tester) async {
+    testWidgets("renders chat tile with different chat types",
+        (WidgetTester tester) async {
       MessageModel message = MessageModel(
         id: '1',
         senderId: '1',
@@ -115,18 +136,20 @@ void main() {
       ];
       var index = 0;
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Column(
-              children:chats.map((chat) {
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+                body: Column(
+              children: chats.map((chat) {
                 return ChatTileWidget(
                   key: ValueKey("${ChatKeys.chatTilePrefix.value}${index++}"),
                   chatModel: chat,
                   displayMessage: message,
                   sentByUser: false,
+                  senderID: message.senderId,
                 );
               }).toList(),
-            )
+            )),
           ),
         ),
       );
@@ -134,20 +157,29 @@ void main() {
       final String content = message.content?.toJson()['text'];
 
       for (int i = 0; i < 3; i++) {
-        expect(find.byKey(ValueKey('${ChatKeys.chatTilePrefix.value}$i')), findsOneWidget,
+        expect(find.byKey(ValueKey('${ChatKeys.chatTilePrefix.value}$i')),
+            findsOneWidget,
             reason: 'Expected chat tile to render.');
-        expect(find.byKey(ValueKey('${ChatKeys.chatTilePrefix.value}$i${ChatKeys.chatTileDisplayTextPostfix.value}')), findsOneWidget,
+        expect(
+            find.byKey(ValueKey(
+                '${ChatKeys.chatTilePrefix.value}$i${ChatKeys.chatTileDisplayTextPostfix.value}')),
+            findsOneWidget,
             reason: 'Expected chat message to render.');
       }
-      Finder displayedTextFind = find.byKey(ValueKey('${ChatKeys.chatTilePrefix.value}1${ChatKeys.chatTileDisplayTextPostfix.value}'));
+      Finder displayedTextFind = find.byKey(ValueKey(
+          '${ChatKeys.chatTilePrefix.value}1${ChatKeys.chatTileDisplayTextPostfix.value}'));
       RichText displayedTextWidget = tester.firstWidget(displayedTextFind);
-      expect(extractTextFromRichText(displayedTextWidget), '${'John Doe'.split(" ")[0]}: $content',
-          reason: 'Expected chat message to render with sender ID in group chat ${chats[1].type}.');
-      displayedTextFind = find.byKey(ValueKey('${ChatKeys.chatTilePrefix.value}0${ChatKeys.chatTileDisplayTextPostfix.value}'));
+      expect(extractTextFromRichText(displayedTextWidget),
+          '${'John Doe'.split(" ")[0]}: $content',
+          reason:
+              'Expected chat message to render with sender ID in group chat ${chats[1].type}.');
+      displayedTextFind = find.byKey(ValueKey(
+          '${ChatKeys.chatTilePrefix.value}0${ChatKeys.chatTileDisplayTextPostfix.value}'));
       displayedTextWidget = tester.firstWidget(displayedTextFind);
       expect(extractTextFromRichText(displayedTextWidget), content,
           reason: 'Expected chat message to render normally in private chat.');
-      displayedTextFind = find.byKey(ValueKey('${ChatKeys.chatTilePrefix.value}2${ChatKeys.chatTileDisplayTextPostfix.value}'));
+      displayedTextFind = find.byKey(ValueKey(
+          '${ChatKeys.chatTilePrefix.value}2${ChatKeys.chatTileDisplayTextPostfix.value}'));
       displayedTextWidget = tester.firstWidget(displayedTextFind);
       expect(extractTextFromRichText(displayedTextWidget), content,
           reason: 'Expected chat message to render normally in channel chat.');
@@ -173,27 +205,36 @@ void main() {
       );
       const index = '0';
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ChatTileWidget(
-              key: ValueKey("${ChatKeys.chatTilePrefix.value}$index"),
-              chatModel: chat,
-              displayMessage: message,
-              sentByUser: false,
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: ChatTileWidget(
+                key: ValueKey("${ChatKeys.chatTilePrefix.value}$index"),
+                chatModel: chat,
+                displayMessage: message,
+                sentByUser: false,
+                senderID: message.senderId,
+              ),
             ),
           ),
         ),
       );
-      expect(find.byKey(ValueKey(ChatKeys.chatTilePrefix.value +
-          index + ChatKeys.chatTileDisplayTextPostfix.value)), findsOneWidget,
+      expect(
+          find.byKey(ValueKey(ChatKeys.chatTilePrefix.value +
+              index +
+              ChatKeys.chatTileDisplayTextPostfix.value)),
+          findsOneWidget,
           reason: 'Expected chat display text to render.');
-      Finder displayedTextFind = find.byKey(ValueKey('${ChatKeys.chatTilePrefix.value}$index${ChatKeys.chatTileDisplayTextPostfix.value}'));
+      Finder displayedTextFind = find.byKey(ValueKey(
+          '${ChatKeys.chatTilePrefix.value}$index${ChatKeys.chatTileDisplayTextPostfix.value}'));
       RichText displayedTextWidget = tester.firstWidget(displayedTextFind);
-      expect(extractTextFromRichText(displayedTextWidget), 'Draft: ${chat.draft}',
+      expect(
+          extractTextFromRichText(displayedTextWidget), 'Draft: ${chat.draft}',
           reason: 'Expected chat message to render with draft message.');
     });
 
-    testWidgets("renders message status only if it was sent by the user", (WidgetTester tester) async {
+    testWidgets("renders message status only if it was sent by the user",
+        (WidgetTester tester) async {
       MessageModel message = MessageModel(
         id: '1',
         senderId: '1',
@@ -204,42 +245,52 @@ void main() {
         userStates: {},
       );
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Column(
-              children: [
-                ChatTileWidget(
-                  key: ValueKey("${ChatKeys.chatTilePrefix.value}0"),
-                  chatModel: ChatModel(
-                    id: faker.guid.guid(),
-                    title: 'Chat 1',
-                    messages: [message],
-                    userIds: [faker.guid.guid()],
-                    type: ChatType.private,
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Column(
+                children: [
+                  ChatTileWidget(
+                    key: ValueKey("${ChatKeys.chatTilePrefix.value}0"),
+                    chatModel: ChatModel(
+                      id: faker.guid.guid(),
+                      title: 'Chat 1',
+                      messages: [message],
+                      userIds: [faker.guid.guid()],
+                      type: ChatType.private,
+                    ),
+                    displayMessage: message,
+                    sentByUser: true,
+                    senderID: message.senderId,
                   ),
-                  displayMessage: message,
-                  sentByUser: true,
-                ),
-                ChatTileWidget(
-                  key: ValueKey("${ChatKeys.chatTilePrefix.value}1"),
-                  chatModel: ChatModel(
-                    id: faker.guid.guid(),
-                    title: 'Chat 1',
-                    messages: [message],
-                    userIds: [faker.guid.guid()],
-                    type: ChatType.private,
-                  ),
-                  displayMessage: message,
-                  sentByUser: false,
-                )
-              ],
+                  ChatTileWidget(
+                    key: ValueKey("${ChatKeys.chatTilePrefix.value}1"),
+                    chatModel: ChatModel(
+                      id: faker.guid.guid(),
+                      title: 'Chat 1',
+                      messages: [message],
+                      userIds: [faker.guid.guid()],
+                      type: ChatType.private,
+                    ),
+                    displayMessage: message,
+                    sentByUser: false,
+                    senderID: message.senderId,
+                  )
+                ],
+              ),
             ),
           ),
         ),
       );
-      expect(find.byKey(ValueKey('${ChatKeys.chatTilePrefix.value}0${ChatKeys.chatTileMessageStatusPostfix.value}')), findsOneWidget,
+      expect(
+          find.byKey(ValueKey(
+              '${ChatKeys.chatTilePrefix.value}0${ChatKeys.chatTileMessageStatusPostfix.value}')),
+          findsOneWidget,
           reason: 'Expected message status to render if sent by user.');
-      expect(find.byKey(ValueKey('${ChatKeys.chatTilePrefix.value}1${ChatKeys.chatTileMessageStatusPostfix.value}')), findsNothing,
+      expect(
+          find.byKey(ValueKey(
+              '${ChatKeys.chatTilePrefix.value}1${ChatKeys.chatTileMessageStatusPostfix.value}')),
+          findsNothing,
           reason: 'Expected message status not to render if not sent by user.');
     });
   });

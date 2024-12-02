@@ -128,7 +128,7 @@ class ActiveContentStoryScreen extends StatelessWidget {
       builder: (context, seenSnapshot) {
         if (seenSnapshot.connectionState == ConnectionState.waiting) {
           return const Center(
-            child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(),
           );
         }
         if (seenSnapshot.hasError || !seenSnapshot.hasData) {

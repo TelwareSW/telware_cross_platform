@@ -8,11 +8,11 @@ class SignaturePen extends StatelessWidget {
   final SignatureController controller;
 
   const SignaturePen({
-    Key? key,
+    super.key,
     required this.signatureBoundaryKey,
     required this.imageFile,
     required this.controller,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

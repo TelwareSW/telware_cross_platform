@@ -4,7 +4,6 @@ import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 
-
 class ProfileHeader extends ConsumerWidget {
   final double factor;
 

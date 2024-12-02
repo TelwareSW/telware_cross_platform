@@ -52,6 +52,8 @@ class ChatLocalRepository {
   // get other users
   Future<bool> setOtherUsers(Map<String, UserModel> otherUsers) async {
     try {
+      debugPrint("!!! set other users locally called");
+      // debugPrint("other users: $otherUsers");
       await _otherUsersBox.put(_otherUsersBoxKey, otherUsers);
       return true;
     } catch (e) {
@@ -89,7 +91,8 @@ class ChatLocalRepository {
   Queue<MessageEvent> getEventQueue() {
     final list = _eventsBox.get(_eventsBoxKey, defaultValue: []);
     final eventsList =
-        list?.map((element) => element as MessageEvent).toList() ?? <MessageEvent>[];
+        list?.map((element) => element as MessageEvent).toList() ??
+            <MessageEvent>[];
     final queue = Queue<MessageEvent>.from(eventsList);
     return queue;
   }

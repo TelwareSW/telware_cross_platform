@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:faker/faker.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -257,6 +256,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
   }
 
   void filterView(String query) {
+
     var filteredChats = <Map<String, dynamic>>[
       {"options": <Map<String, dynamic>>[]}
     ];

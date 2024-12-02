@@ -185,7 +185,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     });
   }
 
-
   //TODO: Implement the sendMsg method with another types of messages
   void _sendMessage(WidgetRef ref) {
     MessageModel newMessage = MessageModel(
@@ -197,19 +196,22 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       userStates: {},
     );
     _messageController.clear();
-    _updateChatMessages([...chatContent, newMessage]);
-    ref.read(chattingControllerProvider).sendMsg(
-      content: newMessage.content!,
-      msgType: newMessage.messageType,
-      contentType: newMessage.messageContentType,
-      chatType: ChatType.private,
-      chatModel: chatModel,
-    ).then((_) {
-      List<MessageModel> messages = ref.watch(chatProvider(chatModel!.id!))?.messages ?? [];
+    _updateChatMessages([...?chatModel?.messages, newMessage]);
+    ref
+        .read(chattingControllerProvider)
+        .sendMsg(
+          content: newMessage.content!,
+          msgType: newMessage.messageType,
+          contentType: newMessage.messageContentType,
+          chatType: ChatType.private,
+          chatModel: chatModel,
+        )
+        .then((_) {
+      List<MessageModel> messages =
+          ref.watch(chatProvider(chatModel!.id!))?.messages ?? [];
       _updateChatMessages(messages);
       _scrollToBottom();
     });
-
   }
 
   void _setChatMute(DateTime? muteUntil) {
@@ -403,7 +405,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     List<int> messageIndices = [];
     for (int i = 0; i < chatContent.length; i++) {
       var msg = chatContent[i];
-      if (msg is! MessageModel || msg.messageContentType !=  MessageContentType.text) {
+      if (msg is! MessageModel ||
+          msg.messageContentType != MessageContentType.text) {
         continue;
       }
       String messageText = msg.content?.toJson()['text'] ?? "";
@@ -464,7 +467,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   @override
   Widget build(BuildContext context) {
     final popupMenu = buildPopupMenu();
-    final chatModel = widget.chatModel ?? ref.watch(chatProvider(widget.chatId))!;
+    final chatModel =
+        widget.chatModel ?? ref.watch(chatProvider(widget.chatId))!;
     final type = chatModel.type;
     final String title = chatModel.title;
     final membersNumber = chatModel.userIds.length;
@@ -477,56 +481,56 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     var messagesIndex = 0;
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            if (isShowAsList) {
-              setState(() {
-                isShowAsList = false;
-              });
-            } else if (isSearching) {
-              setState(() {
-                isSearching = false;
-                _messageMatches.clear();
-              });
-            } else {
-              Navigator.pop(context);
-            }
-          },
-        ),
-        title: !isSearching
-            ? ChatHeaderWidget(
-                title: title,
-                subtitle: subtitle,
-                photo: photo,
-                imageBytes: imageBytes,
-              )
-            : TextField(
-                key: ChatKeys.chatSearchInput,
-                autofocus: true,
-                decoration: const InputDecoration(
-                  hintText: 'Search',
-                  hintStyle: TextStyle(
-                      color: Palette.accentText, fontWeight: FontWeight.w400),
-                  border: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  enabledBorder: InputBorder.none,
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              if (isShowAsList) {
+                setState(() {
+                  isShowAsList = false;
+                });
+              } else if (isSearching) {
+                setState(() {
+                  isSearching = false;
+                  _messageMatches.clear();
+                });
+              } else {
+                Navigator.pop(context);
+              }
+            },
+          ),
+          title: !isSearching
+              ? ChatHeaderWidget(
+                  title: title,
+                  subtitle: subtitle,
+                  photo: photo,
+                  imageBytes: imageBytes,
+                )
+              : TextField(
+                  key: ChatKeys.chatSearchInput,
+                  autofocus: true,
+                  decoration: const InputDecoration(
+                    hintText: 'Search',
+                    hintStyle: TextStyle(
+                        color: Palette.accentText, fontWeight: FontWeight.w400),
+                    border: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                  ),
+                  onSubmitted: _searchForText,
+                  onChanged: (value) => {
+                    if (isShowAsList)
+                      {
+                        setState(() {
+                          isShowAsList = false;
+                        })
+                      }
+                  },
                 ),
-                onSubmitted: _searchForText,
-                onChanged: (value) => {
-                  if (isShowAsList)
-                    {
-                      setState(() {
-                        isShowAsList = false;
-                      })
-                    }
-                },
-              ),
-        actions: [
-          if (!isSearching)
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert),
+          actions: [
+            if (!isSearching)
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert),
               onSelected: _handlePopupMenuSelection,
               color: Palette.secondary,
               padding: EdgeInsets.zero,
@@ -584,79 +588,78 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                           offset: Offset(0, 2),
                         ),
                       ],
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Text(
-                          'No messages here yet...',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Palette.primaryText,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 10),
-                        const Text(
-                          'Send a message or tap the greeting below.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Palette.primaryText,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        LottieViewer(
-                          path: _chosenAnimation,
-                          width: 100,
-                          height: 100,
-                          isLooping: true,
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-                    : SingleChildScrollView(
-                  controller:
-                  _scrollController, // Use the ScrollController
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 10),
-                    child: Column(
-                      children:
-                      chatContent.mapIndexed((index, item) {
-                        if (item is DateLabelWidget) {
-                          return item;
-                        } else if (item is MessageModel) {
-                          return MessageTileWidget(
-                            key: ValueKey(
-                                '${MessageKeys.messagePrefix}${messagesIndex++}'),
-                            messageModel: item,
-                            isSentByMe: item.senderId ==
-                                ref.read(userProvider)!.id,
-                            showInfo: type == ChatType.group,
-                            highlights: _messageMatches[index] ??
-                                const [MapEntry(0, 0)],
-                          );
-                        } else {
-                          return const SizedBox.shrink();
-                        }
-                      }).toList(),
-                    ),
-                  ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    const Text(
+                                      'No messages here yet...',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: Palette.primaryText,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 10),
+                                    const Text(
+                                      'Send a message or tap the greeting below.',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Palette.primaryText,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    LottieViewer(
+                                      path: _chosenAnimation,
+                                      width: 100,
+                                      height: 100,
+                                      isLooping: true,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          : SingleChildScrollView(
+                              controller:
+                                  _scrollController, // Use the ScrollController
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 10),
+                                child: Column(
+                                  children:
+                                      chatContent.mapIndexed((index, item) {
+                                    if (item is DateLabelWidget) {
+                                      return item;
+                                    } else if (item is MessageModel) {
+                                      return MessageTileWidget(
+                                        key: ValueKey(
+                                            '${MessageKeys.messagePrefix}${messagesIndex++}'),
+                                        messageModel: item,
+                                        isSentByMe: item.senderId ==
+                                            ref.read(userProvider)!.id,
+                                        showInfo: type == ChatType.group,
+                                        highlights: _messageMatches[index] ??
+                                            const [MapEntry(0, 0)],
+                                      );
+                                    } else {
+                                      return const SizedBox.shrink();
+                                    }
+                                  }).toList(),
+                                ),
+                              ),
+                            ),
                 ),
-              ),
-              // The input bar at the bottom
-              if (!isSearching)
-                BottomInputBarWidget(
+                // The input bar at the bottom
+                if (!isSearching)
+                  BottomInputBarWidget(
                     controller: _messageController,
                     recorderController: _recorderController,
                     playerController: _playerController,
-                    chatID : chatID,
-                    sendMessage:_sendMessage,
+                    chatID: chatID,
+                    sendMessage: _sendMessage,
                     startRecording: _startRecording,
                     stopRecording: _stopRecording,
                     deleteRecording: _deleteRecording,
@@ -697,186 +700,182 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                   fontSize: 18,
                                   fontWeight: FontWeight.w500,
                                 ),
+                                ),
+                                cancel: null,
                               ),
-                              cancel: null,
-                            ),
-                            minDateTime: DateTime.now()
-                                .subtract(const Duration(days: 365 * 10)),
-                            maxDateTime: DateTime.now(),
-                            initialDateTime: DateTime.now(),
-                            dateFormat: 'dd-MMMM-yyyy',
-                            locale: DateTimePickerLocale.en_us,
-                            onConfirm: (date, time) {
-                              _scrollToTimeStamp(date);
-                            },
-                          );
-                        },
-                      ),
-                      if (_numberOfMatches != 0)
-                        Text(
-                          _numberOfMatches == 0
-                              ? 'No results'
-                              : isShowAsList
-                              ? '$_numberOfMatches result${_numberOfMatches != 1 ? 's' : ''}'
-                              : '$_currentMatch of $_numberOfMatches',
-                          style: const TextStyle(
-                              color: Palette.primaryText,
-                              fontWeight: FontWeight.w500),
+                              minDateTime: DateTime.now()
+                                  .subtract(const Duration(days: 365 * 10)),
+                              maxDateTime: DateTime.now(),
+                              initialDateTime: DateTime.now(),
+                              dateFormat: 'dd-MMMM-yyyy',
+                              locale: DateTimePickerLocale.en_us,
+                              onConfirm: (date, time) {
+                                _scrollToTimeStamp(date);
+                              },
+                            );
+                          },
                         ),
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: GestureDetector(
-                            onTap: () {
-                              _toggleSearchDisplay();
-                            },
-                            child: Text(
-                              key: ChatKeys.chatSearchShowMode,
-                              isShowAsList ? 'Show as Chat' : 'Show as List',
-                              style: const TextStyle(
-                                color: Palette.accent,
-                                fontSize: 16,
+                        if (_numberOfMatches != 0)
+                          Text(
+                            _numberOfMatches == 0
+                                ? 'No results'
+                                : isShowAsList
+                                    ? '$_numberOfMatches result${_numberOfMatches != 1 ? 's' : ''}'
+                                    : '$_currentMatch of $_numberOfMatches',
+                            style: const TextStyle(
+                                color: Palette.primaryText,
+                                fontWeight: FontWeight.w500),
+                          ),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: GestureDetector(
+                              onTap: () {
+                                _toggleSearchDisplay();
+                              },
+                              child: Text(
+                                key: ChatKeys.chatSearchShowMode,
+                                isShowAsList ? 'Show as Chat' : 'Show as List',
+                                style: const TextStyle(
+                                  color: Palette.accent,
+                                  fontSize: 16,
+                                ),
                               ),
                             ),
                           ),
                         ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+            isRecording || isRecordingLocked
+                ? AnimatedPositioned(
+                    bottom: 90,
+                    right: 10,
+                    duration: const Duration(milliseconds: 300),
+                    child: GestureDetector(
+                      child: Transform.translate(
+                        offset: Offset(0, _lockRecordingDragPosition),
+                        child: Container(
+                          width: 30,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            color: Palette.quaternary,
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                          child: Center(
+                            child: isRecordingLocked
+                                ? IconButton(
+                                    onPressed: _startOrStopRecording,
+                                    padding: const EdgeInsets.all(5),
+                                    icon: Icon(
+                                      isRecordingCompleted
+                                          ? Icons.mic
+                                          : Icons.pause,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  )
+                                : LottieViewer(
+                                    path: lockPath,
+                                    width: 20,
+                                    height: 20,
+                                    isLooping: true,
+                                  ),
+                          ),
+                        ),
                       ),
-                    ],
-                  ),
-                ),
-            ],
-          ),
-          isRecording || isRecordingLocked
-              ? AnimatedPositioned(
-            bottom: 90,
-            right: 10,
-            duration: const Duration(milliseconds: 300),
-            child: GestureDetector(
-              child: Transform.translate(
-                offset: Offset(0, _lockRecordingDragPosition),
-                child: Container(
-                  width: 30,
-                  height: 30,
-                  decoration: BoxDecoration(
-                    color: Palette.quaternary,
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: Center(
-                    child: isRecordingLocked
-                        ? IconButton(
-                      onPressed: _startOrStopRecording,
-                      padding: const EdgeInsets.all(5),
-                      icon: Icon(
-                        isRecordingCompleted
-                            ? Icons.mic
-                            : Icons.pause,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    )
-                        : LottieViewer(
-                      path: lockPath,
-                      width: 20,
-                      height: 20,
-                      isLooping: true,
                     ),
-                  ),
+                  )
+                : const SizedBox.shrink(),
+            if (isRecording) ...[
+              const Positioned(
+                bottom: -50,
+                right: -50,
+                child: LottieViewer(
+                  path: "assets/json/wave_animation_2.json",
+                  width: 150,
+                  height: 150,
+                  isLooping: true,
                 ),
               ),
-            ),
-          )
-              : const SizedBox.shrink(),
-          if (isRecording) ...[
-            const Positioned(
-              bottom: -50,
-              right: -50,
-              child: LottieViewer(
-                path: "assets/json/wave_animation_2.json",
-                width: 150,
-                height: 150,
-                isLooping: true,
-              ),
-            ),
-            const Positioned(
-              bottom: -50,
-              right: -50,
-              child: LottieViewer(
-                path: "assets/json/wave_animation_1.json",
-                width: 150,
-                height: 150,
-                isLooping: true,
-              ),
-            )
-          ],
-          if (isSearching && _numberOfMatches != 0) ...[
-            Positioned(
-              bottom: 150,
-              right: 10,
-              child: GestureDetector(
-                onTap: _scrollToPrevMatch,
-                child: Container(
-                    width: 30,
-                    height: 30,
-                    decoration: BoxDecoration(
-                      color: Palette.quaternary,
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.keyboard_arrow_up_sharp),
-                    )
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: 90,
-              right: 10,
-              child: GestureDetector(
-                onTap: _scrollToNextMatch,
-                child: Container(
-                    width: 30,
-                    height: 30,
-                    decoration: BoxDecoration(
-                      color: Palette.quaternary,
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.keyboard_arrow_down_sharp),
-                    )
-                ),
-              ),
-            ),
-          ],
-          AnimatedPositioned(
-            bottom: -20,
-            right: -20,
-            duration: const Duration(milliseconds: 300),
-            child: isRecording
-                  ? Container(
-                width: 90,
-                height: 90,
-                decoration: BoxDecoration(
-                  color: Palette.accent,
-                  borderRadius: BorderRadius.circular(50),
-                ),
-                child: Center(
-                  child: IconButton(
-                    icon: Icon(
-                      size: 28,
-                      isRecordingLocked ? Icons.send : Icons.mic,
-                    ),
-                    color: Colors.white,
-                    onPressed: () {
-                      _cancelRecording();
-                    },
-                  ),
+              const Positioned(
+                bottom: -50,
+                right: -50,
+                child: LottieViewer(
+                  path: "assets/json/wave_animation_1.json",
+                  width: 150,
+                  height: 150,
+                  isLooping: true,
                 ),
               )
+            ],
+            if (isSearching && _numberOfMatches != 0) ...[
+              Positioned(
+                bottom: 150,
+                right: 10,
+                child: GestureDetector(
+                  onTap: _scrollToPrevMatch,
+                  child: Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: Palette.quaternary,
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.keyboard_arrow_up_sharp),
+                      )),
+                ),
+              ),
+              Positioned(
+                bottom: 90,
+                right: 10,
+                child: GestureDetector(
+                  onTap: _scrollToNextMatch,
+                  child: Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: Palette.quaternary,
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.keyboard_arrow_down_sharp),
+                      )),
+                ),
+              ),
+            ],
+            AnimatedPositioned(
+              bottom: -20,
+              right: -20,
+              duration: const Duration(milliseconds: 300),
+              child: isRecording
+                  ? Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        color: Palette.accent,
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: Center(
+                        child: IconButton(
+                          icon: Icon(
+                            size: 28,
+                            isRecordingLocked ? Icons.send : Icons.mic,
+                          ),
+                          color: Colors.white,
+                          onPressed: () {
+                            _cancelRecording();
+                          },
+                        ),
+                      ),
+                    )
                   : const SizedBox.shrink(),
             ),
-
-        ],
-      )
-    );
+          ],
+        ));
   }
 
   void _handlePopupMenuSelection(String value) {

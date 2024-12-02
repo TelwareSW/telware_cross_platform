@@ -46,7 +46,9 @@ Future<void> init() async {
   Hive.registerAdapter(ImageContentAdapter());
   Hive.registerAdapter(VideoContentAdapter());
   Hive.registerAdapter(DocumentContentAdapter());
-
+  Hive.registerAdapter(StickerContentAdapter());
+  Hive.registerAdapter(EmojiContentAdapter());
+  Hive.registerAdapter(GIFContentAdapter());
 
   await Hive.initFlutter();
   await Hive.openBox<ContactModel>('contacts');
