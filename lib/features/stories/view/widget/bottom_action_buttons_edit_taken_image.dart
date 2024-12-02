@@ -14,14 +14,14 @@ class BottomActionButtonsEditTakenImage extends StatelessWidget {
   final String destination;
 
   const BottomActionButtonsEditTakenImage({
-    Key? key,
+    super.key,
     required this.cropImage,
     required this.discardChanges,
     required this.saveAndPostStory,
     required this.captionController,
     required this.ref,
     this.destination = 'story'
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -30,16 +30,19 @@ class BottomActionButtonsEditTakenImage extends StatelessWidget {
       alignment: WrapAlignment.center,
       children: [
         ElevatedButton.icon(
+          key: const ValueKey('to_crop_screen_key'),
           onPressed: cropImage,
           icon: const Icon(Icons.crop),
           label: const Text("Crop"),
         ),
         ElevatedButton.icon(
+          key: const ValueKey('discard_key'),
           onPressed: discardChanges,
           icon: const Icon(Icons.clear),
           label: const Text("Discard"),
         ),
         ElevatedButton.icon(
+          key: const ValueKey('post_key'),
           onPressed: () async {
             FocusScope.of(context).unfocus();
             File combinedImageFile = await saveAndPostStory();
@@ -67,13 +70,13 @@ class BottomActionButtonsEditTakenImage extends StatelessWidget {
               );
 
               if (uploadResult) {
-                Future.delayed(const Duration(seconds: 2), () {
+                Future.delayed(const Duration(seconds: 1), () {
                   Navigator.of(context).pop();
                 });
               }
             }
             if (uploadResult) {
-              Future.delayed(const Duration(seconds: 2), () {
+              Future.delayed(const Duration(seconds: 1), () {
                 Navigator.of(context).pop();
               });
             }

@@ -3,10 +3,14 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
+import 'package:telware_cross_platform/core/constants/server_constants.dart';
 
 Future<Uint8List?> downloadImage(String? url) async {
   if (url == null || url.isEmpty) {
     return null;
+  }
+  if (!url.startsWith('https')) {
+    url='$API_URL_PICTURES/$url';
   }
   try {
     final response = await http.get(Uri.parse(url));

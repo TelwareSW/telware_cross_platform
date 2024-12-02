@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:vibration/vibration.dart';
 
 import 'package:telware_cross_platform/core/providers/sign_up_provider.dart';
@@ -18,6 +17,8 @@ import 'package:telware_cross_platform/features/auth/view/widget/social_log_in.d
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
+
+import '../../../../core/constants/keys.dart';
 
 class LogInScreen extends ConsumerStatefulWidget {
   static const String route = '/log-in';
