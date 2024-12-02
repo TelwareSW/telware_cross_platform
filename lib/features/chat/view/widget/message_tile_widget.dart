@@ -11,6 +11,7 @@ import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
+import 'package:telware_cross_platform/features/chat/view/screens/forward_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/audio_message_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/video_player_widget.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
@@ -18,10 +19,11 @@ import 'package:video_player/video_player.dart';
 
 import 'package:telware_cross_platform/core/view/widget/highlight_text_widget.dart';
 
+import '../../../../core/models/user_model.dart';
 import '../screens/create_chat_screen.dart';
 import 'floating_menu_overlay.dart';
 
-class MessageTileWidget extends StatelessWidget {
+class MessageTileWidget extends ConsumerWidget {
   final MessageModel messageModel;
   final bool isSentByMe;
   final bool showInfo;
@@ -32,6 +34,7 @@ class MessageTileWidget extends StatelessWidget {
   final Function(MessageModel) onLongPress;
   final Function(MessageModel) onPin;
   final Function()? onPress;
+  final MessageModel? parentMessage;
 
   const MessageTileWidget({
     super.key,
@@ -45,6 +48,7 @@ class MessageTileWidget extends StatelessWidget {
     required this.onLongPress,
     required this.onPress,
     required this.onPin,
+    this.parentMessage,
   });
 
   // Function to format timestamp to "hh:mm AM/PM"
@@ -54,7 +58,7 @@ class MessageTileWidget extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final keyValue = (key as ValueKey).value;
     Alignment messageAlignment =
         isSentByMe ? Alignment.centerRight : Alignment.centerLeft;
@@ -84,7 +88,7 @@ class MessageTileWidget extends StatelessWidget {
                     },
                     onForward: () {
                       overlayEntry.remove();
-                      context.push(CreateChatScreen.route);
+                      context.push(ForwardScreen.route);
                     },
                     onPin: () {
                       overlayEntry.remove();
@@ -140,6 +144,78 @@ class MessageTileWidget extends StatelessWidget {
                         isSentByMe: isSentByMe,
                         userId: messageModel.senderId,
                       ),
+                      parentMessage != null ?Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          // First message
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: isSentByMe ? LinearGradient(
+                                colors: [
+                                  Color.lerp(Colors.deepPurpleAccent, Colors.white, 0.4) ??
+                                      Colors.black, // Increase brightness by using 0.4
+                                  Color.lerp(Colors.deepPurpleAccent, Colors.white, 0.2) ??
+                                      Colors.deepPurpleAccent, // Slightly brighten the bottom color
+                                ],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ):LinearGradient(
+                                colors: [
+                                  Color.lerp(Palette.secondary, Colors.white, 0.4) ??
+                                      Colors.black, // Increase brightness by using 0.4
+                                  Color.lerp(Palette.secondary, Colors.white, 0.2) ??
+                                      Palette.secondary, // Slightly brighten the bottom color
+                                ],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ),
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(16),
+                              ),
+                            ),
+                            padding: const EdgeInsets.all(3),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                FutureBuilder<UserModel?>(
+                                  future: ref.read(chatsViewModelProvider.notifier).getUser(messageModel.senderId),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState == ConnectionState.waiting) {
+                                      return const CircularProgressIndicator(); // Show loading spinner
+                                    } else if (snapshot.hasError) {
+                                      return Text(
+                                        'Error: ${snapshot.error}',
+                                        style: const TextStyle(
+                                          color: Colors.red,
+                                        ),
+                                      );
+                                    } else if (snapshot.hasData) {
+                                      return Text(
+                                        snapshot.data!.username ?? '',
+                                        style: const TextStyle(
+                                          color: Palette.primaryText,
+                                          fontSize: 16,
+                                        ),
+                                      );
+                                    } else {
+                                      return const Text(
+                                        'No data',
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
+                                Text(
+                                  parentMessage?.content?.toJson()['text'] ?? "",
+                                  style: const TextStyle(color: Palette.primaryText,
+                                    fontSize: 16,),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],) : SizedBox(),
                       Wrap(
                         children: [
                           HighlightTextWidget(

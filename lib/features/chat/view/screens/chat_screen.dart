@@ -36,6 +36,7 @@ import 'package:telware_cross_platform/features/user/view/widget/settings_option
 import '../../../../core/routes/routes.dart';
 import '../widget/reply_widget.dart';
 import 'create_chat_screen.dart';
+import 'forward_screen.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   static const String route = '/chat';
@@ -106,6 +107,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       _messageController.text = chatModel!.draft ?? "";
       final messages = chatModel?.messages ?? [];
       _updateChatMessages(messages);
+      pinnedMessages = messages.where((message) => message.isPinned).toList();
     // _scrollToBottom();
       if (widget.forwardedMessages != null) {
         _sendForwardedMessages();
@@ -120,6 +122,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       ..iosEncoder = IosEncoder.kAudioFormatMPEG4AAC
       ..bitRate = 128000
       ..sampleRate = 44100;
+
   }
 
   @override
@@ -227,6 +230,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       timestamp: DateTime.now(),
       messageType: MessageType.normal,
       userStates: {},
+      parentMessage:replyMessage?.id,
     );
     _messageController.clear();
     _updateChatMessages([...?chatModel?.messages, newMessage]);
@@ -300,6 +304,12 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     if (!isRecordingLocked) vibrate();
     isRecordingLocked = true;
     setState(() {});
+  }
+
+  void _removeReply() {
+    setState(() {
+      replyMessage = null;
+    });
   }
 
   void _deleteRecording() {
@@ -602,7 +612,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                     IconButton(
                       icon: Icon(FontAwesomeIcons.share, color: Colors.white),
                       onPressed: () {
-                        context.push(CreateChatScreen.route);
+                        context.push(ForwardScreen.route);
                       },
                     ),
                     // Delete icon
@@ -753,6 +763,9 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                         key: ValueKey(
                                             '${MessageKeys.messagePrefix}${messagesIndex++}'),
                                         messageModel: item,
+                                        parentMessage:chatModel.messages.firstWhere(
+                                              (message) => message.parentMessage == item.parentMessage,
+                                        ),
                                         isSentByMe: item.senderId ==
                                             ref.read(userProvider)!.id,
                                         showInfo: type == ChatType.group,
@@ -812,7 +825,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                   Container(
                     color: Palette.secondary,
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -844,7 +857,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                           ),
                           GestureDetector(
                             onTap: () {
-                              context.push(CreateChatScreen.route);
+                              context.push(ForwardScreen.route);
                             },
                             child: const Row(
                               children: [
@@ -880,6 +893,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                     isRecordingLocked: isRecordingLocked,
                     isRecordingPaused: isRecordingPaused,
                     lockRecordingDrag: _lockRecordingDrag,
+                    removeReply: _removeReply,
                   )
                 else
                   Container(
