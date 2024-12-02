@@ -76,6 +76,7 @@ class ChatRemoteRepository {
 
         switch (contentType.content) {
           case 'text':
+            content = TextContent(lastMessage['content']);
           case 'link':
             content = TextContent(lastMessage['content']);
             break;
@@ -161,6 +162,7 @@ class ChatRemoteRepository {
 
       return (chats: chats, users: users, appError: null);
     } catch (e) {
+      debugPrint('!!! error in recieving the chats');
       debugPrint(e.toString());
       return (
         chats: <ChatModel>[],

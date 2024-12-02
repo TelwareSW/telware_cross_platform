@@ -24,7 +24,6 @@ import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/providers/chat_provider.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/popup_menu_item_widget.dart';
-import 'package:telware_cross_platform/features/chat/view/screens/pinned_messages_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/bottom_input_bar_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/chat_header_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/date_label_widget.dart';
@@ -752,6 +751,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                           MessageTileWidget(
                                         key: ValueKey(
                                             '${MessageKeys.messagePrefix}${messagesIndex++}'),
+                                        chatId: chatModel!.id!,
                                         messageModel: item,
                                         isSentByMe: item.senderId ==
                                             ref.read(userProvider)!.id,
@@ -785,6 +785,9 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                                     : selectedMessages
                                                         .add(message);
                                               });
+                                            },
+                                            onDelete: (msg, _, id) {
+                                              
                                             },
                                           ),
                                         ],

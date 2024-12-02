@@ -3,7 +3,6 @@ import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/mock/constants_mock.dart';
-import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/services/socket_service.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
@@ -13,16 +12,25 @@ class EventHandler {
   final ChattingController _chattingController;
   final SocketService _socket;
   Queue<MessageEvent> _queue;
+  String _userId;
+  String _sessionId;
 
   bool _isProcessing = false; // Flag to control processing loop
   bool _stopRequested = false; // Flag to request stopping the loop
 
   void init(Queue<MessageEvent> eventsQueue) {
     _queue = eventsQueue;
-    _socket.connect(API_URL, _onSocketConnect);
+    _socket.connect(
+      serverUrl: SOCKET_URL,
+      userId: _userId,
+      onConnect: _onSocketConnect,
+      sessionId: _sessionId
+    );
+    _processQueue();
   }
 
   void addEvent(MessageEvent event) {
+    debugPrint('!!! event added');
     _queue.add(event);
 
     // Start processing if not already running
@@ -68,11 +76,11 @@ class EventHandler {
   }
 
   void _onSocketConnect() {
+    debugPrint('!!! connected succeffully');
     // receive a message
     _socket.on(EventType.receiveMessage.event, (response) async {
       try {
-        final msg = await MessageModel.fromMap(response);
-        _chattingController.receiveMsg(response['chatId'] ,msg);
+        _chattingController.receiveMsg(response);
       } on Exception catch (e) {
         debugPrint('!!! Error in recieving a message:\n${e.toString()}');
       }
@@ -85,22 +93,28 @@ class EventHandler {
   EventHandler._internal({
     required ChattingController controller,
     required SocketService socket,
+    required String userId,
+    required String sessionId,
   })  : _chattingController = controller,
-        _socket = socket, _queue = Queue();
+        _socket = socket,
+        _userId = userId,
+        _sessionId = sessionId,
+        _queue = Queue();
 
   // Singleton instance
   static EventHandler? _instance;
 
   // private constructor
-  EventHandler._(this._chattingController, this._socket, this._queue);
+  EventHandler._(this._chattingController, this._socket, this._queue, this._userId, this._sessionId);
 
   // Configure the singleton instance
   static void config({
     required ChattingController controller,
     required SocketService socket,
+    required String userId,
+    required String sessionId,
   }) {
-    _instance =
-        EventHandler._internal(controller: controller, socket: socket);
+    _instance = EventHandler._internal(controller: controller, socket: socket, userId: userId, sessionId: sessionId);
   }
 
   // Getter for the singleton instance

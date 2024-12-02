@@ -23,6 +23,7 @@ import 'floating_menu_overlay.dart';
 
 class MessageTileWidget extends StatelessWidget {
   final MessageModel messageModel;
+  final String chatId;
   final bool isSentByMe;
   final bool showInfo;
   final Color nameColor;
@@ -31,11 +32,13 @@ class MessageTileWidget extends StatelessWidget {
   final Function(MessageModel) onReply;
   final Function(MessageModel) onLongPress;
   final Function(MessageModel) onPin;
+  final Function(String, String, DeleteMessageType) onDelete;
   final Function()? onPress;
 
   const MessageTileWidget({
     super.key,
     required this.messageModel,
+    required this.chatId,
     required this.isSentByMe,
     this.showInfo = false,
     this.nameColor = Palette.primary,
@@ -45,6 +48,7 @@ class MessageTileWidget extends StatelessWidget {
     required this.onLongPress,
     required this.onPress,
     required this.onPin,
+    required this.onDelete
   });
 
   // Function to format timestamp to "hh:mm AM/PM"
