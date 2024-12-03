@@ -29,6 +29,7 @@ class BottomInputBarWidget extends ConsumerStatefulWidget {
       String? filePath,
       required WidgetRef ref,
       bool? getRecordingPath}) sendMessage;
+  final void Function() removeReply;
   final void Function(double) lockRecordingDrag;
   final String? audioFilePath;
   final bool isRecordingLocked;
@@ -50,6 +51,7 @@ class BottomInputBarWidget extends ConsumerStatefulWidget {
     required this.deleteRecording,
     required this.resetRecording,
     required this.lockRecording,
+    required this.removeReply,
     required this.isRecordingLocked,
     required this.lockRecordingDrag,
     required this.isRecordingPaused,
@@ -345,6 +347,7 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
               icon: const Icon(Icons.send),
               color: Palette.accent,
               onPressed: () {
+                widget.removeReply();
                 if (widget.isRecordingCompleted) {
                   //TODO: Send the recorded audio
                   widget.sendMessage(

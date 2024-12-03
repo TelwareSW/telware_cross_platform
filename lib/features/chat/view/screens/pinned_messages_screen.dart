@@ -268,23 +268,52 @@ class _PinnedMessagesScreen extends ConsumerState<PinnedMessagesScreen>
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
-                                    const SizedBox(height: 10),
-                                    const Text(
-                                      'Send a message or tap the greeting below.',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Palette.primaryText,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 20),
-                                    LottieViewer(
-                                      path: _chosenAnimation,
-                                      width: 100,
-                                      height: 100,
-                                      isLooping: true,
-                                    ),
-                                  ],
+                                  ),
+                                if (selectedMessages.contains(item))
+                                  const SizedBox(width: 10),
+                                MessageTileWidget(
+                                  chatId: chatModel.id!,
+                                  key: ValueKey(
+                                      '${MessageKeys
+                                          .messagePrefix}${messagesIndex++}'),
+                                  messageModel: item,
+                                  isSentByMe: item.senderId ==
+                                      ref.read(userProvider)!.id,
+                                  showInfo: type == ChatType.group,
+                                  highlights:
+                                  _messageMatches[index] ??
+                                      const [MapEntry(0, 0)],
+                                  onReply: (message) {
+                                    setState(() {
+                                      replyMessage = message;
+                                    });
+                                  },
+                                  onPin: (message) {
+                                    setState(() {
+                                      pinnedMessages.contains(message)
+                                          ? pinnedMessages
+                                          .remove(message)
+                                          : pinnedMessages
+                                          .add(message);
+                                    });
+                                  },
+                                  onPress: selectedMessages.isEmpty
+                                      ? null
+                                      : () {},
+                                  onLongPress: (message) {
+                                    setState(() {
+                                      replyMessage = null;
+                                      selectedMessages
+                                          .contains(message)
+                                          ? selectedMessages
+                                          .remove(message)
+                                          : selectedMessages
+                                          .add(message);
+                                    });
+                                  },
+                                  onDelete: (msgId, _, message) {
+                                  
+                                  },
                                 ),
                               ),
                             )

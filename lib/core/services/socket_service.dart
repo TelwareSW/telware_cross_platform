@@ -1,5 +1,6 @@
 import 'package:socket_io_client/socket_io_client.dart';
 import 'package:flutter/foundation.dart';
+import 'package:telware_cross_platform/core/constants/server_constants.dart';
 
 class SocketService {
   late Socket _socket;
@@ -13,15 +14,36 @@ class SocketService {
   // Getter for the singleton instance
   static SocketService get instance => _instance;
 
-  void connect(String serverUrl, Function() onConnect) {
-    _socket = io(serverUrl, OptionBuilder()
-        .setTransports(['websocket'])
-        .enableAutoConnect()
-        .build());
+  void connect(
+      {required String serverUrl,
+      required String userId,
+      required String sessionId,
+      required Function() onConnect}) {
+    debugPrint('*** Entered the connect method');
+    debugPrint(serverUrl);
+    debugPrint(userId);
+    debugPrint(sessionId);
+
+    _socket = io(serverUrl, <String, dynamic>{
+      // 'autoConnect': false,
+      "transports": ["websocket"],
+      'query': {'userId': userId},
+      'auth': {'sessionId': sessionId}
+    });
+
+    _socket.connect();
 
     _socket.onConnect((_) {
-      debugPrint('Connected to server');
+      debugPrint('### Connected to server');
       onConnect();
+    });
+
+    _socket.onConnectError((error) {
+      debugPrint('Connection error: $error');
+    });
+
+    _socket.onError((error) {
+      debugPrint('Socket error: $error');
     });
 
     _socket.onDisconnect((_) {
@@ -41,7 +63,8 @@ class SocketService {
     _socket.emit(event, data);
   }
 
-  void emitWithAck(String event, dynamic data, {required Function(dynamic data) ackCallback}) {
+  void emitWithAck(String event, dynamic data,
+      {required Function(dynamic data) ackCallback}) {
     _socket.emitWithAck(event, data, ack: ackCallback);
   }
 }

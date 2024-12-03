@@ -244,15 +244,16 @@ class ContactsRemoteRepository {
           );
         } else {
           print('Failed to fetch user data: ${userResponse.statusCode}');
-          return contact;
+          return ContactModel(stories: [], userName: 'myUser', userId: 'myUser', userImageUrl: '');
         }
       } else {
         print('Failed to fetch stories: ${storiesResponse.statusCode}');
-        return contact;
+        return ContactModel(stories: [], userName: 'myUser', userId: 'myUser', userImageUrl: '');
       }
     } catch (e) {
       if (kDebugMode) {
         print('Error occurred: $e');
+        return ContactModel(stories: [], userName: 'myUser', userId: 'myUser', userImageUrl: '');
       }
     }
 

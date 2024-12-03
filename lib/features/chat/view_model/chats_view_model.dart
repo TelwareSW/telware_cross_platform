@@ -4,7 +4,6 @@ import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
-import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 
 import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
@@ -18,9 +17,7 @@ part 'chats_view_model.g.dart';
 @Riverpod(keepAlive: true)
 class ChatsViewModel extends _$ChatsViewModel {
   /// The state of the class, respembels a sorted list
-
   /// of chats, based on the timestamp of the latest msg
-
   /// in them
 
   Map<String, ChatModel> _chatsMap = <String, ChatModel>{};
@@ -64,18 +61,25 @@ class ChatsViewModel extends _$ChatsViewModel {
   }
 
   void addChat(ChatModel chat) {
-    state.insert(0, chat);
     _chatsMap[chat.id!] = chat;
+    state = [chat, ...state];
   }
 
-  void addSentMessage(MessageContent content, String chatID,
-      MessageType msgType, MessageContentType msgContentType) {
+  Map<String, String> addSentMessage(
+    MessageContent content,
+    String chatID,
+    MessageType msgType,
+    MessageContentType msgContentType,
+  ) {
     final chat = _chatsMap[chatID];
     // todo(ahmed): make sure that new chats are added to the map first
     // I mean, new chats from the backend
 
+    final senderId = ref.read(userProvider)!.id!;
+    final msgLocalId =
+        senderId + DateTime.now().millisecondsSinceEpoch.toString();
     final MessageModel msg = MessageModel(
-      senderId: ref.read(userProvider)!.id!,
+      senderId: senderId,
       timestamp: DateTime.now(),
       content: content,
       messageContentType: msgContentType,
@@ -84,12 +88,89 @@ class ChatsViewModel extends _$ChatsViewModel {
       id: USE_MOCK_DATA ? getUniqueMessageId() : null,
     );
 
+
     chat!.messages.add(msg);
     _moveChatToFront(chatID);
+
+    return {'msgLocalId': msgLocalId, 'chatId': chatID};
   }
 
-  Future<void> addReceivedMessage(String chatID, MessageModel msg) async {
+  void updateMsgId(String newMsgId, Map<String, String> identifiers) {
+    String msgLocalId = identifiers['msgLocalId']!,
+        chatId = identifiers['chatId']!;
+    final chat = _chatsMap[chatId];
+    if (chat != null) {
+      final index =
+          chat.messages.indexWhere((msg) => msg.localId == msgLocalId);
+      if (index != -1) {
+        chat.messages[index].copyWith(id: newMsgId);
+        state = [...state];
+      }
+    }
+  }
+
+  Future<void> addReceivedMessage(Map<String, dynamic> response) async {
+    var chatID = response["chatId"] as String;
     var chat = _chatsMap[chatID];
+
+    Map<String, MessageState> userStates = {};
+    MessageContentType contentType =
+        MessageContentType.getType(response['contentType'] ?? 'text');
+    MessageContent? content;
+
+    final Map<String, String> userStatesMap = response['userStates'] ?? {
+      response['senderId']: 'read',
+      ref.read(userProvider)!.id!: 'read'
+    };
+
+    for (var entry in userStatesMap.entries) {
+      userStates[entry.key] = MessageState.getType(entry.value);
+    }
+
+    switch (contentType.content) {
+      case 'text':
+      case 'link':
+        content = TextContent(response['content']);
+        break;
+      case 'image':
+        content = ImageContent();
+        break;
+      case 'video':
+        content = VideoContent();
+        break;
+      case 'audio':
+        content = AudioContent();
+        break;
+      case 'document':
+        content =
+            DocumentContent(fileName: response['fileName'] ?? "UnknownFile");
+        break;
+      case 'sticker':
+        content = StickerContent(
+            stickerUrl: response['stickerUrl'] ?? "UnknownSticker");
+        break;
+      case 'gif':
+        content = GIFContent(gifUrl: response['gifUrl'] ?? "UnknownGif");
+        break;
+      case 'emoji':
+        content =
+            EmojiContent(emojiUrl: response['emojiUrl'] ?? "UnknownEmoji");
+        break;
+      default:
+        debugPrint('!!! Unknown content type: ${contentType.content}');
+    }
+
+    final msg = MessageModel(
+      id: response['id'],
+      senderId: response['senderId'],
+      messageContentType: contentType,
+      messageType: MessageType.getType(response['type'] ?? 'unknown'),
+      content: content,
+      timestamp: response['timestamp'] == null
+          ? DateTime.parse(response['timestamp'])
+          : DateTime.now(),
+      userStates: userStates,
+    );
 
     if (chat == null) {
       chat = await ref.read(chattingControllerProvider).getChat(chatID);
@@ -97,18 +178,17 @@ class ChatsViewModel extends _$ChatsViewModel {
       state.insert(0, chat);
     }
 
-    chat.messages.insert(0, msg);
+    chat.messages.add(msg);
     _moveChatToFront(chatID);
   }
 
   void deleteMessage(String msgID, String chatID) {
     final chat = _chatsMap[chatID];
-    // todo: check if msg is really deleted or just not showed
-    // Find the msg with the specified ID
     final msgIndex = chat!.messages.indexWhere((msg) => msg.id == msgID);
 
     if (msgIndex != -1) {
       chat.messages.removeAt(msgIndex);
+      state = [...state];
     }
   }
 
@@ -120,6 +200,8 @@ class ChatsViewModel extends _$ChatsViewModel {
     if (msgIndex != -1) {
       chat.messages[msgIndex].copyWith(content: content);
     }
+
+    // _moveChatToFront(chatID);
   }
 
   ChatModel? getChatById(String chatId) {
@@ -132,10 +214,11 @@ class ChatsViewModel extends _$ChatsViewModel {
 
     if (chatIndex != -1) {
       // Remove the chat from its current position
-      final chat = state.removeAt(chatIndex);
-
+      final chat = state[chatIndex];
+      final updatedState = List<ChatModel>.from(state)..removeAt(chatIndex);
       // Insert the chat at the front of the list
-      state.insert(0, chat);
+      state = [chat, ...updatedState];
+      debugPrint('!!! List is update, a chat moved to front');
     }
   }
 

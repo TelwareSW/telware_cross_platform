@@ -6,9 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:telware_cross_platform/core/mock/constants_mock.dart';
-import 'package:telware_cross_platform/core/mock/user_mock.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
-import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
@@ -60,7 +58,12 @@ class ChattingController {
   })  : _remoteRepository = remoteRepository,
         _localRepository = localRepository,
         _ref = ref {
-    EventHandler.config(controller: this, socket: SocketService.instance);
+    EventHandler.config(
+      controller: this,
+      socket: SocketService.instance,
+      userId: _ref.read(userProvider)!.id!,
+      sessionId: _ref.read(tokenProvider)!
+    );
     _eventHandler = EventHandler.instance;
   }
 
@@ -80,9 +83,10 @@ class ChattingController {
 
     // get the users list from local
     final otherUsers = _localRepository.getOtherUsers();
-    String ids = '';
-    otherUsers.forEach((key, _) => ids += '$key\n');
-    debugPrint('!!! OtherUsers Map ID\'s: $ids');
+    // * the next three lines are for dubuging
+    // String ids = '';
+    // otherUsers.forEach((key, _) => ids += '$key\n');
+    // debugPrint('!!! OtherUsers Map ID\'s: $ids');
     _ref.read(chatsViewModelProvider.notifier).setOtherUsers(otherUsers);
 
     // get the events and give it to the handler from local
@@ -110,9 +114,11 @@ class ChattingController {
         for (var user in response.users) user.id!: user
       };
 
-      String ids = '';
-      otherUsersMap.forEach((key, _) => ids += '$key\n');
-      debugPrint('!!! OtherUsers Map created ID\'s: $ids');
+
+      // * the next three lines are for dubuging
+      // String ids = '';
+      // otherUsersMap.forEach((key, _) => ids += '$key\n');
+      // debugPrint('!!! OtherUsers Map created ID\'s: $ids');
 
       debugPrint((await _localRepository.setChats(response.chats)).toString());
 
@@ -182,35 +188,38 @@ class ChattingController {
       }
     }
 
-    _ref
+
+    final identifier = _ref
         .read(chatsViewModelProvider.notifier)
         .addSentMessage(content, chatID!, msgType, contentType);
+
     _localRepository.setChats(_ref.read(chatsViewModelProvider));
 
-    final msgEvent = SendMessageEvent({
-      'chatId': chatID,
-      'content': content,
-      'contentType': contentType.content,
-      'senderId': _ref.read(userProvider)!.id,
-      'isFirstTime': isChatNew,
-      'chatType': chatType.type
-    }, controller: this);
+    final msgEvent = SendMessageEvent(
+      {
+        'chatId': chatID,
+        'content': content.getContent(),
+        'contentType': contentType.content,
+        'senderId': _ref.read(userProvider)!.id,
+        'isFirstTime': isChatNew,
+        'chatType': chatType.type
+      },
+      controller: this,
+      identifier: identifier
+    );
 
     _eventHandler.addEvent(msgEvent);
   }
 
-  void receiveMsg(String chatID, MessageModel msg) {
-    _ref.read(chatsViewModelProvider.notifier).addReceivedMessage(chatID, msg);
+  void receiveMsg(Map<String, dynamic> response) {
+    _ref.read(chatsViewModelProvider.notifier).addReceivedMessage(response);
     _localRepository.setChats(_ref.read(chatsViewModelProvider));
   }
 
   // delete a message
   void deleteMsg(String msgID, String chatID, DeleteMessageType deleteType) {
     final msgEvent = DeleteMessageEvent({
-      'chatId': chatID,
-      'senderId': _ref.read(userProvider)!.id,
       'messageId': msgID,
-      'deleteType': deleteType.name
     }, controller: this);
 
     _eventHandler.addEvent(msgEvent);
@@ -222,7 +231,7 @@ class ChattingController {
   // edit a message
 
   void editMsg(String msgID, String chatID, MessageContent content) {
-    final msgEvent = DeleteMessageEvent({
+    final msgEvent = EditMessageEvent({
       'chatId': chatID,
       'senderId': _ref.read(userProvider)!.id,
       'messageId': msgID,
@@ -339,5 +348,9 @@ class ChattingController {
       _ref.read(chatsViewModelProvider.notifier).unmuteChat(chatID);
       _localRepository.setChats(_ref.read(chatsViewModelProvider));
     }
+  }
+
+  void updateMessageId(String msgId, Map<String, String> identifier) {
+    _ref.read(chatsViewModelProvider.notifier).updateMsgId(msgId, identifier);
   }
 }

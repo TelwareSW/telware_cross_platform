@@ -1,7 +1,6 @@
 // Base class for all message contents
 import 'dart:typed_data';
 
-import 'package:camera/camera.dart';
 import 'package:hive/hive.dart';
 
 part 'message_content.g.dart'; // Part file for generated code
@@ -10,7 +9,9 @@ abstract class MessageContent {
   Map<String, dynamic> toJson();
 
   MessageContent copyWith();
-// For serialization
+  
+  String getContent();
+
 }
 
 // For Text Messages
@@ -25,12 +26,17 @@ class TextContent extends MessageContent {
   Map<String, dynamic> toJson() => {'text': text};
 
   @override
+
   TextContent copyWith({
     String? text,
   }) {
     return TextContent(
       text ?? this.text,
     );
+
+  String getContent() {
+    return text;    
+
   }
 }
 
@@ -58,6 +64,7 @@ class AudioContent extends MessageContent {
       };
 
   @override
+
   AudioContent copyWith({
     String? audioUrl,
     int? duration,
@@ -70,6 +77,9 @@ class AudioContent extends MessageContent {
       filePath: filePath ?? this.filePath,
       waveformData: waveformData ?? this.waveformData,
     );
+
+  String getContent() {
+    return '';
   }
 }
 
@@ -103,6 +113,9 @@ class DocumentContent extends MessageContent {
       fileUrl: fileUrl ?? this.fileUrl,
       filePath: filePath ?? this.filePath,
     );
+
+  String getContent() {
+    return '';
   }
 }
 
@@ -123,6 +136,7 @@ class ImageContent extends MessageContent {
       {'imageUrl': imageUrl, 'imageBytes': imageBytes, "filePath": filePath};
 
   @override
+
   ImageContent copyWith({
     String? imageUrl,
     Uint8List? imageBytes,
@@ -133,6 +147,9 @@ class ImageContent extends MessageContent {
       imageBytes: imageBytes ?? this.imageBytes,
       filePath: filePath ?? this.filePath,
     );
+
+  String getContent() {
+    return '';
   }
 }
 
@@ -156,6 +173,7 @@ class VideoContent extends MessageContent {
       };
 
   @override
+
   VideoContent copyWith({
     String? videoUrl,
     int? duration,
@@ -166,6 +184,9 @@ class VideoContent extends MessageContent {
       duration: duration ?? this.duration,
       filePath: filePath ?? this.filePath,
     );
+
+  String getContent() {
+    return '';
   }
 }
 
@@ -189,6 +210,7 @@ class EmojiContent extends MessageContent {
       };
 
   @override
+
   EmojiContent copyWith({
     String? emojiUrl,
     String? emojiName,
@@ -199,6 +221,10 @@ class EmojiContent extends MessageContent {
       emojiName: emojiName ?? this.emojiName,
       filePath: filePath ?? this.filePath,
     );
+
+  String getContent() {
+    return '';
+
   }
 }
 
@@ -221,6 +247,7 @@ class GIFContent extends MessageContent {
       };
 
   @override
+
   GIFContent copyWith({
     String? gifUrl,
     String? gifName,
@@ -231,6 +258,9 @@ class GIFContent extends MessageContent {
       gifName: gifName ?? this.gifName,
       filePath: filePath ?? this.filePath,
     );
+
+  String getContent() {
+    return '';
   }
 }
 
@@ -253,6 +283,7 @@ class StickerContent extends MessageContent {
       };
 
   @override
+
   StickerContent copyWith({
     String? stickerUrl,
     String? stickerName,
@@ -263,5 +294,7 @@ class StickerContent extends MessageContent {
       stickerName: stickerName ?? this.stickerName,
       filePath: filePath ?? this.filePath,
     );
+  String getContent() {
+    return '';
   }
 }
