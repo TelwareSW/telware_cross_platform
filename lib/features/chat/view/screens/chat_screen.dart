@@ -147,8 +147,10 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     } else if (chatModel?.id != null) {
       ref.read(chattingControllerProvider).getDraft(chatModel!.id!).then((draft) {
         if (draft != null && draft != _previousDraft) {
-          _messageController.text = draft;
-          _previousDraft = draft;
+          setState(() {
+            _messageController.text = draft;
+            _previousDraft = draft;
+          });
         }
       });
     }
