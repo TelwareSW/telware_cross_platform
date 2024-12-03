@@ -6,6 +6,7 @@ import 'package:telware_cross_platform/core/models/app_error.dart';
 import 'package:flutter/foundation.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
+import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
 
 part 'user_remote_repository.g.dart';
 
@@ -43,16 +44,22 @@ class UserRemoteRepository {
         return Left(AppError(message));
       }
 
-
       final List<dynamic> users = response.data?['data']['users'] ?? [];
       var filteredUsers = await Future.wait(
-        (users).map((user) => UserModel.fromMap(user)).toList());
+          (users).map((user) => UserModel.fromMap(user)).toList());
+      filteredUsers = await Future.wait(filteredUsers.map((user) async {
+        if (user.photo != null) {
+          return user.copyWith(photo: await downloadAndSaveFile(user.photo!));
+        }
+        return user;
+      }).toList());
       return Right(filteredUsers);
     } on DioException catch (dioException) {
       return Left(handleDioException(dioException));
     } catch (error) {
       debugPrint('Fetch Users error:\n${error.toString()}');
-      return Left(AppError("Couldn't fetch users now. Please, try again later."));
+      return Left(
+          AppError("Couldn't fetch users now. Please, try again later."));
     }
   }
 

@@ -59,11 +59,10 @@ class ChattingController {
         _localRepository = localRepository,
         _ref = ref {
     EventHandler.config(
-      controller: this,
-      socket: SocketService.instance,
-      userId: _ref.read(userProvider)!.id!,
-      sessionId: _ref.read(tokenProvider)!
-    );
+        controller: this,
+        socket: SocketService.instance,
+        userId: _ref.read(userProvider)!.id!,
+        sessionId: _ref.read(tokenProvider)!);
     _eventHandler = EventHandler.instance;
   }
 
@@ -113,7 +112,6 @@ class ChattingController {
       final otherUsersMap = <String, UserModel>{
         for (var user in response.users) user.id!: user
       };
-
 
       // * the next three lines are for dubuging
       // String ids = '';
@@ -188,27 +186,26 @@ class ChattingController {
       }
     }
 
-
     final identifier = _ref
         .read(chatsViewModelProvider.notifier)
         .addSentMessage(content, chatID!, msgType, contentType);
 
     _localRepository.setChats(_ref.read(chatsViewModelProvider));
 
-    final msgEvent = SendMessageEvent(
-      {
-        'chatId': chatID,
-        'content': content.getContent(),
-        'contentType': contentType.content,
-        'senderId': _ref.read(userProvider)!.id,
-        'isFirstTime': isChatNew,
-        'chatType': chatType.type
-      },
-      controller: this,
-      identifier: identifier
-    );
-
-    _eventHandler.addEvent(msgEvent);
+    // final msgEvent = SendMessageEvent(
+    //   {
+    //     'chatId': chatID,
+    //     'content': content.getContent(),
+    //     'contentType': contentType.content,
+    //     'senderId': _ref.read(userProvider)!.id,
+    //     'isFirstTime': isChatNew,
+    //     'chatType': chatType.type
+    //   },
+    //   controller: this,
+    //   identifier: identifier
+    // );
+    //
+    // _eventHandler.addEvent(msgEvent);
   }
 
   void receiveMsg(Map<String, dynamic> response) {

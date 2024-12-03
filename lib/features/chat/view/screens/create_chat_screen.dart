@@ -12,6 +12,7 @@ import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
+import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
 
 import 'package:telware_cross_platform/features/user/view/widget/user_chats.dart';
 import 'package:telware_cross_platform/features/user/view_model/user_view_model.dart';
@@ -255,7 +256,6 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
   }
 
   void filterView(String query) {
-
     var filteredChats = <Map<String, dynamic>>[
       {"options": <Map<String, dynamic>>[]}
     ];
@@ -285,5 +285,4 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
       return null; // Return null if image loading fails
     }
   }
-
 }

@@ -24,8 +24,6 @@ import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/providers/chat_provider.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/popup_menu_item_widget.dart';
-import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
-import 'package:telware_cross_platform/features/chat/view/screens/pinned_messages_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/bottom_input_bar_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/chat_header_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/date_label_widget.dart';
@@ -33,11 +31,9 @@ import 'package:telware_cross_platform/features/chat/view/widget/message_tile_wi
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 import 'package:vibration/vibration.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
-
 import '../../../../core/routes/routes.dart';
 import '../widget/reply_widget.dart';
 import 'create_chat_screen.dart';
-import 'forward_screen.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   static const String route = '/chat';
@@ -121,7 +117,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       ..iosEncoder = IosEncoder.kAudioFormatMPEG4AAC
       ..bitRate = 128000
       ..sampleRate = 44100;
-
   }
 
   @override
@@ -285,7 +280,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       timestamp: DateTime.now(),
       messageType: MessageType.normal,
       userStates: {},
-      parentMessage:replyMessage?.id,
+      parentMessage: replyMessage?.id,
     );
     _messageController.clear();
     _updateChatMessages([...?chatModel?.messages, newMessage]);
@@ -361,14 +356,14 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     isRecordingLocked = true;
     setState(() {});
   }
-  
+
   void _removeReply() {
     setState(() {
       replyMessage = null;
     });
   }
 
-void _resetRecording() {
+  void _resetRecording() {
     isRecording = false;
     isRecordingLocked = false;
     isRecordingPaused = false;
@@ -376,7 +371,6 @@ void _resetRecording() {
     recordingPath = null;
     setState(() {});
   }
- 
 
   void _deleteRecording() {
     if (recordingPath == null) {
@@ -692,7 +686,7 @@ void _resetRecording() {
                       icon: const Icon(FontAwesomeIcons.share,
                           color: Colors.white),
                       onPressed: () {
-                        context.push(ForwardScreen.route);
+                        context.push(CreateChatScreen.route);
                       },
                     ),
                     // Delete icon
@@ -842,11 +836,13 @@ void _resetRecording() {
                                           MessageTileWidget(
                                             key: ValueKey(
                                                 '${MessageKeys.messagePrefix}${messagesIndex++}'),
-                                            chatId: chatModel!.id!,
                                             messageModel: item,
-                                             parentMessage:chatModel.messages.firstWhere(
-                                              (message) => message.parentMessage == item.parentMessage,
-                                        ),
+                                            parentMessage:
+                                                chatModel.messages.firstWhere(
+                                              (message) =>
+                                                  message.parentMessage ==
+                                                  item.parentMessage,
+                                            ),
                                             isSentByMe: item.senderId ==
                                                 ref.read(userProvider)!.id,
                                             showInfo: type == ChatType.group,
@@ -885,9 +881,7 @@ void _resetRecording() {
                                                         .add(message);
                                               });
                                             },
-                                            onDelete: (msg, _, id) {
-                                              
-                                            },
+                                            onDelete: (msg, _, id) {},
                                           ),
                                         ],
                                       );
@@ -947,7 +941,7 @@ void _resetRecording() {
                           ),
                           GestureDetector(
                             onTap: () {
-                              context.push(ForwardScreen.route);
+                              context.push(CreateChatScreen.route);
                             },
                             child: const Row(
                               children: [
@@ -985,7 +979,6 @@ void _resetRecording() {
                     lockRecordingDrag: _lockRecordingDrag,
                     audioFilePath: recordingPath,
                     removeReply: _removeReply,
-
                   )
                 else
                   Container(

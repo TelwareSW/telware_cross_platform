@@ -10,7 +10,12 @@ import '../../view_model/chats_view_model.dart';
 class ReplyWidget extends ConsumerWidget {
   final Function() onDiscard;
   final MessageModel message;
-  const ReplyWidget({super.key, required this.message, required this.onDiscard, });
+
+  const ReplyWidget({
+    super.key,
+    required this.message,
+    required this.onDiscard,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -23,14 +28,7 @@ class ReplyWidget extends ConsumerWidget {
           children: [
             const Icon(Icons.reply, color: Palette.primary),
             const SizedBox(width: 10),
-            message.messageContentType == MessageContentType.text
-                ? const Icon(Icons.person)
-                : Image.memory(
-              message.photoBytes!,
-              width: 40,
-              height: 40,
-              fit: BoxFit.cover,
-            ),
+            const Icon(Icons.person),
             const SizedBox(width: 10),
             Expanded(
               child: FutureBuilder<UserModel?>(
@@ -71,7 +69,7 @@ class ReplyWidget extends ConsumerWidget {
                       Text(
                         message.messageContentType == MessageContentType.text
                             ? message.content?.toJson()['text'] ?? ""
-                            : 'Photo',
+                            : message.messageContentType.content.toUpperCase(),
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,

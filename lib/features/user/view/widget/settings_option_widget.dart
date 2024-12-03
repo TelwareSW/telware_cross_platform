@@ -63,8 +63,9 @@ class SettingsOptionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color avatarBackgroundColor = _colorCache.putIfAbsent(text, () => getRandomColor());
-
+    Color avatarBackgroundColor =
+        _colorCache.putIfAbsent(text, () => getRandomColor());
+    debugPrint("imagePath: $imagePath");
     return Padding(
         padding: const EdgeInsets.symmetric(
             horizontal: Dimensions.optionsHorizontalPad,
