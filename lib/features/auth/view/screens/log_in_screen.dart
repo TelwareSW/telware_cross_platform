@@ -101,7 +101,7 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
     }
   }
 
-  void login() async {
+  void login() {
     bool someNotFilled =
         emailController.text.isEmpty || passwordController.text.isEmpty;
 
@@ -114,13 +114,12 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
     if (someNotFilled) {
       vibrate();
     } else {
-      AuthState state = await ref.read(authViewModelProvider.notifier).login(
+      ref.read(authViewModelProvider.notifier).login(
           email: emailController.text, password: passwordController.text);
-      handelState(state);
     }
   }
 
-  void forgotPassword() async {
+  void forgotPassword() {
     if (emailController.text.isEmpty) {
       showToastMessage('Enter an Email');
       logInemailShakeKey.currentState?.shake();
@@ -130,10 +129,9 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
     if (logInEmailKey.currentState != null &&
         (logInEmailKey.currentState?.validate() ?? false)) {
       debugPrint('forgot password called');
-      AuthState state = await ref
+      ref
           .read(authViewModelProvider.notifier)
           .forgotPassword(emailController.text);
-      handelState(state);
     } else {
       debugPrint('forgot password not called');
       debugPrint(
@@ -147,6 +145,22 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<AuthState>(authViewModelProvider, (_, state) {
+      if (state.type == AuthStateType.fail ||
+          state.type == AuthStateType.success) {
+        // the success state is in case of asking for reset password
+        showToastMessage(state.message!);
+      } else if (state.type == AuthStateType.authenticated) {
+        context.go(Routes.home);
+      } else if (state.type == AuthStateType.unverified) {
+        ref.read(emailProvider.notifier).update((_) => emailController.text);
+        context.push(
+          Routes.verification,
+          extra: {'sendVerificationCode': true}, // or false based on your logic
+        );
+      }
+    });
+
     bool isLoading =
         ref.watch(authViewModelProvider).type == AuthStateType.loading;
     debugPrint('isLoading: $isLoading');

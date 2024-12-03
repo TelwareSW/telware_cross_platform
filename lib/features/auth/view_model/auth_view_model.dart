@@ -151,8 +151,7 @@ class AuthViewModel extends _$AuthViewModel {
     return state;
   }
 
-  Future<AuthState> login(
-      {required String email, required String password}) async {
+  Future<void> login({required String email, required String password}) async {
     state = AuthState.loading;
 
     if (USE_MOCK_DATA) {
@@ -166,7 +165,7 @@ class AuthViewModel extends _$AuthViewModel {
         await ref.read(chattingControllerProvider).newLoginInit();
 
         state = AuthState.authenticated;
-        return state;
+        return;
       } else if (email == mockUsers[1].email &&
           password == otherUserMockPassword) {
         ref.read(authLocalRepositoryProvider).setUser(mockUsers[1]);
@@ -178,10 +177,10 @@ class AuthViewModel extends _$AuthViewModel {
         await ref.read(chattingControllerProvider).newLoginInit();
 
         state = AuthState.authenticated;
-        return state;
+        return;
       } else {
         state = AuthState.fail('Invalid email or password');
-        return state;
+        return;
       }
     }
 
@@ -195,7 +194,6 @@ class AuthViewModel extends _$AuthViewModel {
       } else {
         state = AuthState.fail(appError.error);
       }
-      return state;
     }, (logInResponse) async {
       ref.read(authLocalRepositoryProvider).setUser(logInResponse.user);
       ref.read(userProvider.notifier).update((_) => logInResponse.user);
@@ -204,18 +202,16 @@ class AuthViewModel extends _$AuthViewModel {
       ref.read(tokenProvider.notifier).update((_) => logInResponse.token);
       await ref.read(chattingControllerProvider).newLoginInit();
       state = AuthState.authenticated;
-      return state;
     });
-    return state;
   }
 
-  Future<AuthState> forgotPassword(String email) async {
+  Future<void> forgotPassword(String email) async {
     debugPrint('forgot password start');
     state = AuthState.loading;
     if (USE_MOCK_DATA) {
       await Future.delayed(const Duration(seconds: 1));
       state = AuthState.success('A reset link will be sent to your email');
-      return state;
+      return;
     }
     final appError =
         await ref.read(authRemoteRepositoryProvider).forgotPassword(email);
@@ -225,7 +221,6 @@ class AuthViewModel extends _$AuthViewModel {
       state = AuthState.success('A reset link will be sent to your email');
     }
     debugPrint('forgot password end');
-    return state;
   }
 
   void googleLogIn() => _launchSocialAuth(GOOGLE_AUTH_URL);
