@@ -201,9 +201,9 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   void _sendForwardedMessages() {
     for (MessageModel message in widget.forwardedMessages!) {
       ref.read(chattingControllerProvider).sendMsg(
-            content: TextContent(message.content as String),
-            msgType: MessageType.normal,
-            contentType: MessageContentType.text,
+            content: message.content!,
+            msgType: MessageType.forward,
+            contentType: message.messageContentType,
             chatType: ChatType.private,
             chatModel: widget.chatModel,
           );
@@ -494,13 +494,12 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   //-------------------------------Media----------------------------------------
 
   void onMediaDownloaded(String? filePath, String? messageId, String? chatId) {
-    if (!USE_MOCK_DATA) return;
     if (filePath == null) {
       showToastMessage('File has been deleted ask the sender to resend it');
       return;
     }
     if (messageId == null) {
-      showToastMessage('Message ID is missing');
+      showToastMessage('File does not exist please upload it again');
       return;
     }
     if (chatId == null) {
@@ -513,6 +512,9 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     ref
         .read(chattingControllerProvider)
         .editMessageFilePath(chatId, messageId, filePath);
+    List<MessageModel> messages =
+        ref.watch(chatProvider(chatModel!.id!))?.messages ?? [];
+    _updateChatMessages(messages);
   }
 
   void _searchForText(searchText) async {
@@ -841,7 +843,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                                 chatModel.messages.firstWhere(
                                               (message) =>
                                                   message.parentMessage ==
-                                                  item.parentMessage,
+                                                  item.id,
                                             ),
                                             isSentByMe: item.senderId ==
                                                 ref.read(userProvider)!.id,

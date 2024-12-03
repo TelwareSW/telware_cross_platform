@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
+import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
@@ -21,8 +22,9 @@ import 'chat_screen.dart';
 
 class CreateChatScreen extends ConsumerStatefulWidget {
   static const String route = '/create-chat';
+  final List<MessageModel>? forwardedMessages;
 
-  const CreateChatScreen({super.key});
+  const CreateChatScreen({super.key, this.forwardedMessages = const []});
 
   @override
   ConsumerState<CreateChatScreen> createState() => _CreateChatScreen();
