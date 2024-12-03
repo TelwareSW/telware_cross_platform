@@ -13,6 +13,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter_cupertino_datetime_picker/flutter_cupertino_datetime_picker.dart';
 import 'package:telware_cross_platform/core/constants/keys.dart';
+import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
@@ -139,13 +140,19 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   }
 
   void _updateDraft() async {
+    if (USE_MOCK_DATA) return;
     if (!mounted) return;
     final currentDraft = _messageController.text;
     if (currentDraft != _previousDraft) {
-      ref.read(chattingControllerProvider).updateDraft(chatModel!, currentDraft);
+      ref
+          .read(chattingControllerProvider)
+          .updateDraft(chatModel!, currentDraft);
       _previousDraft = currentDraft;
     } else if (chatModel?.id != null) {
-      ref.read(chattingControllerProvider).getDraft(chatModel!.id!).then((draft) {
+      ref
+          .read(chattingControllerProvider)
+          .getDraft(chatModel!.id!)
+          .then((draft) {
         if (draft != null && draft != _previousDraft) {
           setState(() {
             _messageController.text = draft;
@@ -854,12 +861,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                             key: ValueKey(
                                                 '${MessageKeys.messagePrefix}${messagesIndex++}'),
                                             messageModel: item,
-                                            parentMessage:
-                                                chatModel.messages.firstWhere(
-                                              (message) =>
-                                                  message.parentMessage ==
-                                                  item.id,
-                                            ),
                                             isSentByMe: item.senderId ==
                                                 ref.read(userProvider)!.id,
                                             showInfo: type == ChatType.group,

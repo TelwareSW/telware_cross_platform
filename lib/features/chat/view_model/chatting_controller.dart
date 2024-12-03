@@ -76,7 +76,7 @@ class ChattingController {
     } else {
       // descending sorting for the chats, based on last message
       response.chats.sort(
-            (a, b) {
+        (a, b) {
           if (a.messages.isEmpty || b.messages.isEmpty) {
             return 0;
           }
@@ -91,7 +91,8 @@ class ChattingController {
       // update the local storage chat's info using the response but not override it
       final chats = _localRepository.getChats();
       final updatedChats = response.chats.map((chat) {
-        final ChatModel localChat = chats.firstWhere((element) => element.id == chat.id, orElse: () => chat);
+        final ChatModel localChat = chats
+            .firstWhere((element) => element.id == chat.id, orElse: () => chat);
         if (localChat.id == chat.id) {
           return chat;
         }
@@ -415,7 +416,8 @@ class ChattingController {
       final chats = _localRepository.getChats();
       final chat = chats.firstWhere((element) => element.id == chatID);
       final updatedChat = chat.copyWith(draft: draft);
-      final updatedChats = chats.map((e) => e.id == chatID ? updatedChat : e).toList();
+      final updatedChats =
+          chats.map((e) => e.id == chatID ? updatedChat : e).toList();
       _localRepository.setChats(updatedChats);
       _ref.read(chatsViewModelProvider.notifier).setChats(updatedChats);
       return;
@@ -432,7 +434,8 @@ class ChattingController {
     final chats = _localRepository.getChats();
     final chat = chats.firstWhere((element) => element.id == chatID);
     final updatedChat = chat.copyWith(draft: draft);
-    final updatedChats = chats.map((e) => e.id == chatID ? updatedChat : e).toList();
+    final updatedChats =
+        chats.map((e) => e.id == chatID ? updatedChat : e).toList();
     _localRepository.setChats(updatedChats);
     _ref.read(chatsViewModelProvider.notifier).setChats(updatedChats);
     print('!!! draft updated remotely and locally: ${updatedChat.draft}');
@@ -441,8 +444,14 @@ class ChattingController {
   Future<String?> getDraft(String chatID) async {
     print('!!! getDraft called');
     try {
+      if (USE_MOCK_DATA) {
+        final chats = _localRepository.getChats();
+        final chat = chats.firstWhere((element) => element.id == chatID);
+        return chat.draft;
+      }
       final sessionID = _ref.read(tokenProvider);
-      final draft = await _remoteRepository.getDraft(sessionID!, _ref.read(tokenProvider)!, chatID);
+      final draft = await _remoteRepository.getDraft(
+          sessionID!, _ref.read(tokenProvider)!, chatID);
       print('!!! draft: $draft');
       if (draft.draft == null) {
         final chats = _localRepository.getChats();
