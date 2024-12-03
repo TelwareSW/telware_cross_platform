@@ -46,7 +46,6 @@ void main() {
           home: Scaffold(
             body: MessageTileWidget(
               key: ValueKey("${ChatKeys.chatTilePrefix.value}$index"),
-              chatId: '',
               messageModel: message,
               isSentByMe: false,
               onReply: (messageModel) {},
@@ -54,8 +53,7 @@ void main() {
               onPress: () {},
               onDownloadTap: (String? filePath) {},
               onPin: (messageModel) {},
-              onDelete: (msgId,_, messageType) {},
-
+              onDelete: (msgId, _, messageType) {},
             ),
           ),
         ),
@@ -95,7 +93,6 @@ void main() {
           home: Scaffold(
             body: MessageTileWidget(
               key: ValueKey("${ChatKeys.chatTilePrefix.value}$index"),
-              chatId: '',
               messageModel: message,
               isSentByMe: false,
               onReply: (MessageModel) {},
@@ -103,9 +100,7 @@ void main() {
               onPress: () {},
               onPin: (MessageModel) {},
               onDownloadTap: (String? filePath) {},
-
-              onDelete: (msgId,_, messageType) {},
-
+              onDelete: (msgId, _, messageType) {},
             ),
           ),
         ),
@@ -142,22 +137,17 @@ void main() {
             children: [
               MessageTileWidget(
                 key: ValueKey("${ChatKeys.chatTilePrefix.value}0"),
-                chatId: '',
                 messageModel: message,
                 isSentByMe: true,
                 onReply: (MessageModel) {},
                 onLongPress: (MessageModel) {},
                 onPress: () {},
                 onPin: (MessageModel) {},
-
                 onDownloadTap: (String? filePath) {},
-
-              onDelete: (msgId,_, messageType) {},
-
+                onDelete: (msgId, _, messageType) {},
               ),
               MessageTileWidget(
                 key: ValueKey("${ChatKeys.chatTilePrefix.value}1"),
-                chatId: '',
                 messageModel: message,
                 isSentByMe: false,
                 onReply: (MessageModel) {},
@@ -165,8 +155,7 @@ void main() {
                 onPress: () {},
                 onPin: (MessageModel) {},
                 onDownloadTap: (String? filePath) {},
-              onDelete: (msgId,_, messageType) {},
-
+                onDelete: (msgId, _, messageType) {},
               ),
             ],
           )),
@@ -203,7 +192,6 @@ void main() {
             children: [
               MessageTileWidget(
                 key: ValueKey("${ChatKeys.chatTilePrefix.value}0"),
-                chatId: '',
                 messageModel: message,
                 isSentByMe: false,
                 showInfo: true,
@@ -212,11 +200,10 @@ void main() {
                 onPress: () {},
                 onPin: (MessageModel) {},
                 onDownloadTap: (String? filePath) {},
-              onDelete: (msgId,_, messageType) {},
+                onDelete: (msgId, _, messageType) {},
               ),
               MessageTileWidget(
                 key: ValueKey("${ChatKeys.chatTilePrefix.value}1"),
-                chatId: '',
                 messageModel: message,
                 isSentByMe: false,
                 showInfo: false,
@@ -225,12 +212,10 @@ void main() {
                 onPress: () {},
                 onPin: (MessageModel) {},
                 onDownloadTap: (String? filePath) {},
-              onDelete: (msgId,_, messageType) {},
-
+                onDelete: (msgId, _, messageType) {},
               ),
               MessageTileWidget(
                 key: ValueKey("${ChatKeys.chatTilePrefix.value}2"),
-                chatId: '',
                 messageModel: message,
                 isSentByMe: true,
                 showInfo: true,

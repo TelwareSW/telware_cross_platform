@@ -183,3 +183,42 @@ class EditMessageEvent extends MessageEvent {
     );
   }
 }
+
+@HiveType(typeId: 11)
+class UpdateDraftEvent extends MessageEvent {
+  UpdateDraftEvent(super.payload, {super.controller});
+
+  @override
+  Future<bool> execute(
+    SocketService socket, {
+    Duration timeout = const Duration(seconds: 10),
+  }) async {
+    return await _execute(
+      socket,
+      EventType.updateDraft.event,
+      ackCallback: (response, timer, completer) {
+        if (!completer.isCompleted) {
+          timer.cancel(); // Cancel the timeout timer
+          if (response['success'] == true) {
+            // Handle successful response
+            completer.complete(true);
+          } else {
+            // Handle error response
+            completer.complete(false);
+          }
+        }
+      },
+    );
+  }
+
+  @override
+  UpdateDraftEvent copyWith({
+    dynamic payload,
+    ChattingController? controller,
+  }) {
+    return UpdateDraftEvent(
+      payload ?? this.payload,
+      controller: controller ?? _controller,
+    );
+  }
+}

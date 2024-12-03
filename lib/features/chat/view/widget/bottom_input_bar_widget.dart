@@ -215,9 +215,11 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                           ),
                           cursorColor: Palette.accent,
                           onChanged: (text) {
-                            setState(() {
-                              isTextEmpty = text.isEmpty;
-                            });
+                            if (isTextEmpty ^ text.isEmpty) {
+                              setState(() {
+                                isTextEmpty = text.isEmpty;
+                              });
+                            }
                           },
                         ),
                       ),

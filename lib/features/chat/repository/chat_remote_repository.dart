@@ -330,5 +330,46 @@ class ChatRemoteRepository {
     }
   }
 
+  // updateDraft
+  Future<({AppError? appError})> updateDraft(
+      String sessionID, String chatID, String draft) async {
+    try {
+      final response = await _dio.post(
+        '/chats/draft/:$chatID',
+        data: {
+          'draft': draft,
+        },
+        options: Options(headers: {'X-Session-Token': sessionID}),
+      );
+
+      if (response.statusCode == 200) {
+        return (appError: null);
+      } else {
+        return (appError: AppError('Failed to update draft', code: response.statusCode));
+      }
+    } catch (e) {
+      debugPrint('!!! Failed to update draft, ${e.toString()}');
+      return (appError: AppError('Failed to update draft', code: 500));
+    }
+  }
+
+  Future<({AppError? appError, String? draft})> getDraft(
+      String sessionID, String userID, String chatID) async {
+    try {
+      final response = await _dio.get(
+        '/chats/get-draft',
+        queryParameters: {'userId': userID, 'chatId': chatID},
+        options: Options(headers: {'X-Session-Token': sessionID}),
+      );
+
+      final draft = response.data['drafts'] as String;
+
+      return (appError: null, draft: draft);
+    } catch (e) {
+      debugPrint('!!! Failed to get draft, ${e.toString()}');
+      return (appError: AppError('Failed to get draft', code: 500), draft: null);
+    }
+  }
+
 // TODO Implement Fetch Messages
 }
