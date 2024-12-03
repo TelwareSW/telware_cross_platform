@@ -47,6 +47,7 @@ class EventHandler {
     if (_isProcessing || USE_MOCK_DATA) return; // Avoid multiple loops
 
     _isProcessing = true;
+    debugPrint('()()() called Processing Queue');
 
     while (_queue.isNotEmpty && !_stopRequested) {
       final currentEvent = _queue.first;

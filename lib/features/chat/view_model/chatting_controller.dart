@@ -76,12 +76,12 @@ class ChattingController {
     debugPrint('!!! tried to enter controller init');
     debugPrint('!!! enter controller init');
     // get the chats and give it to the chats view model from local
-    final chats = _localRepository.getChats();
+    final chats = _localRepository.getChats(_ref.read(userProvider)!.id!);
     debugPrint('!!! chats list length ${chats.length}');
     _ref.read(chatsViewModelProvider.notifier).setChats(chats);
 
     // get the users list from local
-    final otherUsers = _localRepository.getOtherUsers();
+    final otherUsers = _localRepository.getOtherUsers(_ref.read(userProvider)!.id!);
     // * the next three lines are for dubuging
     // String ids = '';
     // otherUsers.forEach((key, _) => ids += '$key\n');
@@ -89,7 +89,7 @@ class ChattingController {
     _ref.read(chatsViewModelProvider.notifier).setOtherUsers(otherUsers);
 
     // get the events and give it to the handler from local
-    final events = _localRepository.getEventQueue();
+    final events = _localRepository.getEventQueue(_ref.read(userProvider)!.id!);
     final newEvents = events.map((e) => e.copyWith(controller: this));
     _eventHandler.init(Queue<MessageEvent>.from(newEvents.toList()));
   }
@@ -118,10 +118,10 @@ class ChattingController {
       // otherUsersMap.forEach((key, _) => ids += '$key\n');
       // debugPrint('!!! OtherUsers Map created ID\'s: $ids');
 
-      debugPrint((await _localRepository.setChats(response.chats)).toString());
+      debugPrint((await _localRepository.setChats(response.chats, _ref.read(userProvider)!.id!)).toString());
 
       debugPrint(
-          (await _localRepository.setOtherUsers(otherUsersMap)).toString());
+          (await _localRepository.setOtherUsers(otherUsersMap, _ref.read(userProvider)!.id!)).toString());
 
       debugPrint('!!! ended the newLoginInit mock');
       return;
@@ -147,8 +147,8 @@ class ChattingController {
         for (var user in response.users) user.id!: user
       };
 
-      _localRepository.setChats(response.chats);
-      _localRepository.setOtherUsers(otherUsersMap);
+      _localRepository.setChats(response.chats, _ref.read(userProvider)!.id!);
+      _localRepository.setOtherUsers(otherUsersMap, _ref.read(userProvider)!.id!);
       debugPrint('!!! ended the newLoginInit');
     }
   }
@@ -190,27 +190,27 @@ class ChattingController {
         .read(chatsViewModelProvider.notifier)
         .addSentMessage(content, chatID!, msgType, contentType);
 
-    _localRepository.setChats(_ref.read(chatsViewModelProvider));
+    _localRepository.setChats(_ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
 
-    // final msgEvent = SendMessageEvent(
-    //   {
-    //     'chatId': chatID,
-    //     'content': content.getContent(),
-    //     'contentType': contentType.content,
-    //     'senderId': _ref.read(userProvider)!.id,
-    //     'isFirstTime': isChatNew,
-    //     'chatType': chatType.type
-    //   },
-    //   controller: this,
-    //   identifier: identifier
-    // );
-    //
-    // _eventHandler.addEvent(msgEvent);
+    final msgEvent = SendMessageEvent(
+      {
+        'chatId': chatID,
+        'content': content.getContent(),
+        'contentType': contentType.content,
+        'senderId': _ref.read(userProvider)!.id,
+        'isFirstTime': isChatNew,
+        'chatType': chatType.type
+      },
+      controller: this,
+      identifier: identifier
+    );
+    
+    _eventHandler.addEvent(msgEvent);
   }
 
   void receiveMsg(Map<String, dynamic> response) {
     _ref.read(chatsViewModelProvider.notifier).addReceivedMessage(response);
-    _localRepository.setChats(_ref.read(chatsViewModelProvider));
+    _localRepository.setChats(_ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
 
   // delete a message
@@ -222,7 +222,7 @@ class ChattingController {
     _eventHandler.addEvent(msgEvent);
 
     _ref.read(chatsViewModelProvider.notifier).deleteMessage(msgID, chatID);
-    _localRepository.setChats(_ref.read(chatsViewModelProvider));
+    _localRepository.setChats(_ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
 
   // edit a message
@@ -240,7 +240,7 @@ class ChattingController {
     _ref
         .read(chatsViewModelProvider.notifier)
         .editMessage(msgID, chatID, content);
-    _localRepository.setChats(_ref.read(chatsViewModelProvider));
+    _localRepository.setChats(_ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
 
   // receive a message
@@ -258,7 +258,7 @@ class ChattingController {
   }
 
   void restoreOtherUsers(Map<String, UserModel> otherUsers) {
-    _localRepository.setOtherUsers(otherUsers);
+    _localRepository.setOtherUsers(otherUsers, _ref.read(userProvider)!.id!);
   }
 
   Future<String?> uploadMedia(String filePath, String contentType) async {
@@ -290,7 +290,7 @@ class ChattingController {
     _ref
         .read(chatsViewModelProvider.notifier)
         .updateMessageFilePath(chatID, msgID, newFilePath);
-    _localRepository.setChats(_ref.read(chatsViewModelProvider));
+    _localRepository.setChats(_ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
 
   Future<void> muteChat(String chatID, DateTime? muteUntil) async {
@@ -301,12 +301,12 @@ class ChattingController {
         : muteUntil.difference(DateTime.now()).inSeconds;
 
     if (USE_MOCK_DATA) {
-      final chats = _localRepository.getChats();
+      final chats = _localRepository.getChats(_ref.read(userProvider)!.id!);
       final chat = chats.firstWhere((element) => element.id == chatID);
       final updatedChat = chat.copyWith(isMuted: true, muteUntil: muteUntil);
       final updatedChats =
           chats.map((e) => e.id == chatID ? updatedChat : e).toList();
-      _localRepository.setChats(updatedChats);
+      _localRepository.setChats(updatedChats, _ref.read(userProvider)!.id!);
       return;
     }
 
@@ -319,18 +319,18 @@ class ChattingController {
       _ref
           .read(chatsViewModelProvider.notifier)
           .muteChat(chatID, muteUntilSeconds);
-      _localRepository.setChats(_ref.read(chatsViewModelProvider));
+      _localRepository.setChats(_ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
     }
   }
 
   Future<void> unmuteChat(String chatID) async {
     if (USE_MOCK_DATA) {
-      final chats = _localRepository.getChats();
+      final chats = _localRepository.getChats(_ref.read(userProvider)!.id!);
       final chat = chats.firstWhere((element) => element.id == chatID);
       final updatedChat = chat.copyWith(isMuted: false, muteUntil: null);
       final updatedChats =
           chats.map((e) => e.id == chatID ? updatedChat : e).toList();
-      _localRepository.setChats(updatedChats);
+      _localRepository.setChats(updatedChats, _ref.read(userProvider)!.id!);
       return;
     }
 
@@ -343,11 +343,12 @@ class ChattingController {
       debugPrint('Error: Could not unmute the chat');
     } else {
       _ref.read(chatsViewModelProvider.notifier).unmuteChat(chatID);
-      _localRepository.setChats(_ref.read(chatsViewModelProvider));
+      _localRepository.setChats(_ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
     }
   }
 
   void updateMessageId(String msgId, Map<String, String> identifier) {
     _ref.read(chatsViewModelProvider.notifier).updateMsgId(msgId, identifier);
+    _localRepository.setChats(_ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
 }

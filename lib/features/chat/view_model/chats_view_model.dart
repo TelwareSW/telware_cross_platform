@@ -57,7 +57,7 @@ class ChatsViewModel extends _$ChatsViewModel {
   void setChats(List<ChatModel> chats) {
     state = updateMessagesFilePath(chats);
     _chatsMap.clear();
-    _chatsMap = <String, ChatModel>{for (var chat in chats) chat.id!: chat};
+    _chatsMap = <String, ChatModel>{for (var chat in state) chat.id!: chat};
   }
 
   void addChat(ChatModel chat) {
@@ -86,10 +86,12 @@ class ChatsViewModel extends _$ChatsViewModel {
       messageType: msgType,
       userStates: {},
       id: USE_MOCK_DATA ? getUniqueMessageId() : null,
+      localId: msgLocalId,
     );
 
 
     chat!.messages.add(msg);
+    _chatsMap[chatID] = chat;
     _moveChatToFront(chatID);
 
     return {'msgLocalId': msgLocalId, 'chatId': chatID};
@@ -98,13 +100,20 @@ class ChatsViewModel extends _$ChatsViewModel {
   void updateMsgId(String newMsgId, Map<String, String> identifiers) {
     String msgLocalId = identifiers['msgLocalId']!,
         chatId = identifiers['chatId']!;
+
     final chat = _chatsMap[chatId];
     if (chat != null) {
+      debugPrint('### found the chat');
+
       final index =
           chat.messages.indexWhere((msg) => msg.localId == msgLocalId);
+
       if (index != -1) {
-        chat.messages[index].copyWith(id: newMsgId);
-        state = [...state];
+        final newMsg = chat.messages[index].copyWith(id: newMsgId);
+        chat.messages[index] = newMsg;
+        _chatsMap[chatId] = chat;
+        final newState = state.map((chat2) => chat2.id == chat.id ? chat : chat2.copyWith()).toList();
+        state = newState;
       }
     }
   }
@@ -179,6 +188,7 @@ class ChatsViewModel extends _$ChatsViewModel {
     }
 
     chat.messages.add(msg);
+    _chatsMap[chatID] = chat;
     _moveChatToFront(chatID);
   }
 
@@ -214,10 +224,10 @@ class ChatsViewModel extends _$ChatsViewModel {
 
     if (chatIndex != -1) {
       // Remove the chat from its current position
-      final chat = state[chatIndex];
       final updatedState = List<ChatModel>.from(state)..removeAt(chatIndex);
       // Insert the chat at the front of the list
-      state = [chat, ...updatedState];
+      final newChat = _chatsMap[id];
+      state = [newChat!, ...updatedState];
       debugPrint('!!! List is update, a chat moved to front');
     }
   }
