@@ -439,10 +439,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       vibrate();
     } else if (status.isDenied || status.isRestricted) {
       status = await Permission.microphone.request();
-      if (status.isGranted) {
-        _record();
-        vibrate();
-      } else {
+      if (!status.isGranted) {
         // Handle denied permission scenario gracefully
         showSnackBarMessage(
             context, 'Microphone permission is required to record audio.');
@@ -832,7 +829,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                                 chatModel.messages.firstWhere(
                                               (message) =>
                                                   message.parentMessage ==
-                                                  item.id,
+                                                  item.parentMessage,
                                             ),
                                             isSentByMe: item.senderId ==
                                                 ref.read(userProvider)!.id,

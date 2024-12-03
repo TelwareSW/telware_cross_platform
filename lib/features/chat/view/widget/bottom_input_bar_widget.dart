@@ -305,13 +305,11 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                     return;
                   }
                   String? recordingPath = await widget.stopRecording();
-                  if (recordingPath != null) {
-                    widget.sendMessage(
-                      ref: ref,
-                      contentType: 'audio',
-                      filePath: recordingPath,
-                    );
-                  }
+                  widget.sendMessage(
+                    ref: ref,
+                    contentType: 'audio',
+                    filePath: recordingPath,
+                  );
                   widget.resetRecording();
                 },
                 onLongPressMoveUpdate: (details) {
