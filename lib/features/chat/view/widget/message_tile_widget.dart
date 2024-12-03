@@ -13,6 +13,8 @@ import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/forward_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/audio_message_widget.dart';
+import 'package:telware_cross_platform/features/chat/view/widget/document_message_widget.dart';
+import 'package:telware_cross_platform/features/chat/view/widget/image_message_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/video_player_widget.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 import 'package:video_player/video_player.dart';
@@ -31,6 +33,7 @@ class MessageTileWidget extends ConsumerWidget {
   final Color nameColor;
   final Color imageColor;
   final List<MapEntry<int, int>> highlights;
+  final void Function(String?) onDownloadTap;
   final Function(MessageModel) onReply;
   final Function(MessageModel) onLongPress;
   final Function(MessageModel) onPin;
@@ -47,6 +50,7 @@ class MessageTileWidget extends ConsumerWidget {
     this.nameColor = Palette.primary,
     this.imageColor = Palette.primary,
     this.highlights = const [],
+    required this.onDownloadTap,
     required this.onReply,
     required this.onLongPress,
     required this.onPress,
@@ -222,83 +226,112 @@ class MessageTileWidget extends ConsumerWidget {
                       ],) : SizedBox(),
                       Wrap(
                         children: [
-                          HighlightTextWidget(
-                              key: ValueKey(
-                                  '$keyValue${MessageKeys.messageContentPostfix.value}'),
-                              text:
-                                  messageModel.content?.toJson()['text'] ?? "",
-                              normalStyle: const TextStyle(
-                                color: Palette.primaryText,
-                                fontSize: 16,
-                              ),
-                              highlightStyle: const TextStyle(
-                                  color: Palette.primaryText,
-                                  fontSize: 16,
-                                  backgroundColor:
-                                      Color.fromRGBO(246, 225, 2, 0.43)),
-                              highlights: highlights),
-                          SizedBox(width: isSentByMe ? 70.0 : 55.0),
-                          const Text("")
+                          SenderNameWidget(
+                            keyValue,
+                            nameColor,
+                            showInfo: showInfo,
+                            isSentByMe: isSentByMe,
+                            userId: messageModel.senderId,
+                          ),
+                          Wrap(
+                            children: [
+                              HighlightTextWidget(
+                                  key: ValueKey(
+                                      '$keyValue${MessageKeys.messageContentPostfix.value}'),
+                                  text:
+                                      messageModel.content?.toJson()['text'] ??
+                                          "",
+                                  normalStyle: const TextStyle(
+                                    color: Palette.primaryText,
+                                    fontSize: 16,
+                                  ),
+                                  highlightStyle: const TextStyle(
+                                      color: Palette.primaryText,
+                                      fontSize: 16,
+                                      backgroundColor:
+                                          Color.fromRGBO(246, 225, 2, 0.43)),
+                                  highlights: highlights),
+                              SizedBox(width: isSentByMe ? 70.0 : 55.0),
+                              const Text("")
+                            ],
+                          )
                         ],
                       )
-                    ],
-                  )
-                : messageModel.messageContentType == MessageContentType.audio
-                    ? AudioMessageWidget(
-                        duration: messageModel.content?.toJson()["duration"],
-                        filePath: messageModel.content?.toJson()["filePath"])
                     : messageModel.messageContentType ==
-                            MessageContentType.image
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(15),
-                            child: Image.file(
-                              File(messageModel.content?.toJson()["filePath"]),
-                              fit: BoxFit.cover,
-                            ),
+                            MessageContentType.audio
+                        ? AudioMessageWidget(
+                            duration:
+                                messageModel.content?.toJson()["duration"],
+                            filePath:
+                                messageModel.content?.toJson()["filePath"],
+                            url: messageModel.content?.toJson()["audioUrl"],
+                            onDownloadTap: onDownloadTap,
                           )
                         : messageModel.messageContentType ==
-                                MessageContentType.video
-                            ? SizedBox(
-                                width: 200,
-                                height: 200,
-                                child: VideoPlayerWidget(
-                                    filePath: messageModel.content
-                                        ?.toJson()["filePath"]))
-                            : const SizedBox.shrink(),
-            // The timestamp is always in the bottom-right corner if there's space
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: Container(
-                  padding: const EdgeInsets.only(top: 5),
-                  // Add some space above the timestamp
-                  child: Row(
-                    children: [
-                      Text(
-                        key: ValueKey(
-                            '$keyValue${MessageKeys.messageTimePostfix.value}'),
-                        formatTimestamp(messageModel.timestamp),
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: Palette.primaryText,
-                        ),
-                      ),
-                      if (isSentByMe) ...[
-                        const SizedBox(width: 4),
-                        Icon(
+                                MessageContentType.image
+                            ? ImageMessageWidget(
+                                onDownloadTap: onDownloadTap,
+                                filePath:
+                                    messageModel.content?.toJson()["filePath"],
+                                url: messageModel.content?.toJson()["imageUrl"],
+                              )
+                            : messageModel.messageContentType ==
+                                    MessageContentType.video
+                                ? SizedBox(
+                                    width: 200,
+                                    height: 200,
+                                    child: VideoPlayerWidget(
+                                        url: messageModel.content
+                                            ?.toJson()["videoUrl"],
+                                        onDownloadTap: onDownloadTap,
+                                        filePath: messageModel.content
+                                            ?.toJson()["filePath"]),
+                                  )
+                                : messageModel.messageContentType ==
+                                        MessageContentType.file
+                                    ? DocumentMessageWidget(
+                                        url: messageModel.content
+                                            ?.toJson()["fileUrl"],
+                                        onDownloadTap: onDownloadTap,
+                                        filePath: messageModel.content
+                                            ?.toJson()["filePath"],
+                                        openOptions: () {},
+                                      )
+                                    : const SizedBox.shrink(),
+                // The timestamp is always in the bottom-right corner if there's space
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                      padding: const EdgeInsets.only(top: 5),
+                      // Add some space above the timestamp
+                      child: Row(
+                        children: [
+                          Text(
                             key: ValueKey(
-                                '$keyValue${MessageKeys.messageStatusPostfix.value}'),
-                            messageState,
-                            size: 12,
-                            color: Palette.primaryText),
-                      ]
-                    ],
-                  )),
+                                '$keyValue${MessageKeys.messageTimePostfix.value}'),
+                            formatTimestamp(messageModel.timestamp),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Palette.primaryText,
+                            ),
+                          ),
+                          if (isSentByMe) ...[
+                            const SizedBox(width: 4),
+                            Icon(
+                                key: ValueKey(
+                                    '$keyValue${MessageKeys.messageStatusPostfix.value}'),
+                                messageState,
+                                size: 12,
+                                color: Palette.primaryText),
+                          ]
+                        ],
+                      )),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    ));
+          ),
+        ));
   }
 }
 
@@ -307,6 +340,7 @@ class SenderNameWidget extends ConsumerStatefulWidget {
   final String userId;
   final dynamic keyValue;
   final Color nameColor;
+
   const SenderNameWidget(
     this.keyValue,
     this.nameColor, {
@@ -315,6 +349,7 @@ class SenderNameWidget extends ConsumerStatefulWidget {
     required this.isSentByMe,
     required this.userId,
   });
+
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
       _SenderNameWidgetState();

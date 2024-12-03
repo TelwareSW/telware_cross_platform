@@ -52,8 +52,10 @@ void main() {
               onReply: (messageModel) {},
               onLongPress: (messageModel) {},
               onPress: () {},
+              onDownloadTap: (String? filePath) {},
               onPin: (messageModel) {},
               onDelete: (msgId,_, messageType) {},
+
             ),
           ),
         ),
@@ -100,7 +102,10 @@ void main() {
               onLongPress: (MessageModel) {},
               onPress: () {},
               onPin: (MessageModel) {},
+              onDownloadTap: (String? filePath) {},
+
               onDelete: (msgId,_, messageType) {},
+
             ),
           ),
         ),
@@ -144,7 +149,11 @@ void main() {
                 onLongPress: (MessageModel) {},
                 onPress: () {},
                 onPin: (MessageModel) {},
+
+                onDownloadTap: (String? filePath) {},
+
               onDelete: (msgId,_, messageType) {},
+
               ),
               MessageTileWidget(
                 key: ValueKey("${ChatKeys.chatTilePrefix.value}1"),
@@ -155,7 +164,9 @@ void main() {
                 onLongPress: (MessageModel) {},
                 onPress: () {},
                 onPin: (MessageModel) {},
+                onDownloadTap: (String? filePath) {},
               onDelete: (msgId,_, messageType) {},
+
               ),
             ],
           )),
@@ -200,6 +211,7 @@ void main() {
                 onLongPress: (MessageModel) {},
                 onPress: () {},
                 onPin: (MessageModel) {},
+                onDownloadTap: (String? filePath) {},
               onDelete: (msgId,_, messageType) {},
               ),
               MessageTileWidget(
@@ -212,7 +224,9 @@ void main() {
                 onLongPress: (MessageModel) {},
                 onPress: () {},
                 onPin: (MessageModel) {},
+                onDownloadTap: (String? filePath) {},
               onDelete: (msgId,_, messageType) {},
+
               ),
               MessageTileWidget(
                 key: ValueKey("${ChatKeys.chatTilePrefix.value}2"),
@@ -224,6 +238,7 @@ void main() {
                 onLongPress: (MessageModel) {},
                 onPress: () {},
                 onPin: (MessageModel) {},
+                onDownloadTap: (String? filePath) {},
                 onDelete: (msgId, _, messageType) {}
               ),
             ],

@@ -6,8 +6,12 @@ import 'package:hive/hive.dart';
 part 'message_content.g.dart'; // Part file for generated code
 
 abstract class MessageContent {
-  Map<String, dynamic> toJson(); // For serialization
+  Map<String, dynamic> toJson();
+
+  MessageContent copyWith();
+  
   String getContent();
+
 }
 
 // For Text Messages
@@ -22,8 +26,17 @@ class TextContent extends MessageContent {
   Map<String, dynamic> toJson() => {'text': text};
 
   @override
+
+  TextContent copyWith({
+    String? text,
+  }) {
+    return TextContent(
+      text ?? this.text,
+    );
+
   String getContent() {
     return text;    
+
   }
 }
 
@@ -51,6 +64,20 @@ class AudioContent extends MessageContent {
       };
 
   @override
+
+  AudioContent copyWith({
+    String? audioUrl,
+    int? duration,
+    String? filePath,
+    List<double>? waveformData,
+  }) {
+    return AudioContent(
+      audioUrl: audioUrl ?? this.audioUrl,
+      duration: duration ?? this.duration,
+      filePath: filePath ?? this.filePath,
+      waveformData: waveformData ?? this.waveformData,
+    );
+
   String getContent() {
     return '';
   }
@@ -76,6 +103,17 @@ class DocumentContent extends MessageContent {
       };
 
   @override
+  DocumentContent copyWith({
+    String? fileName,
+    String? fileUrl,
+    String? filePath,
+  }) {
+    return DocumentContent(
+      fileName: fileName ?? this.fileName,
+      fileUrl: fileUrl ?? this.fileUrl,
+      filePath: filePath ?? this.filePath,
+    );
+
   String getContent() {
     return '';
   }
@@ -98,6 +136,18 @@ class ImageContent extends MessageContent {
       {'imageUrl': imageUrl, 'imageBytes': imageBytes, "filePath": filePath};
 
   @override
+
+  ImageContent copyWith({
+    String? imageUrl,
+    Uint8List? imageBytes,
+    String? filePath,
+  }) {
+    return ImageContent(
+      imageUrl: imageUrl ?? this.imageUrl,
+      imageBytes: imageBytes ?? this.imageBytes,
+      filePath: filePath ?? this.filePath,
+    );
+
   String getContent() {
     return '';
   }
@@ -123,6 +173,18 @@ class VideoContent extends MessageContent {
       };
 
   @override
+
+  VideoContent copyWith({
+    String? videoUrl,
+    int? duration,
+    String? filePath,
+  }) {
+    return VideoContent(
+      videoUrl: videoUrl ?? this.videoUrl,
+      duration: duration ?? this.duration,
+      filePath: filePath ?? this.filePath,
+    );
+
   String getContent() {
     return '';
   }
@@ -148,8 +210,21 @@ class EmojiContent extends MessageContent {
       };
 
   @override
+
+  EmojiContent copyWith({
+    String? emojiUrl,
+    String? emojiName,
+    String? filePath,
+  }) {
+    return EmojiContent(
+      emojiUrl: emojiUrl ?? this.emojiUrl,
+      emojiName: emojiName ?? this.emojiName,
+      filePath: filePath ?? this.filePath,
+    );
+
   String getContent() {
     return '';
+
   }
 }
 
@@ -172,6 +247,18 @@ class GIFContent extends MessageContent {
       };
 
   @override
+
+  GIFContent copyWith({
+    String? gifUrl,
+    String? gifName,
+    String? filePath,
+  }) {
+    return GIFContent(
+      gifUrl: gifUrl ?? this.gifUrl,
+      gifName: gifName ?? this.gifName,
+      filePath: filePath ?? this.filePath,
+    );
+
   String getContent() {
     return '';
   }
@@ -196,6 +283,17 @@ class StickerContent extends MessageContent {
       };
 
   @override
+
+  StickerContent copyWith({
+    String? stickerUrl,
+    String? stickerName,
+    String? filePath,
+  }) {
+    return StickerContent(
+      stickerUrl: stickerUrl ?? this.stickerUrl,
+      stickerName: stickerName ?? this.stickerName,
+      filePath: filePath ?? this.filePath,
+    );
   String getContent() {
     return '';
   }

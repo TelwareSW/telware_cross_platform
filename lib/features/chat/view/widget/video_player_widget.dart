@@ -2,13 +2,18 @@ import 'dart:async';
 import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:telware_cross_platform/features/chat/view/widget/download_widget.dart';
 import 'package:video_player/video_player.dart';
 import '../../../../core/theme/palette.dart';
+import '../../utils/chat_utils.dart';
 
 class VideoPlayerWidget extends StatefulWidget {
-  final String filePath;
+  final String? filePath;
+  final String? url;
+  final void Function(String?) onDownloadTap;
 
-  const VideoPlayerWidget({super.key, required this.filePath});
+  const VideoPlayerWidget(
+      {super.key, this.filePath, this.url, required this.onDownloadTap});
 
   @override
   State<VideoPlayerWidget> createState() => _VideoPlayerWidgetState();
@@ -23,7 +28,8 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.file(File(widget.filePath))
+
+    _controller = VideoPlayerController.file(File(widget.filePath ?? ''))
       ..initialize().then((_) {
         setState(() {
           // Initialize durationCounter with total duration
@@ -90,41 +96,54 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
                 }
               });
             },
-            child: Stack(
-              children: [
-                SizedBox.expand(
-                  child: Center(
-                    child: AspectRatio(
-                      aspectRatio: _controller.value.aspectRatio,
-                      child: VideoPlayer(_controller),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 5,
-                  left: 5,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.6),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      // Display total duration initially and after playback, current position during playback
-                      formatDuration(showTotalDuration
-                          ? _controller.value.duration.inSeconds
-                          : durationCounter),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+            child:
+                widget.filePath == null || !doesFileExistSync(widget.filePath!)
+                    ? SizedBox(
+                        width: 200,
+                        height: 200,
+                        child: Center(
+                          child: DownloadWidget(
+                            onTap: widget.onDownloadTap,
+                            url: widget.url,
+                            color: Colors.white,
+                          ),
+                        ),
+                      )
+                    : Stack(
+                        children: [
+                          SizedBox.expand(
+                            child: Center(
+                              child: AspectRatio(
+                                aspectRatio: _controller.value.aspectRatio,
+                                child: VideoPlayer(_controller),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 5,
+                            left: 5,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 5, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.6),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                // Display total duration initially and after playback, current position during playback
+                                formatDuration(showTotalDuration
+                                    ? _controller.value.duration.inSeconds
+                                    : durationCounter),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
           )
         : const Center(
             child: CircularProgressIndicator(

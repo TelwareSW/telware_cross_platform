@@ -29,7 +29,7 @@ part 'chatting_controller.g.dart';
 @Riverpod(keepAlive: true)
 ChattingController chattingController(Ref ref) {
   final remoteRepo = ChatRemoteRepository(
-    dio: Dio(BASE_OPTIONS),
+    dio: Dio(CHAT_BASE_OPTIONS),
   );
 
   final localRepo = ChatLocalRepository(
@@ -114,6 +114,7 @@ class ChattingController {
         for (var user in response.users) user.id!: user
       };
 
+
       // * the next three lines are for dubuging
       // String ids = '';
       // otherUsersMap.forEach((key, _) => ids += '$key\n');
@@ -186,6 +187,7 @@ class ChattingController {
         _ref.read(chatsViewModelProvider.notifier).addChat(response.chat!);
       }
     }
+
 
     final identifier = _ref
         .read(chatsViewModelProvider.notifier)
@@ -260,6 +262,38 @@ class ChattingController {
 
   void restoreOtherUsers(Map<String, UserModel> otherUsers) {
     _localRepository.setOtherUsers(otherUsers);
+  }
+
+  Future<String?> uploadMedia(String filePath, String contentType) async {
+    if (USE_MOCK_DATA) {
+      switch (contentType) {
+        case 'image':
+          return 'assets/images/moamen.jpeg';
+        case 'video':
+          return 'assets/video/demo.mp4';
+        case 'audio':
+          return 'assets/audio/test8.mp3';
+        case 'file':
+          return 'assets/docs/Async Js Requirment.pdf';
+        default:
+          return null;
+      }
+    }
+    final response = await _remoteRepository.uploadMedia(
+        _ref.read(tokenProvider)!, filePath);
+    if (response.appError != null) {
+      debugPrint('Error: Could not create the media');
+    } else {
+      return response.url;
+    }
+    return null;
+  }
+
+  void editMessageFilePath(String chatID, String msgID, String newFilePath) {
+    _ref
+        .read(chatsViewModelProvider.notifier)
+        .updateMessageFilePath(chatID, msgID, newFilePath);
+    _localRepository.setChats(_ref.read(chatsViewModelProvider));
   }
 
   Future<void> muteChat(String chatID, DateTime? muteUntil) async {

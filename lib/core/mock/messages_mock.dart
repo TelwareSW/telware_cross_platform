@@ -100,6 +100,7 @@ Future<List<MessageModel>> generateFakeMessages(
         secondUserID: getRandomMessageState(),
         appUserID: getRandomMessageState(),
       },
+      id: faker.guid.guid(),
     );
 
     // Add the generated message to the list

@@ -142,6 +142,42 @@ class ContactsRemoteRepository {
     String storiesUrl = '$API_URL/users/stories';
     String userUrl = '$API_URL/users/me';
     final String sessionToken = _ref.read(tokenProvider) ?? '';
+    ContactModel contact = ContactModel(
+      userName: 'game of thrones',
+      userImageUrl:
+          'https://st2.depositphotos.com/2703645/7304/v/450/depositphotos_73040253-stock-illustration-male-avatar-icon.jpg',
+      stories: [
+        StoryModel(
+            storyId: 'idd11',
+            createdAt: DateTime(2024, 10, 21, 12, 0),
+            storyContentUrl:
+                'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/1.jpg',
+            isSeen: false,
+            storyCaption: 'very good caption',
+            seenIds: ['id1', 'id2']),
+        StoryModel(
+          storyId: 'idd12',
+          createdAt: DateTime(2024, 10, 21, 12, 0),
+          storyContentUrl:
+              'https://raw.githubusercontent.com/Bishoywadea/hosted_images/refs/heads/main/2.jpeg',
+          isSeen: false,
+          storyCaption: 'very good  good  good caption',
+          seenIds: ['id2'],
+        ),
+        StoryModel(
+          storyId: 'idd13',
+          createdAt: DateTime(2024, 10, 21, 12, 0),
+          storyContentUrl:
+              'https://www.e3lam.com/images/large/2015/01/unnamed-14.jpg',
+          isSeen: false,
+          seenIds: ['id1', 'id2'],
+        ),
+      ],
+      userId: 'myUser',
+    );
+    if (USE_MOCK_DATA) {
+      return contact;
+    }
 
     if (USE_MOCK_DATA) {
       return ContactModel(

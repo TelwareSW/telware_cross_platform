@@ -1,7 +1,6 @@
 import 'dart:math';
 import 'dart:io';
 import 'package:audio_waveforms/audio_waveforms.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -13,6 +12,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter_cupertino_datetime_picker/flutter_cupertino_datetime_picker.dart';
 import 'package:telware_cross_platform/core/constants/keys.dart';
+import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
@@ -24,6 +24,8 @@ import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/providers/chat_provider.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/popup_menu_item_widget.dart';
+import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
+import 'package:telware_cross_platform/features/chat/view/screens/pinned_messages_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/bottom_input_bar_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/chat_header_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/date_label_widget.dart';
@@ -78,7 +80,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   // TODO: This works only on mobile if you tried to run it on web it will throw an error
 
   late final RecorderController _recorderController;
-  final PlayerController _playerController = PlayerController();
   String? musicFile;
   bool isRecording = false;
   bool isRecordingCompleted = false;
@@ -89,7 +90,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   bool showMuteOptions = false;
   double _lockRecordingDragPosition = 0;
   final lockPath = "assets/json/passcode_lock.json";
-  String? path;
+  String? recordingPath;
   late Directory appDirectory;
 
   //----------------------------------------------------------------------------
@@ -107,7 +108,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       final messages = chatModel?.messages ?? [];
       _updateChatMessages(messages);
       pinnedMessages = messages.where((message) => message.isPinned).toList();
-    // _scrollToBottom();
       if (widget.forwardedMessages != null) {
         _sendForwardedMessages();
       }
@@ -129,7 +129,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     _messageController.dispose();
     _scrollController.dispose(); // Dispose of the ScrollController
     _recorderController.dispose();
-    _playerController.dispose();
     WidgetsBinding.instance.removeObserver(this); // Remove the observer
     super.dispose();
   }
@@ -221,11 +220,68 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   }
 
   //TODO: Implement the sendMsg method with another types of messages
-  void _sendMessage(WidgetRef ref) {
+  void _sendMessage(
+      {required WidgetRef ref,
+      required String contentType,
+      String? filePath,
+      bool? getRecordingPath}) async {
+    MessageContentType messageContentType =
+        MessageContentType.getType(contentType);
+    MessageContent content;
+    bool needUploadMedia = contentType != 'text';
+    String? mediaUrl;
+    // Upload the media file before sending the message
+    if (needUploadMedia) {
+      if (filePath == null) {
+        debugPrint("Try to send a media without a file path");
+        return;
+      } else {
+        mediaUrl = await ref
+            .read(chattingControllerProvider)
+            .uploadMedia(filePath, contentType);
+        if (mediaUrl == null) {
+          showToastMessage(
+              "Failed to upload the media check your connection or try again later");
+          return;
+        }
+        debugPrint("Media uploaded successfully with url: $mediaUrl");
+      }
+    }
+    switch (contentType) {
+      case 'text':
+        content = TextContent(_messageController.text);
+        break;
+      case 'image':
+        content = ImageContent(filePath: filePath, imageUrl: mediaUrl);
+        break;
+      case 'video':
+        content = VideoContent(filePath: filePath, videoUrl: mediaUrl);
+        break;
+      case 'audio':
+        if (getRecordingPath == true && filePath == null) {
+          if (recordingPath == null) {
+            showToastMessage("Recording has no path");
+            return;
+          }
+          content = AudioContent(filePath: recordingPath!, audioUrl: mediaUrl);
+        } else {
+          content = AudioContent(filePath: filePath, audioUrl: mediaUrl);
+        }
+        break;
+      case 'file':
+        content = DocumentContent(
+            filePath: filePath,
+            fileName: filePath!.split('/').last,
+            fileUrl: mediaUrl);
+      default:
+        content = TextContent(_messageController.text);
+    }
+    // TODO : Handle media attribute in the request of sending a message
+
     MessageModel newMessage = MessageModel(
       senderId: ref.read(userProvider)!.id!,
-      messageContentType: MessageContentType.text,
-      content: TextContent(_messageController.text),
+      messageContentType: messageContentType,
+      content: content,
       timestamp: DateTime.now(),
       messageType: MessageType.normal,
       userStates: {},
@@ -246,6 +302,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       List<MessageModel> messages =
           ref.watch(chatProvider(chatModel!.id!))?.messages ?? [];
       _updateChatMessages(messages);
+      debugPrint(" ${messages.toString()}");
       // _scrollToBottom();
     });
   }
@@ -272,7 +329,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   //--------------------------------Recording--------------------------------
   void _getDir() async {
     appDirectory = await getApplicationDocumentsDirectory();
-    path = "${appDirectory.path}/recording.m4a";
+    recordingPath = "${appDirectory.path}/recording.m4a";
     isLoading = false;
     setState(() {});
   }
@@ -290,7 +347,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
   void _pauseRecording() async {
     if (isRecordingPaused) {
-      _recorderController.record(path: path);
+      _recorderController.record(path: recordingPath);
     } else {
       _recorderController.pause();
     }
@@ -304,52 +361,52 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     isRecordingLocked = true;
     setState(() {});
   }
-
+  
   void _removeReply() {
     setState(() {
       replyMessage = null;
     });
   }
 
-  void _deleteRecording() {
-    if (path == null) {
-      debugPrint("No recording to delete");
-      return;
-    }
-    if (File(path!).existsSync()) {
-      File(path!).deleteSync();
-      path = null;
-      isRecording = false;
-      isRecordingLocked = false;
-      isRecordingPaused = false;
-      isRecordingCompleted = false;
-      setState(() {});
-    }
-  }
-
-  void _cancelRecording() {
-    //TODO : check for memory leaks
-    _recorderController.stop(true);
+void _resetRecording() {
     isRecording = false;
     isRecordingLocked = false;
     isRecordingPaused = false;
     isRecordingCompleted = false;
+    recordingPath = null;
     setState(() {});
   }
+ 
 
-  void _pickFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
-    if (result != null) {
-      musicFile = result.files.single.path;
-      setState(() {});
-    } else {
-      debugPrint("File not picked");
+  void _deleteRecording() {
+    if (recordingPath == null) {
+      debugPrint("No recording to delete");
+      return;
+    }
+    if (File(recordingPath!).existsSync()) {
+      File(recordingPath!).deleteSync();
+      debugPrint("Recording deleted at $recordingPath");
+      _resetRecording();
+    }
+  }
+
+  void _cancelRecording() async {
+    if (isRecording) {
+      String? path = await _recorderController.stop(true);
+      if (path != null) {
+        if (File(path).existsSync()) {
+          File(path).deleteSync();
+          debugPrint("Recording deleted at $path");
+        }
+        debugPrint("Recording canceled");
+      }
+      _resetRecording();
     }
   }
 
   void _record() async {
     try {
-      await _recorderController.record(path: path); // Path is optional
+      await _recorderController.record(); // Path is optional
       debugPrint("Recording started");
     } catch (e) {
       debugPrint(e.toString());
@@ -362,28 +419,27 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     }
   }
 
-  void _stopRecording() async {
+  //wait for sending will not set the isRecording to false and you will have to set it manually
+  // or call cancel recording to reset every thing
+  Future<String?> _stopRecording() async {
     try {
-      path = await _recorderController.stop(false);
+      recordingPath = await _recorderController.stop(false);
       _recorderController.reset();
 
-      if (path != null) {
+      if (recordingPath != null) {
         isRecordingCompleted = true;
         isRecording = false;
         isRecordingPaused = false;
         setState(() {});
-        await _playerController.preparePlayer(
-          path: path!,
-          shouldExtractWaveform: true,
-          noOfSamples: 500,
-          volume: 1.0,
-        );
-        debugPrint(path);
-        debugPrint("Recorded file size: ${File(path!).lengthSync()}");
+        debugPrint(recordingPath);
+        debugPrint("Recorded file size: ${File(recordingPath!).lengthSync()}");
+        return recordingPath!;
       }
     } catch (e) {
       debugPrint(e.toString());
+      return null;
     }
+    return null;
   }
 
   void _startRecording(context) async {
@@ -442,6 +498,28 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
   //----------------------------------------------------------------------------
   //-------------------------------Media----------------------------------------
+
+  void onMediaDownloaded(String? filePath, String? messageId, String? chatId) {
+    if (!USE_MOCK_DATA) return;
+    if (filePath == null) {
+      showToastMessage('File has been deleted ask the sender to resend it');
+      return;
+    }
+    if (messageId == null) {
+      showToastMessage('Message ID is missing');
+      return;
+    }
+    if (chatId == null) {
+      showToastMessage('Chat ID is missing');
+      return;
+    }
+    debugPrint("Downloaded file path: $filePath");
+    debugPrint("Message ID: $messageId");
+    debugPrint("Chat ID: $chatId");
+    ref
+        .read(chattingControllerProvider)
+        .editMessageFilePath(chatId, messageId, filePath);
+  }
 
   void _searchForText(searchText) async {
     Map<int, List<MapEntry<int, int>>> messageMatches = {};
@@ -529,62 +607,64 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     return Scaffold(
         appBar: selectedMessages.isEmpty
             ? AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              if (isShowAsList) {
-                setState(() {
-                  isShowAsList = false;
-                });
-              } else if (isSearching) {
-                setState(() {
-                  isSearching = false;
-                  _messageMatches.clear();
-                });
-              } else {
-                Navigator.pop(context);
-              }
-            },
-          ),
-          title: !isSearching
-              ? ChatHeaderWidget(
-                  title: title,
-                  subtitle: subtitle,
-                  photo: photo,
-                  imageBytes: imageBytes,
-                )
-              : TextField(
-                  key: ChatKeys.chatSearchInput,
-                  autofocus: true,
-                  decoration: const InputDecoration(
-                    hintText: 'Search',
-                    hintStyle: TextStyle(
-                        color: Palette.accentText, fontWeight: FontWeight.w400),
-                    border: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                  ),
-                  onSubmitted: _searchForText,
-                  onChanged: (value) => {
-                    if (isShowAsList)
-                      {
-                        setState(() {
-                          isShowAsList = false;
-                        })
-                      }
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () {
+                    if (isShowAsList) {
+                      setState(() {
+                        isShowAsList = false;
+                      });
+                    } else if (isSearching) {
+                      setState(() {
+                        isSearching = false;
+                        _messageMatches.clear();
+                      });
+                    } else {
+                      Navigator.pop(context);
+                    }
                   },
                 ),
-          actions: [
-            if (!isSearching)
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert),
-                onSelected: _handlePopupMenuSelection,
-                color: Palette.secondary,
-                padding: EdgeInsets.zero,
-                itemBuilder: popupMenu,
-              ),
-          ],
-        ): AppBar(
+                title: !isSearching
+                    ? ChatHeaderWidget(
+                        title: title,
+                        subtitle: subtitle,
+                        photo: photo,
+                        imageBytes: imageBytes,
+                      )
+                    : TextField(
+                        key: ChatKeys.chatSearchInput,
+                        autofocus: true,
+                        decoration: const InputDecoration(
+                          hintText: 'Search',
+                          hintStyle: TextStyle(
+                              color: Palette.accentText,
+                              fontWeight: FontWeight.w400),
+                          border: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                        ),
+                        onSubmitted: _searchForText,
+                        onChanged: (value) => {
+                          if (isShowAsList)
+                            {
+                              setState(() {
+                                isShowAsList = false;
+                              })
+                            }
+                        },
+                      ),
+                actions: [
+                  if (!isSearching)
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert),
+                      onSelected: _handlePopupMenuSelection,
+                      color: Palette.secondary,
+                      padding: EdgeInsets.zero,
+                      itemBuilder: popupMenu,
+                    ),
+                ],
+              )
+            : AppBar(
                 backgroundColor: Palette.secondary,
                 leading: GestureDetector(
                   onTap: () {
@@ -592,31 +672,32 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                       selectedMessages = [];
                     });
                   },
-                  child: Icon(Icons.close),
+                  child: const Icon(Icons.close),
                 ),
                 title: Row(
                   children: [
                     // Number
                     Text(
                       selectedMessages.length.toString(),
-                      style: TextStyle(color: Colors.white, fontSize: 18),
+                      style: const TextStyle(color: Colors.white, fontSize: 18),
                     ),
-                    Spacer(),
+                    const Spacer(),
                     // Copy icon
                     IconButton(
-                      icon: Icon(Icons.copy, color: Colors.white),
+                      icon: const Icon(Icons.copy, color: Colors.white),
                       onPressed: () {},
                     ),
                     // Share icon
                     IconButton(
-                      icon: Icon(FontAwesomeIcons.share, color: Colors.white),
+                      icon: const Icon(FontAwesomeIcons.share,
+                          color: Colors.white),
                       onPressed: () {
                         context.push(ForwardScreen.route);
                       },
                     ),
                     // Delete icon
                     IconButton(
-                      icon: Icon(Icons.delete, color: Colors.white),
+                      icon: const Icon(Icons.delete, color: Colors.white),
                       onPressed: () {
                         // TODO call delete function
                       },
@@ -665,7 +746,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                     horizontal: 24.0),
                                 padding: const EdgeInsets.all(22.0),
                                 decoration: BoxDecoration(
-                                  color: const Color.fromRGBO(4, 86, 57, 0.30),
+                                  color: Color.fromRGBO(4, 86, 57, 0.30),
                                   borderRadius: BorderRadius.circular(16.0),
                                   boxShadow: const [
                                     BoxShadow(
@@ -710,7 +791,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                               ),
                             )
                           : SingleChildScrollView(
-                            reverse: true,
+                              reverse: true,
                               controller:
                                   _scrollController, // Use the ScrollController
                               child: Padding(
@@ -759,18 +840,23 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                           if (selectedMessages.contains(item))
                                             const SizedBox(width: 10),
                                           MessageTileWidget(
-                                        key: ValueKey(
-                                            '${MessageKeys.messagePrefix}${messagesIndex++}'),
-                                        chatId: chatModel!.id!,
-                                        messageModel: item,
-                                        parentMessage:chatModel.messages.firstWhere(
+                                            key: ValueKey(
+                                                '${MessageKeys.messagePrefix}${messagesIndex++}'),
+                                            chatId: chatModel!.id!,
+                                            messageModel: item,
+                                             parentMessage:chatModel.messages.firstWhere(
                                               (message) => message.parentMessage == item.parentMessage,
                                         ),
-                                        isSentByMe: item.senderId ==
-                                            ref.read(userProvider)!.id,
-                                        showInfo: type == ChatType.group,
-                                        highlights: _messageMatches[index] ??
-                                            const [MapEntry(0, 0)],
+                                            isSentByMe: item.senderId ==
+                                                ref.read(userProvider)!.id,
+                                            showInfo: type == ChatType.group,
+                                            highlights:
+                                                _messageMatches[index] ??
+                                                    const [MapEntry(0, 0)],
+                                            onDownloadTap: (String? filePath) {
+                                              onMediaDownloaded(
+                                                  filePath, item.id, chatID);
+                                            },
                                             onReply: (message) {
                                               setState(() {
                                                 replyMessage = message;
@@ -828,7 +914,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                   Container(
                     color: Palette.secondary,
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 5, vertical: 8),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -883,12 +970,12 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                   BottomInputBarWidget(
                     controller: _messageController,
                     recorderController: _recorderController,
-                    playerController: _playerController,
                     chatID: chatID,
                     sendMessage: _sendMessage,
                     startRecording: _startRecording,
                     stopRecording: _stopRecording,
                     deleteRecording: _deleteRecording,
+                    resetRecording: _resetRecording,
                     cancelRecording: _cancelRecording,
                     lockRecording: _lockRecording,
                     isRecording: isRecording,
@@ -896,7 +983,9 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                     isRecordingLocked: isRecordingLocked,
                     isRecordingPaused: isRecordingPaused,
                     lockRecordingDrag: _lockRecordingDrag,
+                    audioFilePath: recordingPath,
                     removeReply: _removeReply,
+
                   )
                 else
                   Container(
@@ -978,15 +1067,15 @@ class _ChatScreen extends ConsumerState<ChatScreen>
             ),
             pinnedMessages.isNotEmpty
                 ? Positioned(
-                    top:
-                        0, // Adjust this to position the widget from the top of the screen
+                    top: 0,
+                    // Adjust this to position the widget from the top of the screen
                     left: 0,
                     right: 0,
                     child: Container(
                       color: Palette
                           .secondary, // Example background color for the widget
-                      padding:
-                          EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 5),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -1049,7 +1138,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                       ),
                     ),
                   )
-                : SizedBox(),
+                : const SizedBox(),
             isRecording || isRecordingLocked
                 ? AnimatedPositioned(
                     bottom: 90,
@@ -1167,8 +1256,15 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                             isRecordingLocked ? Icons.send : Icons.mic,
                           ),
                           color: Colors.white,
-                          onPressed: () {
-                            _cancelRecording();
+                          onPressed: () async {
+                            if (isRecording) {
+                              String? filePath = await _stopRecording();
+                              _sendMessage(
+                                  ref: ref,
+                                  contentType: 'audio',
+                                  filePath: filePath);
+                              _cancelRecording();
+                            }
                           },
                         ),
                       ),
@@ -1423,4 +1519,3 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     return lottieAnimations[randomIndex];
   }
 }
-

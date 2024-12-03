@@ -5,13 +5,13 @@ import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 
 class AudioPlayerWidget extends StatefulWidget {
-  final PlayerController playerController;
+  final String filePath;
   final int duration;
   final double borderRadius;
 
   const AudioPlayerWidget(
       {super.key,
-      required this.playerController,
+      required this.filePath,
       this.borderRadius = 30,
       required this.duration});
 
@@ -24,18 +24,22 @@ class AudioPlayerWidgetState extends State<AudioPlayerWidget>
   bool isPlaying = false;
   late AnimationController controller;
   final progressStep = 0.15;
+  late PlayerController playerController;
+  List<double> waveformData = [];
 
   @override
   void initState() {
     super.initState();
+    playerController = PlayerController();
+    loadDummyWaveform();
     controller = AnimationController(vsync: this);
     controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         controller.stop();
       }
     });
-    widget.playerController.onCompletion.listen((_) async {
-      await widget.playerController.seekTo(0);
+    playerController.onCompletion.listen((_) async {
+      await playerController.seekTo(0);
       if (mounted) {
         setState(() {
           isPlaying = false;
@@ -44,24 +48,40 @@ class AudioPlayerWidgetState extends State<AudioPlayerWidget>
         });
       }
     });
+    loadAudioFile();
   }
 
   @override
   void dispose() {
     controller.dispose();
-    widget.playerController.stopPlayer();
+    playerController.dispose();
     super.dispose();
+  }
+
+  Future<void> loadAudioFile() async {
+    await playerController.preparePlayer(
+      path: widget.filePath,
+      shouldExtractWaveform: false,
+      noOfSamples: 500,
+      volume: 1.0,
+    );
+    setState(() {});
+  }
+
+  void loadDummyWaveform() {
+    waveformData = generateDummyWaveform(500); // Example for 500 samples
+    setState(() {});
   }
 
   void _startOrStopPlaying() async {
     try {
       if (isPlaying) {
-        await widget.playerController.pausePlayer();
+        await playerController.pausePlayer();
         controller.animateTo(controller.value - progressStep,
             duration: const Duration(milliseconds: 300));
         isPlaying = false;
       } else {
-        await widget.playerController.startPlayer(finishMode: FinishMode.pause);
+        await playerController.startPlayer(finishMode: FinishMode.pause);
         controller.animateTo(controller.value + progressStep,
             duration: const Duration(milliseconds: 300));
         isPlaying = true;
@@ -109,7 +129,7 @@ class AudioPlayerWidgetState extends State<AudioPlayerWidget>
         ),
         AudioFileWaveforms(
           size: const Size(200.0, 40.0),
-          playerController: widget.playerController,
+          playerController: playerController,
           enableSeekGesture: true,
           continuousWaveform: false,
           waveformType: WaveformType.fitWidth,
@@ -127,7 +147,7 @@ class AudioPlayerWidgetState extends State<AudioPlayerWidget>
             borderRadius: BorderRadius.circular(0),
             color: Palette.accent,
           ),
-          waveformData: generateDummyWaveform(500),
+          waveformData: waveformData,
         ),
         Container(
           width: 60, // Set the width

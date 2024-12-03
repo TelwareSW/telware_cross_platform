@@ -9,6 +9,7 @@ import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
 
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
+import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 
 part 'chats_view_model.g.dart';
@@ -54,7 +55,7 @@ class ChatsViewModel extends _$ChatsViewModel {
   }
 
   void setChats(List<ChatModel> chats) {
-    state = chats;
+    state = updateMessagesFilePath(chats);
     _chatsMap.clear();
     _chatsMap = <String, ChatModel>{for (var chat in chats) chat.id!: chat};
   }
@@ -78,13 +79,15 @@ class ChatsViewModel extends _$ChatsViewModel {
     final msgLocalId =
         senderId + DateTime.now().millisecondsSinceEpoch.toString();
     final MessageModel msg = MessageModel(
-        senderId: senderId,
-        timestamp: DateTime.now(),
-        content: content,
-        messageContentType: msgContentType,
-        messageType: msgType,
-        userStates: {ref.read(userProvider)!.id!: MessageState.pending},
-        localId: msgLocalId);
+      senderId: senderId,
+      timestamp: DateTime.now(),
+      content: content,
+      messageContentType: msgContentType,
+      messageType: msgType,
+      userStates: {},
+      id: USE_MOCK_DATA ? getUniqueMessageId() : null,
+    );
+
 
     chat!.messages.add(msg);
     _moveChatToFront(chatID);
@@ -216,6 +219,48 @@ class ChatsViewModel extends _$ChatsViewModel {
       // Insert the chat at the front of the list
       state = [chat, ...updatedState];
       debugPrint('!!! List is update, a chat moved to front');
+    }
+  }
+
+  void updateMessageFilePath(String chatID, String msgID, String filePath) {
+    final chat = _chatsMap[chatID];
+    // Find the msg with the specified ID
+    final msgIndex = chat!.messages.indexWhere((msg) => msg.id == msgID);
+
+    if (msgIndex != -1) {
+      MessageContent? content = chat.messages[msgIndex].content;
+      if (content == null ||
+          chat.messages[msgIndex].messageContentType ==
+              MessageContentType.text) {
+        return;
+      }
+      final message = chat.messages[msgIndex];
+      debugPrint("Updating the file path to $filePath");
+      switch (message.messageContentType) {
+        case MessageContentType.image:
+          content = (content as ImageContent).copyWith(filePath: filePath);
+          break;
+
+        case MessageContentType.video:
+          content = (content as VideoContent).copyWith(filePath: filePath);
+          break;
+
+        case MessageContentType.audio:
+          content = (content as AudioContent).copyWith(filePath: filePath);
+          break;
+
+        case MessageContentType.file:
+          content = (content as DocumentContent).copyWith(filePath: filePath);
+          break;
+        default:
+          break;
+      }
+      chat.messages[msgIndex] =
+          chat.messages[msgIndex].copyWith(content: content);
+      debugPrint(
+          "hmmmmmm  ${chat.messages[msgIndex].content?.toJson()["filePath"]}");
+      _chatsMap[chatID] = chat;
+      state = List.from(state); // Update the state to trigger a rebuild
     }
   }
 
