@@ -14,6 +14,7 @@ import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
+import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 
 import 'package:telware_cross_platform/features/user/view/widget/user_chats.dart';
 import 'package:telware_cross_platform/features/user/view_model/user_view_model.dart';
@@ -40,7 +41,6 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
   final TextEditingController searchController = TextEditingController();
 
   late Future<List<UserModel>> _usersFuture;
-  List<UserModel>? _userContent;
   bool _isUserContentSet = false;
 
   @override
@@ -65,14 +65,11 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
 
   void _createNewChat(UserModel userInfo) {
     final myUser = ref.read(userProvider)!;
-    ChatModel newChat = ChatModel(
-      title: '${userInfo.screenFirstName} ${userInfo.screenLastName}',
-      userIds: [myUser.id!, userInfo.id!],
-      type: ChatType.private,
-      messages: [],
-      photo: userInfo.photo,
-    );
-    context.push(ChatScreen.route, extra: newChat);
+    // Check if a chat already exists between the two users
+    final ChatModel chat = ref.read(chatsViewModelProvider.notifier).getChat(
+        myUser, userInfo, ChatType.private);
+    print('existingChat: $chat');
+    context.push(ChatScreen.route, extra: chat);
   }
 
   @override

@@ -10,6 +10,7 @@ import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_local_repository.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_remote_repository.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
+import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/stories/repository/contacts_remote_repository.dart';
 import 'package:telware_cross_platform/features/user/repository/user_local_repository.dart';
 import 'package:telware_cross_platform/features/user/view_model/user_state.dart';
