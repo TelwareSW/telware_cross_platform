@@ -333,8 +333,9 @@ class ChattingController {
     _localRepository.setChats(_ref.read(chatsViewModelProvider));
   }
 
-  Future<void> muteChat(String chatID, DateTime? muteUntil) async {
-    // Get muteUntil in seconds from today
+  Future<void> muteChat(ChatModel chatModel, DateTime? muteUntil) async {
+    print('!!! muteChat called');
+    final String chatID = chatModel.id!;
     final muteUntilSeconds = muteUntil!.difference(DateTime.now()).inSeconds >
             10 * 365 * 24 * 60 * 60
         ? -1
@@ -342,12 +343,12 @@ class ChattingController {
 
     if (USE_MOCK_DATA) {
       final chats = _localRepository.getChats();
-      final chat = chats.firstWhere((element) => element.id == chatID);
-      final updatedChat = chat.copyWith(isMuted: true, muteUntil: muteUntil);
+      chatModel.copyWith(isMuted: true, muteUntil: muteUntil);
       final updatedChats =
-          chats.map((e) => e.id == chatID ? updatedChat : e).toList();
+          chats.map((e) => e.id == chatID ? chatModel : e).toList();
       _localRepository.setChats(updatedChats);
       _ref.read(chatsViewModelProvider.notifier).setChats(updatedChats);
+      debugPrint('!!! chat muted until: ${chatModel.muteUntil}');
       return;
     }
 
@@ -357,22 +358,27 @@ class ChattingController {
     if (response.appError != null) {
       debugPrint('Error: Could not mute the chat');
     } else {
-      _ref
-          .read(chatsViewModelProvider.notifier)
-          .muteChat(chatID, muteUntilSeconds);
-      _localRepository.setChats(_ref.read(chatsViewModelProvider));
+      final chats = _localRepository.getChats();
+      chatModel = chatModel.copyWith(isMuted: true, muteUntil: muteUntil);
+      final updatedChats =
+      chats.map((e) => e.id == chatID ? chatModel : e).toList();
+      _localRepository.setChats(updatedChats);
+      _ref.read(chatsViewModelProvider.notifier).setChats(updatedChats);
+      debugPrint('!!! chat muted until: ${chatModel.muteUntil}');
     }
   }
 
-  Future<void> unmuteChat(String chatID) async {
+  Future<void> unmuteChat(ChatModel chatModel) async {
+    final String chatID = chatModel.id!;
+    print('!!! unmuteChat called');
     if (USE_MOCK_DATA) {
       final chats = _localRepository.getChats();
-      final chat = chats.firstWhere((element) => element.id == chatID);
-      final updatedChat = chat.copyWith(isMuted: false, muteUntil: null);
+      chatModel = chatModel.copyWith(isMuted: false, muteUntil: null);
       final updatedChats =
-          chats.map((e) => e.id == chatID ? updatedChat : e).toList();
+          chats.map((e) => e.id == chatID ? chatModel : e).toList();
       _localRepository.setChats(updatedChats);
       _ref.read(chatsViewModelProvider.notifier).setChats(updatedChats);
+      print('!!! chat unmuted ${chatModel.isMuted}');
       return;
     }
 
@@ -384,8 +390,12 @@ class ChattingController {
     if (response.appError != null) {
       debugPrint('Error: Could not unmute the chat');
     } else {
-      _ref.read(chatsViewModelProvider.notifier).unmuteChat(chatID);
-      _localRepository.setChats(_ref.read(chatsViewModelProvider));
+      final chats = _localRepository.getChats();
+      chatModel.copyWith(isMuted: false, muteUntil: null);
+      final updatedChats =
+      chats.map((e) => e.id == chatID ? chatModel : e).toList();
+      _localRepository.setChats(updatedChats);
+      _ref.read(chatsViewModelProvider.notifier).setChats(updatedChats);
     }
   }
 

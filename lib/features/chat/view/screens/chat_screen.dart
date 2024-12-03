@@ -63,7 +63,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   bool isSearching = false;
   bool isShowAsList = false;
   int _numberOfMatches = 0;
-
+  late bool _isMuted = false;
   // ignore: prefer_final_fields
   int _currentMatch = 1;
 
@@ -104,6 +104,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       chatModel = widget.chatModel ?? ref.watch(chatProvider(widget.chatId));
       setState(() {
+        _isMuted = chatModel!.isMuted;
         _messageController.text = chatModel!.draft ?? "";
       });
       final messages = chatModel?.messages ?? [];
@@ -322,22 +323,22 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     });
   }
 
-  void _setChatMute(DateTime? muteUntil) {
+  void _setChatMute(DateTime? muteUntil) async {
     if (muteUntil == null) {
-      ref.read(chattingControllerProvider).unmuteChat(chatModel!.id!).then((_) {
+      ref.read(chattingControllerProvider).unmuteChat(chatModel!).then((_) {
+        print('Unmuted until: $muteUntil, chat: $chatModel');
         setState(() {
-          chatModel = chatModel!.copyWith(isMuted: false, muteUntil: null);
+          _isMuted = false;
         });
       });
     } else {
-      ref
-          .read(chattingControllerProvider)
-          .muteChat(chatModel!.id!, muteUntil)
+      ref.read(chattingControllerProvider).muteChat(chatModel!, muteUntil)
           .then((_) {
-        setState(() {
-          chatModel = chatModel!.copyWith(isMuted: true, muteUntil: muteUntil);
+            print('Muted until: $muteUntil, chat: $chatModel');
+            setState(() {
+              _isMuted = true;
+            });
         });
-      });
     }
   }
 
@@ -606,18 +607,18 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   @override
   Widget build(BuildContext context) {
     final popupMenu = buildPopupMenu();
-    final chatModel =
-        widget.chatModel ?? ref.watch(chatProvider(widget.chatId))!;
+    final chatModelImage =
+        chatModel ?? ref.watch(chatProvider(widget.chatId))!;
     _updateDraft();
-    final type = chatModel.type;
-    final String title = chatModel.title;
-    final membersNumber = chatModel.userIds.length;
-    final String subtitle = chatModel.type == ChatType.private
+    final type = chatModelImage.type;
+    final String title = chatModelImage.title;
+    final membersNumber = chatModelImage.userIds.length;
+    final String subtitle = chatModelImage.type == ChatType.private
         ? "last seen a long time ago"
         : "$membersNumber Member${membersNumber > 1 ? "s" : ""}";
-    final imageBytes = chatModel.photoBytes;
-    final photo = chatModel.photo;
-    final chatID = chatModel.id;
+    final imageBytes = chatModelImage.photoBytes;
+    final photo = chatModelImage.photo;
+    final chatID = chatModelImage.id;
     var messagesIndex = 0;
 
     return Scaffold(
@@ -1353,7 +1354,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
   PopupMenuItemBuilder<String> buildPopupMenu() {
     const double menuItemsHeight = 45.0;
-
+    if (!mounted) return (BuildContext context) => [];
     return (BuildContext context) {
       if (showMuteOptions) {
         return [
@@ -1412,7 +1413,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
         ];
       }
       return [
-        if (chatModel!.isMuted)
+        if (_isMuted)
           const PopupMenuItem<String>(
               value: 'unmute-chat',
               padding: EdgeInsets.zero,
