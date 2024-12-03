@@ -351,4 +351,8 @@ class ChattingController {
     _ref.read(chatsViewModelProvider.notifier).updateMsgId(msgId, identifier);
     _localRepository.setChats(_ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
+
+  void setEveentsQueue(Queue<MessageEvent> queue) {
+    _localRepository.setEventQueue(queue, _ref.read(userProvider)!.id!);
+  }
 }

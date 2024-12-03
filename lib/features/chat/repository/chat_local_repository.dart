@@ -83,6 +83,7 @@ class ChatLocalRepository {
 
     try {
       await _eventsBox.put(_eventsBoxKey+userId, list);
+      debugPrint('%%% stored ${list.length}');
       return true;
     } catch (e) {
       debugPrint('!!! exception at storing the event queue');
@@ -93,6 +94,8 @@ class ChatLocalRepository {
   // get event queue
   Queue<MessageEvent> getEventQueue(String userId) {
     final list = _eventsBox.get(_eventsBoxKey+userId, defaultValue: []);
+    debugPrint('%%% received ${list?.length}');
+
     final eventsList =
         list?.map((element) => element as MessageEvent).toList() ??
             <MessageEvent>[];

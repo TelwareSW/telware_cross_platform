@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:socket_io_client/socket_io_client.dart';
 import 'package:flutter/foundation.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
