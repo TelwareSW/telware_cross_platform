@@ -238,7 +238,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
       var option = <String, dynamic>{
         "avatar": true,
         "text": '${user.screenFirstName} ${user.screenLastName}',
-        "imagePath": user.photo,
+        "imagePath": null,
         "subtext": "last seen Nov 23 at 6:40 PM",
         "trailingFontSize": 13.0,
         "trailingPadding": const EdgeInsets.only(bottom: 20.0),
