@@ -7,6 +7,7 @@ import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 
 import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
+import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
@@ -270,10 +271,37 @@ class ChatsViewModel extends _$ChatsViewModel {
         ? DateTime.now().add(const Duration(days: 365 * 100))
         : DateTime.now().add(Duration(seconds: muteUntilSeconds));
     chat!.copyWith(isMuted: true, muteUntil: muteUntil);
+    _chatsMap[chatID] = chat;
+    state = List.from(state);
   }
 
   void unmuteChat(String chatID) {
     final chat = _chatsMap[chatID];
     chat!.copyWith(isMuted: false, muteUntil: null);
+    _chatsMap[chatID] = chat;
+    state = List.from(state);
+  }
+
+  void updateDraft(String chatID, String draft) {
+    final chat = _chatsMap[chatID];
+    chat!.copyWith(draft: draft);
+    _chatsMap[chatID] = chat;
+    state = List.from(state);
+  }
+
+  ChatModel getChat(UserModel myInfo, UserModel otherInfo, ChatType private) {
+    return state.firstWhere(
+        (chat) =>
+            chat.type == private &&
+            chat.userIds.contains(myInfo.id) &&
+            chat.userIds.contains(otherInfo.id),
+        orElse: () => ChatModel(
+          title: '${otherInfo.screenFirstName} ${otherInfo.screenLastName}',
+          userIds: [myInfo.id!, otherInfo.id!],
+          type: ChatType.private,
+          messages: [],
+          photo: otherInfo.photo,
+        )
+    );
   }
 }

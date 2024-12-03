@@ -153,3 +153,39 @@ class EditMessageEventAdapter extends TypeAdapter<EditMessageEvent> {
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
+
+class UpdateDraftEventAdapter extends TypeAdapter<UpdateDraftEvent> {
+  @override
+  final int typeId = 11;
+
+  @override
+  UpdateDraftEvent read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return UpdateDraftEvent(
+      fields[0] as dynamic,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, UpdateDraftEvent obj) {
+    writer
+      ..writeByte(2)
+      ..writeByte(0)
+      ..write(obj.payload)
+      ..writeByte(1)
+      ..write(obj.identifier);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UpdateDraftEventAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}

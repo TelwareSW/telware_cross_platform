@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:io';
 import 'package:audio_waveforms/audio_waveforms.dart';
@@ -12,7 +13,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter_cupertino_datetime_picker/flutter_cupertino_datetime_picker.dart';
 import 'package:telware_cross_platform/core/constants/keys.dart';
-import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
@@ -88,6 +88,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   final lockPath = "assets/json/passcode_lock.json";
   String? recordingPath;
   late Directory appDirectory;
+  late Timer _draftTimer;
+  String _previousDraft = "";
 
   //----------------------------------------------------------------------------
   //-------------------------------Media----------------------------------------
@@ -97,10 +99,13 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   @override
   void initState() {
     super.initState();
+    _messageController.text = widget.chatModel?.draft ?? "";
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       chatModel = widget.chatModel ?? ref.watch(chatProvider(widget.chatId));
-      _messageController.text = chatModel!.draft ?? "";
+      setState(() {
+        _messageController.text = chatModel!.draft ?? "";
+      });
       final messages = chatModel?.messages ?? [];
       _updateChatMessages(messages);
       pinnedMessages = messages.where((message) => message.isPinned).toList();
@@ -117,6 +122,10 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       ..iosEncoder = IosEncoder.kAudioFormatMPEG4AAC
       ..bitRate = 128000
       ..sampleRate = 44100;
+
+    _draftTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      _updateDraft();
+    });
   }
 
   @override
@@ -124,8 +133,25 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     _messageController.dispose();
     _scrollController.dispose(); // Dispose of the ScrollController
     _recorderController.dispose();
+    _draftTimer.cancel();
     WidgetsBinding.instance.removeObserver(this); // Remove the observer
     super.dispose();
+  }
+
+  void _updateDraft() async {
+    if (!mounted) return;
+    final currentDraft = _messageController.text;
+    if (currentDraft != _previousDraft) {
+      ref.read(chattingControllerProvider).updateDraft(chatModel!, currentDraft);
+      _previousDraft = currentDraft;
+    } else if (chatModel?.id != null) {
+      ref.read(chattingControllerProvider).getDraft(chatModel!.id!).then((draft) {
+        if (draft != null && draft != _previousDraft) {
+          _messageController.text = draft;
+          _previousDraft = draft;
+        }
+      });
+    }
   }
 
   void _updateChatMessages(List<MessageModel> messages) async {
@@ -588,6 +614,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     final popupMenu = buildPopupMenu();
     final chatModel =
         widget.chatModel ?? ref.watch(chatProvider(widget.chatId))!;
+    _updateDraft();
     final type = chatModel.type;
     final String title = chatModel.title;
     final membersNumber = chatModel.userIds.length;
@@ -597,7 +624,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     final imageBytes = chatModel.photoBytes;
     final photo = chatModel.photo;
     final chatID = chatModel.id;
-    const menuItemsHeight = 45.0;
     var messagesIndex = 0;
 
     return Scaffold(
@@ -616,6 +642,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                         _messageMatches.clear();
                       });
                     } else {
+                      _updateDraft();
                       Navigator.pop(context);
                     }
                   },
@@ -742,7 +769,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                     horizontal: 24.0),
                                 padding: const EdgeInsets.all(22.0),
                                 decoration: BoxDecoration(
-                                  color: Color.fromRGBO(4, 86, 57, 0.30),
+                                  color: const Color.fromRGBO(4, 86, 57, 0.30),
                                   borderRadius: BorderRadius.circular(16.0),
                                   boxShadow: const [
                                     BoxShadow(
@@ -1271,14 +1298,23 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   }
 
   void _handlePopupMenuSelection(String value) {
+    final bool noChat = chatModel?.id == null;
     switch (value) {
       // case 'no-close':
       //   break;
       case 'search':
+        if (noChat) {
+          showToastMessage("There is nothing to search");
+          return;
+        }
         _enableSearching();
         break;
       case 'mute-chat':
         showMuteOptions = false;
+        if (noChat) {
+          showToastMessage("Maybe say something first...");
+          return;
+        }
         DatePicker.showDatePicker(
           context,
           pickerTheme: const DateTimePickerTheme(
@@ -1312,6 +1348,10 @@ class _ChatScreen extends ConsumerState<ChatScreen>
         _setChatMute(null);
         break;
       case 'mute-chat-forever':
+        if (noChat) {
+          showToastMessage("Seriously? Mute what?");
+          return;
+        }
         showMuteOptions = false;
         _setChatMute(DateTime.now().add(const Duration(days: 365 * 10)));
       default:
