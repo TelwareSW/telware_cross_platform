@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vibration/vibration.dart';
 
@@ -18,8 +19,6 @@ import 'package:telware_cross_platform/features/auth/view/widget/title_element.d
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
 
-import '../../../../core/constants/keys.dart';
-
 class LogInScreen extends ConsumerStatefulWidget {
   static const String route = '/log-in';
 
@@ -30,6 +29,22 @@ class LogInScreen extends ConsumerStatefulWidget {
 }
 
 class _LogInScreenState extends ConsumerState<LogInScreen> {
+  //------------------------------Keys------------------------------------------
+  final logInFormKey = GlobalKey<FormState>(debugLabel: 'login_form');
+  final logInEmailKey =
+      GlobalKey<FormFieldState>(debugLabel: 'login_email_input');
+  final logInPasswordKey =
+      GlobalKey<FormFieldState>(debugLabel: 'login_password_input');
+  final logInForgotPasswordKey =
+      GlobalKey<State>(debugLabel: 'login_forgot_password_button');
+  final logInSignUpKey = GlobalKey<State>(debugLabel: 'login_signup_button');
+  final logInSubmitKey = GlobalKey<State>(debugLabel: 'login_submit_button');
+  final logInemailShakeKey =
+      GlobalKey<ShakeWidgetState>(debugLabel: 'login_email_shake');
+  final logInpasswordShakeKey =
+      GlobalKey<ShakeWidgetState>(debugLabel: 'login_password_shake');
+
+  //----------------------------------------------------------------------------
   final FocusNode emailFocusNode = FocusNode();
   final FocusNode passwordFocusNode = FocusNode();
   bool isEmailFocused = false;
@@ -70,40 +85,59 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
     });
   }
 
-  void login() {
+  void handelState(AuthState state) {
+    if (state.type == AuthStateType.fail ||
+        state.type == AuthStateType.success) {
+      // the success state is in case of asking for reset password
+      showToastMessage(state.message!);
+    } else if (state.type == AuthStateType.authenticated) {
+      context.go(Routes.home);
+    } else if (state.type == AuthStateType.unverified) {
+      ref.read(emailProvider.notifier).update((_) => emailController.text);
+      context.push(
+        Routes.verification,
+        extra: {'sendVerificationCode': true}, // or false based on your logic
+      );
+    }
+  }
+
+  void login() async {
     bool someNotFilled =
         emailController.text.isEmpty || passwordController.text.isEmpty;
 
     if (emailController.text.isEmpty) {
-      Keys.logInemailShakeKey.currentState?.shake();
+      logInemailShakeKey.currentState?.shake();
     } else if (passwordController.text.isEmpty) {
-      Keys.logInpasswordShakeKey.currentState?.shake();
+      logInpasswordShakeKey.currentState?.shake();
     }
 
     if (someNotFilled) {
       vibrate();
     } else {
-      ref.read(authViewModelProvider.notifier).login(
+      AuthState state = await ref.read(authViewModelProvider.notifier).login(
           email: emailController.text, password: passwordController.text);
+      handelState(state);
     }
   }
 
-  void forgotPassword() {
+  void forgotPassword() async {
     if (emailController.text.isEmpty) {
       showToastMessage('Enter an Email');
-      Keys.logInemailShakeKey.currentState?.shake();
+      logInemailShakeKey.currentState?.shake();
       return vibrate();
     }
 
-    if (Keys.logInEmailKey.currentState != null &&
-        (Keys.logInEmailKey.currentState?.validate() ?? false)) {
+    if (logInEmailKey.currentState != null &&
+        (logInEmailKey.currentState?.validate() ?? false)) {
       debugPrint('forgot password called');
-      ref
+      AuthState state = await ref
           .read(authViewModelProvider.notifier)
           .forgotPassword(emailController.text);
+      handelState(state);
     } else {
       debugPrint('forgot password not called');
-      debugPrint('Keys.logInEmailKey.currentState: ${Keys.logInEmailKey.currentState}');
+      debugPrint(
+          'Keys.logInEmailKey.currentState: ${logInEmailKey.currentState}');
     }
   }
 
@@ -113,22 +147,6 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<AuthState>(authViewModelProvider, (_, state) {
-      if (state.type == AuthStateType.fail ||
-          state.type == AuthStateType.success) {
-        // the success state is in case of asking for reset password
-        showToastMessage(state.message!);
-      } else if (state.type == AuthStateType.authenticated) {
-        context.go(Routes.home);
-      } else if (state.type == AuthStateType.unverified) {
-        ref.read(emailProvider.notifier).update((_) => emailController.text);
-        context.push(
-          Routes.verification,
-          extra: {'sendVerificationCode': true}, // or false based on your logic
-        );
-      }
-    });
-
     bool isLoading =
         ref.watch(authViewModelProvider).type == AuthStateType.loading;
     debugPrint('isLoading: $isLoading');
@@ -141,7 +159,7 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
               child: SingleChildScrollView(
                 child: Responsive(
                   child: Form(
-                    key: Keys.logInFormKey,
+                    key: logInFormKey,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -162,8 +180,8 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
                         ),
                         ShakeMyAuthInput(
                           name: 'Email',
-                          formKey: Keys.logInEmailKey,
-                          shakeKey: Keys.logInemailShakeKey,
+                          formKey: logInEmailKey,
+                          shakeKey: logInemailShakeKey,
                           isFocused: isEmailFocused,
                           focusNode: emailFocusNode,
                           controller: emailController,
@@ -171,8 +189,8 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
                         ),
                         ShakeMyAuthInput(
                           name: 'Password',
-                          formKey: Keys.logInPasswordKey,
-                          shakeKey: Keys.logInpasswordShakeKey,
+                          formKey: logInPasswordKey,
+                          shakeKey: logInpasswordShakeKey,
                           isFocused: isPasswordFocused,
                           focusNode: passwordFocusNode,
                           controller: passwordController,
@@ -195,7 +213,7 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
                               fontSize: Sizes.infoText,
                             ),
                             AuthSubTextButton(
-                              buttonKey: Keys.logInSignUpKey,
+                              buttonKey: logInSignUpKey,
                               onPressed: () {
                                 context.push(Routes.signUp);
                               },
@@ -211,8 +229,8 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
               ),
             ),
       floatingActionButton: AuthFloatingActionButton(
-        formKey: Keys.logInFormKey,
-        buttonKey: Keys.logInSubmitKey,
+        formKey: logInFormKey,
+        buttonKey: logInSubmitKey,
         onSubmit: login,
       ),
     );
@@ -226,7 +244,7 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
           padding:
               const EdgeInsets.only(left: Dimensions.inputPaddingLeft, top: 5),
           child: AuthSubTextButton(
-            buttonKey: Keys.logInForgotPasswordKey,
+            buttonKey: logInForgotPasswordKey,
             onPressed: forgotPassword,
             label: 'Forgot Password?',
           ),

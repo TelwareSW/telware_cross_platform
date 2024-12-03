@@ -255,19 +255,13 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     String? mediaUrl;
     // Upload the media file before sending the message
     if (needUploadMedia) {
-      if (filePath == null) {
-        debugPrint("Try to send a media without a file path");
-        return;
-      } else {
+      if (filePath != null) {
         mediaUrl = await ref
             .read(chattingControllerProvider)
             .uploadMedia(filePath, contentType);
-        if (mediaUrl == null) {
-          showToastMessage(
-              "Failed to upload the media check your connection or try again later");
-          return;
-        }
-        debugPrint("Media uploaded successfully with url: $mediaUrl");
+      } else {
+        showToastMessage("Media file is missing");
+        return;
       }
     }
     switch (contentType) {
@@ -281,15 +275,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
         content = VideoContent(filePath: filePath, videoUrl: mediaUrl);
         break;
       case 'audio':
-        if (getRecordingPath == true && filePath == null) {
-          if (recordingPath == null) {
-            showToastMessage("Recording has no path");
-            return;
-          }
-          content = AudioContent(filePath: recordingPath!, audioUrl: mediaUrl);
-        } else {
-          content = AudioContent(filePath: filePath, audioUrl: mediaUrl);
-        }
+        content = AudioContent(filePath: filePath, audioUrl: mediaUrl);
         break;
       case 'file':
         content = DocumentContent(
@@ -391,13 +377,15 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     });
   }
 
-  void _resetRecording() {
+  String? _resetRecording() {
+    String? tempPath = recordingPath;
     isRecording = false;
     isRecordingLocked = false;
     isRecordingPaused = false;
     isRecordingCompleted = false;
     recordingPath = null;
     setState(() {});
+    return tempPath;
   }
 
   void _deleteRecording() {
@@ -443,12 +431,13 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
   //wait for sending will not set the isRecording to false and you will have to set it manually
   // or call cancel recording to reset every thing
-  Future<String?> _stopRecording() async {
+  Future<String?> _stopRecording({bool waitForSending = false}) async {
     try {
       recordingPath = await _recorderController.stop(false);
       _recorderController.reset();
 
       if (recordingPath != null) {
+        if (waitForSending) return recordingPath;
         isRecordingCompleted = true;
         isRecording = false;
         isRecordingPaused = false;
@@ -478,10 +467,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       vibrate();
     } else if (status.isDenied || status.isRestricted) {
       status = await Permission.microphone.request();
-      if (status.isGranted) {
-        _record();
-        vibrate();
-      } else {
+      if (!status.isGranted) {
         // Handle denied permission scenario gracefully
         showSnackBarMessage(
             context, 'Microphone permission is required to record audio.');
@@ -1167,8 +1153,11 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                 ? AnimatedPositioned(
                     bottom: 90,
                     right: 10,
+                    width: 30,
+                    height: 30,
                     duration: const Duration(milliseconds: 300),
                     child: GestureDetector(
+                      onTap: _startOrStopRecording,
                       child: Transform.translate(
                         offset: Offset(0, _lockRecordingDragPosition),
                         child: Container(
@@ -1282,7 +1271,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                           color: Colors.white,
                           onPressed: () async {
                             if (isRecording) {
-                              String? filePath = await _stopRecording();
+                              String? filePath =
+                                  await _stopRecording(waitForSending: true);
                               _sendMessage(
                                   ref: ref,
                                   contentType: 'audio',
