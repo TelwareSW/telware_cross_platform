@@ -1,9 +1,15 @@
+import 'dart:async';
+
 import 'package:socket_io_client/socket_io_client.dart';
 import 'package:flutter/foundation.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
 
 class SocketService {
   late Socket _socket;
+
+  int _retryAttempts = 0;
+  final int _maxRetryAttempts = 5;
+  final Duration _initialRetryDelay = Duration(seconds: 2);
 
   // Private constructor
   SocketService._internal();
@@ -14,11 +20,12 @@ class SocketService {
   // Getter for the singleton instance
   static SocketService get instance => _instance;
 
-  void connect(
-      {required String serverUrl,
-      required String userId,
-      required String sessionId,
-      required Function() onConnect}) {
+  void connect({
+    required String serverUrl,
+    required String userId,
+    required String sessionId,
+    required Function() onConnect,
+  }) {
     debugPrint('*** Entered the connect method');
     debugPrint(serverUrl);
     debugPrint(userId);
@@ -35,23 +42,48 @@ class SocketService {
 
     _socket.onConnect((_) {
       debugPrint('### Connected to server');
+      _retryAttempts = 0; // Reset retry attempts on successful connection
       onConnect();
     });
 
     _socket.onConnectError((error) {
       debugPrint('Connection error: $error');
+      _disconnect();
+      _retryConnection(serverUrl, userId, sessionId, onConnect);
     });
 
     _socket.onError((error) {
       debugPrint('Socket error: $error');
+      _disconnect();
+      _retryConnection(serverUrl, userId, sessionId, onConnect);
     });
 
     _socket.onDisconnect((_) {
       debugPrint('Disconnected from server');
+      _disconnect();
+      _retryConnection(serverUrl, userId, sessionId, onConnect);
     });
   }
 
-  void disconnect() {
+  void _retryConnection(String serverUrl, String userId, String sessionId, Function() onConnect) {
+    if (_retryAttempts < _maxRetryAttempts) {
+      _retryAttempts++;
+      final delay = _initialRetryDelay * _retryAttempts;
+      debugPrint('Retrying connection in ${delay.inSeconds} seconds...');
+      Timer(delay, () {
+        connect(
+          serverUrl: serverUrl,
+          userId: userId,
+          sessionId: sessionId,
+          onConnect: onConnect,
+        );
+      });
+    } else {
+      debugPrint('Max retry attempts reached. Could not connect to server.');
+    }
+  }
+
+  void _disconnect() {
     _socket.disconnect();
   }
 

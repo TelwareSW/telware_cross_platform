@@ -40,7 +40,7 @@ class ChatModel {
   @HiveField(12)
   final bool isMentioned;
   @HiveField(13)
-  final List<MessageModel> messages;
+  List<MessageModel> messages;
   @HiveField(14)
   final DateTime? muteUntil; // Add this field
 

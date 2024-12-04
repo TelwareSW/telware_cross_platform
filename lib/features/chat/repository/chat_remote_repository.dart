@@ -65,6 +65,10 @@ class ChatRemoteRepository {
       for (var message in lastMessageData) {
         final lastMessage = message['lastMessage'];
 
+        if (lastMessage is! Map || message['lastMessage'] == null) {
+          continue;
+        }
+
         Map<String, MessageState> userStates = {};
         MessageContentType contentType =
             MessageContentType.getType(lastMessage['contentType'] ?? 'text');
@@ -139,6 +143,9 @@ class ChatRemoteRepository {
         String chatTitle = 'Invalid Chat';
 
         if (chat['type'] == 'private') {
+          if (otherUsers.isEmpty) {
+            continue;
+          }
           chatTitle = otherUsers[0]?.username ?? 'Private Chat';
         } else if (chat['type'] == 'group') {
           chatTitle = 'Group Chat';
@@ -164,9 +171,10 @@ class ChatRemoteRepository {
       }
 
       return (chats: chats, users: users, appError: null);
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint('!!! error in recieving the chats');
       debugPrint(e.toString());
+      debugPrint(stackTrace.toString());
       return (
         chats: <ChatModel>[],
         users: <UserModel>[],

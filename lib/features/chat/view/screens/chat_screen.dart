@@ -29,6 +29,7 @@ import 'package:telware_cross_platform/features/chat/view/widget/bottom_input_ba
 import 'package:telware_cross_platform/features/chat/view/widget/chat_header_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/date_label_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/message_tile_widget.dart';
+import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 import 'package:vibration/vibration.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
@@ -317,7 +318,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
         )
         .then((_) {
       List<MessageModel> messages =
-          ref.watch(chatProvider(chatModel!.id!))?.messages ?? [];
+          ref.read(chatProvider(chatModel!.id!))?.messages ?? [];
       _updateChatMessages(messages);
       debugPrint(" ${messages.toString()}");
       // _scrollToBottom();
@@ -607,6 +608,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('&*&**&**& rebuild chat screen');
+    ref.watch(chatsViewModelProvider);
     final popupMenu = buildPopupMenu();
     final chatModelImage =
         chatModel ?? ref.watch(chatProvider(widget.chatId))!;

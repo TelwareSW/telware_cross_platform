@@ -52,6 +52,10 @@ class ChatsList extends ConsumerWidget {
       userStates: {},
     );
     final message = chat.messages.isNotEmpty ? chat.messages.last : fakeMessage;
+    // debugPrint('*** ${chat.title}');
+    // debugPrint('*** ${chat.messages.length}');
+    // debugPrint(chat.messages.lastOrNull?.content?.getContent());
+    // debugPrint(chat.messages.firstOrNull?.content?.getContent());
     return ChatTileWidget(
       key: key,
       chatModel: chat,
