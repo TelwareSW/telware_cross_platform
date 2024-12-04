@@ -166,7 +166,8 @@ class AuthViewModel extends _$AuthViewModel {
 
         state = AuthState.authenticated;
         return;
-      } else if (email == mockUsers[1].email && password == otherUserMockPassword) {
+      } else if (email == mockUsers[1].email &&
+          password == otherUserMockPassword) {
         ref.read(authLocalRepositoryProvider).setUser(mockUsers[1]);
         ref.read(userProvider.notifier).update((_) => mockUsers[1]);
 

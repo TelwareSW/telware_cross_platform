@@ -50,10 +50,12 @@ randomizeMessageContent(MessageContentType contentType) async {
         filePath: imageFile.path,
       );
     case MessageContentType.audio:
+      XFile audioFile =
+          await loadAssetAsXFile("assets/audio/test8.mp3", "test8.mp3");
       return AudioContent(
-        audioUrl: "dummy_audio_url",
+        audioUrl: "assets/audio/test8.mp3",
         duration: const Duration(minutes: 1, seconds: 20).inSeconds,
-        filePath: "assets/audio/test8.mp3",
+        filePath: audioFile.path,
       );
     case MessageContentType.video:
       XFile videoFile =

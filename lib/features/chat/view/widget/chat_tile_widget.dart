@@ -107,7 +107,7 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
 
           return InkWell(
             onTap: () {
-              context.push(Routes.chatScreen, extra: chatModel.id);
+              context.push(Routes.chatScreen, extra: chatModel.id ?? chatModel);
             },
             child: Container(
                 color: Palette.secondary,

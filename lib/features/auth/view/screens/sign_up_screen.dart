@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phone_form_field/phone_form_field.dart';
 import 'package:telware_cross_platform/core/models/signup_result.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/confirmation_dialog.dart';
 import 'package:vibration/vibration.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
-import 'package:telware_cross_platform/core/constants/keys.dart';
 
 import 'package:telware_cross_platform/core/providers/sign_up_provider.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
@@ -34,6 +34,30 @@ class SignUpScreen extends ConsumerStatefulWidget {
 }
 
 class _SignUpScreenState extends ConsumerState<SignUpScreen> {
+  final formKey = GlobalKey<FormState>(debugLabel: 'signup_form');
+  final emailKey = GlobalKey<FormFieldState>(debugLabel: 'signup_email_input');
+  final phoneKey = GlobalKey<FormFieldState>(debugLabel: 'signup_phone_input');
+  final passwordKey =
+      GlobalKey<FormFieldState>(debugLabel: 'signup_password_input');
+  final confirmPasswordKey =
+      GlobalKey<FormFieldState>(debugLabel: 'signup_confirm_password_input');
+  final alreadyHaveAccountKey =
+      GlobalKey<State>(debugLabel: 'signup_already_have_account_button');
+  final signUpSubmitKey = GlobalKey<State>(debugLabel: 'signup_submit_button');
+  final onConfirmationKey =
+      GlobalKey<State>(debugLabel: 'signup_on_confirmation_button');
+  final onCancellationKey =
+      GlobalKey<State>(debugLabel: 'signup_on_cancellation_button');
+
+  final emailShakeKey =
+      GlobalKey<ShakeWidgetState>(debugLabel: 'signup_email_shake');
+  final phoneShakeKey =
+      GlobalKey<ShakeWidgetState>(debugLabel: 'signup_phone_shake');
+  final passwordShakeKey =
+      GlobalKey<ShakeWidgetState>(debugLabel: 'signup_password_shake');
+  final confirmPasswordShakeKey =
+      GlobalKey<ShakeWidgetState>(debugLabel: 'signup_confirm_password_shake');
+
   //-------------------------------------- Focus nodes -------------------------
   final FocusNode emailFocusNode = FocusNode();
   final FocusNode phoneFocusNode = FocusNode();
@@ -196,13 +220,13 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         confirmPasswordController.text.isEmpty;
 
     if (emailController.text.isEmpty) {
-      SignUpKeys.emailShakeKey.currentState?.shake();
+      emailShakeKey.currentState?.shake();
     } else if (phoneController.value.nsn.isEmpty) {
-      SignUpKeys.phoneShakeKey.currentState?.shake();
+      phoneShakeKey.currentState?.shake();
     } else if (passwordController.text.isEmpty) {
-      SignUpKeys.passwordShakeKey.currentState?.shake();
+      passwordShakeKey.currentState?.shake();
     } else if (confirmPasswordController.text.isEmpty) {
-      SignUpKeys.confirmPasswordShakeKey.currentState?.shake();
+      confirmPasswordShakeKey.currentState?.shake();
     }
 
     if (someNotFilled) {
@@ -218,8 +242,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         onConfirm: signUp,
         onCancel: onEdit,
         trailing: reCaptcha(),
-        onCancelButtonKey: SignUpKeys.onCancellationKey,
-        onConfirmButtonKey: SignUpKeys.onConfirmationKey,
+        onCancelButtonKey: onCancellationKey,
+        onConfirmButtonKey: onConfirmationKey,
       );
     }
   }
@@ -240,7 +264,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         child: SingleChildScrollView(
           child: Responsive(
             child: Form(
-              key: SignUpKeys.formKey,
+              key: formKey,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -262,8 +286,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   ShakeMyAuthInput(
                     name: 'Email',
                     errorText: emailError,
-                    formKey: SignUpKeys.emailKey,
-                    shakeKey: SignUpKeys.emailShakeKey,
+                    formKey: emailKey,
+                    shakeKey: emailShakeKey,
                     isFocused: isEmailFocused,
                     focusNode: emailFocusNode,
                     controller: emailController,
@@ -272,8 +296,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   AuthPhoneNumber(
                     name: 'Phone Number',
                     errorText: phoneError,
-                    formKey: SignUpKeys.phoneKey,
-                    shakeKey: SignUpKeys.phoneShakeKey,
+                    formKey: phoneKey,
+                    shakeKey: phoneShakeKey,
                     isFocused: isPhoneFocused,
                     focusNode: phoneFocusNode,
                     controller: phoneController,
@@ -281,8 +305,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   ShakeMyAuthInput(
                     name: 'Password',
                     errorText: passwordError,
-                    formKey: SignUpKeys.passwordKey,
-                    shakeKey: SignUpKeys.passwordShakeKey,
+                    formKey: passwordKey,
+                    shakeKey: passwordShakeKey,
                     isFocused: isPasswordFocused,
                     focusNode: passwordFocusNode,
                     controller: passwordController,
@@ -292,8 +316,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   ShakeMyAuthInput(
                     name: 'Confirm Password',
                     errorText: confirmPasswordError,
-                    formKey: SignUpKeys.confirmPasswordKey,
-                    shakeKey: SignUpKeys.confirmPasswordShakeKey,
+                    formKey: confirmPasswordKey,
+                    shakeKey: confirmPasswordShakeKey,
                     isFocused: isConfirmPasswordFocused,
                     focusNode: confirmPasswordFocusNode,
                     controller: confirmPasswordController,
@@ -309,7 +333,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           color: Palette.primaryText,
                           fontSize: Sizes.infoText),
                       AuthSubTextButton(
-                        buttonKey: SignUpKeys.alreadyHaveAccountKey,
+                        buttonKey: alreadyHaveAccountKey,
                         onPressed: () {
                           context.pop();
                         },
@@ -325,8 +349,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         ),
       ),
       floatingActionButton: AuthFloatingActionButton(
-        formKey: SignUpKeys.formKey,
-        buttonKey: SignUpKeys.signUpSubmitKey,
+        formKey: formKey,
+        buttonKey: signUpSubmitKey,
         onSubmit: handelSubmit,
       ),
     );

@@ -21,7 +21,7 @@ class BottomInputBarWidget extends ConsumerStatefulWidget {
   final void Function(BuildContext) startRecording;
   final Future<String?> Function() stopRecording;
   final void Function() deleteRecording;
-  final void Function() resetRecording;
+  final String? Function() resetRecording;
   final void Function() cancelRecording;
   final void Function() lockRecording;
   final void Function(
@@ -215,9 +215,11 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                           ),
                           cursorColor: Palette.accent,
                           onChanged: (text) {
-                            setState(() {
-                              isTextEmpty = text.isEmpty;
-                            });
+                            if (isTextEmpty ^ text.isEmpty) {
+                              setState(() {
+                                isTextEmpty = text.isEmpty;
+                              });
+                            }
                           },
                         ),
                       ),
@@ -305,13 +307,11 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                     return;
                   }
                   String? recordingPath = await widget.stopRecording();
-                  if (recordingPath != null) {
-                    widget.sendMessage(
-                      ref: ref,
-                      contentType: 'audio',
-                      filePath: recordingPath,
-                    );
-                  }
+                  widget.sendMessage(
+                    ref: ref,
+                    contentType: 'audio',
+                    filePath: recordingPath,
+                  );
                   widget.resetRecording();
                 },
                 onLongPressMoveUpdate: (details) {
@@ -347,15 +347,14 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
               icon: const Icon(Icons.send),
               color: Palette.accent,
               onPressed: () {
-                widget.removeReply();
                 if (widget.isRecordingCompleted) {
-                  //TODO: Send the recorded audio
+                  String? filePath = widget.resetRecording();
                   widget.sendMessage(
-                      ref: ref, contentType: 'audio', getRecordingPath: true);
-                  widget.resetRecording();
+                      ref: ref, contentType: 'audio', filePath: filePath);
                 } else {
                   widget.sendMessage(ref: ref, contentType: 'text');
                 }
+                widget.removeReply();
               },
             ),
           ],

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:io';
 import 'package:audio_waveforms/audio_waveforms.dart';
@@ -64,7 +65,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   bool isSearching = false;
   bool isShowAsList = false;
   int _numberOfMatches = 0;
-
+  late bool _isMuted = false;
   // ignore: prefer_final_fields
   int _currentMatch = 1;
 
@@ -89,6 +90,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   final lockPath = "assets/json/passcode_lock.json";
   String? recordingPath;
   late Directory appDirectory;
+  late Timer _draftTimer;
+  String _previousDraft = "";
 
   //----------------------------------------------------------------------------
   //-------------------------------Media----------------------------------------
@@ -98,10 +101,14 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   @override
   void initState() {
     super.initState();
+    _messageController.text = widget.chatModel?.draft ?? "";
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       chatModel = widget.chatModel ?? ref.watch(chatProvider(widget.chatId));
-      _messageController.text = chatModel!.draft ?? "";
+      setState(() {
+        _isMuted = chatModel!.isMuted;
+        _messageController.text = chatModel!.draft ?? "";
+      });
       final messages = chatModel?.messages ?? [];
       _updateChatMessages(messages);
       pinnedMessages = messages.where((message) => message.isPinned).toList();
@@ -118,6 +125,10 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       ..iosEncoder = IosEncoder.kAudioFormatMPEG4AAC
       ..bitRate = 128000
       ..sampleRate = 44100;
+
+    _draftTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      _updateDraft();
+    });
   }
 
   @override
@@ -125,8 +136,33 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     _messageController.dispose();
     _scrollController.dispose(); // Dispose of the ScrollController
     _recorderController.dispose();
+    _draftTimer.cancel();
     WidgetsBinding.instance.removeObserver(this); // Remove the observer
     super.dispose();
+  }
+
+  void _updateDraft() async {
+    if (USE_MOCK_DATA) return;
+    if (!mounted) return;
+    final currentDraft = _messageController.text;
+    if (currentDraft != _previousDraft) {
+      ref
+          .read(chattingControllerProvider)
+          .updateDraft(chatModel!, currentDraft);
+      _previousDraft = currentDraft;
+    } else if (chatModel?.id != null) {
+      ref
+          .read(chattingControllerProvider)
+          .getDraft(chatModel!.id!)
+          .then((draft) {
+        if (draft != null && draft != _previousDraft) {
+          setState(() {
+            _messageController.text = draft;
+            _previousDraft = draft;
+          });
+        }
+      });
+    }
   }
 
   void _updateChatMessages(List<MessageModel> messages) async {
@@ -202,9 +238,9 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   void _sendForwardedMessages() {
     for (MessageModel message in widget.forwardedMessages!) {
       ref.read(chattingControllerProvider).sendMsg(
-            content: TextContent(message.content as String),
-            msgType: MessageType.normal,
-            contentType: MessageContentType.text,
+            content: message.content!,
+            msgType: MessageType.forward,
+            contentType: message.messageContentType,
             chatType: ChatType.private,
             chatModel: widget.chatModel,
           );
@@ -228,19 +264,13 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     String? mediaUrl;
     // Upload the media file before sending the message
     if (needUploadMedia) {
-      if (filePath == null) {
-        debugPrint("Try to send a media without a file path");
-        return;
-      } else {
+      if (filePath != null) {
         mediaUrl = await ref
             .read(chattingControllerProvider)
             .uploadMedia(filePath, contentType);
-        if (mediaUrl == null) {
-          showToastMessage(
-              "Failed to upload the media check your connection or try again later");
-          return;
-        }
-        debugPrint("Media uploaded successfully with url: $mediaUrl");
+      } else {
+        showToastMessage("Media file is missing");
+        return;
       }
     }
     switch (contentType) {
@@ -254,15 +284,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
         content = VideoContent(filePath: filePath, videoUrl: mediaUrl);
         break;
       case 'audio':
-        if (getRecordingPath == true && filePath == null) {
-          if (recordingPath == null) {
-            showToastMessage("Recording has no path");
-            return;
-          }
-          content = AudioContent(filePath: recordingPath!, audioUrl: mediaUrl);
-        } else {
-          content = AudioContent(filePath: filePath, audioUrl: mediaUrl);
-        }
+        content = AudioContent(filePath: filePath, audioUrl: mediaUrl);
         break;
       case 'file':
         content = DocumentContent(
@@ -303,22 +325,22 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     });
   }
 
-  void _setChatMute(DateTime? muteUntil) {
+  void _setChatMute(DateTime? muteUntil) async {
     if (muteUntil == null) {
-      ref.read(chattingControllerProvider).unmuteChat(chatModel!.id!).then((_) {
+      ref.read(chattingControllerProvider).unmuteChat(chatModel!).then((_) {
+        print('Unmuted until: $muteUntil, chat: $chatModel');
         setState(() {
-          chatModel = chatModel!.copyWith(isMuted: false, muteUntil: null);
+          _isMuted = false;
         });
       });
     } else {
-      ref
-          .read(chattingControllerProvider)
-          .muteChat(chatModel!.id!, muteUntil)
+      ref.read(chattingControllerProvider).muteChat(chatModel!, muteUntil)
           .then((_) {
-        setState(() {
-          chatModel = chatModel!.copyWith(isMuted: true, muteUntil: muteUntil);
+            print('Muted until: $muteUntil, chat: $chatModel');
+            setState(() {
+              _isMuted = true;
+            });
         });
-      });
     }
   }
 
@@ -364,13 +386,15 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     });
   }
 
-  void _resetRecording() {
+  String? _resetRecording() {
+    String? tempPath = recordingPath;
     isRecording = false;
     isRecordingLocked = false;
     isRecordingPaused = false;
     isRecordingCompleted = false;
     recordingPath = null;
     setState(() {});
+    return tempPath;
   }
 
   void _deleteRecording() {
@@ -416,12 +440,13 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
   //wait for sending will not set the isRecording to false and you will have to set it manually
   // or call cancel recording to reset every thing
-  Future<String?> _stopRecording() async {
+  Future<String?> _stopRecording({bool waitForSending = false}) async {
     try {
       recordingPath = await _recorderController.stop(false);
       _recorderController.reset();
 
       if (recordingPath != null) {
+        if (waitForSending) return recordingPath;
         isRecordingCompleted = true;
         isRecording = false;
         isRecordingPaused = false;
@@ -451,10 +476,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       vibrate();
     } else if (status.isDenied || status.isRestricted) {
       status = await Permission.microphone.request();
-      if (status.isGranted) {
-        _record();
-        vibrate();
-      } else {
+      if (!status.isGranted) {
         // Handle denied permission scenario gracefully
         showSnackBarMessage(
             context, 'Microphone permission is required to record audio.');
@@ -495,13 +517,12 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   //-------------------------------Media----------------------------------------
 
   void onMediaDownloaded(String? filePath, String? messageId, String? chatId) {
-    if (!USE_MOCK_DATA) return;
     if (filePath == null) {
       showToastMessage('File has been deleted ask the sender to resend it');
       return;
     }
     if (messageId == null) {
-      showToastMessage('Message ID is missing');
+      showToastMessage('File does not exist please upload it again');
       return;
     }
     if (chatId == null) {
@@ -514,6 +535,9 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     ref
         .read(chattingControllerProvider)
         .editMessageFilePath(chatId, messageId, filePath);
+    List<MessageModel> messages =
+        ref.watch(chatProvider(chatModel!.id!))?.messages ?? [];
+    _updateChatMessages(messages);
   }
 
   void _searchForText(searchText) async {
@@ -587,18 +611,18 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     debugPrint('&*&**&**& rebuild chat screen');
     ref.watch(chatsViewModelProvider);
     final popupMenu = buildPopupMenu();
-    final chatModel =
-        widget.chatModel ?? ref.read(chatsViewModelProvider.notifier).getChatById(widget.chatId)!;
-    final type = chatModel.type;
-    final String title = chatModel.title;
-    final membersNumber = chatModel.userIds.length;
-    final String subtitle = chatModel.type == ChatType.private
+    final chatModelImage =
+        chatModel ?? ref.watch(chatProvider(widget.chatId))!;
+    _updateDraft();
+    final type = chatModelImage.type;
+    final String title = chatModelImage.title;
+    final membersNumber = chatModelImage.userIds.length;
+    final String subtitle = chatModelImage.type == ChatType.private
         ? "last seen a long time ago"
         : "$membersNumber Member${membersNumber > 1 ? "s" : ""}";
-    final imageBytes = chatModel.photoBytes;
-    final photo = chatModel.photo;
-    final chatID = chatModel.id;
-    const menuItemsHeight = 45.0;
+    final imageBytes = chatModelImage.photoBytes;
+    final photo = chatModelImage.photo;
+    final chatID = chatModelImage.id;
     var messagesIndex = 0;
 
     return Scaffold(
@@ -617,6 +641,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                         _messageMatches.clear();
                       });
                     } else {
+                      _updateDraft();
                       Navigator.pop(context);
                     }
                   },
@@ -743,7 +768,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                     horizontal: 24.0),
                                 padding: const EdgeInsets.all(22.0),
                                 decoration: BoxDecoration(
-                                  color: Color.fromRGBO(4, 86, 57, 0.30),
+                                  color: const Color.fromRGBO(4, 86, 57, 0.30),
                                   borderRadius: BorderRadius.circular(16.0),
                                   boxShadow: const [
                                     BoxShadow(
@@ -840,12 +865,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                             key: ValueKey(
                                                 '${MessageKeys.messagePrefix}${messagesIndex++}'),
                                             messageModel: item,
-                                            parentMessage:
-                                                chatModel.messages.firstWhere(
-                                              (message) =>
-                                                  message.parentMessage ==
-                                                  item.parentMessage,
-                                            ),
                                             isSentByMe: item.senderId ==
                                                 ref.read(userProvider)!.id,
                                             showInfo: type == ChatType.group,
@@ -1139,8 +1158,11 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                 ? AnimatedPositioned(
                     bottom: 90,
                     right: 10,
+                    width: 30,
+                    height: 30,
                     duration: const Duration(milliseconds: 300),
                     child: GestureDetector(
+                      onTap: _startOrStopRecording,
                       child: Transform.translate(
                         offset: Offset(0, _lockRecordingDragPosition),
                         child: Container(
@@ -1254,7 +1276,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                           color: Colors.white,
                           onPressed: () async {
                             if (isRecording) {
-                              String? filePath = await _stopRecording();
+                              String? filePath =
+                                  await _stopRecording(waitForSending: true);
                               _sendMessage(
                                   ref: ref,
                                   contentType: 'audio',
@@ -1272,14 +1295,23 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   }
 
   void _handlePopupMenuSelection(String value) {
+    final bool noChat = chatModel?.id == null;
     switch (value) {
       // case 'no-close':
       //   break;
       case 'search':
+        if (noChat) {
+          showToastMessage("There is nothing to search");
+          return;
+        }
         _enableSearching();
         break;
       case 'mute-chat':
         showMuteOptions = false;
+        if (noChat) {
+          showToastMessage("Maybe say something first...");
+          return;
+        }
         DatePicker.showDatePicker(
           context,
           pickerTheme: const DateTimePickerTheme(
@@ -1313,6 +1345,10 @@ class _ChatScreen extends ConsumerState<ChatScreen>
         _setChatMute(null);
         break;
       case 'mute-chat-forever':
+        if (noChat) {
+          showToastMessage("Seriously? Mute what?");
+          return;
+        }
         showMuteOptions = false;
         _setChatMute(DateTime.now().add(const Duration(days: 365 * 10)));
       default:
@@ -1322,7 +1358,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
   PopupMenuItemBuilder<String> buildPopupMenu() {
     const double menuItemsHeight = 45.0;
-
+    if (!mounted) return (BuildContext context) => [];
     return (BuildContext context) {
       if (showMuteOptions) {
         return [
@@ -1381,7 +1417,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
         ];
       }
       return [
-        if (chatModel!.isMuted)
+        if (_isMuted)
           const PopupMenuItem<String>(
               value: 'unmute-chat',
               padding: EdgeInsets.zero,

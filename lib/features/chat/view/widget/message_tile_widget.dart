@@ -85,6 +85,7 @@ class MessageTileWidget extends ConsumerWidget {
                     },
                     onForward: () {
                       overlayEntry.remove();
+                      List<MessageModel> messageList = [messageModel];
                       context.push(CreateChatScreen.route);
                     },
                     onPin: () {

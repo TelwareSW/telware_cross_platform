@@ -5,6 +5,7 @@ part 'chatting_enums.g.dart';
 enum EventType {
   sendMessage(event: 'SEND_MESSAGE'),
   sendAnnouncement(event: 'SEND_ANNOUNCEMENT'),
+  updateDraft(event: 'UPDATE_DRAFT'),
   editMessage(event: 'EDIT_MESSAGE'),
   deleteMessage(event: 'DELETE_MESSAGE'),
   replyOnMessage(event: 'REPLY_MESSAGE'),
@@ -13,7 +14,6 @@ enum EventType {
   //////////////////////////////
   receiveMessage(event: 'RECEIVE_MESSAGE'),
   receiveReply(event: 'RECEIVE_REPLY'),
-  receiveDraft(event: 'RECEIVE_DRAFT'),
   ;
 
   final String event;

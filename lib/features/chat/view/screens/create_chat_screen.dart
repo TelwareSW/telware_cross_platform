@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
+import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
@@ -13,6 +14,7 @@ import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
+import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 
 import 'package:telware_cross_platform/features/user/view/widget/user_chats.dart';
 import 'package:telware_cross_platform/features/user/view_model/user_view_model.dart';
@@ -21,8 +23,9 @@ import 'chat_screen.dart';
 
 class CreateChatScreen extends ConsumerStatefulWidget {
   static const String route = '/create-chat';
+  final List<MessageModel>? forwardedMessages;
 
-  const CreateChatScreen({super.key});
+  const CreateChatScreen({super.key, this.forwardedMessages = const []});
 
   @override
   ConsumerState<CreateChatScreen> createState() => _CreateChatScreen();
@@ -38,7 +41,6 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
   final TextEditingController searchController = TextEditingController();
 
   late Future<List<UserModel>> _usersFuture;
-  List<UserModel>? _userContent;
   bool _isUserContentSet = false;
 
   @override
@@ -63,14 +65,11 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
 
   void _createNewChat(UserModel userInfo) {
     final myUser = ref.read(userProvider)!;
-    ChatModel newChat = ChatModel(
-      title: '${userInfo.screenFirstName} ${userInfo.screenLastName}',
-      userIds: [myUser.id!, userInfo.id!],
-      type: ChatType.private,
-      messages: [],
-      photo: userInfo.photo,
-    );
-    context.push(ChatScreen.route, extra: newChat);
+    // Check if a chat already exists between the two users
+    final ChatModel chat = ref.read(chatsViewModelProvider.notifier).getChat(
+        myUser, userInfo, ChatType.private);
+    print('existingChat: $chat');
+    context.push(ChatScreen.route, extra: chat);
   }
 
   @override
@@ -236,7 +235,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
       var option = <String, dynamic>{
         "avatar": true,
         "text": '${user.screenFirstName} ${user.screenLastName}',
-        "imagePath": user.photo,
+        "imagePath": null,
         "subtext": "last seen Nov 23 at 6:40 PM",
         "trailingFontSize": 13.0,
         "trailingPadding": const EdgeInsets.only(bottom: 20.0),

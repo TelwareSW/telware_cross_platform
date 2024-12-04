@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
-import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
@@ -31,6 +30,14 @@ class VerificationScreen extends ConsumerStatefulWidget {
 }
 
 class _VerificationScreen extends ConsumerState<VerificationScreen> {
+  final verificationCodeKey =
+      GlobalKey<State>(debugLabel: 'verificationCode_input');
+  final resendCodeKey =
+      GlobalKey<State>(debugLabel: 'verification_resendCode_button');
+  final submitKey = GlobalKey<State>(debugLabel: 'verification_submit_button');
+  final shakeKey =
+      GlobalKey<ShakeWidgetState>(debugLabel: 'verification_shake');
+
   //------------------------------ Controllers ---------------------------------
   late StreamController<ErrorAnimationType> errorController;
 
@@ -124,7 +131,7 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
         showToastMessage(state.message!);
       }
     } else {
-      ValidationKeys.shakeKey.currentState?.shake();
+      shakeKey.currentState?.shake();
       Vibration.hasVibrator().then((hasVibrator) {
         if (hasVibrator ?? false) {
           Vibration.vibrate(duration: 100);
@@ -167,12 +174,12 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
                 padding: const EdgeInsets.only(bottom: 40),
               ),
               ShakeMe(
-                key: ValidationKeys.shakeKey,
+                key: shakeKey,
                 shakeCount: 3,
                 shakeOffset: 10,
                 shakeDuration: const Duration(milliseconds: 500),
                 child: PinCodeTextField(
-                  key: ValidationKeys.verificationCodeKey,
+                  key: verificationCodeKey,
                   keyboardType: TextInputType.number,
                   length: VERIFICATION_LENGTH,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -209,7 +216,7 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
               ),
               remainingTime == 0
                   ? AuthSubTextButton(
-                      buttonKey: ValidationKeys.resendCodeKey,
+                      buttonKey: resendCodeKey,
                       onPressed: resendCode,
                       label: 'Resend code',
                       padding: const EdgeInsets.only(top: 20, right: 5),
@@ -238,7 +245,7 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
         ),
       ),
       floatingActionButton: AuthFloatingActionButton(
-        buttonKey: ValidationKeys.submitKey,
+        buttonKey: submitKey,
         onSubmit: onSubmit,
       ),
     );
