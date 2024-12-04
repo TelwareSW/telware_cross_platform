@@ -32,7 +32,7 @@ class EventHandler {
     debugPrint('!!! event added');
     _queue.add(event);
 
-    _chattingController.setEveentsQueue(_queue);
+    _chattingController.setEventsQueue(_queue);
     // Start processing if not already running
     if (!_isProcessing) {
       _processQueue();
@@ -63,7 +63,7 @@ class EventHandler {
         if (success) {
           _queue.removeFirst(); // Remove successful event
           debugPrint('Processed event: ${currentEvent.runtimeType}');
-          _chattingController.setEveentsQueue(_queue);
+          _chattingController.setEventsQueue(_queue);
         } else {
           debugPrint('Failed to process event: ${currentEvent.runtimeType}');
           // Retry after a delay
