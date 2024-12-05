@@ -13,7 +13,6 @@ import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
-import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 
 import 'package:telware_cross_platform/features/user/view/widget/user_chats.dart';
@@ -68,7 +67,6 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
     // Check if a chat already exists between the two users
     final ChatModel chat = ref.read(chatsViewModelProvider.notifier).getChat(
         myUser, userInfo, ChatType.private);
-    print('existingChat: $chat');
     context.push(ChatScreen.route, extra: chat);
   }
 

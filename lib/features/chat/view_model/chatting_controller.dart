@@ -336,8 +336,7 @@ class ChattingController {
   Future<void> muteChat(ChatModel chatModel, DateTime? muteUntil) async {
     print('!!! muteChat called');
     final String chatID = chatModel.id!;
-    final muteUntilSeconds = muteUntil!.difference(DateTime.now()).inSeconds >
-            10 * 365 * 24 * 60 * 60
+    final muteUntilSeconds = muteUntil == null
         ? -1
         : muteUntil.difference(DateTime.now()).inSeconds;
 

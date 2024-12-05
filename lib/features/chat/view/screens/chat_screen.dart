@@ -324,8 +324,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     });
   }
 
-  void _setChatMute(DateTime? muteUntil) async {
-    if (muteUntil == null) {
+  void _setChatMute(bool mute, DateTime? muteUntil) async {
+    if (!mute) {
       ref.read(chattingControllerProvider).unmuteChat(chatModel!).then((_) {
         print('Unmuted until: $muteUntil, chat: $chatModel');
         setState(() {
@@ -339,7 +339,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
             setState(() {
               _isMuted = true;
             });
-        });
+          });
     }
   }
 
@@ -644,12 +644,17 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                   },
                 ),
                 title: !isSearching
-                    ? ChatHeaderWidget(
+                    ? GestureDetector(
+                      onTap: () {
+                        context.push(Routes.chatInfoScreen, extra: chatModel!);
+                      },
+                      child: ChatHeaderWidget(
                         title: title,
                         subtitle: subtitle,
                         photo: photo,
                         imageBytes: imageBytes,
-                      )
+                      ),
+                    )
                     : TextField(
                         key: ChatKeys.chatSearchInput,
                         autofocus: true,
@@ -1334,12 +1339,12 @@ class _ChatScreen extends ConsumerState<ChatScreen>
           dateFormat: 'dd-MMMM-yyyy',
           locale: DateTimePickerLocale.en_us,
           onConfirm: (date, time) {
-            _setChatMute(date);
+            _setChatMute(true, date);
           },
         );
         break;
       case 'unmute-chat':
-        _setChatMute(null);
+        _setChatMute(false, null);
         break;
       case 'mute-chat-forever':
         if (noChat) {
@@ -1347,7 +1352,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
           return;
         }
         showMuteOptions = false;
-        _setChatMute(DateTime.now().add(const Duration(days: 365 * 10)));
+        _setChatMute(true, null);
       default:
         showToastMessage("No Bueno");
     }
