@@ -21,10 +21,11 @@ class EventHandler {
   void init(Queue<MessageEvent> eventsQueue) {
     _queue = eventsQueue;
     _socket.connect(
-        serverUrl: SOCKET_URL,
-        userId: _userId,
-        onConnect: _onSocketConnect,
-        sessionId: _sessionId);
+      serverUrl: SOCKET_URL,
+      userId: _userId,
+      onConnect: _onSocketConnect,
+      sessionId: _sessionId,
+    );
     processQueue();
   }
 
@@ -35,7 +36,7 @@ class EventHandler {
     _chattingController.setEventsQueue(_queue);
     // Start processing if not already running
     if (!_isProcessing) {
-        ();
+      ();
     }
   }
 
@@ -51,8 +52,19 @@ class EventHandler {
     debugPrint('()()() ${_queue.length}');
     debugPrint('()()() $_stopRequested');
 
+    int failingCounter = 0;
+
     while (_queue.isNotEmpty && !_stopRequested) {
       final currentEvent = _queue.first;
+
+      if (!_socket.isConnected) {
+        _socket.connect(
+          serverUrl: SOCKET_URL,
+          userId: _userId,
+          onConnect: _onSocketConnect,
+          sessionId: _sessionId,
+        );
+      }
 
       try {
         final bool success = await currentEvent.execute(
@@ -66,6 +78,13 @@ class EventHandler {
           _chattingController.setEventsQueue(_queue);
         } else {
           debugPrint('Failed to process event: ${currentEvent.runtimeType}');
+          failingCounter++;
+          if (failingCounter == EVENT_FAIL_LIMIT) {
+            failingCounter = 0;
+            _stopRequested =
+                true; // it is already called in the onError method, but I add it for insurance
+            _socket.onError();
+          }
           // Retry after a delay
           await Future.delayed(const Duration(seconds: 2));
         }

@@ -33,6 +33,7 @@ class SocketService {
   }
 
   void _connect() {
+    if (isConnected) return;
     debugPrint('*** Entered the connect method');
     debugPrint(_serverUrl);
     debugPrint(_userId);
@@ -49,18 +50,20 @@ class SocketService {
 
     _socket.onConnect((_) {
       debugPrint('### Connected to server');
+      isConnected = true;
+      _isReconnecting = false;
       _eventHandler.processQueue();
       _onConnect();
     });
 
     _socket.onConnectError((error) {
       debugPrint('Connection error: $error');
-      _onError();
+      onError();
     });
 
     _socket.onError((error) {
       debugPrint('Socket error: $error');
-      _onError();
+      onError();
     });
 
     _socket.onDisconnect((_) {
@@ -68,8 +71,9 @@ class SocketService {
     });
   }
 
-  void _onError() {
+  void onError() {
     _socket.disconnect();
+    isConnected = false;
     _eventHandler.stopProcessing();
 
     if (_isReconnecting) return;
@@ -82,6 +86,7 @@ class SocketService {
 
   void _disconnect() {
     _socket.disconnect();
+    isConnected = false;
   }
 
   void on(String event, Function(dynamic data) callback) {
