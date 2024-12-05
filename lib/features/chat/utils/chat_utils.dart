@@ -154,6 +154,43 @@ List<ChatModel> updateMessagesFilePath(List<ChatModel> chats) {
   return chats;
 }
 
+// TODO: ADD OTHER CHAT TYPES
+MessageContent createMessageContent({
+  required MessageContentType contentType,
+  required String filePath,
+  String? mediaUrl,
+  int duration = 0,
+  String text = '',
+}) {
+  switch (contentType) {
+    case MessageContentType.text:
+      return TextContent(text);
+    case MessageContentType.image:
+      return ImageContent(
+        filePath: filePath,
+        imageUrl: mediaUrl,
+      );
+    case MessageContentType.video:
+      return VideoContent(
+        filePath: filePath,
+        videoUrl: mediaUrl,
+      );
+    case MessageContentType.audio:
+      return AudioContent(
+        filePath: filePath,
+        audioUrl: mediaUrl,
+        duration: duration,
+      );
+    case MessageContentType.file:
+      return DocumentContent(
+        filePath: filePath,
+        fileName: 'sample.pdf',
+      );
+    default:
+      return TextContent('Hello, how are you?');
+  }
+}
+
 String getUniqueMessageId() {
   return faker.guid.guid();
 }

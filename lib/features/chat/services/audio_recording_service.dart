@@ -36,6 +36,11 @@ class AudioRecorderService {
     _recorderController.dispose();
   }
 
+  int getDuration() {
+    if (recordingPath == null) return 0;
+    return _recorderController.recordedDuration.inSeconds;
+  }
+
   void getDir() async {
     appDirectory = await getApplicationDocumentsDirectory();
     recordingPath = "${appDirectory.path}/recording.m4a";
