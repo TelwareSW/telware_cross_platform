@@ -64,24 +64,26 @@ class AuthInputFieldState extends State<AuthInputField> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: widget.padding,
-        child: TextFormField(
-          controller: widget.controller,
-          focusNode: widget.focusNode,
-          key: widget.formFieldKey,
-          obscureText: _obscure,
-          cursorColor: Palette.accent,
-          validator: widget.validator,
-          decoration: InputDecoration(
-            hintText: widget.isFocused ? '' : widget.name,
-            labelText: !widget.isFocused ? '' : widget.name,
-            errorText: widget.errorText,
-            hintStyle: const TextStyle(
-                color: Palette.accentText, fontWeight: FontWeight.normal),
-            labelStyle: const TextStyle(
-                color: Palette.accent, fontWeight: FontWeight.normal),
-            suffixIcon: visibilityEyeIcon(),
-          ),
-        ));
+      padding: widget.padding,
+      child: TextFormField(
+        controller: widget.controller,
+        focusNode: widget.focusNode,
+        key: widget.formFieldKey,
+        obscureText: _obscure,
+        cursorColor: Palette.accent,
+        style: const TextStyle(color: Colors.white),
+        validator: widget.validator,
+        decoration: InputDecoration(
+          hintText: widget.isFocused ? '' : widget.name,
+          labelText: !widget.isFocused ? '' : widget.name,
+          errorText: widget.errorText,
+          hintStyle: const TextStyle(
+              color: Palette.accentText, fontWeight: FontWeight.normal),
+          labelStyle: const TextStyle(
+              color: Palette.accent, fontWeight: FontWeight.normal),
+          suffixIcon: visibilityEyeIcon(),
+        ),
+      ),
+    );
   }
 }
