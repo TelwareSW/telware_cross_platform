@@ -144,9 +144,8 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    Widget audioWaveform = AudioFileWaveforms(
+  Widget audioWaveform(BuildContext context) {
+    return AudioFileWaveforms(
       size: const Size(200.0, 40.0),
       playerController: playerController,
       enableSeekGesture: true,
@@ -167,8 +166,10 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
       ),
       waveformData: waveformData,
     );
+  }
 
-    Widget audioDuration = Container(
+  Widget audioDuration(BuildContext context) {
+    return Container(
       width: widget.isMessage ? null : 60, // Set the width
       height: widget.isMessage ? null : 40, // Set the height
       decoration: BoxDecoration(
@@ -210,7 +211,10 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
         ),
       ),
     );
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Row(
       children: [
         Container(
@@ -249,14 +253,14 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
                 ),
         ),
         if (!widget.isMessage) ...[
-          audioWaveform,
-          audioDuration,
+          audioWaveform(context),
+          audioDuration(context),
         ] else
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              audioWaveform,
-              audioDuration,
+              audioWaveform(context),
+              audioDuration(context),
             ],
           ),
       ],
