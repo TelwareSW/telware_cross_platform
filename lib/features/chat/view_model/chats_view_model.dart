@@ -17,7 +17,7 @@ part 'chats_view_model.g.dart';
 
 @Riverpod(keepAlive: true)
 class ChatsViewModel extends _$ChatsViewModel {
-  /// The state of the class, respembels a sorted list
+  /// The state of the class, resembles a sorted list
   /// of chats, based on the timestamp of the latest msg
   /// in them
 
@@ -76,7 +76,7 @@ class ChatsViewModel extends _$ChatsViewModel {
   void setChats(List<ChatModel> chats) {
     state = updateMessagesFilePath(chats);
     _chatsMap.clear();
-    _chatsMap = <String, ChatModel>{for (var chat in chats) chat.id!: chat};
+    _chatsMap = <String, ChatModel>{for (var chat in state) chat.id!: chat};
   }
 
   void addChat(ChatModel chat) {
@@ -105,10 +105,11 @@ class ChatsViewModel extends _$ChatsViewModel {
       messageType: msgType,
       userStates: {},
       id: USE_MOCK_DATA ? getUniqueMessageId() : null,
+      localId: msgLocalId,
     );
 
-
     chat!.messages.add(msg);
+    _chatsMap[chatID] = chat;
     _moveChatToFront(chatID);
 
     return {'msgLocalId': msgLocalId, 'chatId': chatID};
@@ -117,13 +118,22 @@ class ChatsViewModel extends _$ChatsViewModel {
   void updateMsgId(String newMsgId, Map<String, String> identifiers) {
     String msgLocalId = identifiers['msgLocalId']!,
         chatId = identifiers['chatId']!;
+
     final chat = _chatsMap[chatId];
     if (chat != null) {
+      debugPrint('### found the chat');
+
       final index =
           chat.messages.indexWhere((msg) => msg.localId == msgLocalId);
+
       if (index != -1) {
-        chat.messages[index].copyWith(id: newMsgId);
-        state = [...state];
+        final newMsg = chat.messages[index].copyWith(id: newMsgId);
+        chat.messages[index] = newMsg;
+        _chatsMap[chatId] = chat;
+        final newState = state
+            .map((chat2) => chat2.id == chat.id ? chat : chat2.copyWith())
+            .toList();
+        state = newState;
       }
     }
   }
@@ -137,47 +147,20 @@ class ChatsViewModel extends _$ChatsViewModel {
         MessageContentType.getType(response['contentType'] ?? 'text');
     MessageContent? content;
 
-    final Map<String, String> userStatesMap = response['userStates'] ?? {
-      response['senderId']: 'read',
-      ref.read(userProvider)!.id!: 'read'
-    };
+    final Map<String, String> userStatesMap = response['userStates'] ??
+        {response['senderId']: 'read', ref.read(userProvider)!.id!: 'read'};
 
     for (var entry in userStatesMap.entries) {
       userStates[entry.key] = MessageState.getType(entry.value);
     }
 
-    switch (contentType.content) {
-      case 'text':
-      case 'link':
-        content = TextContent(response['content']);
-        break;
-      case 'image':
-        content = ImageContent();
-        break;
-      case 'video':
-        content = VideoContent();
-        break;
-      case 'audio':
-        content = AudioContent();
-        break;
-      case 'document':
-        content =
-            DocumentContent(fileName: response['fileName'] ?? "UnknownFile");
-        break;
-      case 'sticker':
-        content = StickerContent(
-            stickerUrl: response['stickerUrl'] ?? "UnknownSticker");
-        break;
-      case 'gif':
-        content = GIFContent(gifUrl: response['gifUrl'] ?? "UnknownGif");
-        break;
-      case 'emoji':
-        content =
-            EmojiContent(emojiUrl: response['emojiUrl'] ?? "UnknownEmoji");
-        break;
-      default:
-        debugPrint('!!! Unknown content type: ${contentType.content}');
-    }
+    // TODO: needs to be modified to match the response fields
+    content = createMessageContent(
+      contentType: contentType,
+      text: response['content'],
+      fileName: response['fileName'],
+      mediaUrl: response['mediaUrl'],
+    );
 
     final msg = MessageModel(
       id: response['id'],
@@ -198,6 +181,7 @@ class ChatsViewModel extends _$ChatsViewModel {
     }
 
     chat.messages.add(msg);
+    _chatsMap[chatID] = chat;
     _moveChatToFront(chatID);
   }
 
@@ -233,10 +217,10 @@ class ChatsViewModel extends _$ChatsViewModel {
 
     if (chatIndex != -1) {
       // Remove the chat from its current position
-      final chat = state[chatIndex];
       final updatedState = List<ChatModel>.from(state)..removeAt(chatIndex);
       // Insert the chat at the front of the list
-      state = [chat, ...updatedState];
+      final newChat = _chatsMap[id];
+      state = [newChat!, ...updatedState];
       debugPrint('!!! List is update, a chat moved to front');
     }
   }
@@ -247,35 +231,13 @@ class ChatsViewModel extends _$ChatsViewModel {
     final msgIndex = chat!.messages.indexWhere((msg) => msg.id == msgID);
 
     if (msgIndex != -1) {
-      MessageContent? content = chat.messages[msgIndex].content;
-      if (content == null ||
-          chat.messages[msgIndex].messageContentType ==
-              MessageContentType.text) {
-        return;
-      }
-      final message = chat.messages[msgIndex];
+      MessageModel? message = chat.messages[msgIndex];
+
       debugPrint("Updating the file path to $filePath");
-      switch (message.messageContentType) {
-        case MessageContentType.image:
-          content = (content as ImageContent).copyWith(filePath: filePath);
-          break;
+      message = updateMessageIfFileMissing(message, filePath);
 
-        case MessageContentType.video:
-          content = (content as VideoContent).copyWith(filePath: filePath);
-          break;
-
-        case MessageContentType.audio:
-          content = (content as AudioContent).copyWith(filePath: filePath);
-          break;
-
-        case MessageContentType.file:
-          content = (content as DocumentContent).copyWith(filePath: filePath);
-          break;
-        default:
-          break;
-      }
       chat.messages[msgIndex] =
-          chat.messages[msgIndex].copyWith(content: content);
+          chat.messages[msgIndex].copyWith(content: message.content);
       debugPrint(
           "hmmmmmm  ${chat.messages[msgIndex].content?.toJson()["filePath"]}");
       _chatsMap[chatID] = chat;
@@ -313,12 +275,11 @@ class ChatsViewModel extends _$ChatsViewModel {
             chat.userIds.contains(myInfo.id) &&
             chat.userIds.contains(otherInfo.id),
         orElse: () => ChatModel(
-          title: '${otherInfo.screenFirstName} ${otherInfo.screenLastName}',
-          userIds: [myInfo.id!, otherInfo.id!],
-          type: ChatType.private,
-          messages: [],
-          photo: otherInfo.photo,
-        )
-    );
+              title: '${otherInfo.screenFirstName} ${otherInfo.screenLastName}',
+              userIds: [myInfo.id!, otherInfo.id!],
+              type: ChatType.private,
+              messages: [],
+              photo: otherInfo.photo,
+            ));
   }
 }

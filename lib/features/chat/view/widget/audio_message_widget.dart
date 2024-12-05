@@ -1,12 +1,7 @@
 import 'dart:async';
-import 'dart:io';
-import 'dart:math';
-
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/download_widget.dart';
@@ -17,16 +12,19 @@ class AudioMessageWidget extends StatefulWidget {
   final String? filePath;
   final String? url;
   final int? duration;
+  final bool isMessage;
   final double borderRadius;
   final void Function(String?) onDownloadTap;
 
-  const AudioMessageWidget(
-      {super.key,
-      this.borderRadius = 30,
-      this.duration,
-      this.filePath,
-      required this.onDownloadTap,
-      this.url});
+  const AudioMessageWidget({
+    super.key,
+    this.borderRadius = 30,
+    this.duration,
+    this.filePath,
+    required this.onDownloadTap,
+    this.url,
+    this.isMessage = true,
+  });
 
   @override
   AudioMessageWidgetState createState() => AudioMessageWidgetState();
@@ -136,18 +134,102 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
     setState(() {});
   }
 
+  BorderRadiusGeometry getBorderRadius(
+      {topLeft, bottomLeft, topRight, bottomRight}) {
+    return BorderRadius.only(
+      topLeft: Radius.circular(topLeft ? widget.borderRadius : 0),
+      bottomLeft: Radius.circular(bottomLeft ? widget.borderRadius : 0),
+      topRight: Radius.circular(topRight ? widget.borderRadius : 0),
+      bottomRight: Radius.circular(bottomRight ? widget.borderRadius : 0),
+    );
+  }
+
+  Widget audioWaveform(BuildContext context) {
+    return AudioFileWaveforms(
+      size: const Size(200.0, 40.0),
+      playerController: playerController,
+      enableSeekGesture: true,
+      continuousWaveform: false,
+      waveformType: WaveformType.fitWidth,
+      playerWaveStyle: PlayerWaveStyle(
+        fixedWaveColor: Colors.white38,
+        liveWaveColor: Colors.white,
+        showSeekLine: false,
+        spacing: 4,
+        waveThickness: 2,
+        scaleFactor: widget.isMessage ? 50 : 10,
+      ),
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(0),
+        color: widget.isMessage ? Colors.transparent : Palette.accent,
+      ),
+      waveformData: waveformData,
+    );
+  }
+
+  Widget audioDuration(BuildContext context) {
+    return Container(
+      width: widget.isMessage ? null : 60, // Set the width
+      height: widget.isMessage ? null : 40, // Set the height
+      decoration: BoxDecoration(
+        color: widget.isMessage ? Colors.transparent : Palette.accent,
+        borderRadius: getBorderRadius(
+          topRight: true,
+          topLeft: widget.isMessage,
+          bottomLeft: widget.isMessage,
+          bottomRight: true,
+        ),
+      ),
+      child: Center(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              formatTime(durationCounter != -1 && widget.isMessage
+                  ? durationCounter
+                  : currentDuration),
+              style: TextStyle(
+                color: Palette.primaryText,
+                fontSize: widget.isMessage ? 15 : 13,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+            if (widget.isMessage) ...[
+              const SizedBox(width: 2),
+              Container(
+                padding: const EdgeInsets.only(top: 2),
+                child: const Icon(
+                  Icons.circle,
+                  color: Palette.primaryText,
+                  size: 9,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         Container(
           width: 60,
-          height: 60,
-          margin: const EdgeInsets.only(right: 10),
+          height: widget.isMessage ? 60 : 40,
+          margin: EdgeInsets.only(right: widget.isMessage ? 10 : 0),
           decoration: BoxDecoration(
-            color: Colors.white, // Set the background color
-            borderRadius:
-                BorderRadius.circular(widget.borderRadius), // Set border radius
+            color: widget.isMessage ? Colors.white : Palette.accent,
+            // Set the background color
+            borderRadius: getBorderRadius(
+              topLeft: true,
+              bottomLeft: true,
+              topRight: widget.isMessage,
+              bottomRight: widget.isMessage,
+            ), // Set border radius
           ),
           child: widget.filePath == null || !doesFileExistSync(widget.filePath!)
               ? DownloadWidget(onTap: widget.onDownloadTap, url: widget.url)
@@ -158,80 +240,29 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
                       _startOrStopPlaying();
                     },
                     child: Lottie.asset(
-                      "assets/json/play_pause_message.json",
+                      "assets/json/play_pause${widget.isMessage ? '_message' : ''}.json",
                       controller: controller,
                       onLoaded: (composition) {
                         controller.duration = composition.duration;
                       },
-                      width: 30,
-                      height: 30,
+                      width: widget.isMessage ? 30 : 20,
+                      height: widget.isMessage ? 30 : 20,
                       decoder: LottieComposition.decodeGZip,
                     ),
                   ),
                 ),
         ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AudioFileWaveforms(
-              size: const Size(200.0, 40.0),
-              playerController: playerController,
-              enableSeekGesture: true,
-              continuousWaveform: false,
-              waveformType: WaveformType.fitWidth,
-              playerWaveStyle: const PlayerWaveStyle(
-                fixedWaveColor: Colors.white38,
-                liveWaveColor: Colors.white,
-                showSeekLine: false,
-                scaleFactor: 50,
-                spacing: 5,
-              ),
-              margin: const EdgeInsets.symmetric(vertical: 10),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(0),
-                color: Colors.transparent,
-              ),
-              waveformData: waveformData,
-            ),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.transparent, // Set the background color
-                borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(
-                      widget.borderRadius), // Set the top-left radius
-                  bottomRight: Radius.circular(
-                      widget.borderRadius), // Set the bottom-left radius
-                ), // Set border radius
-              ),
-              child: Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      formatTime(durationCounter != -1
-                          ? durationCounter
-                          : currentDuration),
-                      style: const TextStyle(
-                        color: Palette.primaryText,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                    const SizedBox(width: 2),
-                    Container(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: const Icon(
-                          Icons.circle,
-                          color: Palette.primaryText,
-                          size: 9,
-                        )),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+        if (!widget.isMessage) ...[
+          audioWaveform(context),
+          audioDuration(context),
+        ] else
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              audioWaveform(context),
+              audioDuration(context),
+            ],
+          ),
       ],
     );
   }

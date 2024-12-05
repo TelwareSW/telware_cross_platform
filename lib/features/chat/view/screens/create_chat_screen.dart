@@ -14,7 +14,6 @@ import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
-
 import 'package:telware_cross_platform/features/user/view/widget/user_chats.dart';
 import 'package:telware_cross_platform/features/user/view_model/user_view_model.dart';
 

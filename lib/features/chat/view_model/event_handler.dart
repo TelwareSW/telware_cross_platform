@@ -21,11 +21,10 @@ class EventHandler {
   void init(Queue<MessageEvent> eventsQueue) {
     _queue = eventsQueue;
     _socket.connect(
-      serverUrl: SOCKET_URL,
-      userId: _userId,
-      onConnect: _onSocketConnect,
-      sessionId: _sessionId
-    );
+        serverUrl: SOCKET_URL,
+        userId: _userId,
+        onConnect: _onSocketConnect,
+        sessionId: _sessionId);
     _processQueue();
   }
 
@@ -33,6 +32,7 @@ class EventHandler {
     debugPrint('!!! event added');
     _queue.add(event);
 
+    _chattingController.setEventsQueue(_queue);
     // Start processing if not already running
     if (!_isProcessing) {
       _processQueue();
@@ -47,6 +47,9 @@ class EventHandler {
     if (_isProcessing || USE_MOCK_DATA) return; // Avoid multiple loops
 
     _isProcessing = true;
+    debugPrint('()()() called Processing Queue');
+    debugPrint('()()() ${_queue.length}');
+    debugPrint('()()() $_stopRequested');
 
     while (_queue.isNotEmpty && !_stopRequested) {
       final currentEvent = _queue.first;
@@ -60,6 +63,7 @@ class EventHandler {
         if (success) {
           _queue.removeFirst(); // Remove successful event
           debugPrint('Processed event: ${currentEvent.runtimeType}');
+          _chattingController.setEventsQueue(_queue);
         } else {
           debugPrint('Failed to process event: ${currentEvent.runtimeType}');
           // Retry after a delay
@@ -105,7 +109,8 @@ class EventHandler {
   static EventHandler? _instance;
 
   // private constructor
-  EventHandler._(this._chattingController, this._socket, this._queue, this._userId, this._sessionId);
+  EventHandler._(this._chattingController, this._socket, this._queue,
+      this._userId, this._sessionId);
 
   // Configure the singleton instance
   static void config({
@@ -114,7 +119,11 @@ class EventHandler {
     required String userId,
     required String sessionId,
   }) {
-    _instance = EventHandler._internal(controller: controller, socket: socket, userId: userId, sessionId: sessionId);
+    _instance = EventHandler._internal(
+        controller: controller,
+        socket: socket,
+        userId: userId,
+        sessionId: sessionId);
   }
 
   // Getter for the singleton instance

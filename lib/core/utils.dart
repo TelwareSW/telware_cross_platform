@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:telware_cross_platform/core/classes/telware_toast.dart';
 import 'package:intl/intl.dart';
+import 'package:vibration/vibration.dart';
 
 import 'models/message_model.dart';
 
@@ -291,4 +292,12 @@ String getRandomImagePath() {
     'assets/imgs/bishoy.jpeg'
   ];
   return paths[random.nextInt(3)];
+}
+
+void vibrate() {
+  Vibration.hasVibrator().then((hasVibrator) {
+    if (hasVibrator ?? false) {
+      Vibration.vibrate(duration: 50);
+    }
+  });
 }

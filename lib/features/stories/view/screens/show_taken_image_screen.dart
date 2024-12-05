@@ -10,15 +10,12 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:signature/signature.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:telware_cross_platform/core/constants/keys.dart';
-
 import 'package:uuid/uuid.dart';
 import '../../../../core/routes/routes.dart';
 import '../widget/bottom_action_buttons_edit_taken_image.dart';
 import '../widget/signature_pen.dart';
 import '../widget/story_caption_text_field.dart';
-import 'crop_image_screen.dart';
 
 class ShowTakenImageScreen extends ConsumerStatefulWidget {
   static const String route = '/show-taken-story';
@@ -83,10 +80,9 @@ class _ShowTakenStoryScreenState extends ConsumerState<ShowTakenImageScreen> {
 
   Future<void> _cropImage() async {
     try {
-      final String croppedImagePath = await context.push<String>(
-          Routes.cropImageScreen,
-          extra: widget.image.path
-      ) ?? '';
+      final String croppedImagePath = await context
+              .push<String>(Routes.cropImageScreen, extra: widget.image.path) ??
+          '';
 
       if (croppedImagePath.isNotEmpty) {
         setState(() {
@@ -101,8 +97,8 @@ class _ShowTakenStoryScreenState extends ConsumerState<ShowTakenImageScreen> {
   }
 
   Future<ui.Image> _captureImage() async {
-    final boundary = Keys.signatureBoundaryKey.currentContext!.findRenderObject()
-        as RenderRepaintBoundary;
+    final boundary = Keys.signatureBoundaryKey.currentContext!
+        .findRenderObject() as RenderRepaintBoundary;
     return await boundary.toImage(pixelRatio: 3.0);
   }
 
