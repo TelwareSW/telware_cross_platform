@@ -1,15 +1,13 @@
 import 'dart:async';
-
 import 'package:socket_io_client/socket_io_client.dart';
 import 'package:flutter/foundation.dart';
-import 'package:telware_cross_platform/core/constants/server_constants.dart';
 
 class SocketService {
   late Socket _socket;
 
   int _retryAttempts = 0;
   final int _maxRetryAttempts = 5;
-  final Duration _initialRetryDelay = Duration(seconds: 2);
+  final Duration _initialRetryDelay = const Duration(seconds: 2);
 
   // Private constructor
   SocketService._internal();
@@ -65,7 +63,8 @@ class SocketService {
     });
   }
 
-  void _retryConnection(String serverUrl, String userId, String sessionId, Function() onConnect) {
+  void _retryConnection(
+      String serverUrl, String userId, String sessionId, Function() onConnect) {
     if (_retryAttempts < _maxRetryAttempts) {
       _retryAttempts++;
       final delay = _initialRetryDelay * _retryAttempts;

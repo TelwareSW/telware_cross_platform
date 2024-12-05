@@ -88,82 +88,85 @@ bool doesFileExistSync(String filePath) {
 /////////////////////////////////////
 // update file path
 //TODO MUST BE UPDATED WHEN ADDING OTHER CHAT TYPES
-List<ChatModel> updateMessagesFilePath(List<ChatModel> chats) {
-  // loop over chat messages and check if they are a media and if they are check if the file exists
-  // if not set the file path to null
-  bool isUpdated = false;
-  for (var i = 0; i < chats.length; i++) {
-    List<MessageModel> updatedMessages = [];
-    for (var j = 0; j < chats[i].messages.length; j++) {
-      var message = chats[i].messages[j];
 
-      if (message.messageContentType != MessageContentType.text) {
-        switch (message.messageContentType) {
-          case MessageContentType.image:
-            final imageContent = message.content as ImageContent;
-            if (imageContent.filePath != null &&
-                !doesFileExistSync(imageContent.filePath!)) {
-              debugPrint('!!! image content: ${imageContent.filePath}');
-              debugPrint("!!! file does not exist");
-              isUpdated = true;
-              message = message.copyWith(
-                  content: imageContent.copyWith(filePath: null));
-            }
-            break;
+List<ChatModel> updateMessagesFilePath(List<ChatModel> chats,
+    {String? filePath}) {
+  // Iterate through each chat and update messages if the file path is invalid
+  return chats.map((chat) {
+    List<MessageModel> updatedMessages = chat.messages.map((message) {
+      return updateMessageIfFileMissing(message, filePath);
+    }).toList();
 
-          case MessageContentType.video:
-            final videoContent = message.content as VideoContent;
-            if (videoContent.filePath != null &&
-                !doesFileExistSync(videoContent.filePath!)) {
-              isUpdated = true;
-              message = message.copyWith(
-                  content: videoContent.copyWith(filePath: null));
-            }
-            break;
-
-          case MessageContentType.audio:
-            final audioContent = message.content as AudioContent;
-            if (audioContent.filePath != null &&
-                !doesFileExistSync(audioContent.filePath!)) {
-              isUpdated = true;
-              message = message.copyWith(
-                  content: audioContent.copyWith(filePath: null));
-            }
-            break;
-
-          case MessageContentType.file:
-            final mediaContent = message.content as DocumentContent;
-            if (mediaContent.filePath != null &&
-                !doesFileExistSync(mediaContent.filePath!)) {
-              isUpdated = true;
-              message = message.copyWith(
-                  content: mediaContent.copyWith(filePath: null));
-            }
-            break;
-
-          default:
-            break;
-        }
-      }
-      updatedMessages.add(message);
-    }
-    // Update the chat with the modified messages
-    chats[i] = chats[i].copyWith(messages: updatedMessages);
-  }
-
-  return chats;
+    return chat.copyWith(messages: updatedMessages);
+  }).toList();
 }
+
+MessageModel updateMessageIfFileMissing(
+    MessageModel message, String? filePath) {
+  final content = message.content;
+
+  // Check if the file exists
+  bool fileExists(String? path) => path != null && doesFileExistSync(path);
+
+  switch (message.messageContentType) {
+    case MessageContentType.image:
+      return updateContent<ImageContent>(
+          message, content as ImageContent, fileExists, filePath);
+
+    case MessageContentType.video:
+      return updateContent<VideoContent>(
+          message, content as VideoContent, fileExists, filePath);
+
+    case MessageContentType.audio:
+      return updateContent<AudioContent>(
+          message, content as AudioContent, fileExists, filePath);
+
+    case MessageContentType.file:
+      return updateContent<DocumentContent>(
+          message, content as DocumentContent, fileExists, filePath);
+
+    case MessageContentType.sticker:
+      return updateContent<StickerContent>(
+          message, content as StickerContent, fileExists, filePath);
+
+    case MessageContentType.gif:
+      return updateContent<GIFContent>(
+          message, content as GIFContent, fileExists, filePath);
+
+    case MessageContentType.emoji:
+      return updateContent<EmojiContent>(
+          message, content as EmojiContent, fileExists, filePath);
+
+    default:
+      return message;
+  }
+}
+
+// Generic function to handle content updates based on file existence
+MessageModel updateContent<T>(MessageModel message, T content,
+    bool Function(String?) fileExists, String? newFilePath) {
+  final filePath = (content as dynamic).filePath;
+  if (!fileExists(filePath)) {
+    debugPrint('!!! ${T.toString()} content: $filePath');
+    debugPrint("!!! file does not exist");
+    return message.copyWith(content: content.copyWith(filePath: newFilePath));
+  }
+  return message;
+}
+
+/////////////////////////////////////
 
 // TODO: ADD OTHER CHAT TYPES
 MessageContent createMessageContent({
   required MessageContentType contentType,
-  required String filePath,
+  String? filePath,
+  String? fileName,
   String? mediaUrl,
-  int duration = 0,
+  int? duration,
   String text = '',
 }) {
   switch (contentType) {
-    case MessageContentType.text:
+    case MessageContentType.text || MessageContentType.link:
       return TextContent(text);
     case MessageContentType.image:
       return ImageContent(
@@ -174,6 +177,7 @@ MessageContent createMessageContent({
       return VideoContent(
         filePath: filePath,
         videoUrl: mediaUrl,
+        duration: duration,
       );
     case MessageContentType.audio:
       return AudioContent(
@@ -183,11 +187,31 @@ MessageContent createMessageContent({
       );
     case MessageContentType.file:
       return DocumentContent(
+        fileUrl: mediaUrl,
         filePath: filePath,
-        fileName: 'sample.pdf',
+        fileName: fileName ??
+            (filePath != null ? filePath.split('/').last : "Untitled"),
+      );
+    case MessageContentType.sticker:
+      return StickerContent(
+        filePath: filePath,
+        stickerName: fileName,
+        stickerUrl: mediaUrl,
+      );
+    case MessageContentType.gif:
+      return GIFContent(
+        filePath: filePath,
+        gifName: fileName,
+        gifUrl: mediaUrl,
+      );
+    case MessageContentType.emoji:
+      return EmojiContent(
+        filePath: filePath,
+        emojiName: fileName,
+        emojiUrl: mediaUrl,
       );
     default:
-      return TextContent('Hello, how are you?');
+      return TextContent('This is a text message for unknown content type');
   }
 }
 

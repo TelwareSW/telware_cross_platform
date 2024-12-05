@@ -7,7 +7,6 @@ import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/chat/services/audio_recording_service.dart';

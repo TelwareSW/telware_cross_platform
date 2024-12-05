@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math';
-import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -263,8 +262,9 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
     content = createMessageContent(
         contentType: messageContentType,
-        filePath: filePath!,
-        mediaUrl: mediaUrl);
+        filePath: filePath,
+        mediaUrl: mediaUrl,
+        text: _messageController.text);
     // TODO : Handle media attribute in the request of sending a message
 
     MessageModel newMessage = MessageModel(

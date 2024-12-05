@@ -1,8 +1,5 @@
-import 'dart:io';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
@@ -10,6 +7,7 @@ import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
+import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
 
 class ChatRemoteRepository {
   final Dio _dio;
@@ -81,40 +79,14 @@ class ChatRemoteRepository {
           userStates[entry.key] = MessageState.getType(entry.value);
         }
 
-        switch (contentType.content) {
-          case 'text':
-            content = TextContent(lastMessage['content']);
-          case 'link':
-            content = TextContent(lastMessage['content']);
-            break;
-          case 'image':
-            content = ImageContent();
-            break;
-          case 'video':
-            content = VideoContent();
-            break;
-          case 'audio':
-            content = AudioContent();
-            break;
-          case 'document':
-            content = DocumentContent(
-                fileName: lastMessage['fileName'] ?? "UnknownFile");
-            break;
-          case 'sticker':
-            content = StickerContent(
-                stickerUrl: lastMessage['stickerUrl'] ?? "UnknownSticker");
-            break;
-          case 'gif':
-            content = GIFContent(gifUrl: lastMessage['gifUrl'] ?? "UnknownGif");
-            break;
-          case 'emoji':
-            content = EmojiContent(
-                emojiUrl: lastMessage['emojiUrl'] ?? "UnknownEmoji");
-            break;
-          default:
-            debugPrint('!!! Unknown content type: ${contentType.content}');
-            continue;
-        }
+        // TODO: needs to be modified to match the response fields
+        content = createMessageContent(
+          contentType: contentType,
+          text: lastMessage['content'],
+          fileName: lastMessage['fileName'],
+          mediaUrl: lastMessage['mediaUrl'],
+        );
+
         lastMessageMap[message['chatId']] = MessageModel(
           id: lastMessage['id'],
           senderId: lastMessage['senderId'],
@@ -312,7 +284,9 @@ class ChatRemoteRepository {
       if (response.statusCode == 200) {
         return (appError: null);
       } else {
-        return (appError: AppError('Failed to mute chat', code: response.statusCode));
+        return (
+          appError: AppError('Failed to mute chat', code: response.statusCode)
+        );
       }
     } catch (e) {
       debugPrint('!!! Failed to mute chat, ${e.toString()}');
@@ -320,7 +294,8 @@ class ChatRemoteRepository {
     }
   }
 
-  Future<({AppError? appError})> unmuteChat(String sessionID, String chatID) async {
+  Future<({AppError? appError})> unmuteChat(
+      String sessionID, String chatID) async {
     try {
       final response = await _dio.post(
         '/chats/unmute/:$chatID',
@@ -330,7 +305,9 @@ class ChatRemoteRepository {
       if (response.statusCode == 200) {
         return (appError: null);
       } else {
-        return (appError: AppError('Failed to unmute chat', code: response.statusCode));
+        return (
+          appError: AppError('Failed to unmute chat', code: response.statusCode)
+        );
       }
     } catch (e) {
       debugPrint('!!! Failed to unmute chat, ${e.toString()}');
@@ -353,7 +330,10 @@ class ChatRemoteRepository {
       if (response.statusCode == 200) {
         return (appError: null);
       } else {
-        return (appError: AppError('Failed to update draft', code: response.statusCode));
+        return (
+          appError:
+              AppError('Failed to update draft', code: response.statusCode)
+        );
       }
     } catch (e) {
       debugPrint('!!! Failed to update draft, ${e.toString()}');
@@ -375,7 +355,10 @@ class ChatRemoteRepository {
       return (appError: null, draft: draft);
     } catch (e) {
       debugPrint('!!! Failed to get draft, ${e.toString()}');
-      return (appError: AppError('Failed to get draft', code: 500), draft: null);
+      return (
+        appError: AppError('Failed to get draft', code: 500),
+        draft: null
+      );
     }
   }
 

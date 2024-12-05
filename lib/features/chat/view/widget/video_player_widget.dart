@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/download_widget.dart';
 import 'package:video_player/video_player.dart';
