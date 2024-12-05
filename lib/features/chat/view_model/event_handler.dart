@@ -25,7 +25,7 @@ class EventHandler {
         userId: _userId,
         onConnect: _onSocketConnect,
         sessionId: _sessionId);
-    _processQueue();
+    processQueue();
   }
 
   void addEvent(MessageEvent event) {
@@ -35,7 +35,7 @@ class EventHandler {
     _chattingController.setEventsQueue(_queue);
     // Start processing if not already running
     if (!_isProcessing) {
-      _processQueue();
+        ();
     }
   }
 
@@ -43,7 +43,7 @@ class EventHandler {
     _stopRequested = true; // Gracefully request stopping the loop
   }
 
-  Future<void> _processQueue() async {
+  Future<void> processQueue() async {
     if (_isProcessing || USE_MOCK_DATA) return; // Avoid multiple loops
 
     _isProcessing = true;

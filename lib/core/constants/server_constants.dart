@@ -8,6 +8,8 @@ final String SOCKET_URL = dotenv.env['SOCKET_URL']!;
 final String API_URL_PICTURES = dotenv.env['API_URL_PICTURES']!;
 final String GOOGLE_AUTH_URL = API_URL + dotenv.env['GOOGLE_AUTH_URL']!;
 final String GITHUB_AUTH_URL = API_URL + dotenv.env['GITHUB_AUTH_URL']!;
+final int SOCKET_RECONNECT_DELAY_SECONDS =  int.parse(dotenv.env['SOCKET_RECONNECT_DELAY_SECONDS'] ?? '3');
+
 final BASE_OPTIONS = BaseOptions(
   baseUrl: API_URL,
   contentType: 'application/json',
