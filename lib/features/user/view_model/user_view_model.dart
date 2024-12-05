@@ -10,9 +10,7 @@ import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_local_repository.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_remote_repository.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
-import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/stories/repository/contacts_remote_repository.dart';
-import 'package:telware_cross_platform/features/user/repository/user_local_repository.dart';
 import 'package:telware_cross_platform/features/user/view_model/user_state.dart';
 import 'package:telware_cross_platform/features/user/repository/user_remote_repository.dart';
 
@@ -59,11 +57,11 @@ class UserViewModel extends _$UserViewModel {
     final response = await ref.read(userRemoteRepositoryProvider).fetchUsers();
 
     return response.fold(
-          (appError) {
+      (appError) {
         state = UserState.fail(appError.error);
         return [];
       },
-          (users) {
+      (users) {
         state = UserState.success('Users fetched successfully');
         return users;
       },
@@ -155,8 +153,8 @@ class UserViewModel extends _$UserViewModel {
 
     if (USE_MOCK_DATA) {
       // Simulate a successful update with mock data
-      final updatedUser =
-          mockUsers[0].copyWith(screenFirstName: firstName, screenLastName: lastName, bio: newBio);
+      final updatedUser = mockUsers[0].copyWith(
+          screenFirstName: firstName, screenLastName: lastName, bio: newBio);
       ref.read(authLocalRepositoryProvider).setUser(updatedUser);
       ref.read(userProvider.notifier).update((_) => updatedUser);
       state = UserState.success('Screen name updated successfully');
@@ -180,8 +178,10 @@ class UserViewModel extends _$UserViewModel {
         // Update the user locally after successful update
         final user = ref.read(userProvider);
         if (user != null) {
-          final updatedUser =
-              user.copyWith(screenFirstName: firstName, screenLastName: lastName, bio: newBio);
+          final updatedUser = user.copyWith(
+              screenFirstName: firstName,
+              screenLastName: lastName,
+              bio: newBio);
           ref.read(authLocalRepositoryProvider).setUser(updatedUser);
           ref.read(userProvider.notifier).update((_) => updatedUser);
         }
@@ -287,7 +287,9 @@ class UserViewModel extends _$UserViewModel {
   }
 
   Future<bool> updateProfilePicture(File storyImage) async {
-    if (await ref.read(contactsRemoteRepositoryProvider).updateProfilePicture(storyImage) ==
+    if (await ref
+            .read(contactsRemoteRepositoryProvider)
+            .updateProfilePicture(storyImage) ==
         true) {
       await ref.read(authViewModelProvider.notifier).getMe();
       return true;
@@ -296,14 +298,16 @@ class UserViewModel extends _$UserViewModel {
   }
 
   Future<bool> deleteProfilePicture() async {
-    if (await ref.read(contactsRemoteRepositoryProvider).deleteProfilePicture() ==
+    if (await ref
+            .read(contactsRemoteRepositoryProvider)
+            .deleteProfilePicture() ==
         true) {
       await ref.read(authViewModelProvider.notifier).getMe();
       return true;
     }
     return false;
   }
-  
+
   Future<void> changeLastSeenPrivacy(String newPrivacy) async {
     state = UserState.loading;
 

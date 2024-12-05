@@ -38,7 +38,6 @@ randomizeMessageContent(MessageContentType contentType) async {
   ];
 
   final Random random = Random();
-  MessageContent content;
   switch (contentType) {
     case MessageContentType.text:
       return TextContent(sampleMessages[random.nextInt(sampleMessages.length)]);
