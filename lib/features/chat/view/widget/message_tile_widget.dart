@@ -294,16 +294,12 @@ class MessageTileWidget extends ConsumerWidget {
                             )
                           : messageModel.messageContentType ==
                                   MessageContentType.video
-                              ? SizedBox(
-                                  width: 200,
-                                  height: 200,
-                                  child: VideoPlayerWidget(
-                                      url: messageModel.content
-                                          ?.toJson()["videoUrl"],
-                                      onDownloadTap: onDownloadTap,
-                                      filePath: messageModel.content
-                                          ?.toJson()["filePath"]),
-                                )
+                              ? VideoPlayerWidget(
+                                  url: messageModel.content
+                                      ?.toJson()["videoUrl"],
+                                  onDownloadTap: onDownloadTap,
+                                  filePath: messageModel.content
+                                      ?.toJson()["filePath"])
                               : messageModel.messageContentType ==
                                       MessageContentType.file
                                   ? DocumentMessageWidget(

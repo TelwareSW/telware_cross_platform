@@ -10,52 +10,29 @@ import 'package:image_picker/image_picker.dart';
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
+import 'package:telware_cross_platform/features/chat/services/audio_recording_service.dart';
+import 'package:telware_cross_platform/features/chat/view/widget/audio_message_widget.dart';
 
-import 'package:telware_cross_platform/features/chat/view/widget/audio_player_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/slide_to_cancel_widget.dart';
 
 class BottomInputBarWidget extends ConsumerStatefulWidget {
   final TextEditingController controller; // Accept controller as a parameter
-  final RecorderController recorderController;
   final String? chatID;
-  final void Function(BuildContext) startRecording;
-  final Future<String?> Function() stopRecording;
-  final void Function() deleteRecording;
-  final String? Function() resetRecording;
-  final void Function() cancelRecording;
-  final void Function() lockRecording;
   final void Function(
       {required String contentType,
       String? filePath,
       required WidgetRef ref,
       bool? getRecordingPath}) sendMessage;
   final void Function() removeReply;
-  final void Function(double) lockRecordingDrag;
-  final String? audioFilePath;
-  final bool isRecordingLocked;
-  final bool isRecording;
-  final bool isRecordingCompleted;
-  final bool isRecordingPaused;
+  final AudioRecorderService audioRecorderService;
 
   const BottomInputBarWidget({
     super.key,
     this.chatID,
     required this.sendMessage,
     required this.controller,
-    required this.recorderController,
-    required this.startRecording,
-    required this.stopRecording,
-    required this.cancelRecording,
-    required this.isRecording,
-    required this.isRecordingCompleted,
-    required this.deleteRecording,
-    required this.resetRecording,
-    required this.lockRecording,
     required this.removeReply,
-    required this.isRecordingLocked,
-    required this.lockRecordingDrag,
-    required this.isRecordingPaused,
-    this.audioFilePath,
+    required this.audioRecorderService,
   });
 
   @override
@@ -82,11 +59,16 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
   @override
   void didUpdateWidget(BottomInputBarWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.isRecording != widget.isRecording ||
-        oldWidget.isRecordingCompleted != widget.isRecordingCompleted ||
-        oldWidget.isRecordingLocked != widget.isRecordingLocked ||
-        oldWidget.isRecordingPaused != widget.isRecordingPaused ||
-        oldWidget.audioFilePath != widget.audioFilePath) {
+    if (oldWidget.audioRecorderService.isRecording !=
+            widget.audioRecorderService.isRecording ||
+        oldWidget.audioRecorderService.isRecordingCompleted !=
+            widget.audioRecorderService.isRecordingCompleted ||
+        oldWidget.audioRecorderService.isRecordingLocked !=
+            widget.audioRecorderService.isRecordingLocked ||
+        oldWidget.audioRecorderService.isRecordingPaused !=
+            widget.audioRecorderService.isRecordingPaused ||
+        oldWidget.audioRecorderService.recordingPath !=
+            widget.audioRecorderService.recordingPath) {
       setState(() {});
     }
   }
@@ -99,10 +81,10 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
 
   void startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (widget.isRecordingPaused) {
+      if (widget.audioRecorderService.isRecordingPaused) {
         return;
       }
-      if (!widget.isRecording) {
+      if (!widget.audioRecorderService.isRecording) {
         elapsedTime = 0;
         return;
       }
@@ -174,11 +156,13 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
-          horizontal: widget.isRecordingCompleted ? 0 : 10, vertical: 0),
+          horizontal: widget.audioRecorderService.isRecordingCompleted ? 0 : 10,
+          vertical: 0),
       color: Palette.trinary,
       child: Row(
         children: [
-          widget.isRecording || widget.isRecordingCompleted
+          widget.audioRecorderService.isRecording ||
+                  widget.audioRecorderService.isRecordingCompleted
               ? const SizedBox.shrink()
               : Expanded(
                   child: Row(
@@ -227,8 +211,9 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                   ),
                 ),
           if (widget.controller.text.isEmpty && isTextEmpty) ...[
-            if (widget.isRecording || widget.isRecordingLocked) ...[
-              if (!widget.isRecordingCompleted) ...[
+            if (widget.audioRecorderService.isRecording ||
+                widget.audioRecorderService.isRecordingLocked) ...[
+              if (!widget.audioRecorderService.isRecordingCompleted) ...[
                 const LottieViewer(
                   path: "assets/json/recording_led.json",
                   width: 20,
@@ -245,8 +230,8 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                 ),
                 const Spacer()
               ],
-              if (widget.isRecordingLocked) ...[
-                if (widget.isRecordingCompleted) ...[
+              if (widget.audioRecorderService.isRecordingLocked) ...[
+                if (widget.audioRecorderService.isRecordingCompleted) ...[
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     child: LottieViewer(
@@ -255,18 +240,19 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                       height: 40,
                       isLooping: true,
                       onTap: () {
-                        widget.deleteRecording();
+                        widget.audioRecorderService.deleteRecording();
                       },
                     ),
                   ),
-                  AudioPlayerWidget(
-                    filePath: widget.audioFilePath!,
-                    duration: elapsedTime,
+                  AudioMessageWidget(
+                    filePath: widget.audioRecorderService.recordingPath!,
+                    onDownloadTap: (String? _) {},
+                    isMessage: false,
                   ),
                 ] else ...[
                   GestureDetector(
                     onTap: () {
-                      widget.cancelRecording();
+                      widget.audioRecorderService.cancelRecording();
                       setState(() {});
                     },
                     child: const SizedBox(
@@ -299,31 +285,35 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                 },
               ),
             ],
-            if (!widget.isRecordingCompleted) ...[
+            if (!widget.audioRecorderService.isRecordingCompleted) ...[
               GestureDetector(
-                onLongPress: () => widget.startRecording(context),
+                onLongPress: () =>
+                    widget.audioRecorderService.startRecording(context),
                 onLongPressUp: () async {
-                  if (widget.isRecordingLocked) {
+                  if (widget.audioRecorderService.isRecordingLocked ||
+                      isCanceled) {
                     return;
                   }
-                  String? recordingPath = await widget.stopRecording();
+                  String? recordingPath =
+                      await widget.audioRecorderService.stopRecording();
                   widget.sendMessage(
                     ref: ref,
                     contentType: 'audio',
                     filePath: recordingPath,
                   );
-                  widget.resetRecording();
+                  widget.audioRecorderService.resetRecording();
                 },
                 onLongPressMoveUpdate: (details) {
                   if (details.localPosition.dx.abs() > _cancelThreshold) {
                     isCanceled = true;
-                    widget.cancelRecording();
+                    widget.audioRecorderService.cancelRecording();
                     setState(() {});
                     return;
                   }
-                  widget.lockRecordingDrag(details.localPosition.dy);
+                  widget.audioRecorderService.lockRecordingDragPositionUpdate(
+                      details.localPosition.dy);
                   if (details.localPosition.dy.abs() > _lockThreshold) {
-                    widget.lockRecording();
+                    widget.audioRecorderService.lockRecording();
                     return;
                   }
                   setState(() {
@@ -339,7 +329,7 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
               ),
             ],
           ],
-          if (widget.isRecordingCompleted ||
+          if (widget.audioRecorderService.isRecordingCompleted ||
               (widget.controller.text.isNotEmpty || !isTextEmpty)) ...[
             IconButton(
               padding: const EdgeInsets.only(left: 10),
@@ -347,8 +337,9 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
               icon: const Icon(Icons.send),
               color: Palette.accent,
               onPressed: () {
-                if (widget.isRecordingCompleted) {
-                  String? filePath = widget.resetRecording();
+                if (widget.audioRecorderService.isRecordingCompleted) {
+                  String? filePath =
+                      widget.audioRecorderService.resetRecording();
                   widget.sendMessage(
                       ref: ref, contentType: 'audio', filePath: filePath);
                 } else {

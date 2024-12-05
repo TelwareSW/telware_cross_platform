@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math';
-import 'dart:io';
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,8 +7,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter_cupertino_datetime_picker/flutter_cupertino_datetime_picker.dart';
 import 'package:telware_cross_platform/core/constants/keys.dart';
@@ -25,13 +22,13 @@ import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/providers/chat_provider.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/popup_menu_item_widget.dart';
+import 'package:telware_cross_platform/features/chat/services/audio_recording_service.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/bottom_input_bar_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/chat_header_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/date_label_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/message_tile_widget.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
-import 'package:vibration/vibration.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
 import '../../../../core/routes/routes.dart';
 import '../widget/reply_widget.dart';
@@ -52,6 +49,8 @@ class ChatScreen extends ConsumerStatefulWidget {
 
 class _ChatScreen extends ConsumerState<ChatScreen>
     with WidgetsBindingObserver {
+  late AudioRecorderService _audioRecorderService;
+
   List<dynamic> chatContent = [];
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -60,12 +59,15 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   List<MessageModel> selectedMessages = [];
   List<MessageModel> pinnedMessages = [];
   int indexInPinnedMessage = 0;
-
   late ChatModel? chatModel;
   bool isSearching = false;
   bool isShowAsList = false;
   int _numberOfMatches = 0;
   late bool _isMuted = false;
+  bool isLoading = true;
+  bool isTextEmpty = true;
+  bool showMuteOptions = false;
+
   // ignore: prefer_final_fields
   int _currentMatch = 1;
 
@@ -74,27 +76,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   Map<int, List<MapEntry<int, int>>> _messageMatches = {};
   List<int> _messageIndices = [];
 
-  //---------------------------------Recording--------------------------------
-  // TODO: This works only on mobile if you tried to run it on web it will throw an error
-
-  late final RecorderController _recorderController;
-  String? musicFile;
-  bool isRecording = false;
-  bool isRecordingCompleted = false;
-  bool isRecordingLocked = false;
-  bool isRecordingPaused = false;
-  bool isLoading = true;
-  bool isTextEmpty = true;
-  bool showMuteOptions = false;
-  double _lockRecordingDragPosition = 0;
-  final lockPath = "assets/json/passcode_lock.json";
-  String? recordingPath;
-  late Directory appDirectory;
   late Timer _draftTimer;
   String _previousDraft = "";
-
-  //----------------------------------------------------------------------------
-  //-------------------------------Media----------------------------------------
 
   late ChatType type;
 
@@ -117,14 +100,10 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       }
     });
     _chosenAnimation = getRandomLottieAnimation();
-    _getDir();
     // _scrollToBottom();
-    _recorderController = RecorderController()
-      ..androidEncoder = AndroidEncoder.aac
-      ..androidOutputFormat = AndroidOutputFormat.aac_adts
-      ..iosEncoder = IosEncoder.kAudioFormatMPEG4AAC
-      ..bitRate = 128000
-      ..sampleRate = 44100;
+
+    // Initialize the AudioRecorderService
+    _audioRecorderService = AudioRecorderService(updateUI: setState);
 
     _draftTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
       _updateDraft();
@@ -135,14 +114,15 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose(); // Dispose of the ScrollController
-    _recorderController.dispose();
+    _audioRecorderService.dispose();
     _draftTimer.cancel();
     WidgetsBinding.instance.removeObserver(this); // Remove the observer
     super.dispose();
   }
 
   void _updateDraft() async {
-    if (USE_MOCK_DATA) return;
+    // TODO : server return 500 status code every time try to fix it ASAP
+    return;
     if (!mounted) return;
     final currentDraft = _messageController.text;
     if (currentDraft != _previousDraft) {
@@ -263,7 +243,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     bool needUploadMedia = contentType != 'text';
     String? mediaUrl;
     // Upload the media file before sending the message
-    if (needUploadMedia) {
+    if (needUploadMedia && UPLOAD_MEDIA) {
       if (filePath != null) {
         mediaUrl = await ref
             .read(chattingControllerProvider)
@@ -328,188 +308,27 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   void _setChatMute(DateTime? muteUntil) async {
     if (muteUntil == null) {
       ref.read(chattingControllerProvider).unmuteChat(chatModel!).then((_) {
-        print('Unmuted until: $muteUntil, chat: $chatModel');
+        debugPrint('Unmuted until: $muteUntil, chat: $chatModel');
         setState(() {
           _isMuted = false;
         });
       });
     } else {
-      ref.read(chattingControllerProvider).muteChat(chatModel!, muteUntil)
+      ref
+          .read(chattingControllerProvider)
+          .muteChat(chatModel!, muteUntil)
           .then((_) {
-            print('Muted until: $muteUntil, chat: $chatModel');
-            setState(() {
-              _isMuted = true;
-            });
+        debugPrint('Muted until: $muteUntil, chat: $chatModel');
+        setState(() {
+          _isMuted = true;
         });
+      });
     }
-  }
-
-  //--------------------------------Recording--------------------------------
-  void _getDir() async {
-    appDirectory = await getApplicationDocumentsDirectory();
-    recordingPath = "${appDirectory.path}/recording.m4a";
-    isLoading = false;
-    setState(() {});
-  }
-
-  void _lockRecordingDrag(double dragPosition) {
-    if (isRecordingLocked) {
-      _lockRecordingDragPosition = 0;
-      return;
-    }
-    if (dragPosition < 0) {
-      _lockRecordingDragPosition = dragPosition;
-    }
-    setState(() {});
-  }
-
-  void _pauseRecording() async {
-    if (isRecordingPaused) {
-      _recorderController.record(path: recordingPath);
-    } else {
-      _recorderController.pause();
-    }
-    debugPrint("Recording paused");
-    isRecordingPaused = !isRecordingPaused;
-    setState(() {});
-  }
-
-  void _lockRecording() {
-    if (!isRecordingLocked) vibrate();
-    isRecordingLocked = true;
-    setState(() {});
   }
 
   void _removeReply() {
     setState(() {
       replyMessage = null;
-    });
-  }
-
-  String? _resetRecording() {
-    String? tempPath = recordingPath;
-    isRecording = false;
-    isRecordingLocked = false;
-    isRecordingPaused = false;
-    isRecordingCompleted = false;
-    recordingPath = null;
-    setState(() {});
-    return tempPath;
-  }
-
-  void _deleteRecording() {
-    if (recordingPath == null) {
-      debugPrint("No recording to delete");
-      return;
-    }
-    if (File(recordingPath!).existsSync()) {
-      File(recordingPath!).deleteSync();
-      debugPrint("Recording deleted at $recordingPath");
-      _resetRecording();
-    }
-  }
-
-  void _cancelRecording() async {
-    if (isRecording) {
-      String? path = await _recorderController.stop(true);
-      if (path != null) {
-        if (File(path).existsSync()) {
-          File(path).deleteSync();
-          debugPrint("Recording deleted at $path");
-        }
-        debugPrint("Recording canceled");
-      }
-      _resetRecording();
-    }
-  }
-
-  void _record() async {
-    try {
-      await _recorderController.record(); // Path is optional
-      debugPrint("Recording started");
-    } catch (e) {
-      debugPrint(e.toString());
-    } finally {
-      if (!isRecording) {
-        setState(() {
-          isRecording = true;
-        });
-      }
-    }
-  }
-
-  //wait for sending will not set the isRecording to false and you will have to set it manually
-  // or call cancel recording to reset every thing
-  Future<String?> _stopRecording({bool waitForSending = false}) async {
-    try {
-      recordingPath = await _recorderController.stop(false);
-      _recorderController.reset();
-
-      if (recordingPath != null) {
-        if (waitForSending) return recordingPath;
-        isRecordingCompleted = true;
-        isRecording = false;
-        isRecordingPaused = false;
-        setState(() {});
-        debugPrint(recordingPath);
-        debugPrint("Recorded file size: ${File(recordingPath!).lengthSync()}");
-        return recordingPath!;
-      }
-    } catch (e) {
-      debugPrint(e.toString());
-      return null;
-    }
-    return null;
-  }
-
-  void _startRecording(context) async {
-    if (isRecording) return;
-
-    if (isRecordingCompleted) {
-      setState(() {
-        isRecordingCompleted = false;
-      });
-    }
-    var status = await Permission.microphone.status;
-    if (status.isGranted) {
-      _record();
-      vibrate();
-    } else if (status.isDenied || status.isRestricted) {
-      status = await Permission.microphone.request();
-      if (!status.isGranted) {
-        // Handle denied permission scenario gracefully
-        showSnackBarMessage(
-            context, 'Microphone permission is required to record audio.');
-      }
-    } else if (status.isPermanentlyDenied) {
-      // If permanently denied, open app settings
-      SnackBarAction action = SnackBarAction(
-        label: 'Open Settings',
-        onPressed: () => openAppSettings(),
-      );
-      showSnackBarMessage(context,
-          'Microphone permission is permanently denied. Please enable it in settings.',
-          action: action);
-    }
-  }
-
-  void _startOrStopRecording() async {
-    try {
-      if (isRecording) {
-        _stopRecording();
-      } else {
-        _startRecording(context);
-      }
-    } catch (e) {
-      debugPrint(e.toString());
-    }
-  }
-
-  void vibrate() {
-    Vibration.hasVibrator().then((hasVibrator) {
-      if (hasVibrator ?? false) {
-        Vibration.vibrate(duration: 50);
-      }
     });
   }
 
@@ -611,8 +430,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     debugPrint('&*&**&**& rebuild chat screen');
     ref.watch(chatsViewModelProvider);
     final popupMenu = buildPopupMenu();
-    final chatModelImage =
-        chatModel ?? ref.watch(chatProvider(widget.chatId))!;
+    final chatModelImage = chatModel ?? ref.watch(chatProvider(widget.chatId))!;
     _updateDraft();
     final type = chatModelImage.type;
     final String title = chatModelImage.title;
@@ -985,21 +803,9 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                 else if (!isSearching)
                   BottomInputBarWidget(
                     controller: _messageController,
-                    recorderController: _recorderController,
+                    audioRecorderService: _audioRecorderService,
                     chatID: chatID,
                     sendMessage: _sendMessage,
-                    startRecording: _startRecording,
-                    stopRecording: _stopRecording,
-                    deleteRecording: _deleteRecording,
-                    resetRecording: _resetRecording,
-                    cancelRecording: _cancelRecording,
-                    lockRecording: _lockRecording,
-                    isRecording: isRecording,
-                    isRecordingCompleted: isRecordingCompleted,
-                    isRecordingLocked: isRecordingLocked,
-                    isRecordingPaused: isRecordingPaused,
-                    lockRecordingDrag: _lockRecordingDrag,
-                    audioFilePath: recordingPath,
                     removeReply: _removeReply,
                   )
                 else
@@ -1154,7 +960,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                     ),
                   )
                 : const SizedBox(),
-            isRecording || isRecordingLocked
+            _audioRecorderService.isRecording ||
+                    _audioRecorderService.isRecordingLocked
                 ? AnimatedPositioned(
                     bottom: 90,
                     right: 10,
@@ -1162,9 +969,11 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                     height: 30,
                     duration: const Duration(milliseconds: 300),
                     child: GestureDetector(
-                      onTap: _startOrStopRecording,
+                      onTap: () =>
+                          _audioRecorderService.startOrStopRecording(context),
                       child: Transform.translate(
-                        offset: Offset(0, _lockRecordingDragPosition),
+                        offset: Offset(
+                            0, _audioRecorderService.lockRecordingDragPosition),
                         child: Container(
                           width: 30,
                           height: 30,
@@ -1173,12 +982,13 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                             borderRadius: BorderRadius.circular(50),
                           ),
                           child: Center(
-                            child: isRecordingLocked
+                            child: _audioRecorderService.isRecordingLocked
                                 ? IconButton(
-                                    onPressed: _startOrStopRecording,
+                                    onPressed: () => _audioRecorderService
+                                        .startOrStopRecording(context),
                                     padding: const EdgeInsets.all(5),
                                     icon: Icon(
-                                      isRecordingCompleted
+                                      _audioRecorderService.isRecordingCompleted
                                           ? Icons.mic
                                           : Icons.pause,
                                       color: Colors.white,
@@ -1186,7 +996,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                     ),
                                   )
                                 : LottieViewer(
-                                    path: lockPath,
+                                    path: _audioRecorderService.lockPath,
                                     width: 20,
                                     height: 20,
                                     isLooping: true,
@@ -1197,7 +1007,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                     ),
                   )
                 : const SizedBox.shrink(),
-            if (isRecording) ...[
+            if (_audioRecorderService.isRecording) ...[
               const Positioned(
                 bottom: -50,
                 right: -50,
@@ -1259,7 +1069,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
               bottom: -20,
               right: -20,
               duration: const Duration(milliseconds: 300),
-              child: isRecording
+              child: _audioRecorderService.isRecording
                   ? Container(
                       width: 90,
                       height: 90,
@@ -1271,18 +1081,20 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                         child: IconButton(
                           icon: Icon(
                             size: 28,
-                            isRecordingLocked ? Icons.send : Icons.mic,
+                            _audioRecorderService.isRecordingLocked
+                                ? Icons.send
+                                : Icons.mic,
                           ),
                           color: Colors.white,
                           onPressed: () async {
-                            if (isRecording) {
-                              String? filePath =
-                                  await _stopRecording(waitForSending: true);
+                            if (_audioRecorderService.isRecording) {
+                              String? filePath = await _audioRecorderService
+                                  .stopRecording(waitForSending: true);
                               _sendMessage(
                                   ref: ref,
                                   contentType: 'audio',
                                   filePath: filePath);
-                              _cancelRecording();
+                              _audioRecorderService.cancelRecording();
                             }
                           },
                         ),

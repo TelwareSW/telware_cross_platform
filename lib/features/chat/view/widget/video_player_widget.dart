@@ -83,72 +83,76 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return _controller.value.isInitialized
-        ? GestureDetector(
-            onTap: () {
-              setState(() {
-                if (_controller.value.isPlaying) {
-                  _controller.pause();
-                  _timer?.cancel(); // Stop timer when paused
-                } else {
-                  _controller.play();
-                  startTimer(); // Start timer when playing
-                }
-              });
-            },
-            child:
-                widget.filePath == null || !doesFileExistSync(widget.filePath!)
-                    ? SizedBox(
-                        width: 200,
-                        height: 200,
-                        child: Center(
-                          child: DownloadWidget(
-                            onTap: widget.onDownloadTap,
-                            url: widget.url,
-                            color: Colors.white,
+    return SizedBox(
+      width: 200,
+      height: 200,
+      child: _controller.value.isInitialized
+          ? GestureDetector(
+              onTap: () {
+                setState(() {
+                  if (_controller.value.isPlaying) {
+                    _controller.pause();
+                    _timer?.cancel(); // Stop timer when paused
+                  } else {
+                    _controller.play();
+                    startTimer(); // Start timer when playing
+                  }
+                });
+              },
+              child: widget.filePath == null ||
+                      !doesFileExistSync(widget.filePath!)
+                  ? SizedBox(
+                      width: 200,
+                      height: 200,
+                      child: Center(
+                        child: DownloadWidget(
+                          onTap: widget.onDownloadTap,
+                          url: widget.url,
+                          color: Colors.white,
+                        ),
+                      ),
+                    )
+                  : Stack(
+                      children: [
+                        SizedBox.expand(
+                          child: Center(
+                            child: AspectRatio(
+                              aspectRatio: _controller.value.aspectRatio,
+                              child: VideoPlayer(_controller),
+                            ),
                           ),
                         ),
-                      )
-                    : Stack(
-                        children: [
-                          SizedBox.expand(
-                            child: Center(
-                              child: AspectRatio(
-                                aspectRatio: _controller.value.aspectRatio,
-                                child: VideoPlayer(_controller),
+                        Positioned(
+                          bottom: 5,
+                          left: 5,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 5, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.6),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              // Display total duration initially and after playback, current position during playback
+                              formatDuration(showTotalDuration
+                                  ? _controller.value.duration.inSeconds
+                                  : durationCounter),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
-                          Positioned(
-                            bottom: 5,
-                            left: 5,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 5, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.6),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                // Display total duration initially and after playback, current position during playback
-                                formatDuration(showTotalDuration
-                                    ? _controller.value.duration.inSeconds
-                                    : durationCounter),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-          )
-        : const Center(
-            child: CircularProgressIndicator(
-              color: Palette.accent,
+                        ),
+                      ],
+                    ),
+            )
+          : const Center(
+              child: CircularProgressIndicator(
+                color: Palette.accent,
+              ),
             ),
-          );
+    );
   }
 }
