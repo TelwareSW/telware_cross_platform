@@ -37,7 +37,7 @@ class EventHandler {
     _chattingController.setEventsQueue(_queue);
     // Start processing if not already running
     if (!_isProcessing) {
-      ();
+      processQueue();
     }
   }
 
