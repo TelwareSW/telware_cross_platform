@@ -46,7 +46,11 @@ class ChatsViewModel extends _$ChatsViewModel {
   }
 
   List<UserModel?> getChatUsers(String chatId) {
-    return state.firstWhere((chat) => chat.id == chatId).userIds.map((userId) => _otherUsers[userId]).toList();
+    return state
+        .firstWhere((chat) => chat.id == chatId)
+        .userIds
+        .map((userId) => _otherUsers[userId])
+        .toList();
   }
 
   Future<UserModel?> getUser(String ID) async {
@@ -84,7 +88,10 @@ class ChatsViewModel extends _$ChatsViewModel {
     state = [chat, ...state];
   }
 
-  Map<String, String> addSentMessage(
+  ({
+    String msgLocalId,
+    String chatId,
+  }) addSentMessage(
     MessageContent content,
     String chatID,
     MessageType msgType,
@@ -112,13 +119,14 @@ class ChatsViewModel extends _$ChatsViewModel {
     _chatsMap[chatID] = chat;
     _moveChatToFront(chatID);
 
-    return {'msgLocalId': msgLocalId, 'chatId': chatID};
+    return (msgLocalId: msgLocalId, chatId: chatID);
   }
 
-  void updateMsgId(String newMsgId, Map<String, String> identifiers) {
-    String msgLocalId = identifiers['msgLocalId']!,
-        chatId = identifiers['chatId']!;
-
+  void updateMsgId({
+    required String newMsgId,
+    required String msgLocalId,
+    required String chatId,
+  }) {
     final chat = _chatsMap[chatId];
     if (chat != null) {
       debugPrint('### found the chat');
@@ -142,17 +150,10 @@ class ChatsViewModel extends _$ChatsViewModel {
     var chatID = response["chatId"] as String;
     var chat = _chatsMap[chatID];
 
-    Map<String, MessageState> userStates = {};
+    Map<String, MessageState> userStates = {ref.read(userProvider)!.id!: MessageState.read};
+    MessageContent? content;
     MessageContentType contentType =
         MessageContentType.getType(response['contentType'] ?? 'text');
-    MessageContent? content;
-
-    final Map<String, String> userStatesMap = response['userStates'] ??
-        {response['senderId']: 'read', ref.read(userProvider)!.id!: 'read'};
-
-    for (var entry in userStatesMap.entries) {
-      userStates[entry.key] = MessageState.getType(entry.value);
-    }
 
     // TODO: needs to be modified to match the response fields
     content = createMessageContent(
@@ -172,6 +173,9 @@ class ChatsViewModel extends _$ChatsViewModel {
           ? DateTime.parse(response['timestamp'])
           : DateTime.now(),
       userStates: userStates,
+      parentMessage: response['parentMessageId'],
+      isPinned: response['isPinned'],
+      isForward: response['isForward']
     );
 
     if (chat == null) {
@@ -248,7 +252,8 @@ class ChatsViewModel extends _$ChatsViewModel {
   void muteChat(String chatID, int muteUntilSeconds) {
     final chat = _chatsMap[chatID];
     DateTime? muteUntil = muteUntilSeconds == -1
-        ? null : DateTime.now().add(Duration(seconds: muteUntilSeconds));
+        ? null
+        : DateTime.now().add(Duration(seconds: muteUntilSeconds));
     chat!.copyWith(isMuted: true, muteUntil: muteUntil);
     _chatsMap[chatID] = chat;
     state = List.from(state);

@@ -25,14 +25,20 @@ part 'message_event_models.g.dart';
 @HiveType(typeId: 7)
 class MessageEvent {
   @HiveField(0)
-  final dynamic payload;
+  final Map<String, dynamic> payload;
   @HiveField(1)
-  final dynamic identifier;
+  final String msgId;
+  @HiveField(2)
+  final String chatId;
 
   final ChattingController? _controller;
 
-  MessageEvent(this.payload, {ChattingController? controller, this.identifier})
-      : _controller = controller;
+  MessageEvent(
+    this.payload, {
+    required this.msgId,
+    required this.chatId,
+    ChattingController? controller,
+  }) : _controller = controller;
 
   Future<bool> execute(SocketService socket,
       {Duration timeout = const Duration(seconds: 10)}) async {
@@ -68,17 +74,22 @@ class MessageEvent {
   MessageEvent copyWith({
     dynamic payload,
     ChattingController? controller,
+    String? msgId,
+    String? chatId,
   }) {
-    return SendMessageEvent(
+    return MessageEvent(
       payload ?? this.payload,
       controller: controller ?? _controller,
+      msgId: msgId ?? this.msgId,
+      chatId: chatId ?? this.chatId,
     );
   }
 }
 
 @HiveType(typeId: 8)
 class SendMessageEvent extends MessageEvent {
-  SendMessageEvent(super.payload, {super.controller, super.identifier});
+  SendMessageEvent(super.payload,
+      {super.controller, required super.msgId, required super.chatId});
 
   @override
   Future<bool> execute(
@@ -105,7 +116,11 @@ class SendMessageEvent extends MessageEvent {
               final messageId = res['messageId'] as String;
               debugPrint('--- got the id $messageId');
 
-              _controller!.updateMessageId(messageId, identifier);
+              _controller!.updateMessageId(
+                msgId: messageId,
+                msgLocalId: msgId,
+                chatId: chatId,
+              );
               completer.complete(true);
             } else {
               completer.complete(false);
@@ -123,17 +138,26 @@ class SendMessageEvent extends MessageEvent {
   SendMessageEvent copyWith({
     dynamic payload,
     ChattingController? controller,
+    String? msgId,
+    String? chatId,
   }) {
     return SendMessageEvent(
       payload ?? this.payload,
       controller: controller ?? _controller,
+      msgId: msgId ?? this.msgId,
+      chatId: chatId ?? this.chatId,
     );
   }
 }
 
 @HiveType(typeId: 9)
 class DeleteMessageEvent extends MessageEvent {
-  DeleteMessageEvent(super.payload, {super.controller, super.identifier});
+  DeleteMessageEvent(
+    super.payload, {
+    super.controller,
+    required super.msgId,
+    required super.chatId,
+  });
 
   @override
   Future<bool> execute(
@@ -156,17 +180,26 @@ class DeleteMessageEvent extends MessageEvent {
   DeleteMessageEvent copyWith({
     dynamic payload,
     ChattingController? controller,
+    String? msgId,
+    String? chatId,
   }) {
     return DeleteMessageEvent(
       payload ?? this.payload,
       controller: controller ?? _controller,
+      msgId: msgId ?? this.msgId,
+      chatId: chatId ?? this.chatId,
     );
   }
 }
 
 @HiveType(typeId: 10)
 class EditMessageEvent extends MessageEvent {
-  EditMessageEvent(super.payload, {super.controller, super.identifier});
+  EditMessageEvent(
+    super.payload, {
+    super.controller,
+    required super.msgId,
+    required super.chatId,
+  });
 
   @override
   Future<bool> execute(
@@ -189,17 +222,26 @@ class EditMessageEvent extends MessageEvent {
   EditMessageEvent copyWith({
     dynamic payload,
     ChattingController? controller,
+    String? msgId,
+    String? chatId,
   }) {
     return EditMessageEvent(
       payload ?? this.payload,
       controller: controller ?? _controller,
+      msgId: msgId ?? this.msgId,
+      chatId: chatId ?? this.chatId,
     );
   }
 }
 
 @HiveType(typeId: 11)
 class UpdateDraftEvent extends MessageEvent {
-  UpdateDraftEvent(super.payload, {super.controller});
+  UpdateDraftEvent(
+    super.payload, {
+    super.controller,
+    required super.msgId,
+    required super.chatId,
+  });
 
   @override
   Future<bool> execute(
@@ -228,10 +270,14 @@ class UpdateDraftEvent extends MessageEvent {
   UpdateDraftEvent copyWith({
     dynamic payload,
     ChattingController? controller,
+    String? msgId,
+    String? chatId,
   }) {
     return UpdateDraftEvent(
       payload ?? this.payload,
       controller: controller ?? _controller,
+      msgId: msgId ?? this.msgId,
+      chatId: chatId ?? this.chatId,
     );
   }
 }

@@ -40,6 +40,8 @@ class MessageModel {
   final String? parentMessage;
   @HiveField(12)
   final String localId;
+  @HiveField(13)
+  final bool isForward;
 
 //<editor-fold desc="Data Methods">
   MessageModel({
@@ -55,7 +57,8 @@ class MessageModel {
     required this.userStates,
     this.isPinned=false,
     this.parentMessage,
-    this.localId = ''
+    this.localId = '',
+    this.isForward = false
   });
 
   Future<void> _setPhotoBytes() async {
@@ -99,6 +102,7 @@ class MessageModel {
         other.photo == photo &&
         other.photoBytes == photoBytes &&
         other.localId == localId &&
+        other.isForward == isForward &&
         other.userStates == userStates;
   }
 
@@ -113,6 +117,7 @@ class MessageModel {
         id.hashCode ^
         photo.hashCode ^
         photoBytes.hashCode ^
+        isForward.hashCode ^
         localId.hashCode ^
         userStates.hashCode;
   }
@@ -131,6 +136,7 @@ class MessageModel {
         'messageContentType: ${messageContentType.name},\n'
         'isPhotoBytesSet: ${photoBytes != null}\n'
         'localId: $localId\n'
+        'isForward: $isForward\n'
         ')');
   }
 
@@ -145,7 +151,9 @@ class MessageModel {
     Map<String, MessageState>? userStates,
     MessageType? messageType,
     MessageContentType? messageContentType,
-    String? localId
+    String? localId,
+    bool? isForward,
+    bool? isPinned,
   }) {
     return MessageModel(
       senderId: senderId ?? this.senderId,
@@ -158,7 +166,9 @@ class MessageModel {
       userStates: userStates ?? Map.from(this.userStates),
       messageType: messageType ?? this.messageType,
       messageContentType: messageContentType ?? this.messageContentType,
-      localId: localId ?? this.localId
+      localId: localId ?? this.localId,
+      isForward: isForward ?? this.isForward,
+      isPinned: isPinned ?? this.isPinned
     );
   }
 
@@ -176,7 +186,9 @@ class MessageModel {
           : null,
       'messageType': messageType.name,
       'messageContentType': messageContentType.name,
-      'localId': localId
+      'localId': localId,
+      'isForward': isForward,
+      'isPinned': isPinned,
     };
 
     return map;
@@ -203,6 +215,8 @@ class MessageModel {
           ),
         ),
       ),
+      isForward: map['isForward'] ?? false,
+      isPinned: map['isPinned'] ?? false,
     );
     await message._setPhotoBytes();
     return message;
