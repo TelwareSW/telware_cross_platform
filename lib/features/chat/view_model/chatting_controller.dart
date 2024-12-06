@@ -343,8 +343,7 @@ class ChattingController {
     debugPrint('!!! muteChat called');
     final String chatID = chatModel.id!;
     final String userId = _ref.read(userProvider)!.id!;
-    final muteUntilSeconds = muteUntil!.difference(DateTime.now()).inSeconds >
-            10 * 365 * 24 * 60 * 60
+    final muteUntilSeconds = muteUntil == null
         ? -1
         : muteUntil.difference(DateTime.now()).inSeconds;
 

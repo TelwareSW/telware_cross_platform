@@ -163,7 +163,7 @@ class _ProfilePhotoPrivacyScreen extends ConsumerState<ProfilePhotoPrivacyScreen
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) => const AddMyImageScreen(
-                                destination: 'profile'),
+                                destination: 'user-profile'),
                           ),
                         );
                       },

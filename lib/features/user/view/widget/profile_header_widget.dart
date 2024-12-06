@@ -1,3 +1,5 @@
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
@@ -5,14 +7,31 @@ import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 
 class ProfileHeader extends ConsumerWidget {
-  final double factor;
+  final BoxConstraints constraints;
+  final Uint8List? photoBytes;
+  final String displayName;
+  final String? substring;
 
-  const ProfileHeader({super.key, this.factor = 0});
+  const ProfileHeader({
+    super.key,
+    this.constraints = const BoxConstraints(),
+    required this.photoBytes,
+    required this.displayName,
+    this.substring,
+  });
+
+  double _calculateFactor(BoxConstraints constraints) {
+    double maxExtent = 130.0;
+    double scrollOffset = constraints.maxHeight - kToolbarHeight;
+    double factor =
+    scrollOffset > 0 ? (maxExtent - scrollOffset) / maxExtent * 90.0 : 60.0;
+    return factor.clamp(0, 90.0);
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(userProvider);
-    final userImageBytes = user?.photoBytes;
+    final double factor = _calculateFactor(constraints);
+
     return Padding(
       padding: EdgeInsets.fromLTRB(factor, 0, 0, 0),
       child: Row(
@@ -22,12 +41,12 @@ class ProfileHeader extends ConsumerWidget {
           CircleAvatar(
             radius: 20,
             backgroundImage:
-            userImageBytes != null ? MemoryImage(userImageBytes) : null,
+            photoBytes != null ? MemoryImage(photoBytes!) : null,
             backgroundColor:
-            userImageBytes == null ? Palette.primary : null,
-            child: userImageBytes == null
+            photoBytes == null ? getRandomColor(displayName) : null,
+            child: photoBytes == null
                 ? Text(
-              getInitials('${user!.screenFirstName} ${user.screenLastName}'),
+              getInitials(displayName),
               style: const TextStyle(
                 fontWeight: FontWeight.w500,
                 color: Palette.primaryText,
@@ -36,27 +55,29 @@ class ProfileHeader extends ConsumerWidget {
                 : null,
           ),
           const SizedBox(width: 10),
-          Column(
+          Expanded(child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '${user!.screenFirstName} ${user.screenLastName}',
+                displayName,
                 style: TextStyle(
                   fontSize: 14  + 6 * factor / 100,
                   fontWeight: FontWeight.bold,
                   color: Palette.primaryText,
                 ),
               ),
-              Text(
-                user.status,
-                style: TextStyle(
-                  fontSize: 10  + 6 * factor / 100,
-                  color: Palette.accentText,
+              if (substring != null)
+                Text(
+                  substring!,
+                  style: TextStyle(
+                    fontSize: 10  + 6 * factor / 100,
+                    color: Palette.accentText,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
             ],
-          )
+          ))
         ],
       ),
     );

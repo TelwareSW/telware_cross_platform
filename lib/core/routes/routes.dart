@@ -12,8 +12,10 @@ import 'package:telware_cross_platform/features/auth/view/screens/sign_up_screen
 import 'package:telware_cross_platform/features/auth/view/screens/social_auth_loading_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/verification_screen.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
+import 'package:telware_cross_platform/features/chat/view/screens/chat_info_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/chat_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/create_chat_screen.dart';
+import 'package:telware_cross_platform/features/chat/view/screens/create_group_screen.dart';
 import 'package:telware_cross_platform/features/home/view/screens/home_screen.dart';
 import 'package:telware_cross_platform/features/home/view/screens/inbox_screen.dart';
 import 'package:telware_cross_platform/features/stories/view/screens/add_my_image_screen.dart';
@@ -70,6 +72,8 @@ class Routes {
   static const String pinnedMessagesScreen = PinnedMessagesScreen.route;
   static const String cropImageScreen = CropImageScreen.route;
   static const String createChatScreen = CreateChatScreen.route;
+  static const String chatInfoScreen = ChatInfoScreen.route;
+  static const String createGroupScreen = CreateGroupScreen.route;
 
   static GoRouter appRouter(WidgetRef ref) => GoRouter(
         initialLocation: Routes.splash,
@@ -195,7 +199,10 @@ class Routes {
           ),
           GoRoute(
             path: Routes.userProfile,
-            builder: (context, state) => const UserProfileScreen(),
+            builder: (context, state) {
+              final String? userId = state.extra as String?;
+              return UserProfileScreen(userId: userId);
+            }
           ),
           GoRoute(
             path: Routes.privacySettings,
@@ -263,6 +270,17 @@ class Routes {
           GoRoute(
             path: Routes.createChatScreen,
             builder: (context, state) => const CreateChatScreen(),
+          ),
+          GoRoute(
+            path: Routes.chatInfoScreen,
+            builder: (context, state) {
+              final ChatModel chatModel = state.extra as ChatModel;
+              return ChatInfoScreen(chatModel: chatModel);
+            },
+          ),
+          GoRoute(
+            path: Routes.createGroupScreen,
+            builder: (context, state) => const CreateGroupScreen(),
           ),
         ],
       );

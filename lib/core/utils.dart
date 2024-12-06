@@ -98,14 +98,24 @@ String formatPhoneNumber(String phoneNumber) {
 }
 
 // Helper function to generate random pastel-like colors
-Color getRandomColor() {
+final Map<String, Color> _colorCache = {};
+Color getRandomColor([String? key]) {
+  // Check color cache for a color with the same key
+  if (_colorCache.containsKey(key)) {
+    return _colorCache[key]!;
+  }
+
   final Random random = Random();
-  return Color.fromARGB(
+  final randomColor = Color.fromARGB(
     255,
     50 + random.nextInt(100), // Red (200-255)
     50 + random.nextInt(100), // Green (200-255)
     50 + random.nextInt(100), // Blue (200-255)
   );
+
+  // Add the color to the cache
+  if (key != null) _colorCache[key] = randomColor;
+  return randomColor;
 }
 
 String toKebabCase(String input) {

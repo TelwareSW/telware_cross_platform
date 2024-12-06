@@ -33,8 +33,25 @@ class ChatsViewModel extends _$ChatsViewModel {
     _otherUsers = otherUsers;
   }
 
+  Map<String, UserModel> getOtherUsers() {
+    return _otherUsers;
+  }
+
+  List<ChatModel> getGroupChats() {
+    return state.where((chat) => chat.type == ChatType.group).toList();
+  }
+
+  List<ChatModel> getPrivateChats() {
+    return state.where((chat) => chat.type == ChatType.private).toList();
+  }
+
+  List<UserModel?> getChatUsers(String chatId) {
+    return state.firstWhere((chat) => chat.id == chatId).userIds.map((userId) => _otherUsers[userId]).toList();
+  }
+
   Future<UserModel?> getUser(String ID) async {
     if (ID == ref.read(userProvider)!.id) {
+      print('!!!** returning the current user');
       return ref.read(userProvider);
     }
 
@@ -52,6 +69,7 @@ class ChatsViewModel extends _$ChatsViewModel {
       ref.read(chattingControllerProvider).restoreOtherUsers(_otherUsers);
     }
 
+    print('!!!** returning a user from the other users map: $user');
     return user;
   }
 
@@ -229,9 +247,8 @@ class ChatsViewModel extends _$ChatsViewModel {
 
   void muteChat(String chatID, int muteUntilSeconds) {
     final chat = _chatsMap[chatID];
-    DateTime muteUntil = muteUntilSeconds == -1
-        ? DateTime.now().add(const Duration(days: 365 * 100))
-        : DateTime.now().add(Duration(seconds: muteUntilSeconds));
+    DateTime? muteUntil = muteUntilSeconds == -1
+        ? null : DateTime.now().add(Duration(seconds: muteUntilSeconds));
     chat!.copyWith(isMuted: true, muteUntil: muteUntil);
     _chatsMap[chatID] = chat;
     state = List.from(state);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/core/utils.dart';
@@ -96,12 +97,12 @@ class AppDrawer extends ConsumerWidget {
         _drawerItem(context, Icons.account_circle_outlined, 'My Profile',
             verticalPadding: 5, route: UserProfileScreen.route),
         const Divider(thickness: 0.3, color: Palette.black, height: 0),
-        _drawerItem(context, Icons.people_alt_outlined, 'New Group'),
+        _drawerItem(context, Icons.people_alt_outlined, 'New Group', route: Routes.createGroupScreen),
         _drawerItem(context, Icons.person_outline_rounded, 'Contacts'),
         _drawerItem(context, Icons.call_outlined, 'Calls'),
         _drawerItem(context, Icons.bookmark_outline_rounded, 'Saved Messages'),
         _drawerItem(context, Icons.settings_outlined, 'Settings',
-            route: SettingsScreen.route),
+            route: Routes.settings),
         const Divider(thickness: 0.3, color: Palette.black, height: 0),
         _drawerItem(context, Icons.person_add_outlined, 'Invite Friends'),
         _drawerItem(context, Icons.info_outlined, 'TelWare Features'),
