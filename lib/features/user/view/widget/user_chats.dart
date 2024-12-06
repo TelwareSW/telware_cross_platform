@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
 
@@ -23,7 +22,6 @@ class UserChats extends StatelessWidget {
             final options = section["options"];
             final trailing = section["trailing"] ?? "";
             final titleFontSize = section["titleFontSize"];
-            final isSelected = section["isSelected"];
             return Column(
               children: [
                 SettingsSection(

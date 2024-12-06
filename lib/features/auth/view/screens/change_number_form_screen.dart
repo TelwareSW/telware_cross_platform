@@ -72,9 +72,6 @@ class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
       Keys.changeNumberPhoneShakeKey.currentState?.shake();
     }
 
-    String phoneNumber = "+${phoneController.value.countryCode} "
-        "${phoneController.value.nsn}";
-
     if (notFilled) {
       Vibration.hasVibrator().then((hasVibrator) {
         if (hasVibrator ?? false) {
@@ -95,8 +92,6 @@ class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userState = ref.watch(userViewModelProvider);
-
     ref.listen<UserState>(userViewModelProvider, (previous, next) {
       if (next.type == UserStateType.success) {
         ScaffoldMessenger.of(context).showSnackBar(

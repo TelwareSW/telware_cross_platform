@@ -7,13 +7,15 @@ class PopupMenuItemWidget extends StatelessWidget {
   final String text;
   final Widget? trailing;
   final Function? onTap;
+  final Color? color;
 
   const PopupMenuItemWidget({
     super.key,
     required this.icon,
     required this.text,
     this.trailing,
-    this.onTap
+    this.onTap,
+    this.color,
   });
 
   @override
@@ -24,11 +26,11 @@ class PopupMenuItemWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
           child: Row(
             children: [
-              Icon(icon, color: Palette.accentText,),
+              Icon(icon, color: color ?? Palette.accentText,),
               const SizedBox(width: 16),
               Text(text,
-                style: const TextStyle(
-                  color: Palette.primaryText,
+                style: TextStyle(
+                  color: color ?? Palette.primaryText,
                   fontSize: 16,
                 ),
               ),

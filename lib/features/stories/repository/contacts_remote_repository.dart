@@ -131,7 +131,7 @@ class ContactsRemoteRepository {
           throw Exception('Failed to load contacts: ${response.statusCode}');
         }
       } catch (error) {
-        print('Error fetching contacts: $error');
+        debugPrint('Error fetching contacts: $error');
         rethrow;
       }
     }
@@ -243,17 +243,29 @@ class ContactsRemoteRepository {
             userImageUrl: userData['photo'],
           );
         } else {
-          print('Failed to fetch user data: ${userResponse.statusCode}');
-          return ContactModel(stories: [], userName: 'myUser', userId: 'myUser', userImageUrl: '');
+          debugPrint('Failed to fetch user data: ${userResponse.statusCode}');
+          return ContactModel(
+              stories: [],
+              userName: 'myUser',
+              userId: 'myUser',
+              userImageUrl: '');
         }
       } else {
-        print('Failed to fetch stories: ${storiesResponse.statusCode}');
-        return ContactModel(stories: [], userName: 'myUser', userId: 'myUser', userImageUrl: '');
+        debugPrint('Failed to fetch stories: ${storiesResponse.statusCode}');
+        return ContactModel(
+            stories: [],
+            userName: 'myUser',
+            userId: 'myUser',
+            userImageUrl: '');
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Error occurred: $e');
-        return ContactModel(stories: [], userName: 'myUser', userId: 'myUser', userImageUrl: '');
+        debugPrint('Error occurred: $e');
+        return ContactModel(
+            stories: [],
+            userName: 'myUser',
+            userId: 'myUser',
+            userImageUrl: '');
       }
     }
 
@@ -365,10 +377,10 @@ class ContactsRemoteRepository {
     request.headers['X-Session-Token'] = _ref.read(tokenProvider)!;
     try {
       var response = await request.send();
-      print(response.statusCode);
+      debugPrint('${response.statusCode}');
       return response.statusCode == 200;
     } catch (e) {
-      print('Error occurred: $e');
+      debugPrint('Error occurred: $e');
       return false;
     }
   }
@@ -380,10 +392,10 @@ class ContactsRemoteRepository {
     request.headers['X-Session-Token'] = _ref.read(tokenProvider)!;
     try {
       var response = await request.send();
-      print(response.statusCode);
+      debugPrint('${response.statusCode}');
       return response.statusCode == 204;
     } catch (e) {
-      print('Error occurred: $e');
+      debugPrint('Error occurred: $e');
       return false;
     }
   }

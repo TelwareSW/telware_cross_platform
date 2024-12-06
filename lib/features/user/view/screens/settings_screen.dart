@@ -156,9 +156,13 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
                   ],
                   flexibleSpace: LayoutBuilder(
                     builder: (context, constraints) {
-                      double factor = _calculateFactor(constraints);
                       return FlexibleSpaceBar(
-                        title: ProfileHeader(factor: factor),
+                        title: ProfileHeader(
+                          constraints: constraints,
+                          photoBytes: user.photoBytes,
+                          displayName: '${user.screenFirstName} ${user.screenLastName}',
+                          substring: user.status,
+                        ),
                         centerTitle: true,
                         background: Container(
                           alignment: Alignment.topLeft,
@@ -180,7 +184,7 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
                                     builder: (context) => const AddMyImageScreen(
-                                        destination: 'profile'),
+                                        destination: 'user-profile'),
                                   ),
                                 );
                               },
@@ -255,13 +259,5 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
               ],
             ),
     );
-  }
-
-  double _calculateFactor(BoxConstraints constraints) {
-    double maxExtent = 130.0;
-    double scrollOffset = constraints.maxHeight - kToolbarHeight;
-    double factor =
-        scrollOffset > 0 ? (maxExtent - scrollOffset) / maxExtent * 90.0 : 60.0;
-    return factor.clamp(0, 90.0);
   }
 }

@@ -53,9 +53,9 @@ class _PinnedMessagesScreen extends ConsumerState<PinnedMessagesScreen>
   int _currentMatch = 1;
 
   // ignore: unused_field
-  int _currentMatchIndex = 0;
-  Map<int, List<MapEntry<int, int>>> _messageMatches = {};
-  List<int> _messageIndices = [];
+  final int _currentMatchIndex = 0;
+  final Map<int, List<MapEntry<int, int>>> _messageMatches = {};
+  final List<int> _messageIndices = [];
 
   //---------------------------------Recording--------------------------------
   // TODO: This works only on mobile if you tried to run it on web it will throw an error
