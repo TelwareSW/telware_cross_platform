@@ -61,7 +61,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   List<MessageModel> pinnedMessages = [];
   int indexInPinnedMessage = 0;
 
-  late ChatModel? chatModel;
+  ChatModel? chatModel;
   bool isSearching = false;
   bool isShowAsList = false;
   int _numberOfMatches = 0;
@@ -151,17 +151,17 @@ class _ChatScreen extends ConsumerState<ChatScreen>
           .updateDraft(chatModel!, currentDraft);
       _previousDraft = currentDraft;
     } else if (chatModel?.id != null) {
-      ref
-          .read(chattingControllerProvider)
-          .getDraft(chatModel!.id!)
-          .then((draft) {
-        if (draft != null && draft != _previousDraft) {
-          setState(() {
-            _messageController.text = draft;
-            _previousDraft = draft;
-          });
-        }
-      });
+      // ref
+      //     .read(chattingControllerProvider)
+      //     .getDraft(chatModel!.id!)
+      //     .then((draft) {
+      //   if (draft != null && draft != _previousDraft) {
+      //     setState(() {
+      //       _messageController.text = draft;
+      //       _previousDraft = draft;
+      //     });
+      //   }
+      // });
     }
   }
 

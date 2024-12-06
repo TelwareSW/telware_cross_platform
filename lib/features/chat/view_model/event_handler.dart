@@ -25,6 +25,7 @@ class EventHandler {
       userId: _userId,
       onConnect: _onSocketConnect,
       sessionId: _sessionId,
+      eventHandler: this,
     );
     processQueue();
   }
@@ -64,6 +65,7 @@ class EventHandler {
           onConnect: _onSocketConnect,
           sessionId: _sessionId,
         );
+        break;
       }
 
       try {
@@ -76,11 +78,11 @@ class EventHandler {
           _queue.removeFirst(); // Remove successful event
           debugPrint('Processed event: ${currentEvent.runtimeType}');
           _chattingController.setEventsQueue(_queue);
+          failingCounter = 0;
         } else {
           debugPrint('Failed to process event: ${currentEvent.runtimeType}');
           failingCounter++;
           if (failingCounter == EVENT_FAIL_LIMIT) {
-            failingCounter = 0;
             _stopRequested =
                 true; // it is already called in the onError method, but I add it for insurance
             _socket.onError();
@@ -90,6 +92,10 @@ class EventHandler {
         }
       } catch (e) {
         debugPrint('Error processing event: ${currentEvent.runtimeType}, $e');
+        if (failingCounter == EVENT_FAIL_LIMIT) {
+          _stopRequested =true;
+          _socket.onError();
+        }
         await Future.delayed(const Duration(seconds: 2));
       }
     }

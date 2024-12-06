@@ -201,7 +201,7 @@ class ChattingController {
   /// Send a text message.
   /// Must specify either the chatID or userID in case of new chat,
   /// otherwise, it will throw an error
-
+  
   Future<void> sendMsg({
     required MessageContent content,
     required MessageType msgType,
@@ -234,6 +234,8 @@ class ChattingController {
     final identifier = _ref
         .read(chatsViewModelProvider.notifier)
         .addSentMessage(content, chatID!, msgType, contentType);
+    
+    print('^^^ new message identifier: $identifier');
 
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
