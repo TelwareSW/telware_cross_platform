@@ -290,6 +290,11 @@ class ContactsRemoteRepository {
 
     try {
       var response = await request.send();
+      var responseBody = await response.stream.bytesToString();
+
+      if (kDebugMode) {
+        debugPrint('Response Body: $responseBody');
+      }
       return response.statusCode == 201;
     } catch (e) {
       if (kDebugMode) {

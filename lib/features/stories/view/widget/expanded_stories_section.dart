@@ -21,7 +21,7 @@ class ExpandedStoriesSection extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             SizedBox(
-              height: kIsWeb ? kToolbarHeight : kToolbarHeight + 30,
+              height: kIsWeb ? kToolbarHeight : kToolbarHeight + 26,
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
