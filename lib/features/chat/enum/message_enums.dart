@@ -61,7 +61,7 @@ enum MessageContentType {
   @HiveField(2)
   emoji(content: 'emoji'),
   @HiveField(3)
-  gif(content: 'GIF'),
+  gif(content: 'gif'),
   @HiveField(4)
   sticker(content: 'sticker'),
   @HiveField(5)
@@ -79,7 +79,7 @@ enum MessageContentType {
         return MessageContentType.image;
       case 'emoji':
         return MessageContentType.emoji;
-      case 'GIF':
+      case 'gif':
         return MessageContentType.gif;
       case 'sticker':
         return MessageContentType.sticker;

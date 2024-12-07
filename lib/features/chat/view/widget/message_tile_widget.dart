@@ -10,6 +10,7 @@ import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/audio_message_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/document_message_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/image_message_widget.dart';
+import 'package:telware_cross_platform/features/chat/view/widget/sticker_message_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/video_player_widget.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 import 'package:telware_cross_platform/core/view/widget/highlight_text_widget.dart';
@@ -60,8 +61,14 @@ class MessageTileWidget extends ConsumerWidget {
     Alignment messageAlignment =
         isSentByMe ? Alignment.centerRight : Alignment.centerLeft;
     IconData messageState = getMessageStateIcon(messageModel);
-    // final String otherUserName = ;
-
+    bool noBackGround =
+        messageModel.messageContentType == MessageContentType.sticker ||
+            messageModel.messageContentType == MessageContentType.gif ||
+            messageModel.messageContentType == MessageContentType.emoji;
+    bool mediaMessage =
+        messageModel.messageContentType == MessageContentType.audio ||
+            messageModel.messageContentType == MessageContentType.image ||
+            messageModel.messageContentType == MessageContentType.video;
     return Align(
       alignment: messageAlignment,
       child: GestureDetector(
@@ -108,15 +115,11 @@ class MessageTileWidget extends ConsumerWidget {
               },
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 5),
-          padding: EdgeInsets.all(messageModel.messageContentType ==
-                      MessageContentType.image ||
-                  messageModel.messageContentType == MessageContentType.video
-              ? 3
-              : 12),
+          padding: EdgeInsets.all(mediaMessage ? 3 : 12),
           constraints: BoxConstraints(
               maxWidth: MediaQuery.of(context).size.width * 0.75),
           decoration: BoxDecoration(
-            gradient: isSentByMe
+            gradient: isSentByMe && !noBackGround
                 ? LinearGradient(
                     colors: [
                       Color.lerp(Colors.deepPurpleAccent, Colors.white, 0.2) ??
@@ -127,8 +130,8 @@ class MessageTileWidget extends ConsumerWidget {
                     end: Alignment.bottomCenter,
                   )
                 : null,
-            color: isSentByMe ? null : Palette.secondary,
-            borderRadius: BorderRadius.circular(15),
+            color: isSentByMe || noBackGround ? null : Palette.secondary,
+            borderRadius: BorderRadius.circular(20),
           ),
           child: Stack(
             children: [
@@ -295,26 +298,45 @@ class MessageTileWidget extends ConsumerWidget {
                           : messageModel.messageContentType ==
                                   MessageContentType.video
                               ? VideoPlayerWidget(
-                                  url: messageModel.content
-                                      ?.toJson()["videoUrl"],
                                   onDownloadTap: onDownloadTap,
                                   filePath: messageModel.content
-                                      ?.toJson()["filePath"])
+                                      ?.toJson()["filePath"],
+                                  url: messageModel.content
+                                      ?.toJson()["videoUrl"],
+                                )
                               : messageModel.messageContentType ==
                                       MessageContentType.file
                                   ? DocumentMessageWidget(
-                                      url: messageModel.content
-                                          ?.toJson()["fileUrl"],
                                       onDownloadTap: onDownloadTap,
                                       filePath: messageModel.content
                                           ?.toJson()["filePath"],
+                                      url: messageModel.content
+                                          ?.toJson()["fileUrl"],
                                       openOptions: () {},
                                     )
-                                  : const SizedBox.shrink(),
+                                  : messageModel.messageContentType ==
+                                          MessageContentType.sticker
+                                      ? StickerMessageWidget(
+                                          onDownloadTap: onDownloadTap,
+                                          filePath: messageModel.content
+                                              ?.toJson()["filePath"],
+                                          url: messageModel.content
+                                              ?.toJson()["stickerUrl"],
+                                        )
+                                      : messageModel.messageContentType ==
+                                              MessageContentType.gif
+                                          ? ImageMessageWidget(
+                                              onDownloadTap: onDownloadTap,
+                                              filePath: messageModel.content
+                                                  ?.toJson()["filePath"],
+                                              url: messageModel.content
+                                                  ?.toJson()["gifUrl"],
+                                            )
+                                          : const SizedBox.shrink(),
               // The timestamp is always in the bottom-right corner if there's space
               Positioned(
-                bottom: 0,
-                right: 0,
+                bottom: 5,
+                right: 5,
                 child: Container(
                     padding: const EdgeInsets.only(top: 5),
                     // Add some space above the timestamp

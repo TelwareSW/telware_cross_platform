@@ -331,10 +331,11 @@ class ChattingController {
     return null;
   }
 
-  void editMessageFilePath(String chatID, String msgID, String newFilePath) {
+  void editMessageFilePath(
+      String chatID, String msgLocalID, String newFilePath) {
     _ref
         .read(chatsViewModelProvider.notifier)
-        .updateMessageFilePath(chatID, msgID, newFilePath);
+        .updateMessageFilePath(chatID, msgLocalID, newFilePath);
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
@@ -343,9 +344,8 @@ class ChattingController {
     debugPrint('!!! muteChat called');
     final String chatID = chatModel.id!;
     final String userId = _ref.read(userProvider)!.id!;
-    final muteUntilSeconds = muteUntil == null
-        ? -1
-        : muteUntil.difference(DateTime.now()).inSeconds;
+    final muteUntilSeconds =
+        muteUntil == null ? -1 : muteUntil.difference(DateTime.now()).inSeconds;
 
     if (USE_MOCK_DATA) {
       final chats = _localRepository.getChats(userId);

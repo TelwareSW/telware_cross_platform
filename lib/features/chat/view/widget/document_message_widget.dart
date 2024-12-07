@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
 import 'package:telware_cross_platform/core/utils.dart';
@@ -36,8 +35,16 @@ class DocumentMessageWidgetState extends State<DocumentMessageWidget> {
     _initializeFileDetails();
   }
 
+  @override
+  void didUpdateWidget(DocumentMessageWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.filePath != widget.filePath) {
+      _initializeFileDetails();
+    }
+  }
+
   void _initializeFileDetails() {
-    if (widget.filePath == null) {
+    if (widget.filePath == null || !doesFileExistSync(widget.filePath!)) {
       fileName = 'Document';
       fileSize = '0 MB';
       return;
@@ -72,10 +79,16 @@ class DocumentMessageWidgetState extends State<DocumentMessageWidget> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           widget.filePath == null || !doesFileExistSync(widget.filePath!)
-              ? DownloadWidget(
-                  onTap: widget.onDownloadTap,
-                  url: widget.url,
-                  color: Colors.white,
+              ? SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: Center(
+                    child: DownloadWidget(
+                      onTap: widget.onDownloadTap,
+                      url: widget.url,
+                      color: Colors.white,
+                    ),
+                  ),
                 )
               : LottieViewer(
                   path: 'assets/json/attach_file.json',

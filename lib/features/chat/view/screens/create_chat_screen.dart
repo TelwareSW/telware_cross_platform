@@ -64,8 +64,9 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
   void _createNewChat(UserModel userInfo) {
     final myUser = ref.read(userProvider)!;
     // Check if a chat already exists between the two users
-    final ChatModel chat = ref.read(chatsViewModelProvider.notifier).getChat(
-        myUser, userInfo, ChatType.private);
+    final ChatModel chat = ref
+        .read(chatsViewModelProvider.notifier)
+        .getChat(myUser, userInfo, ChatType.private);
     context.push(ChatScreen.route, extra: chat);
   }
 
@@ -104,6 +105,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
+          dividerHeight: 0,
           tabAlignment: TabAlignment.start,
           padding: const EdgeInsets.only(left: 4.0, right: 4.0),
           indicator: const BoxDecoration(

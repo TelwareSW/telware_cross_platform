@@ -46,7 +46,11 @@ class ChatsViewModel extends _$ChatsViewModel {
   }
 
   List<UserModel?> getChatUsers(String chatId) {
-    return state.firstWhere((chat) => chat.id == chatId).userIds.map((userId) => _otherUsers[userId]).toList();
+    return state
+        .firstWhere((chat) => chat.id == chatId)
+        .userIds
+        .map((userId) => _otherUsers[userId])
+        .toList();
   }
 
   Future<UserModel?> getUser(String ID) async {
@@ -225,10 +229,12 @@ class ChatsViewModel extends _$ChatsViewModel {
     }
   }
 
-  void updateMessageFilePath(String chatID, String msgID, String filePath) {
+  void updateMessageFilePath(
+      String chatID, String msgLocalID, String filePath) {
     final chat = _chatsMap[chatID];
     // Find the msg with the specified ID
-    final msgIndex = chat!.messages.indexWhere((msg) => msg.id == msgID);
+    final msgIndex =
+        chat!.messages.indexWhere((msg) => msg.localId == msgLocalID);
 
     if (msgIndex != -1) {
       MessageModel? message = chat.messages[msgIndex];
@@ -241,14 +247,15 @@ class ChatsViewModel extends _$ChatsViewModel {
       debugPrint(
           "hmmmmmm  ${chat.messages[msgIndex].content?.toJson()["filePath"]}");
       _chatsMap[chatID] = chat;
-      state = List.from(state); // Update the state to trigger a rebuild
+      state = _chatsMap.values.toList();
     }
   }
 
   void muteChat(String chatID, int muteUntilSeconds) {
     final chat = _chatsMap[chatID];
     DateTime? muteUntil = muteUntilSeconds == -1
-        ? null : DateTime.now().add(Duration(seconds: muteUntilSeconds));
+        ? null
+        : DateTime.now().add(Duration(seconds: muteUntilSeconds));
     chat!.copyWith(isMuted: true, muteUntil: muteUntil);
     _chatsMap[chatID] = chat;
     state = List.from(state);
