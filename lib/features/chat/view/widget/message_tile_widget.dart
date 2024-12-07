@@ -65,6 +65,10 @@ class MessageTileWidget extends ConsumerWidget {
         messageModel.messageContentType == MessageContentType.sticker ||
             messageModel.messageContentType == MessageContentType.gif ||
             messageModel.messageContentType == MessageContentType.emoji;
+    bool mediaMessage =
+        messageModel.messageContentType == MessageContentType.audio ||
+            messageModel.messageContentType == MessageContentType.image ||
+            messageModel.messageContentType == MessageContentType.video;
     return Align(
       alignment: messageAlignment,
       child: GestureDetector(
@@ -111,11 +115,7 @@ class MessageTileWidget extends ConsumerWidget {
               },
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 5),
-          padding: EdgeInsets.all(messageModel.messageContentType ==
-                      MessageContentType.image ||
-                  messageModel.messageContentType == MessageContentType.video
-              ? 3
-              : 12),
+          padding: EdgeInsets.all(mediaMessage ? 3 : 12),
           constraints: BoxConstraints(
               maxWidth: MediaQuery.of(context).size.width * 0.75),
           decoration: BoxDecoration(
@@ -131,7 +131,7 @@ class MessageTileWidget extends ConsumerWidget {
                   )
                 : null,
             color: isSentByMe || noBackGround ? null : Palette.secondary,
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(20),
           ),
           child: Stack(
             children: [
@@ -284,8 +284,7 @@ class MessageTileWidget extends ConsumerWidget {
                       ? AudioMessageWidget(
                           duration: messageModel.content?.toJson()["duration"],
                           filePath: messageModel.content?.toJson()["filePath"],
-                          url: messageModel.content?.toJson()["audioUrl"] ??
-                              "e1de06344452b862.m4a",
+                          url: messageModel.content?.toJson()["audioUrl"],
                           onDownloadTap: onDownloadTap,
                         )
                       : messageModel.messageContentType ==
@@ -312,8 +311,7 @@ class MessageTileWidget extends ConsumerWidget {
                                       filePath: messageModel.content
                                           ?.toJson()["filePath"],
                                       url: messageModel.content
-                                              ?.toJson()["fileUrl"] ??
-                                          "87d8896eca064601.pdf",
+                                          ?.toJson()["fileUrl"],
                                       openOptions: () {},
                                     )
                                   : messageModel.messageContentType ==
@@ -323,8 +321,7 @@ class MessageTileWidget extends ConsumerWidget {
                                           filePath: messageModel.content
                                               ?.toJson()["filePath"],
                                           url: messageModel.content
-                                                  ?.toJson()["stickerUrl"] ??
-                                              "d13c1ff28f8f8834.tgs",
+                                              ?.toJson()["stickerUrl"],
                                         )
                                       : messageModel.messageContentType ==
                                               MessageContentType.gif
@@ -333,14 +330,13 @@ class MessageTileWidget extends ConsumerWidget {
                                               filePath: messageModel.content
                                                   ?.toJson()["filePath"],
                                               url: messageModel.content
-                                                      ?.toJson()["gifUrl"] ??
-                                                  "0d7341d8571360e5.gif",
+                                                  ?.toJson()["gifUrl"],
                                             )
                                           : const SizedBox.shrink(),
               // The timestamp is always in the bottom-right corner if there's space
               Positioned(
-                bottom: 0,
-                right: 0,
+                bottom: 5,
+                right: 5,
                 child: Container(
                     padding: const EdgeInsets.only(top: 5),
                     // Add some space above the timestamp
