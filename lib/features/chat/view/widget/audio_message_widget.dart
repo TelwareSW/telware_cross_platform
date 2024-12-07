@@ -66,6 +66,22 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
     loadAudioFile();
   }
 
+  @override
+  void dispose() {
+    controller.dispose();
+    playerController.dispose();
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(AudioMessageWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.filePath != widget.filePath) {
+      loadAudioFile();
+    }
+  }
+
   void startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (isPlaying) {
@@ -80,7 +96,7 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
   }
 
   Future<void> loadAudioFile() async {
-    if (widget.filePath == null) {
+    if (widget.filePath == null || !doesFileExistSync(widget.filePath!)) {
       return;
     }
     await playerController.preparePlayer(
@@ -96,14 +112,6 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
       currentDuration = 0;
     }
     setState(() {});
-  }
-
-  @override
-  void dispose() {
-    controller.dispose();
-    playerController.dispose();
-    super.dispose();
-    _timer?.cancel();
   }
 
   void _startOrStopPlaying() async {

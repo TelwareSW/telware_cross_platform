@@ -83,6 +83,7 @@ dependencies:
   mime: ^1.0.0
   just_audio: ^0.9.42
   open_file: ^3.5.10
+  emoji_picker_flutter: ^3.1.0
 
 
 dev_dependencies:

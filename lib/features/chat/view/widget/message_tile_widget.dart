@@ -10,6 +10,7 @@ import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/audio_message_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/document_message_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/image_message_widget.dart';
+import 'package:telware_cross_platform/features/chat/view/widget/sticker_message_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/video_player_widget.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 import 'package:telware_cross_platform/core/view/widget/highlight_text_widget.dart';
@@ -60,8 +61,10 @@ class MessageTileWidget extends ConsumerWidget {
     Alignment messageAlignment =
         isSentByMe ? Alignment.centerRight : Alignment.centerLeft;
     IconData messageState = getMessageStateIcon(messageModel);
-    // final String otherUserName = ;
-
+    bool noBackGround =
+        messageModel.messageContentType == MessageContentType.sticker ||
+            messageModel.messageContentType == MessageContentType.gif ||
+            messageModel.messageContentType == MessageContentType.emoji;
     return Align(
       alignment: messageAlignment,
       child: GestureDetector(
@@ -116,7 +119,7 @@ class MessageTileWidget extends ConsumerWidget {
           constraints: BoxConstraints(
               maxWidth: MediaQuery.of(context).size.width * 0.75),
           decoration: BoxDecoration(
-            gradient: isSentByMe
+            gradient: isSentByMe && !noBackGround
                 ? LinearGradient(
                     colors: [
                       Color.lerp(Colors.deepPurpleAccent, Colors.white, 0.2) ??
@@ -127,7 +130,7 @@ class MessageTileWidget extends ConsumerWidget {
                     end: Alignment.bottomCenter,
                   )
                 : null,
-            color: isSentByMe ? null : Palette.secondary,
+            color: isSentByMe || noBackGround ? null : Palette.secondary,
             borderRadius: BorderRadius.circular(15),
           ),
           child: Stack(
@@ -281,7 +284,8 @@ class MessageTileWidget extends ConsumerWidget {
                       ? AudioMessageWidget(
                           duration: messageModel.content?.toJson()["duration"],
                           filePath: messageModel.content?.toJson()["filePath"],
-                          url: messageModel.content?.toJson()["audioUrl"],
+                          url: messageModel.content?.toJson()["audioUrl"] ??
+                              "e1de06344452b862.m4a",
                           onDownloadTap: onDownloadTap,
                         )
                       : messageModel.messageContentType ==
@@ -295,22 +299,44 @@ class MessageTileWidget extends ConsumerWidget {
                           : messageModel.messageContentType ==
                                   MessageContentType.video
                               ? VideoPlayerWidget(
-                                  url: messageModel.content
-                                      ?.toJson()["videoUrl"],
                                   onDownloadTap: onDownloadTap,
                                   filePath: messageModel.content
-                                      ?.toJson()["filePath"])
+                                      ?.toJson()["filePath"],
+                                  url: messageModel.content
+                                      ?.toJson()["videoUrl"],
+                                )
                               : messageModel.messageContentType ==
                                       MessageContentType.file
                                   ? DocumentMessageWidget(
-                                      url: messageModel.content
-                                          ?.toJson()["fileUrl"],
                                       onDownloadTap: onDownloadTap,
                                       filePath: messageModel.content
                                           ?.toJson()["filePath"],
+                                      url: messageModel.content
+                                              ?.toJson()["fileUrl"] ??
+                                          "87d8896eca064601.pdf",
                                       openOptions: () {},
                                     )
-                                  : const SizedBox.shrink(),
+                                  : messageModel.messageContentType ==
+                                          MessageContentType.sticker
+                                      ? StickerMessageWidget(
+                                          onDownloadTap: onDownloadTap,
+                                          filePath: messageModel.content
+                                              ?.toJson()["filePath"],
+                                          url: messageModel.content
+                                                  ?.toJson()["stickerUrl"] ??
+                                              "d13c1ff28f8f8834.tgs",
+                                        )
+                                      : messageModel.messageContentType ==
+                                              MessageContentType.gif
+                                          ? ImageMessageWidget(
+                                              onDownloadTap: onDownloadTap,
+                                              filePath: messageModel.content
+                                                  ?.toJson()["filePath"],
+                                              url: messageModel.content
+                                                      ?.toJson()["gifUrl"] ??
+                                                  "0d7341d8571360e5.gif",
+                                            )
+                                          : const SizedBox.shrink(),
               // The timestamp is always in the bottom-right corner if there's space
               Positioned(
                 bottom: 0,
