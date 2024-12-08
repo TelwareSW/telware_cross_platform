@@ -192,7 +192,6 @@ class _BlockUserScreen extends ConsumerState<BlockUserScreen>
     }
     userChats[0]["options"] = filteredOptions;
 
-    debugPrint('userChats: $userChats');
     for (var option in userChats[0]["options"]) {
       option["trailingFontSize"] = 13.0;
       option["avatar"] = true;

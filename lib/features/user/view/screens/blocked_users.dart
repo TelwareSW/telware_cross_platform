@@ -122,7 +122,6 @@ class _BlockedUsersScreen extends ConsumerState<BlockedUsersScreen> {
               ? user.username
               : '${user.screenFirstName} ${user.screenLastName}'.trim();
 
-      debugPrint("displayName: ${user.photo!.isEmpty}");
       String? photo;
       if (user.photo != null) {
         if (user.photo!.isNotEmpty) {
