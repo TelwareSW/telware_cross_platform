@@ -420,7 +420,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   @override
   Widget build(BuildContext context) {
     debugPrint('&*&**&**& rebuild chat screen');
-    ref.watch(chatsViewModelProvider);
+    // ref.watch(chatsViewModelProvider);
     final popupMenu = buildPopupMenu();
     final chatModelImage = chatModel ?? ref.watch(chatProvider(widget.chatId))!;
     _updateDraft();

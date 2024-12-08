@@ -21,7 +21,6 @@ class ChatsViewModel extends _$ChatsViewModel {
   /// of chats, based on the timestamp of the latest msg
   /// in them
 
-  Map<String, ChatModel> _chatsMap = <String, ChatModel>{};
   Map<String, UserModel> _otherUsers = <String, UserModel>{};
 
   @override
@@ -53,38 +52,35 @@ class ChatsViewModel extends _$ChatsViewModel {
         .toList();
   }
 
-  Future<UserModel?> getUser(String ID) async {
-    if (ID == ref.read(userProvider)!.id) {
-      print('!!!** returning the current user');
+  Future<UserModel?> getUser(String id) async {
+    if (id == ref.read(userProvider)!.id) {
+      debugPrint('!!!** returning the current user');
       return ref.read(userProvider);
     }
 
-    var user = _otherUsers[ID];
+    var user = _otherUsers[id];
     if (user == null) {
       if (USE_MOCK_DATA) {
-        debugPrint('!!!** can\'t find a mocked user: $ID');
+        debugPrint('!!!** can\'t find a mocked user: $id');
       }
-      user = await ref.read(chattingControllerProvider).getOtherUser(ID);
+      user = await ref.read(chattingControllerProvider).getOtherUser(id);
       if (user == null) {
         return null;
       }
-      _otherUsers[ID] = user;
+      _otherUsers[id] = user;
       // todo: ask the controller to restore the other users map in the local storage
       ref.read(chattingControllerProvider).restoreOtherUsers(_otherUsers);
     }
 
-    print('!!!** returning a user from the other users map: $user');
+    debugPrint('!!!** returning a user from the other users map: $user');
     return user;
   }
 
   void setChats(List<ChatModel> chats) {
     state = updateMessagesFilePath(chats);
-    _chatsMap.clear();
-    _chatsMap = <String, ChatModel>{for (var chat in state) chat.id!: chat};
   }
 
   void addChat(ChatModel chat) {
-    _chatsMap[chat.id!] = chat;
     state = [chat, ...state];
   }
 
@@ -93,17 +89,19 @@ class ChatsViewModel extends _$ChatsViewModel {
     String chatId,
   }) addSentMessage(
     MessageContent content,
-    String chatID,
+    String chatId,
     MessageType msgType,
     MessageContentType msgContentType,
   ) {
-    final chat = _chatsMap[chatID];
+    final chatIndex = getChatIndex(chatId);
+    final chat = state[chatIndex];
     // todo(ahmed): make sure that new chats are added to the map first
     // I mean, new chats from the backend
 
     final senderId = ref.read(userProvider)!.id!;
     final msgLocalId =
         senderId + DateTime.now().millisecondsSinceEpoch.toString();
+
     final MessageModel msg = MessageModel(
       senderId: senderId,
       timestamp: DateTime.now(),
@@ -115,11 +113,11 @@ class ChatsViewModel extends _$ChatsViewModel {
       localId: msgLocalId,
     );
 
-    chat!.messages.add(msg);
-    _chatsMap[chatID] = chat;
-    _moveChatToFront(chatID);
+    chat.messages.add(msg);
 
-    return (msgLocalId: msgLocalId, chatId: chatID);
+    _moveChatToFront(chatIndex, chat);
+
+    return (msgLocalId: msgLocalId, chatId: chatId);
   }
 
   void updateMsgId({
@@ -127,35 +125,37 @@ class ChatsViewModel extends _$ChatsViewModel {
     required String msgLocalId,
     required String chatId,
   }) {
-    final chat = _chatsMap[chatId];
+    final chatIndex = getChatIndex(chatId);
+    final chat = chatIndex > 0 ? state[chatIndex] : null;
+
     if (chat != null) {
       debugPrint('### found the chat');
 
-      final index =
+      final msgIndex =
           chat.messages.indexWhere((msg) => msg.localId == msgLocalId);
 
-      if (index != -1) {
-        final newMsg = chat.messages[index].copyWith(id: newMsgId);
-        chat.messages[index] = newMsg;
-        _chatsMap[chatId] = chat;
-        final newState = state
-            .map((chat2) => chat2.id == chat.id ? chat : chat2.copyWith())
-            .toList();
-        state = newState;
+      if (msgIndex != -1) {
+        final newMsg = chat.messages[msgIndex].copyWith(id: newMsgId);
+        chat.messages[msgIndex] = newMsg;
+
+        _moveChatToFront(chatIndex, chat);
       }
     }
   }
 
   Future<void> addReceivedMessage(Map<String, dynamic> response) async {
-    var chatID = response["chatId"] as String;
-    var chat = _chatsMap[chatID];
+    var chatId = response["chatId"] as String;
+    final chatIndex = getChatIndex(chatId);
+    var chat = chatIndex > 0 ? state[chatIndex] : null;
 
-    Map<String, MessageState> userStates = {ref.read(userProvider)!.id!: MessageState.read};
+    Map<String, MessageState> userStates = {
+      ref.read(userProvider)!.id!: MessageState.read
+    };
     MessageContent? content;
     MessageContentType contentType =
         MessageContentType.getType(response['contentType'] ?? 'text');
 
-    // TODO: needs to be modified to match the response fields
+    // todo: needs to be modified to match the response fields
     content = createMessageContent(
       contentType: contentType,
       text: response['content'],
@@ -164,75 +164,81 @@ class ChatsViewModel extends _$ChatsViewModel {
     );
 
     final msg = MessageModel(
-      id: response['id'],
-      senderId: response['senderId'],
-      messageContentType: contentType,
-      messageType: MessageType.getType(response['type'] ?? 'unknown'),
-      content: content,
-      timestamp: response['timestamp'] == null
-          ? DateTime.parse(response['timestamp'])
-          : DateTime.now(),
-      userStates: userStates,
-      parentMessage: response['parentMessageId'],
-      isPinned: response['isPinned'],
-      isForward: response['isForward']
-    );
+        id: response['id'],
+        senderId: response['senderId'],
+        messageContentType: contentType,
+        messageType: MessageType.getType(response['type'] ?? 'unknown'),
+        content: content,
+        timestamp: response['timestamp'] == null
+            ? DateTime.parse(response['timestamp'])
+            : DateTime.now(),
+        userStates: userStates,
+        parentMessage: response['parentMessageId'],
+        isPinned: response['isPinned'],
+        isForward: response['isForward']);
 
     if (chat == null) {
-      chat = await ref.read(chattingControllerProvider).getChat(chatID);
-      _chatsMap[chatID] = chat;
+      chat = await ref.read(chattingControllerProvider).getChat(chatId);
       state.insert(0, chat);
     }
 
     chat.messages.add(msg);
-    _chatsMap[chatID] = chat;
-    _moveChatToFront(chatID);
+
+    _moveChatToFront(chatIndex, chat);
   }
 
-  void deleteMessage(String msgID, String chatID) {
-    final chat = _chatsMap[chatID];
-    final msgIndex = chat!.messages.indexWhere((msg) => msg.id == msgID);
+  void deleteMessage(String msgId, String chatId) {
+    final chatIndex = getChatIndex(chatId);
+    final chat = state[chatIndex];
+
+    final msgIndex = chat.messages.indexWhere((msg) => msg.id == msgId);
 
     if (msgIndex != -1) {
       chat.messages.removeAt(msgIndex);
-      state = [...state];
+      state = [
+        ...state.sublist(0, chatIndex),
+        chat.copyWith(),
+        ...state.sublist(chatIndex + 1),
+      ];
     }
   }
 
-  void editMessage(String msgID, String chatID, MessageContent content) {
-    final chat = _chatsMap[chatID];
+  void editMessage(String msgId, String chatId, MessageContent content) {
+    final chatIndex = getChatIndex(chatId);
+    final chat = state[chatIndex];
     // Find the msg with the specified ID
-    final msgIndex = chat!.messages.indexWhere((msg) => msg.id == msgID);
+    final msgIndex = chat.messages.indexWhere((msg) => msg.id == msgId);
 
     if (msgIndex != -1) {
-      chat.messages[msgIndex].copyWith(content: content);
+      chat.messages[msgIndex] =
+          chat.messages[msgIndex].copyWith(content: content);
+      state = [
+        ...state.sublist(0, chatIndex),
+        chat.copyWith(),
+        ...state.sublist(chatIndex + 1),
+      ];
     }
-
-    // _moveChatToFront(chatID);
   }
 
   ChatModel? getChatById(String chatId) {
-    return _chatsMap[chatId];
+    final chatIndex = getChatIndex(chatId);
+    return chatIndex > 0 ? state[chatIndex] : null;
   }
 
-  void _moveChatToFront(String id) {
-    // Find the chat with the specified ID
-    final chatIndex = state.indexWhere((chat) => chat.id == id);
-
-    if (chatIndex != -1) {
-      // Remove the chat from its current position
-      final updatedState = List<ChatModel>.from(state)..removeAt(chatIndex);
-      // Insert the chat at the front of the list
-      final newChat = _chatsMap[id];
-      state = [newChat!, ...updatedState];
-      debugPrint('!!! List is update, a chat moved to front');
-    }
+  void _moveChatToFront(int chatIndex, ChatModel chat) {
+    final updatedState = List<ChatModel>.from(state)..removeAt(chatIndex);
+    state = [chat, ...updatedState];
+    debugPrint('!!! List is update, a chat moved to front');
   }
 
-  void updateMessageFilePath(String chatID, String msgID, String filePath) {
-    final chat = _chatsMap[chatID];
+  int getChatIndex(String chatId) =>
+      state.indexWhere((chat) => chat.id == chatId);
+
+  void updateMessageFilePath(String chatId, String msgId, String filePath) {
+    final chatIndex = getChatIndex(chatId);
+    final chat = state[chatIndex];
     // Find the msg with the specified ID
-    final msgIndex = chat!.messages.indexWhere((msg) => msg.id == msgID);
+    final msgIndex = chat.messages.indexWhere((msg) => msg.id == msgId);
 
     if (msgIndex != -1) {
       MessageModel? message = chat.messages[msgIndex];
@@ -244,47 +250,48 @@ class ChatsViewModel extends _$ChatsViewModel {
           chat.messages[msgIndex].copyWith(content: message.content);
       debugPrint(
           "hmmmmmm  ${chat.messages[msgIndex].content?.toJson()["filePath"]}");
-      _chatsMap[chatID] = chat;
       state = List.from(state); // Update the state to trigger a rebuild
     }
   }
 
-  void muteChat(String chatID, int muteUntilSeconds) {
-    final chat = _chatsMap[chatID];
+  void muteChat(String chatId, int muteUntilSeconds) {
+    final chatIndex = getChatIndex(chatId);
+    final chat = state[chatIndex];
     DateTime? muteUntil = muteUntilSeconds == -1
         ? null
         : DateTime.now().add(Duration(seconds: muteUntilSeconds));
-    chat!.copyWith(isMuted: true, muteUntil: muteUntil);
-    _chatsMap[chatID] = chat;
+
+    chat.copyWith(isMuted: true, muteUntil: muteUntil);
     state = List.from(state);
   }
 
-  void unmuteChat(String chatID) {
-    final chat = _chatsMap[chatID];
-    chat!.copyWith(isMuted: false, muteUntil: null);
-    _chatsMap[chatID] = chat;
+  void unmuteChat(String chatId) {
+    final chatIndex = getChatIndex(chatId);
+    final chat = state[chatIndex];
+    chat.copyWith(isMuted: false, muteUntil: null);
     state = List.from(state);
   }
 
-  void updateDraft(String chatID, String draft) {
-    final chat = _chatsMap[chatID];
-    chat!.copyWith(draft: draft);
-    _chatsMap[chatID] = chat;
+  void updateDraft(String chatId, String draft) {
+    final chatIndex = getChatIndex(chatId);
+    final chat = state[chatIndex];
+    chat.copyWith(draft: draft);
     state = List.from(state);
   }
 
   ChatModel getChat(UserModel myInfo, UserModel otherInfo, ChatType private) {
     return state.firstWhere(
-        (chat) =>
-            chat.type == private &&
+      (chat) =>
+          chat.type == private &&
             chat.userIds.contains(myInfo.id) &&
             chat.userIds.contains(otherInfo.id),
-        orElse: () => ChatModel(
-              title: '${otherInfo.screenFirstName} ${otherInfo.screenLastName}',
+      orElse: () => ChatModel(
+        title: '${otherInfo.screenFirstName} ${otherInfo.screenLastName}',
               userIds: [myInfo.id!, otherInfo.id!],
-              type: ChatType.private,
-              messages: [],
-              photo: otherInfo.photo,
-            ));
+        type: ChatType.private,
+        messages: [],
+        photo: otherInfo.photo,
+      ),
+    );
   }
 }
