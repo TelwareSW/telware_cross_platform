@@ -86,6 +86,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   @override
   void initState() {
     super.initState();
+    chatModel = widget.chatModel;
     _messageController.text = widget.chatModel?.draft ?? "";
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {

@@ -38,7 +38,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
   final ScrollController scrollController = ScrollController();
   final TextEditingController searchController = TextEditingController();
 
-  late Future<List<UserModel>> _usersFuture;
+  Future<List<UserModel>> _usersFuture = Future.value(<UserModel>[]);
   bool _isUserContentSet = false;
 
   @override
@@ -67,6 +67,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
     final ChatModel chat = ref
         .read(chatsViewModelProvider.notifier)
         .getChat(myUser, userInfo, ChatType.private);
+    debugPrint('Opening Chat: $chat');
     context.push(ChatScreen.route, extra: chat);
   }
 

@@ -225,6 +225,7 @@ class ChattingController {
 
       if (response.appError != null) {
         debugPrint('Error: Could not create the chat');
+        return;
       } else {
         chatID = response.chat!.id;
         chatModel.id = chatID;
