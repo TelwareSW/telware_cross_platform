@@ -45,6 +45,8 @@ class UserModel {
   Uint8List? photoBytes;
   @HiveField(15)
   String? id;
+  @HiveField(17)
+  List<UserModel>? blockedUsers;
 
   UserModel({
     required this.username,
@@ -64,6 +66,7 @@ class UserModel {
     required this.phone,
     required this.id,
     this.photoBytes,
+    this.blockedUsers,
   });
 
   _setPhotoBytes() async {
@@ -89,50 +92,51 @@ class UserModel {
   }
 
   @override
-  bool operator ==(covariant UserModel other) {
-    if (identical(this, other)) return true;
-
-    return other.username == username &&
-        other.screenFirstName == screenFirstName &&
-        other.screenLastName == screenLastName &&
-        other.email == email &&
-        other.photo == photo &&
-        other.status == status &&
-        other.bio == bio &&
-        other.maxFileSize == maxFileSize &&
-        other.automaticDownloadEnable == automaticDownloadEnable &&
-        other.lastSeenPrivacy == lastSeenPrivacy &&
-        other.readReceiptsEnablePrivacy == readReceiptsEnablePrivacy &&
-        other.storiesPrivacy == storiesPrivacy &&
-        other.picturePrivacy == picturePrivacy &&
-        other.invitePermissionsPrivacy == invitePermissionsPrivacy &&
-        other.phone == phone &&
-        other.id == id;
-  }
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is UserModel &&
+          runtimeType == other.runtimeType &&
+          username == other.username &&
+          screenFirstName == other.screenFirstName &&
+          screenLastName == other.screenLastName &&
+          email == other.email &&
+          photo == other.photo &&
+          status == other.status &&
+          bio == other.bio &&
+          maxFileSize == other.maxFileSize &&
+          automaticDownloadEnable == other.automaticDownloadEnable &&
+          lastSeenPrivacy == other.lastSeenPrivacy &&
+          readReceiptsEnablePrivacy == other.readReceiptsEnablePrivacy &&
+          storiesPrivacy == other.storiesPrivacy &&
+          picturePrivacy == other.picturePrivacy &&
+          invitePermissionsPrivacy == other.invitePermissionsPrivacy &&
+          phone == other.phone &&
+          photoBytes == other.photoBytes &&
+          id == other.id &&
+          blockedUsers == other.blockedUsers);
 
   @override
-  int get hashCode {
-    return username.hashCode ^
-        screenFirstName.hashCode ^
-        screenLastName.hashCode ^
-        email.hashCode ^
-        photo.hashCode ^
-        status.hashCode ^
-        bio.hashCode ^
-        maxFileSize.hashCode ^
-        automaticDownloadEnable.hashCode ^
-        lastSeenPrivacy.hashCode ^
-        readReceiptsEnablePrivacy.hashCode ^
-        storiesPrivacy.hashCode ^
-        picturePrivacy.hashCode ^
-        invitePermissionsPrivacy.hashCode ^
-        phone.hashCode ^
-        id.hashCode;
-  }
+  int get hashCode =>
+      username.hashCode ^
+      screenFirstName.hashCode ^
+      screenLastName.hashCode ^
+      email.hashCode ^
+      photo.hashCode ^
+      status.hashCode ^
+      bio.hashCode ^
+      maxFileSize.hashCode ^
+      automaticDownloadEnable.hashCode ^
+      lastSeenPrivacy.hashCode ^
+      readReceiptsEnablePrivacy.hashCode ^
+      storiesPrivacy.hashCode ^
+      picturePrivacy.hashCode ^
+      invitePermissionsPrivacy.hashCode ^
+      phone.hashCode ^
+      id.hashCode;
 
   @override
   String toString() {
-    return 'UserModel(\n username: $username,\n screenName: $screenFirstName $screenLastName,\n email: $email,\n photo: $photo,\n status: $status,\n bio: $bio,\n maxFileSize: $maxFileSize,\n automaticDownloadEnable: $automaticDownloadEnable,\n lastSeenPrivacy: $lastSeenPrivacy,\n readReceiptsEnablePrivacy: $readReceiptsEnablePrivacy,\n storiesPrivacy: $storiesPrivacy,\n picturePrivacy: $picturePrivacy,\n invitePermissionsPrivacy: $invitePermissionsPrivacy,\n phone: $phone,\n id: $id,\n isPhotoBytesSet: ${photoBytes != null}\n)';
+    return 'UserModel{ username: $username, screenFirstName: $screenFirstName, screenLastName: $screenLastName, email: $email, photo: $photo, status: $status, bio: $bio, maxFileSize: $maxFileSize, automaticDownloadEnable: $automaticDownloadEnable, lastSeenPrivacy: $lastSeenPrivacy, readReceiptsEnablePrivacy: $readReceiptsEnablePrivacy, storiesPrivacy: $storiesPrivacy, picturePrivacy: $picturePrivacy, invitePermissionsPrivacy: $invitePermissionsPrivacy, phone: $phone, photoBytes: $photoBytes, id: $id, blockedUsers: $blockedUsers,}';
   }
 
   UserModel copyWith({
@@ -153,6 +157,7 @@ class UserModel {
     String? phone,
     String? id,
     Uint8List? photoBytes,
+    List<UserModel>? blockedUsers,
   }) {
     return UserModel(
       username: username ?? this.username,
@@ -175,11 +180,12 @@ class UserModel {
       phone: phone ?? this.phone,
       id: id ?? this.id,
       photoBytes: photoBytes ?? this.photoBytes,
+      blockedUsers: blockedUsers ?? this.blockedUsers,
     );
   }
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
+    return {
       'username': username,
       'screenFirstName': screenFirstName,
       'screenLastName': screenLastName,
@@ -196,6 +202,7 @@ class UserModel {
       'invitePermissionsPrivacy': invitePermissionsPrivacy,
       'phone': phone,
       'id': id,
+      'blockedUsers': blockedUsers,
     };
   }
 
@@ -211,7 +218,9 @@ class UserModel {
       screenFirstName: first,
       screenLastName: last,
       email: (map['email'] as String?) ?? '',
-      photo: map['photo'] != null && map['photo'] != "" ? map['photo'] as String : null,
+      photo: map['photo'] != null && map['photo'] != ""
+          ? map['photo'] as String
+          : null,
       status: map['status'] as String,
       bio: map['bio'] as String,
       maxFileSize: map['maxFileSize'] ?? 0,

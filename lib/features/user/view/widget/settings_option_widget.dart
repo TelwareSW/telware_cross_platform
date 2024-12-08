@@ -61,7 +61,6 @@ class SettingsOptionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("imagePath: $imagePath");
     return Padding(
         padding: const EdgeInsets.symmetric(
             horizontal: Dimensions.optionsHorizontalPad,

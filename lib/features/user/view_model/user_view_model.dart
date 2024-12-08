@@ -10,6 +10,7 @@ import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_local_repository.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_remote_repository.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
+import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 import 'package:telware_cross_platform/features/stories/repository/contacts_remote_repository.dart';
 import 'package:telware_cross_platform/features/user/view_model/user_state.dart';
 import 'package:telware_cross_platform/features/user/repository/user_remote_repository.dart';
@@ -405,6 +406,91 @@ class UserViewModel extends _$UserViewModel {
           ref.read(userProvider.notifier).update((_) => updatedUser);
         }
         state = UserState.success('Invite permissions updated successfully');
+      },
+    );
+  }
+
+  Future<List<UserModel>> getBlockedUsers() async {
+    state = UserState.loading;
+
+    if (USE_MOCK_DATA) {
+      state = UserState.success('blocked users fetched successfully');
+      return mockBlockedUsers;
+    }
+
+    final response =
+        await ref.read(userRemoteRepositoryProvider).getBlockedUsers();
+
+    response.fold(
+      (appError) {
+        state = UserState.fail(appError.error);
+      },
+      (blockedUsers) {
+        state = UserState.success('blocked users fetched successfully');
+        return blockedUsers;
+      },
+    );
+    return [];
+  }
+
+  Future<void> blockUser({required String userId}) async {
+    state = UserState.loading;
+
+    if (USE_MOCK_DATA) {
+      state = UserState.success('block user done successfully');
+      return;
+    }
+
+    final response = await ref
+        .read(userRemoteRepositoryProvider)
+        .blockedUser(userId: userId);
+
+    response.fold(
+      (appError) {
+        state = UserState.fail(appError.error);
+      },
+      (_) async {
+        UserModel? blockedUser =
+            await ref.read(chatsViewModelProvider.notifier).getUser(userId);
+        if (blockedUser != null) {
+          UserModel user = ref.read(userProvider)!;
+          List<UserModel> blockedUsers = user.blockedUsers ?? [];
+          blockedUsers.add(blockedUser);
+          user = user.copyWith(blockedUsers: blockedUsers);
+          ref.read(userProvider.notifier).update((_) => user);
+          ref.read(authLocalRepositoryProvider).setUser(user);
+        }
+        state = UserState.success('block user done successfully');
+        return;
+      },
+    );
+  }
+
+  Future<void> unblockUser({required String userId}) async {
+    state = UserState.loading;
+
+    if (USE_MOCK_DATA) {
+      state = UserState.success('unblock user done successfully');
+      return;
+    }
+
+    final response = await ref
+        .read(userRemoteRepositoryProvider)
+        .unblockedUser(userId: userId);
+
+    response.fold(
+      (appError) {
+        state = UserState.fail(appError.error);
+      },
+      (_) async {
+        UserModel user = ref.read(userProvider)!;
+        List<UserModel> blockedUsers = user.blockedUsers ?? [];
+        blockedUsers.removeWhere((element) => element.id == userId);
+        user = user.copyWith(blockedUsers: blockedUsers);
+        ref.read(userProvider.notifier).update((_) => user);
+        ref.read(authLocalRepositoryProvider).setUser(user);
+        state = UserState.success('unblock user done successfully');
+        return;
       },
     );
   }
