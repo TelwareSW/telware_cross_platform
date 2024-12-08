@@ -221,8 +221,8 @@ class UserModel {
       photo: map['photo'] != null && map['photo'] != ""
           ? map['photo'] as String
           : null,
-      status: map['status'] as String,
-      bio: map['bio'] as String,
+      status: map['status'] as String? ?? '',
+      bio: map['bio'] as String? ?? '',
       maxFileSize: map['maxFileSize'] ?? 0,
       automaticDownloadEnable: map['automaticDownloadEnable'] ?? false,
       lastSeenPrivacy: map['lastSeenPrivacy'] ?? '',

@@ -200,14 +200,14 @@ class AuthViewModel extends _$AuthViewModel {
     }, (logInResponse) async {
       // get the blocked users and set them
       UserModel user = logInResponse.user;
+      ref.read(authLocalRepositoryProvider).setToken(logInResponse.token);
+      ref.read(tokenProvider.notifier).update((_) => logInResponse.token);
       List<UserModel> blockedUsers =
           await ref.read(userViewModelProvider.notifier).getBlockedUsers();
       user = user.copyWith(blockedUsers: blockedUsers);
       ref.read(authLocalRepositoryProvider).setUser(user);
       ref.read(userProvider.notifier).update((_) => user);
 
-      ref.read(authLocalRepositoryProvider).setToken(logInResponse.token);
-      ref.read(tokenProvider.notifier).update((_) => logInResponse.token);
       await ref.read(chattingControllerProvider).newLoginInit();
       state = AuthState.authenticated;
     });

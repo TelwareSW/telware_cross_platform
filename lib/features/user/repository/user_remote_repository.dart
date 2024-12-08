@@ -45,7 +45,6 @@ class UserRemoteRepository {
       }
 
       final List<dynamic> users = response.data?['data']['users'] ?? [];
-      debugPrint("Fetched: $users");
 
       var filteredUsers = await Future.wait(
           (users).map((user) => UserModel.fromMap(user)).toList());

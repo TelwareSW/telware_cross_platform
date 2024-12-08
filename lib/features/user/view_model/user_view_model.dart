@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_manual_providers_as_generated_provider_dependency
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/core/mock/user_mock.dart';
@@ -421,16 +422,16 @@ class UserViewModel extends _$UserViewModel {
     final response =
         await ref.read(userRemoteRepositoryProvider).getBlockedUsers();
 
-    response.fold(
+    return response.fold(
       (appError) {
         state = UserState.fail(appError.error);
+        return [];
       },
       (blockedUsers) {
         state = UserState.success('blocked users fetched successfully');
         return blockedUsers;
       },
     );
-    return [];
   }
 
   Future<void> blockUser({required String userId}) async {

@@ -117,10 +117,15 @@ class _BlockedUsersScreen extends ConsumerState<BlockedUsersScreen> {
   _updateBlockedUsers(UserModel? user) {
     List<UserModel> blockedUsers = user?.blockedUsers ?? [];
     blockSections[1]["options"] = blockedUsers.map((user) {
-      String displayName =
-          (user.screenFirstName.isEmpty) && (user.screenLastName.isEmpty)
-              ? user.username
-              : '${user.screenFirstName} ${user.screenLastName}'.trim();
+      String displayName = '';
+      if ('${user.screenFirstName} ${user.screenLastName}' == 'No Name') {
+        displayName = user.username;
+      } else {
+        displayName =
+            (user.screenFirstName.isEmpty) && (user.screenLastName.isEmpty)
+                ? user.username
+                : '${user.screenFirstName} ${user.screenLastName}'.trim();
+      }
 
       String? photo;
       if (user.photo != null) {
