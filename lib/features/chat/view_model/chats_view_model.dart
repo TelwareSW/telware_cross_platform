@@ -251,6 +251,7 @@ class ChatsViewModel extends _$ChatsViewModel {
       debugPrint(
           "hmmmmmm  ${chat.messages[msgIndex].content?.toJson()["filePath"]}");
       state = List.from(state); // Update the state to trigger a rebuild
+
     }
   }
 

@@ -260,7 +260,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
         return;
       }
     }
-
     content = createMessageContent(
         contentType: messageContentType,
         filePath: filePath,
@@ -327,12 +326,13 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   //----------------------------------------------------------------------------
   //-------------------------------Media----------------------------------------
 
-  void onMediaDownloaded(String? filePath, String? messageId, String? chatId) {
+  void onMediaDownloaded(
+      String? filePath, String? messageLocalId, String? chatId) {
     if (filePath == null) {
       showToastMessage('File has been deleted ask the sender to resend it');
       return;
     }
-    if (messageId == null) {
+    if (messageLocalId == null) {
       showToastMessage('File does not exist please upload it again');
       return;
     }
@@ -341,11 +341,11 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       return;
     }
     debugPrint("Downloaded file path: $filePath");
-    debugPrint("Message ID: $messageId");
+    debugPrint("Message local ID: $messageLocalId");
     debugPrint("Chat ID: $chatId");
     ref
         .read(chattingControllerProvider)
-        .editMessageFilePath(chatId, messageId, filePath);
+        .editMessageFilePath(chatId, messageLocalId, filePath);
     List<MessageModel> messages =
         ref.watch(chatProvider(chatModel!.id!))?.messages ?? [];
     _updateChatMessages(messages);
@@ -458,16 +458,17 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                 ),
                 title: !isSearching
                     ? GestureDetector(
-                      onTap: () {
-                        context.push(Routes.chatInfoScreen, extra: chatModel!);
-                      },
-                      child: ChatHeaderWidget(
-                        title: title,
-                        subtitle: subtitle,
-                        photo: photo,
-                        imageBytes: imageBytes,
-                      ),
-                    )
+                        onTap: () {
+                          context.push(Routes.chatInfoScreen,
+                              extra: chatModel!);
+                        },
+                        child: ChatHeaderWidget(
+                          title: title,
+                          subtitle: subtitle,
+                          photo: photo,
+                          imageBytes: imageBytes,
+                        ),
+                      )
                     : TextField(
                         key: ChatKeys.chatSearchInput,
                         autofocus: true,
@@ -687,8 +688,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                                 _messageMatches[index] ??
                                                     const [MapEntry(0, 0)],
                                             onDownloadTap: (String? filePath) {
-                                              onMediaDownloaded(
-                                                  filePath, item.id, chatID);
+                                              onMediaDownloaded(filePath,
+                                                  item.localId, chatID);
                                             },
                                             onReply: (message) {
                                               setState(() {

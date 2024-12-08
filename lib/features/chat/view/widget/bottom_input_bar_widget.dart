@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mime/mime.dart';
 import 'package:path_provider/path_provider.dart';
@@ -11,7 +12,7 @@ import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/chat/services/audio_recording_service.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/audio_message_widget.dart';
-
+import 'package:telware_cross_platform/features/chat/view/widget/emoji_picker_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/slide_to_cancel_widget.dart';
 
 class BottomInputBarWidget extends ConsumerStatefulWidget {
@@ -47,6 +48,8 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
   final double _lockThreshold = 100.0; // Drag threshold for lock recording
   bool isCanceled = false;
   Timer? _timer;
+  final FocusNode _textFieldFocusNode = FocusNode();
+  bool _emojiShowing = false;
 
   @override
   void initState() {
@@ -151,6 +154,34 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
     setState(() {});
   }
 
+  void sendGifsStickers(String mediaPath, String mediaType) async {
+    try {
+      // Get the app's documents directory
+      final directory = await getApplicationDocumentsDirectory();
+      final fileName = mediaPath.split('/').last; // Extract the file name
+      final newFilePath = '${directory.path}/$fileName';
+
+      // Copy the sticker asset to the new location
+      final byteData = await rootBundle.load(mediaPath); // Load the asset
+      final file = File(newFilePath);
+      await file.writeAsBytes(byteData.buffer.asUint8List(
+        byteData.offsetInBytes,
+        byteData.lengthInBytes,
+      ));
+
+      // Call the sendMessage function with the new file path
+      widget.sendMessage(
+        filePath: newFilePath,
+        ref: ref,
+        contentType: mediaType,
+      );
+
+      debugPrint("$mediaType saved and sent: $newFilePath");
+    } catch (e) {
+      debugPrint("Error saving or sending sticker: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -158,196 +189,227 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
           horizontal: widget.audioRecorderService.isRecordingCompleted ? 0 : 10,
           vertical: 0),
       color: Palette.trinary,
-      child: Row(
+      child: Column(
         children: [
-          widget.audioRecorderService.isRecording ||
-                  widget.audioRecorderService.isRecordingCompleted
-              ? const SizedBox.shrink()
-              : Expanded(
-                  child: Row(
-                    children: [
-                      isCanceled
-                          ? LottieViewer(
-                              path:
-                                  "assets/json/chat_audio_record_delete_3.json",
-                              width: 20,
-                              height: 20,
-                              onCompleted: () {
-                                isCanceled = false;
-                                setState(() {});
+          Row(
+            children: [
+              widget.audioRecorderService.isRecording ||
+                      widget.audioRecorderService.isRecordingCompleted
+                  ? const SizedBox.shrink()
+                  : Expanded(
+                      child: Row(
+                        children: [
+                          isCanceled
+                              ? LottieViewer(
+                                  path:
+                                      "assets/json/chat_audio_record_delete_3.json",
+                                  width: 20,
+                                  height: 20,
+                                  onCompleted: () {
+                                    isCanceled = false;
+                                    setState(() {});
+                                  },
+                                )
+                              : LottieViewer(
+                                  path: "assets/json/sticker_to_keyboard.json",
+                                  width: 30,
+                                  height: 30,
+                                  isIcon: true,
+                                  onTap: () {
+                                    _emojiShowing = !_emojiShowing;
+                                    if (_emojiShowing) {
+                                      FocusScope.of(context).unfocus();
+                                    } else {
+                                      FocusScope.of(context)
+                                          .requestFocus(_textFieldFocusNode);
+                                    }
+                                    setState(() {});
+                                  },
+                                  onCompleted: () {
+                                    // isCanceled = false;
+                                    // setState(() {});
+                                  },
+                                ),
+                          Expanded(
+                            child: TextField(
+                              focusNode: _textFieldFocusNode,
+                              controller: widget.controller,
+                              decoration: const InputDecoration(
+                                hintText: 'Message',
+                                hintStyle: TextStyle(
+                                  fontSize: 18,
+                                  color: Palette.accentText,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                                border: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                              ),
+                              cursorColor: Palette.accent,
+                              onTap: () {
+                                setState(() {
+                                  _emojiShowing = false;
+                                });
                               },
-                            )
-                          : IconButton(
-                              icon: const Icon(Icons.insert_emoticon),
-                              color: Palette.accentText,
-                              onPressed: () {},
+                              onChanged: (text) {
+                                if (isTextEmpty ^ text.isEmpty) {
+                                  setState(() {
+                                    isTextEmpty = text.isEmpty;
+                                  });
+                                }
+                              },
                             ),
-                      Expanded(
-                        child: TextField(
-                          controller: widget.controller,
-                          decoration: const InputDecoration(
-                            hintText: 'Message',
-                            hintStyle: TextStyle(
-                              fontSize: 18,
-                              color: Palette.accentText,
-                              fontWeight: FontWeight.w400,
-                            ),
-                            border: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            enabledBorder: InputBorder.none,
                           ),
-                          cursorColor: Palette.accent,
-                          onChanged: (text) {
-                            if (isTextEmpty ^ text.isEmpty) {
-                              setState(() {
-                                isTextEmpty = text.isEmpty;
-                              });
-                            }
+                        ],
+                      ),
+                    ),
+              if (widget.controller.text.isEmpty && isTextEmpty) ...[
+                if (widget.audioRecorderService.isRecording ||
+                    widget.audioRecorderService.isRecordingLocked) ...[
+                  if (!widget.audioRecorderService.isRecordingCompleted) ...[
+                    const LottieViewer(
+                      path: "assets/json/recording_led.json",
+                      width: 20,
+                      height: 20,
+                      isLooping: true,
+                    ),
+                    Text(
+                      formatTime(elapsedTime),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    const Spacer()
+                  ],
+                  if (widget.audioRecorderService.isRecordingLocked) ...[
+                    if (widget.audioRecorderService.isRecordingCompleted) ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: LottieViewer(
+                          path: "assets/json/group_pip_delete_icon.json",
+                          width: 40,
+                          height: 40,
+                          isLooping: true,
+                          onTap: () {
+                            widget.audioRecorderService.deleteRecording();
                           },
                         ),
                       ),
-                    ],
-                  ),
-                ),
-          if (widget.controller.text.isEmpty && isTextEmpty) ...[
-            if (widget.audioRecorderService.isRecording ||
-                widget.audioRecorderService.isRecordingLocked) ...[
-              if (!widget.audioRecorderService.isRecordingCompleted) ...[
-                const LottieViewer(
-                  path: "assets/json/recording_led.json",
-                  width: 20,
-                  height: 20,
-                  isLooping: true,
-                ),
-                Text(
-                  formatTime(elapsedTime),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-                const Spacer()
-              ],
-              if (widget.audioRecorderService.isRecordingLocked) ...[
-                if (widget.audioRecorderService.isRecordingCompleted) ...[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: LottieViewer(
-                      path: "assets/json/group_pip_delete_icon.json",
-                      width: 40,
-                      height: 40,
-                      isLooping: true,
-                      onTap: () {
-                        widget.audioRecorderService.deleteRecording();
-                      },
-                    ),
-                  ),
-                  AudioMessageWidget(
-                    filePath: widget.audioRecorderService.recordingPath!,
-                    onDownloadTap: (String? _) {},
-                    isMessage: false,
-                  ),
-                ] else ...[
-                  GestureDetector(
-                    onTap: () {
-                      widget.audioRecorderService.cancelRecording();
-                      setState(() {});
-                    },
-                    child: const SizedBox(
-                      width: 100,
-                      height: 50,
-                      child: Padding(
-                        padding: EdgeInsets.only(right: 30.0),
-                        child: Center(
-                          child: Text(
-                            "CANCEL",
-                            style: TextStyle(
-                                color: Palette.accent,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500),
+                      AudioMessageWidget(
+                        filePath: widget.audioRecorderService.recordingPath!,
+                        onDownloadTap: (String? _) {},
+                        isMessage: false,
+                      ),
+                    ] else ...[
+                      GestureDetector(
+                        onTap: () {
+                          widget.audioRecorderService.cancelRecording();
+                          setState(() {});
+                        },
+                        child: const SizedBox(
+                          width: 100,
+                          height: 50,
+                          child: Padding(
+                            padding: EdgeInsets.only(right: 30.0),
+                            child: Center(
+                              child: Text(
+                                "CANCEL",
+                                style: TextStyle(
+                                    color: Palette.accent,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500),
+                              ),
+                            ),
                           ),
                         ),
                       ),
+                      const Spacer(),
+                    ],
+                  ] else
+                    SlideToCancelWidget(dragPosition: _dragPosition),
+                ] else ...[
+                  IconButton(
+                    icon: const Icon(Icons.attach_file_rounded),
+                    color: Palette.accentText,
+                    onPressed: () => {
+                      _loadMediaFiles(),
+                    },
+                  ),
+                ],
+                if (!widget.audioRecorderService.isRecordingCompleted) ...[
+                  GestureDetector(
+                    onLongPress: () =>
+                        widget.audioRecorderService.startRecording(context),
+                    onLongPressUp: () async {
+                      if (widget.audioRecorderService.isRecordingLocked ||
+                          isCanceled) {
+                        return;
+                      }
+                      String? recordingPath =
+                          await widget.audioRecorderService.stopRecording();
+                      widget.sendMessage(
+                        ref: ref,
+                        contentType: 'audio',
+                        filePath: recordingPath,
+                      );
+                      widget.audioRecorderService.resetRecording();
+                    },
+                    onLongPressMoveUpdate: (details) {
+                      if (details.localPosition.dx.abs() > _cancelThreshold) {
+                        isCanceled = true;
+                        widget.audioRecorderService.cancelRecording();
+                        setState(() {});
+                        return;
+                      }
+                      widget.audioRecorderService
+                          .lockRecordingDragPositionUpdate(
+                              details.localPosition.dy);
+                      if (details.localPosition.dy.abs() > _lockThreshold) {
+                        widget.audioRecorderService.lockRecording();
+                        return;
+                      }
+                      setState(() {
+                        _dragPosition = details.localPosition.dx;
+                      });
+                    },
+                    child: const LottieViewer(
+                      path: "assets/json/voice_to_video.json",
+                      width: 29,
+                      height: 29,
+                      isIcon: true,
                     ),
                   ),
-                  const Spacer(),
                 ],
-              ] else
-                SlideToCancelWidget(dragPosition: _dragPosition),
-            ] else ...[
-              IconButton(
-                icon: const Icon(Icons.attach_file_rounded),
-                color: Palette.accentText,
-                onPressed: () => {
-                  _loadMediaFiles(),
-                },
-              ),
-            ],
-            if (!widget.audioRecorderService.isRecordingCompleted) ...[
-              GestureDetector(
-                onLongPress: () =>
-                    widget.audioRecorderService.startRecording(context),
-                onLongPressUp: () async {
-                  if (widget.audioRecorderService.isRecordingLocked ||
-                      isCanceled) {
-                    return;
-                  }
-                  String? recordingPath =
-                      await widget.audioRecorderService.stopRecording();
-                  widget.sendMessage(
-                    ref: ref,
-                    contentType: 'audio',
-                    filePath: recordingPath,
-                  );
-                  widget.audioRecorderService.resetRecording();
-                },
-                onLongPressMoveUpdate: (details) {
-                  if (details.localPosition.dx.abs() > _cancelThreshold) {
-                    isCanceled = true;
-                    widget.audioRecorderService.cancelRecording();
-                    setState(() {});
-                    return;
-                  }
-                  widget.audioRecorderService.lockRecordingDragPositionUpdate(
-                      details.localPosition.dy);
-                  if (details.localPosition.dy.abs() > _lockThreshold) {
-                    widget.audioRecorderService.lockRecording();
-                    return;
-                  }
-                  setState(() {
-                    _dragPosition = details.localPosition.dx;
-                  });
-                },
-                child: const LottieViewer(
-                  path: "assets/json/voice_to_video.json",
-                  width: 29,
-                  height: 29,
-                  isIcon: true,
+              ],
+              if (widget.audioRecorderService.isRecordingCompleted ||
+                  (widget.controller.text.isNotEmpty || !isTextEmpty)) ...[
+                IconButton(
+                  padding: const EdgeInsets.only(left: 10),
+                  iconSize: 28,
+                  icon: const Icon(Icons.send),
+                  color: Palette.accent,
+                  onPressed: () {
+                    if (widget.audioRecorderService.isRecordingCompleted) {
+                      String? filePath =
+                          widget.audioRecorderService.resetRecording();
+                      widget.sendMessage(
+                          ref: ref, contentType: 'audio', filePath: filePath);
+                    } else {
+                      widget.sendMessage(ref: ref, contentType: 'text');
+                    }
+                    widget.removeReply();
+                  },
                 ),
-              ),
+              ],
             ],
-          ],
-          if (widget.audioRecorderService.isRecordingCompleted ||
-              (widget.controller.text.isNotEmpty || !isTextEmpty)) ...[
-            IconButton(
-              padding: const EdgeInsets.only(left: 10),
-              iconSize: 28,
-              icon: const Icon(Icons.send),
-              color: Palette.accent,
-              onPressed: () {
-                if (widget.audioRecorderService.isRecordingCompleted) {
-                  String? filePath =
-                      widget.audioRecorderService.resetRecording();
-                  widget.sendMessage(
-                      ref: ref, contentType: 'audio', filePath: filePath);
-                } else {
-                  widget.sendMessage(ref: ref, contentType: 'text');
-                }
-                widget.removeReply();
-              },
-            ),
-          ],
+          ),
+          EmojiPickerWidget(
+            textEditingController: widget.controller,
+            emojiShowing: _emojiShowing,
+            onSelectedMedia: sendGifsStickers,
+          )
         ],
       ),
     );

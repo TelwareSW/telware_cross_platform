@@ -66,6 +66,22 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
     loadAudioFile();
   }
 
+  @override
+  void dispose() {
+    controller.dispose();
+    playerController.dispose();
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(AudioMessageWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.filePath != widget.filePath) {
+      loadAudioFile();
+    }
+  }
+
   void startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (isPlaying) {
@@ -80,7 +96,7 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
   }
 
   Future<void> loadAudioFile() async {
-    if (widget.filePath == null) {
+    if (widget.filePath == null || !doesFileExistSync(widget.filePath!)) {
       return;
     }
     await playerController.preparePlayer(
@@ -96,14 +112,6 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
       currentDuration = 0;
     }
     setState(() {});
-  }
-
-  @override
-  void dispose() {
-    controller.dispose();
-    playerController.dispose();
-    super.dispose();
-    _timer?.cancel();
   }
 
   void _startOrStopPlaying() async {
@@ -146,7 +154,7 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
 
   Widget audioWaveform(BuildContext context) {
     return AudioFileWaveforms(
-      size: const Size(200.0, 40.0),
+      size: Size(200.0, widget.isMessage ? 30 : 40.0),
       playerController: playerController,
       enableSeekGesture: true,
       continuousWaveform: false,
@@ -157,7 +165,7 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
         showSeekLine: false,
         spacing: 4,
         waveThickness: 2,
-        scaleFactor: widget.isMessage ? 50 : 10,
+        scaleFactor: widget.isMessage ? 30 : 10,
       ),
       margin: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
@@ -170,8 +178,11 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
 
   Widget audioDuration(BuildContext context) {
     return Container(
-      width: widget.isMessage ? null : 60, // Set the width
-      height: widget.isMessage ? null : 40, // Set the height
+      width: widget.isMessage ? null : 60,
+      height: widget.isMessage ? null : 40,
+      margin: EdgeInsets.only(
+        bottom: widget.isMessage ? 15 : 0,
+      ),
       decoration: BoxDecoration(
         color: widget.isMessage ? Colors.transparent : Palette.accent,
         borderRadius: getBorderRadius(
@@ -192,7 +203,7 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
                   : currentDuration),
               style: TextStyle(
                 color: Palette.primaryText,
-                fontSize: widget.isMessage ? 15 : 13,
+                fontSize: widget.isMessage ? 13 : 13,
                 fontWeight: FontWeight.w400,
               ),
             ),
@@ -215,55 +226,63 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 60,
-          height: widget.isMessage ? 60 : 40,
-          margin: EdgeInsets.only(right: widget.isMessage ? 10 : 0),
-          decoration: BoxDecoration(
-            color: widget.isMessage ? Colors.white : Palette.accent,
-            // Set the background color
-            borderRadius: getBorderRadius(
-              topLeft: true,
-              bottomLeft: true,
-              topRight: widget.isMessage,
-              bottomRight: widget.isMessage,
-            ), // Set border radius
-          ),
-          child: widget.filePath == null || !doesFileExistSync(widget.filePath!)
-              ? DownloadWidget(onTap: widget.onDownloadTap, url: widget.url)
-              : Align(
-                  alignment: Alignment.center,
-                  child: GestureDetector(
-                    onTap: () {
-                      _startOrStopPlaying();
-                    },
-                    child: Lottie.asset(
-                      "assets/json/play_pause${widget.isMessage ? '_message' : ''}.json",
-                      controller: controller,
-                      onLoaded: (composition) {
-                        controller.duration = composition.duration;
+    return SizedBox(
+      width: 280,
+      child: Row(
+        children: [
+          Container(
+            width: 50,
+            height: widget.isMessage ? 50 : 40,
+            margin: EdgeInsets.only(
+              right: widget.isMessage ? 10 : 0,
+              left: widget.isMessage ? 10 : 0,
+              bottom: 10,
+            ),
+            decoration: BoxDecoration(
+              color: widget.isMessage ? Colors.white : Palette.accent,
+              // Set the background color
+              borderRadius: getBorderRadius(
+                topLeft: true,
+                bottomLeft: true,
+                topRight: widget.isMessage,
+                bottomRight: widget.isMessage,
+              ), // Set border radius
+            ),
+            child: widget.filePath == null ||
+                    !doesFileExistSync(widget.filePath!)
+                ? DownloadWidget(onTap: widget.onDownloadTap, url: widget.url)
+                : Align(
+                    alignment: Alignment.center,
+                    child: GestureDetector(
+                      onTap: () {
+                        _startOrStopPlaying();
                       },
-                      width: widget.isMessage ? 30 : 20,
-                      height: widget.isMessage ? 30 : 20,
-                      decoder: LottieComposition.decodeGZip,
+                      child: Lottie.asset(
+                        "assets/json/play_pause${widget.isMessage ? '_message' : ''}.json",
+                        controller: controller,
+                        onLoaded: (composition) {
+                          controller.duration = composition.duration;
+                        },
+                        width: widget.isMessage ? 23 : 20,
+                        height: widget.isMessage ? 23 : 20,
+                        decoder: LottieComposition.decodeGZip,
+                      ),
                     ),
                   ),
-                ),
-        ),
-        if (!widget.isMessage) ...[
-          audioWaveform(context),
-          audioDuration(context),
-        ] else
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              audioWaveform(context),
-              audioDuration(context),
-            ],
           ),
-      ],
+          if (!widget.isMessage) ...[
+            audioWaveform(context),
+            audioDuration(context),
+          ] else
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                audioWaveform(context),
+                audioDuration(context),
+              ],
+            ),
+        ],
+      ),
     );
   }
 }

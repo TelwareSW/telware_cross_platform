@@ -1,6 +1,5 @@
 import 'package:telware_cross_platform/core/models/user_model.dart';
 
-
 const userMockPassword = 'qwerty99';
 
 final List<UserModel> mockUsers = [
@@ -71,6 +70,43 @@ final List<UserModel> mockUsers = [
     invitePermissionsPrivacy: 'admins',
     phone: '+01100663313',
     id: '113',
+  ),
+];
+
+final List<UserModel> mockBlockedUsers = [
+  UserModel(
+    username: 'blocked.user1',
+    screenFirstName: 'Blocked',
+    screenLastName: 'User1',
+    email: 'blocked1@gmail.com',
+    status: 'offline',
+    bio: 'I am a blocked user 1',
+    maxFileSize: 30,
+    automaticDownloadEnable: true,
+    lastSeenPrivacy: 'nobody',
+    readReceiptsEnablePrivacy: false,
+    storiesPrivacy: 'nobody',
+    picturePrivacy: 'nobody',
+    invitePermissionsPrivacy: 'nobody',
+    phone: '+01100663314',
+    id: '114',
+  ),
+  UserModel(
+    username: 'blocked.user2',
+    screenFirstName: 'Blocked',
+    screenLastName: 'User2',
+    email: 'blocked2@gmail.com',
+    status: 'offline',
+    bio: 'I am a blocked user 2',
+    maxFileSize: 30,
+    automaticDownloadEnable: true,
+    lastSeenPrivacy: 'nobody',
+    readReceiptsEnablePrivacy: false,
+    storiesPrivacy: 'nobody',
+    picturePrivacy: 'nobody',
+    invitePermissionsPrivacy: 'nobody',
+    phone: '+01100663315',
+    id: '115',
   ),
 ];
 

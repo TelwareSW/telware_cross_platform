@@ -208,8 +208,8 @@ class EmojiContent extends MessageContent {
 
   @override
   Map<String, dynamic> toJson() => {
-        'mediaUrl': emojiUrl,
-        'mediaType': emojiName,
+        'emojiUrl': emojiUrl,
+        'emojiName': emojiName,
         'filePath': filePath,
       };
 
@@ -245,8 +245,8 @@ class GIFContent extends MessageContent {
 
   @override
   Map<String, dynamic> toJson() => {
-        'mediaUrl': gifUrl,
-        'mediaType': gifName,
+        'gifUrl': gifUrl,
+        'gifName': gifName,
         'filePath': filePath,
       };
 
@@ -282,8 +282,8 @@ class StickerContent extends MessageContent {
 
   @override
   Map<String, dynamic> toJson() => {
-        'mediaUrl': stickerUrl,
-        'mediaType': stickerName,
+        'stickerUrl': stickerUrl,
+        'stickerName': stickerName,
         'filePath': filePath,
       };
 

@@ -11,6 +11,7 @@ import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 
 import 'package:telware_cross_platform/features/chat/view/widget/chat_tile_widget.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
+import 'package:telware_cross_platform/features/user/view/widget/empty_chats.dart';
 
 class ChatsList extends ConsumerWidget {
   const ChatsList({
@@ -20,6 +21,7 @@ class ChatsList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final chatsList = ref.watch(chatsViewModelProvider);
+    debugPrint('chat list ${chatsList.toString()}');
     debugPrint('Building chats_list...');
     ChatKeys.resetChatTilePrefixSubvalue();
 
@@ -27,7 +29,9 @@ class ChatsList extends ConsumerWidget {
       delegate: SliverChildBuilderDelegate(
         (BuildContext context, int index) {
           return _delegate(
-            ValueKey(ChatKeys.chatTilePrefix.value + ChatKeys.chatTilePrefixSubvalue + index.toString()),
+            ValueKey(ChatKeys.chatTilePrefix.value +
+                ChatKeys.chatTilePrefixSubvalue +
+                index.toString()),
             chatsList[index],
             ref.read(userProvider)!.id!,
           );

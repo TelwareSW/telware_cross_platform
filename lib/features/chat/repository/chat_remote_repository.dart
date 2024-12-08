@@ -29,9 +29,10 @@ class ChatRemoteRepository {
         options: Options(headers: {'X-Session-Token': sessionId}),
       );
 
-      final chatData = response.data['data']['chats'] as List;
-      final memberData = response.data['data']['members'] as List;
-      final lastMessageData = response.data['data']['lastMessages'] as List;
+      final chatData = response.data['data']['chats'] as List? ?? [];
+      final memberData = response.data['data']['members'] as List? ?? [];
+      final lastMessageData =
+          response.data['data']['lastMessages'] as List? ?? [];
 
       Map<String, UserModel> userMap = {};
       Map<String, MessageModel> lastMessageMap = {};
@@ -62,7 +63,6 @@ class ChatRemoteRepository {
       // They should also send the type of message eg. normal ,forward, etc .
       for (var message in lastMessageData) {
         final lastMessage = message['lastMessage'];
-
         if (lastMessage is! Map || message['lastMessage'] == null) {
           continue;
         }
@@ -87,6 +87,8 @@ class ChatRemoteRepository {
           mediaUrl: lastMessage['mediaUrl'],
         );
 
+        // todo(ahmed): add (isForward, isPinned, isAnnouncement, parentMsgId) 
+        // the connumicationType attribute is extra
         lastMessageMap[message['chatId']] = MessageModel(
           id: lastMessage['id'],
           senderId: lastMessage['senderId'],
@@ -102,26 +104,38 @@ class ChatRemoteRepository {
 
       // Iterate through chats and map users
       for (var chat in chatData) {
-        final chatID = chat['id'];
+        final chatID = chat['chat']['id'];
 
-        final members = (chat['members'] as List).cast<String>();
+        // todo(ahmed) make this list only for the normal members
+        final members = (chat['chat']['members'] as List)
+            .map((member) => member['user'] as String)
+            .toList();
+
+        final admins = (chat['chat']['members'] as List)
+            .where((member) => member['Role'] == 'admin')
+            .map((member) => member['user'] as String)
+            .toList();
+
+        final creators = (chat['chat']['members'] as List)
+            .where((member) => member['Role'] == 'creator')
+            .map((member) => member['user'] as String)
+            .toList();
 
         // Create list of user IDs excluding current user
         final otherUserIDs = members.where((id) => id != userID).toList();
         final otherUsers = otherUserIDs.map((id) => userMap[id]).toList();
         final List<MessageModel> messages =
             lastMessageMap[chatID] == null ? [] : [lastMessageMap[chatID]!];
-
         String chatTitle = 'Invalid Chat';
 
-        if (chat['type'] == 'private') {
+        if (chat['chat']['type'] == 'private') {
           if (otherUsers.isEmpty) {
             continue;
           }
           chatTitle = otherUsers[0]?.username ?? 'Private Chat';
-        } else if (chat['type'] == 'group') {
+        } else if (chat['chat']['type'] == 'group') {
           chatTitle = 'Group Chat';
-        } else if (chat['type'] == 'channel') {
+        } else if (chat['chat']['type'] == 'channel') {
           chatTitle = 'Channel';
         } else {
           chatTitle = 'My Chat';
@@ -130,12 +144,17 @@ class ChatRemoteRepository {
 
         // Create chat model
         // Contains the last message only
+        // todo(ahmed): store the creators list as well as the isMuted, isSeen, isDeleted and draft attributes
+        // should it be sent in the first place if it is deleted?
         final chatModel = ChatModel(
           id: chatID,
           title: chatTitle,
           userIds: members,
-          type: ChatType.getType(chat['type']),
+          admins: admins,
+          type: ChatType.getType(chat['chat']['type']),
           messages: messages,
+          draft: chat['draft'],
+          isMuted: chat['isMuted'],
         );
 
         chats.add(chatModel);
@@ -164,7 +183,7 @@ class ChatRemoteRepository {
         options: Options(headers: {'X-Session-Token': sessionId}),
       );
 
-      final data = response.data['data'];
+      final data = response.data['data']['user'];
 
       return UserModel(
         username: data['username'] ?? 'Unknown User',

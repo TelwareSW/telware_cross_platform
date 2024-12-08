@@ -344,10 +344,11 @@ class ChattingController {
     return null;
   }
 
-  void editMessageFilePath(String chatID, String msgID, String newFilePath) {
+  void editMessageFilePath(
+      String chatID, String msgLocalID, String newFilePath) {
     _ref
         .read(chatsViewModelProvider.notifier)
-        .updateMessageFilePath(chatID, msgID, newFilePath);
+        .updateMessageFilePath(chatID, msgLocalID, newFilePath);
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
