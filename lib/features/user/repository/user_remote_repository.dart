@@ -348,7 +348,7 @@ class UserRemoteRepository {
     }
   }
 
-  Future<Either<AppError, void>> blockedUser({required String userId}) async {
+  Future<Either<AppError, void>> blockUser({required String userId}) async {
     try {
       final sessionId = await _getSessionId();
       final response = await _dio.post(
@@ -372,7 +372,7 @@ class UserRemoteRepository {
     }
   }
 
-  Future<Either<AppError, void>> unblockedUser({required String userId}) async {
+  Future<Either<AppError, void>> unblockUser({required String userId}) async {
     try {
       final sessionId = await _getSessionId();
       final response = await _dio.delete(

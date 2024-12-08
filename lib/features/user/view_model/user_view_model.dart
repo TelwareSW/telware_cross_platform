@@ -442,9 +442,8 @@ class UserViewModel extends _$UserViewModel {
       return;
     }
 
-    final response = await ref
-        .read(userRemoteRepositoryProvider)
-        .blockedUser(userId: userId);
+    final response =
+        await ref.read(userRemoteRepositoryProvider).blockUser(userId: userId);
 
     response.fold(
       (appError) {
@@ -477,7 +476,7 @@ class UserViewModel extends _$UserViewModel {
 
     final response = await ref
         .read(userRemoteRepositoryProvider)
-        .unblockedUser(userId: userId);
+        .unblockUser(userId: userId);
 
     response.fold(
       (appError) {
