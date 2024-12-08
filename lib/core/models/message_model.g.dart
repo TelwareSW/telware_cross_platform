@@ -30,13 +30,14 @@ class MessageModelAdapter extends TypeAdapter<MessageModel> {
       isPinned: fields[10] as bool,
       parentMessage: fields[11] as String?,
       localId: fields[12] as String,
+      isForward: fields[13] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, MessageModel obj) {
     writer
-      ..writeByte(13)
+      ..writeByte(14)
       ..writeByte(0)
       ..write(obj.senderId)
       ..writeByte(1)
@@ -62,7 +63,9 @@ class MessageModelAdapter extends TypeAdapter<MessageModel> {
       ..writeByte(11)
       ..write(obj.parentMessage)
       ..writeByte(12)
-      ..write(obj.localId);
+      ..write(obj.localId)
+      ..writeByte(13)
+      ..write(obj.isForward);
   }
 
   @override

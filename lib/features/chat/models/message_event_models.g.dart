@@ -17,19 +17,22 @@ class MessageEventAdapter extends TypeAdapter<MessageEvent> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return MessageEvent(
-      fields[0] as dynamic,
-      identifier: fields[1] as dynamic,
+      (fields[0] as Map).cast<String, dynamic>(),
+      msgId: fields[1] as String,
+      chatId: fields[2] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, MessageEvent obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.payload)
       ..writeByte(1)
-      ..write(obj.identifier);
+      ..write(obj.msgId)
+      ..writeByte(2)
+      ..write(obj.chatId);
   }
 
   @override
@@ -54,19 +57,22 @@ class SendMessageEventAdapter extends TypeAdapter<SendMessageEvent> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return SendMessageEvent(
-      fields[0] as dynamic,
-      identifier: fields[1] as dynamic,
+      (fields[0] as Map).cast<String, dynamic>(),
+      msgId: fields[1] as String,
+      chatId: fields[2] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, SendMessageEvent obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.payload)
       ..writeByte(1)
-      ..write(obj.identifier);
+      ..write(obj.msgId)
+      ..writeByte(2)
+      ..write(obj.chatId);
   }
 
   @override
@@ -91,19 +97,22 @@ class DeleteMessageEventAdapter extends TypeAdapter<DeleteMessageEvent> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return DeleteMessageEvent(
-      fields[0] as dynamic,
-      identifier: fields[1] as dynamic,
+      (fields[0] as Map).cast<String, dynamic>(),
+      msgId: fields[1] as String,
+      chatId: fields[2] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, DeleteMessageEvent obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.payload)
       ..writeByte(1)
-      ..write(obj.identifier);
+      ..write(obj.msgId)
+      ..writeByte(2)
+      ..write(obj.chatId);
   }
 
   @override
@@ -128,19 +137,22 @@ class EditMessageEventAdapter extends TypeAdapter<EditMessageEvent> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return EditMessageEvent(
-      fields[0] as dynamic,
-      identifier: fields[1] as dynamic,
+      (fields[0] as Map).cast<String, dynamic>(),
+      msgId: fields[1] as String,
+      chatId: fields[2] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, EditMessageEvent obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.payload)
       ..writeByte(1)
-      ..write(obj.identifier);
+      ..write(obj.msgId)
+      ..writeByte(2)
+      ..write(obj.chatId);
   }
 
   @override
@@ -165,18 +177,22 @@ class UpdateDraftEventAdapter extends TypeAdapter<UpdateDraftEvent> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return UpdateDraftEvent(
-      fields[0] as dynamic,
+      (fields[0] as Map).cast<String, dynamic>(),
+      msgId: fields[1] as String,
+      chatId: fields[2] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, UpdateDraftEvent obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.payload)
       ..writeByte(1)
-      ..write(obj.identifier);
+      ..write(obj.msgId)
+      ..writeByte(2)
+      ..write(obj.chatId);
   }
 
   @override
