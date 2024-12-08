@@ -6,8 +6,14 @@ import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
+import 'package:telware_cross_platform/core/theme/sizes.dart';
+import 'package:telware_cross_platform/core/view/widget/tab_bar_widget.dart';
+import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
+import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
+import 'package:telware_cross_platform/features/chat/providers/call_provider.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/chat_screen.dart';
+import 'package:telware_cross_platform/features/chat/view/widget/call_overlay_widget.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 import 'package:telware_cross_platform/features/user/view/widget/profile_header_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
@@ -27,21 +33,33 @@ class UserProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<UserProfileScreen> createState() => _UserProfileScreen();
 }
 
-class _UserProfileScreen extends ConsumerState<UserProfileScreen> {
-  late final UserModel _user;
-  late final bool _isCurrentUser = widget.userId == null ||
-      widget.userId == ref.read(userLocalRepositoryProvider).getUser()!.id;
+class _UserProfileScreen extends ConsumerState<UserProfileScreen>
+    with SingleTickerProviderStateMixin {
+  late UserModel _user;
+  late final bool _isCurrentUser;
+  late final TabController _tabController;
 
   @override
   void initState() {
-    super.initState();
+    _isCurrentUser = widget.userId == null ||
+        widget.userId == ref.read(userLocalRepositoryProvider).getUser()!.id;
+    _tabController = TabController(length: _isCurrentUser ? 2 : 5, vsync: this);
+    _user = !_isCurrentUser
+        ? ref.read(chatsViewModelProvider.notifier).getOtherUsers()[widget.userId]!
+    : ref.read(userLocalRepositoryProvider).getUser()!;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      String? userId = widget.userId;
-      _user = (userId != null
-          ? await ref.read(chatsViewModelProvider.notifier).getUser(userId)
-          : ref.read(userLocalRepositoryProvider).getUser()!)!;
-      setState(() {});
+      if (widget.userId != null) {
+        _user = (await ref.read(chatsViewModelProvider.notifier).getUser(widget.userId!))!;
+        setState(() {});
+      }
     });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   void _createChat() {
@@ -77,7 +95,10 @@ class _UserProfileScreen extends ConsumerState<UserProfileScreen> {
                   else ...[
                     IconButton(
                       icon: const Icon(Icons.call),
-                      onPressed: () {  // TODO: Implement call
+                      onPressed: () {
+                        ref.read(callStateProvider.notifier).startCall();
+                        debugPrint("Sending user: $_user");
+                        context.push(Routes.callScreen, extra: _user);
                       },
                     )
                   ],
@@ -162,15 +183,22 @@ class _UserProfileScreen extends ConsumerState<UserProfileScreen> {
                           text: _user.phone,
                           icon: null,
                           subtext: "Mobile",
+                          showDivider: _user.bio.isNotEmpty || _user.username.isNotEmpty,
                         ),
-                        if (_user.bio != "")
+                        if (_user.bio.isNotEmpty)
                           SettingsOptionWidget(
-                              icon: null, text: _user.bio, subtext: "Bio"),
-                        if (_user.username != "")
+                              icon: null,
+                              text: _user.bio,
+                              subtext: "Bio",
+                              showDivider: _user.username.isNotEmpty
+                          ),
+                        if (_user.username.isNotEmpty)
                           SettingsOptionWidget(
                               icon: null,
                               text: "@${_user.username}",
-                              subtext: "Username"),
+                              subtext: "Username",
+                              showDivider: false
+                          ),
                       ],
                     ),
                   ],
@@ -179,6 +207,61 @@ class _UserProfileScreen extends ConsumerState<UserProfileScreen> {
               const SliverToBoxAdapter(
                 child: SizedBox(height: Dimensions.sectionGaps),
               ),
+              SliverToBoxAdapter(
+                child: Container(
+                  color: Palette.secondary,
+                  child: Column(
+                    children: [
+                      TabBarWidget(
+                        controller: _tabController,
+                        tabs: _isCurrentUser ?
+                        const [
+                          Tab(text: "Posts",),
+                          Tab(text: "Archived Posts",),
+                        ] :
+                        const [
+                          Tab(text: "Media",),
+                          Tab(text: "Files",),
+                          Tab(text: "Voice",),
+                          Tab(text: "GIFs",),
+                          Tab(text: "Groups",),
+                        ],
+                        isScrollable: !_isCurrentUser,
+                      ),
+                      const CallOverlay(showDetails: false,),
+                    ],
+                  ),
+                )
+              ),
+              SliverFillRemaining(
+                child: Container(
+                  color: Palette.secondary,
+                  child: TabBarView(
+                      controller: _tabController,
+                      children: List.generate(_isCurrentUser ? 2 : 5, (index) {
+                        return const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            LottieViewer(
+                              path: 'assets/tgs/EasterDuck.tgs',
+                              width: 100,
+                              height: 100,
+                            ),
+                            TitleElement(
+                              name: 'To be implemented',
+                              color: Palette.primaryText,
+                              fontSize: Sizes.primaryText - 2,
+                              fontWeight: FontWeight.bold,
+                              padding: EdgeInsets.only(bottom: 0, top: 10),
+                            ),
+                          ],
+                        );
+                      }
+                      )
+                  ),
+                ),
+              )
             ],
           ),
           Align(
