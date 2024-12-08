@@ -87,6 +87,8 @@ class ChatRemoteRepository {
           mediaUrl: lastMessage['mediaUrl'],
         );
 
+        // todo(ahmed): add (isForward, isPinned, isAnnouncement, parentMsgId) 
+        // the connumicationType attribute is extra
         lastMessageMap[message['chatId']] = MessageModel(
           id: lastMessage['id'],
           senderId: lastMessage['senderId'],
@@ -104,6 +106,7 @@ class ChatRemoteRepository {
       for (var chat in chatData) {
         final chatID = chat['chat']['id'];
 
+        // todo(ahmed) make this list only for the normal members
         final members = (chat['chat']['members'] as List)
             .map((member) => member['user'] as String)
             .toList();
@@ -141,6 +144,8 @@ class ChatRemoteRepository {
 
         // Create chat model
         // Contains the last message only
+        // todo(ahmed): store the creators list as well as the isMuted, isSeen, isDeleted and draft attributes
+        // should it be sent in the first place if it is deleted?
         final chatModel = ChatModel(
           id: chatID,
           title: chatTitle,
