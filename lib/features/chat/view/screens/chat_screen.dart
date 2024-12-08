@@ -247,14 +247,16 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     bool needUploadMedia = contentType != 'text';
     String? mediaUrl;
     // Upload the media file before sending the message
-    if (needUploadMedia && UPLOAD_MEDIA) {
+    if (needUploadMedia) {
       if (filePath != null) {
-        mediaUrl = await ref
-            .read(chattingControllerProvider)
-            .uploadMedia(filePath, contentType);
-        if (mediaUrl == null) {
-          showToastMessage("Failed to upload media file");
-          return;
+        if (UPLOAD_MEDIA) {
+          mediaUrl = await ref
+              .read(chattingControllerProvider)
+              .uploadMedia(filePath, contentType);
+          if (mediaUrl == null) {
+            showToastMessage("Failed to upload media file");
+            return;
+          }
         }
       } else {
         showToastMessage("Media file is missing");
