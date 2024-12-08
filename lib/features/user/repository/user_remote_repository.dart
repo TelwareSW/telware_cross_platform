@@ -321,33 +321,6 @@ class UserRemoteRepository {
     }
   }
 
-  Future<Either<AppError, List<UserModel>>> getBlockedUsers() async {
-    try {
-      final sessionId = await _getSessionId();
-      final response = await _dio.get(
-        '/users/block',
-        options: Options(
-          headers: {'X-Session-Token': sessionId},
-        ),
-      );
-
-      if (response.statusCode! >= 400) {
-        final String message = response.data?['message'] ?? 'Unexpected Error';
-        return Left(AppError(message));
-      }
-      final List<dynamic> users = response.data?['data']['users'] ?? [];
-      var blockedUsers = await Future.wait(
-          (users).map((user) => UserModel.fromMap(user)).toList());
-      return Right(blockedUsers);
-    } on DioException catch (dioException) {
-      return Left(handleDioException(dioException));
-    } catch (error) {
-      debugPrint('block user error:\n${error.toString()}');
-      return Left(
-          AppError("Couldn't block user now. Please, try again later."));
-    }
-  }
-
   Future<Either<AppError, void>> blockUser({required String userId}) async {
     try {
       final sessionId = await _getSessionId();
