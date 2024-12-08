@@ -196,8 +196,9 @@ class _BlockUserScreen extends ConsumerState<BlockUserScreen>
       option["trailingFontSize"] = 13.0;
       option["avatar"] = true;
       option["trailingPadding"] = const EdgeInsets.only(bottom: 20.0);
-      option["trailingColor"] =
+      option["subtextColor"] =
           option["changeColor"] ? Palette.accent : Palette.accentText;
+      option["trailingColor"] = Palette.accentText;
       option["color"] = Palette.primaryText;
       option["fontSize"] = 18.0;
       option["subtextFontSize"] = 14.0;
