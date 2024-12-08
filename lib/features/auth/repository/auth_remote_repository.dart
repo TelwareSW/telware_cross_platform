@@ -116,7 +116,6 @@ class AuthRemoteRepository {
       debugPrint('=========================================');
       debugPrint('Get me was successful');
       final user = await UserModel.fromMap(response.data['data']['user']);
-      debugPrint('** First Creation done');
       return Right(user);
     } on DioException catch (dioException) {
       return Left(handleDioException(dioException));

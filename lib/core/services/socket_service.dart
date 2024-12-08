@@ -1,89 +1,91 @@
 import 'dart:async';
 import 'package:socket_io_client/socket_io_client.dart';
 import 'package:flutter/foundation.dart';
+import 'package:telware_cross_platform/core/constants/server_constants.dart';
+import 'package:telware_cross_platform/features/chat/view_model/event_handler.dart';
 
 class SocketService {
   late Socket _socket;
+  late String _serverUrl;
+  late String _userId;
+  late String _sessionId;
+  late Function() _onConnect;
+  late EventHandler _eventHandler;
+  bool isConnected = false, _isReconnecting = false;
 
-  int _retryAttempts = 0;
-  final int _maxRetryAttempts = 5;
-  final Duration _initialRetryDelay = const Duration(seconds: 2);
+  final Duration _retryDelay =
+      Duration(seconds: SOCKET_RECONNECT_DELAY_SECONDS);
 
-  // Private constructor
-  SocketService._internal();
+  void connect(
+      {required String? serverUrl,
+      required String? userId,
+      required String? sessionId,
+      required Function()? onConnect,
+      EventHandler? eventHandler}) {
+    _serverUrl = serverUrl ?? _serverUrl;
+    _userId = userId ?? _userId;
+    _sessionId = sessionId ?? _sessionId;
+    _onConnect = onConnect ?? _onConnect;
+    _eventHandler = eventHandler ?? _eventHandler;
 
-  // Singleton instance
-  static final SocketService _instance = SocketService._internal();
+    _connect();
+  }
 
-  // Getter for the singleton instance
-  static SocketService get instance => _instance;
-
-  void connect({
-    required String serverUrl,
-    required String userId,
-    required String sessionId,
-    required Function() onConnect,
-  }) {
+  void _connect() {
+    if (isConnected) return;
     debugPrint('*** Entered the connect method');
-    debugPrint(serverUrl);
-    debugPrint(userId);
-    debugPrint(sessionId);
+    debugPrint(_serverUrl);
+    debugPrint(_userId);
+    debugPrint(_sessionId);
 
-    _socket = io(serverUrl, <String, dynamic>{
+    _socket = io(_serverUrl, <String, dynamic>{
       // 'autoConnect': false,
       "transports": ["websocket"],
-      'query': {'userId': userId},
-      'auth': {'sessionId': sessionId}
+      'query': {'userId': _userId},
+      'auth': {'sessionId': _sessionId}
     });
 
     _socket.connect();
 
     _socket.onConnect((_) {
       debugPrint('### Connected to server');
-      _retryAttempts = 0; // Reset retry attempts on successful connection
-      onConnect();
+      isConnected = true;
+      _isReconnecting = false;
+      _eventHandler.processQueue();
+      _onConnect();
     });
 
     _socket.onConnectError((error) {
       debugPrint('Connection error: $error');
-      _disconnect();
-      _retryConnection(serverUrl, userId, sessionId, onConnect);
+      onError();
     });
 
     _socket.onError((error) {
       debugPrint('Socket error: $error');
-      _disconnect();
-      _retryConnection(serverUrl, userId, sessionId, onConnect);
+      onError();
     });
 
     _socket.onDisconnect((_) {
       debugPrint('Disconnected from server');
-      _disconnect();
-      _retryConnection(serverUrl, userId, sessionId, onConnect);
     });
   }
 
-  void _retryConnection(
-      String serverUrl, String userId, String sessionId, Function() onConnect) {
-    if (_retryAttempts < _maxRetryAttempts) {
-      _retryAttempts++;
-      final delay = _initialRetryDelay * _retryAttempts;
-      debugPrint('Retrying connection in ${delay.inSeconds} seconds...');
-      Timer(delay, () {
-        connect(
-          serverUrl: serverUrl,
-          userId: userId,
-          sessionId: sessionId,
-          onConnect: onConnect,
-        );
-      });
-    } else {
-      debugPrint('Max retry attempts reached. Could not connect to server.');
-    }
+  void onError() {
+    _socket.disconnect();
+    isConnected = false;
+    _eventHandler.stopProcessing();
+
+    if (_isReconnecting) return;
+    _isReconnecting = true;
+    Timer(_retryDelay, () {
+      _isReconnecting = false;
+      _connect();
+    });
   }
 
   void _disconnect() {
     _socket.disconnect();
+    isConnected = false;
   }
 
   void on(String event, Function(dynamic data) callback) {
@@ -98,4 +100,13 @@ class SocketService {
       {required Function(dynamic data) ackCallback}) {
     _socket.emitWithAck(event, data, ack: ackCallback);
   }
+
+  // Private constructor
+  SocketService._internal();
+
+  // Singleton instance
+  static final SocketService _instance = SocketService._internal();
+
+  // Getter for the singleton instance
+  static SocketService get instance => _instance;
 }

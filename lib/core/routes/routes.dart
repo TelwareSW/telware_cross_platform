@@ -80,7 +80,7 @@ class Routes {
         redirect: (context, state) {
           final isAuthorized =
               ref.read(authViewModelProvider.notifier).isAuthorized();
-          debugPrint('fullPath: ${state.fullPath}');
+          // debugPrint('fullPath: ${state.fullPath}');
           if (!isAuthorized) {
             if ((state.fullPath?.startsWith(Routes.socialAuthLoading) ??
                 false)) {

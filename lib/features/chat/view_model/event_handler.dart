@@ -21,11 +21,13 @@ class EventHandler {
   void init(Queue<MessageEvent> eventsQueue) {
     _queue = eventsQueue;
     _socket.connect(
-        serverUrl: SOCKET_URL,
-        userId: _userId,
-        onConnect: _onSocketConnect,
-        sessionId: _sessionId);
-    _processQueue();
+      serverUrl: SOCKET_URL,
+      userId: _userId,
+      onConnect: _onSocketConnect,
+      sessionId: _sessionId,
+      eventHandler: this,
+    );
+    processQueue();
   }
 
   void addEvent(MessageEvent event) {
@@ -35,7 +37,7 @@ class EventHandler {
     _chattingController.setEventsQueue(_queue);
     // Start processing if not already running
     if (!_isProcessing) {
-      _processQueue();
+      processQueue();
     }
   }
 
@@ -43,7 +45,7 @@ class EventHandler {
     _stopRequested = true; // Gracefully request stopping the loop
   }
 
-  Future<void> _processQueue() async {
+  Future<void> processQueue() async {
     if (_isProcessing || USE_MOCK_DATA) return; // Avoid multiple loops
 
     _isProcessing = true;
@@ -51,8 +53,20 @@ class EventHandler {
     debugPrint('()()() ${_queue.length}');
     debugPrint('()()() $_stopRequested');
 
+    int failingCounter = 0;
+
     while (_queue.isNotEmpty && !_stopRequested) {
       final currentEvent = _queue.first;
+
+      if (!_socket.isConnected) {
+        _socket.connect(
+          serverUrl: SOCKET_URL,
+          userId: _userId,
+          onConnect: _onSocketConnect,
+          sessionId: _sessionId,
+        );
+        break;
+      }
 
       try {
         final bool success = await currentEvent.execute(
@@ -64,13 +78,24 @@ class EventHandler {
           _queue.removeFirst(); // Remove successful event
           debugPrint('Processed event: ${currentEvent.runtimeType}');
           _chattingController.setEventsQueue(_queue);
+          failingCounter = 0;
         } else {
           debugPrint('Failed to process event: ${currentEvent.runtimeType}');
+          failingCounter++;
+          if (failingCounter == EVENT_FAIL_LIMIT) {
+            _stopRequested =
+                true; // it is already called in the onError method, but I add it for insurance
+            _socket.onError();
+          }
           // Retry after a delay
           await Future.delayed(const Duration(seconds: 2));
         }
       } catch (e) {
         debugPrint('Error processing event: ${currentEvent.runtimeType}, $e');
+        if (failingCounter == EVENT_FAIL_LIMIT) {
+          _stopRequested =true;
+          _socket.onError();
+        }
         await Future.delayed(const Duration(seconds: 2));
       }
     }
