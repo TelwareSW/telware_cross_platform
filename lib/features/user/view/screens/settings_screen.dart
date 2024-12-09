@@ -152,7 +152,7 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
                           ref.read(authViewModelProvider.notifier).logOut();
                           context.go(Routes.logIn);
                         },
-                        icon: const Icon(Icons.more_vert)),
+                        icon: const Icon(Icons.exit_to_app_rounded)),
                   ],
                   flexibleSpace: LayoutBuilder(
                     builder: (context, constraints) {

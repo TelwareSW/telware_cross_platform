@@ -18,10 +18,9 @@ class ChatRemoteRepository {
       ({
         AppError? appError,
         List<ChatModel> chats,
-        List<UserModel> users,
+        Map<String, UserModel> users,
       })> getUserChats(String sessionId, String userID) async {
     List<ChatModel> chats = [];
-    List<UserModel> users = [];
 
     try {
       final response = await _dio.get(
@@ -87,7 +86,7 @@ class ChatRemoteRepository {
           mediaUrl: lastMessage['mediaUrl'],
         );
 
-        // todo(ahmed): add (isForward, isPinned, isAnnouncement, parentMsgId) 
+        // todo(ahmed): add (parentMsgId)
         // the connumicationType attribute is extra
         lastMessageMap[message['chatId']] = MessageModel(
           id: lastMessage['id'],
@@ -99,6 +98,10 @@ class ChatRemoteRepository {
               ? DateTime.parse(lastMessage['timestamp'])
               : DateTime.now(),
           userStates: userStates,
+          isForward: lastMessage['isForward'] ?? false,
+          isPinned: lastMessage['isPinned'] ?? false,
+          isAnnouncement: lastMessage['isAnnouncement'],
+          threadMessages: lastMessage['threadMessages']
         );
       }
 
@@ -132,19 +135,24 @@ class ChatRemoteRepository {
           if (otherUsers.isEmpty) {
             continue;
           }
-          chatTitle = otherUsers[0]?.username ?? 'Private Chat';
+
+          chatTitle =
+              '${otherUsers[0]?.screenFirstName} ${otherUsers[0]?.screenLastName}';
+          if (chatTitle.isEmpty) {
+            chatTitle = (otherUsers[0]?.username != null &&
+                    otherUsers[0]!.username.isNotEmpty)
+                ? otherUsers[0]!.username
+                : 'Private Chat';
+          }
         } else if (chat['chat']['type'] == 'group') {
-          chatTitle = 'Group Chat';
+          chatTitle = chat['chat']['name'] ?? 'Group Chat';
         } else if (chat['chat']['type'] == 'channel') {
-          chatTitle = 'Channel';
+          chatTitle = chat['chat']['name'] ?? 'Channel';
         } else {
-          chatTitle = 'My Chat';
-          chatTitle = 'My Chat';
+          chatTitle = 'Error in chat';
         }
 
-        // Create chat model
-        // Contains the last message only
-        // todo(ahmed): store the creators list as well as the isMuted, isSeen, isDeleted and draft attributes
+        // todo(ahmed): store the creators list as well as the isSeen, isDeleted attributes
         // should it be sent in the first place if it is deleted?
         final chatModel = ChatModel(
           id: chatID,
@@ -155,20 +163,21 @@ class ChatRemoteRepository {
           messages: messages,
           draft: chat['draft'],
           isMuted: chat['isMuted'],
+          creators: creators,
+          
         );
 
         chats.add(chatModel);
-        users.addAll(otherUsers.whereType<UserModel>());
       }
 
-      return (chats: chats, users: users, appError: null);
+      return (chats: chats, users: userMap, appError: null);
     } catch (e, stackTrace) {
       debugPrint('!!! error in recieving the chats');
       debugPrint(e.toString());
       debugPrint(stackTrace.toString());
       return (
         chats: <ChatModel>[],
-        users: <UserModel>[],
+        users: <String, UserModel>{},
         appError: AppError('Failed to fetch chats', code: 500),
       );
     }

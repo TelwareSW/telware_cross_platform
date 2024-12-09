@@ -72,7 +72,7 @@ class ChatsViewModel extends _$ChatsViewModel {
       ref.read(chattingControllerProvider).restoreOtherUsers(_otherUsers);
     }
 
-    debugPrint('!!!** returning a user from the other users map: $user');
+    // debugPrint('!!!** returning a user from the other users map: $user');
     return user;
   }
 

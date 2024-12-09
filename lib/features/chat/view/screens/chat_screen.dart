@@ -291,7 +291,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       List<MessageModel> messages =
           ref.read(chatProvider(chatModel!.id!))?.messages ?? [];
       _updateChatMessages(messages);
-      debugPrint(" ${messages.toString()}");
+      // debugPrint(" ${messages.toString()}");
       // _scrollToBottom();
     });
   }
