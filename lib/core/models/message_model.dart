@@ -29,19 +29,19 @@ class MessageModel {
   @HiveField(6)
   String? id;
   @HiveField(7)
-  final String? photo;
-  @HiveField(8)
-  Uint8List? photoBytes;
-  @HiveField(9)
   final Map<String, MessageState> userStates; // userID -> state of the message
-  @HiveField(10)
+  @HiveField(8)
   final bool isPinned;
-  @HiveField(11)
+  @HiveField(9)
   final String? parentMessage;
-  @HiveField(12)
+  @HiveField(10)
   final String localId;
-  @HiveField(13)
+  @HiveField(11)
   final bool isForward;
+  @HiveField(12)
+  final bool isAnnouncement;
+  @HiveField(13)
+  List<String> threadMessages;
 
 //<editor-fold desc="Data Methods">
   MessageModel({
@@ -52,33 +52,14 @@ class MessageModel {
     this.content,
     required this.timestamp,
     this.id,
-    this.photo,
-    this.photoBytes,
     required this.userStates,
     this.isPinned=false,
     this.parentMessage,
     this.localId = '',
-    this.isForward = false
-  });
-
-  Future<void> _setPhotoBytes() async {
-    if (photo == null || photo!.isEmpty) return;
-
-    String url =
-        photo!.startsWith('http') ? photo! : '$API_URL_PICTURES/$photo';
-
-    if (url.isEmpty) return;
-
-    Uint8List? tempImage;
-    try {
-      tempImage = await downloadImage(url);
-      if (tempImage != null) {
-        photoBytes = tempImage;
-      }
-    } catch (e) {
-      photoBytes = null;
-    }
-  }
+    this.isForward = false,
+    this.isAnnouncement = false,
+    List<String>? threadMessages,
+}) : threadMessages = threadMessages ?? [];
 
   void updateUserState(String userId, MessageState state) {
     userStates[userId] = state;
@@ -99,8 +80,8 @@ class MessageModel {
         other.timestamp == timestamp &&
         other.autoDeleteTimestamp == autoDeleteTimestamp &&
         other.id == id &&
-        other.photo == photo &&
-        other.photoBytes == photoBytes &&
+        other.threadMessages == threadMessages &&
+        other.isAnnouncement == isAnnouncement &&
         other.localId == localId &&
         other.isForward == isForward &&
         other.userStates == userStates;
@@ -115,8 +96,8 @@ class MessageModel {
         content.hashCode ^
         timestamp.hashCode ^
         id.hashCode ^
-        photo.hashCode ^
-        photoBytes.hashCode ^
+        isAnnouncement.hashCode ^
+        threadMessages.hashCode ^
         isForward.hashCode ^
         localId.hashCode ^
         userStates.hashCode;
@@ -130,13 +111,14 @@ class MessageModel {
         'timestamp: $timestamp,\n'
         'autoDeleteTimestamp: $autoDeleteTimestamp,\n'
         'id: $id,\n'
-        'photo: $photo,\n'
         'userStates: $userStates,\n'
         'messageType: ${messageType.name},\n'
         'messageContentType: ${messageContentType.name},\n'
-        'isPhotoBytesSet: ${photoBytes != null}\n'
         'localId: $localId\n'
+        'isAnnouncement: $isAnnouncement\n'
         'isForward: $isForward\n'
+        'isPinned: $isPinned\n'
+        'threadMessages: $threadMessages'
         ')');
   }
 
@@ -154,6 +136,8 @@ class MessageModel {
     String? localId,
     bool? isForward,
     bool? isPinned,
+    bool? isAnnouncement,
+    List<String>? threadMessages,
   }) {
     return MessageModel(
       senderId: senderId ?? this.senderId,
@@ -161,14 +145,14 @@ class MessageModel {
       timestamp: timestamp ?? this.timestamp,
       autoDeleteTimestamp: autoDeleteTimestamp ?? this.autoDeleteTimestamp,
       id: id ?? this.id,
-      photo: photo ?? this.photo,
-      photoBytes: photoBytes ?? this.photoBytes,
       userStates: userStates ?? Map.from(this.userStates),
       messageType: messageType ?? this.messageType,
       messageContentType: messageContentType ?? this.messageContentType,
       localId: localId ?? this.localId,
       isForward: isForward ?? this.isForward,
-      isPinned: isPinned ?? this.isPinned
+      isPinned: isPinned ?? this.isPinned,
+      isAnnouncement: isAnnouncement ?? this.isAnnouncement,
+      threadMessages: threadMessages ?? this.threadMessages,
     );
   }
 
@@ -179,7 +163,6 @@ class MessageModel {
       'timestamp': timestamp.toIso8601String(),
       'autoDeleteTimestamp': autoDeleteTimestamp?.microsecondsSinceEpoch,
       'id': id,
-      'photo': photo,
       'userStates': forSender
           ? userStates.map(
               (key, value) => MapEntry(key, value.toString().split('.').last))
@@ -189,18 +172,19 @@ class MessageModel {
       'localId': localId,
       'isForward': isForward,
       'isPinned': isPinned,
+      'isAnnouncement': isAnnouncement,
+      'threadMessages': threadMessages,
     };
 
     return map;
   }
 
   static Future<MessageModel> fromMap(Map<String, dynamic> map) async {
-    final message = MessageModel(
+    return MessageModel(
       senderId: map['senderId'] as String,
       content: map['content'] as MessageContent?,
       timestamp: DateTime.parse(map['timestamp'] as String),
       id: map['messageId'] as String?,
-      photo: map['photo'] as String?,
       messageType: MessageType.getType(map['messageType']),
       messageContentType: MessageContentType.getType(map['messageContentType']),
       autoDeleteTimestamp: map['autoDeleteTimeStamp'] != null
@@ -217,9 +201,8 @@ class MessageModel {
       ),
       isForward: map['isForward'] ?? false,
       isPinned: map['isPinned'] ?? false,
+      isAnnouncement: map['isAnnouncement'] ?? false,
     );
-    await message._setPhotoBytes();
-    return message;
   }
 
   String toJson({bool forSender = false}) =>
