@@ -84,6 +84,9 @@ dependencies:
   just_audio: ^0.9.42
   open_file: ^3.5.10
   emoji_picker_flutter: ^3.1.0
+  firebase_core: ^3.8.1
+  flutter_webrtc: ^0.12.3
+  cloud_firestore: ^5.5.1
 
 
 dev_dependencies:
