@@ -20,6 +20,7 @@ import 'floating_menu_overlay.dart';
 
 class MessageTileWidget extends ConsumerWidget {
   final MessageModel messageModel;
+  final String chatId;
   final bool isSentByMe;
   final bool showInfo;
   final Color nameColor;
@@ -36,6 +37,7 @@ class MessageTileWidget extends ConsumerWidget {
   const MessageTileWidget(
       {super.key,
       required this.messageModel,
+      required this.chatId,
       required this.isSentByMe,
       this.showInfo = false,
       this.nameColor = Palette.primary,
@@ -104,6 +106,8 @@ class MessageTileWidget extends ConsumerWidget {
                     },
                     onDelete: () {
                       overlayEntry.remove();
+                      final msgId = messageModel.id ?? messageModel.localId;
+                      onDelete(msgId, chatId, DeleteMessageType.all);
                     },
                     pinned: messageModel.isPinned,
                   ),

@@ -338,6 +338,7 @@ class _PinnedMessagesScreen extends ConsumerState<PinnedMessagesScreen>
                                           MessageTileWidget(
                                             key: ValueKey(
                                                 '${MessageKeys.messagePrefix}${messagesIndex++}'),
+                                            chatId: chatModel.id ?? '',
                                             messageModel: item,
                                             isSentByMe: item.senderId ==
                                                 ref.read(userProvider)!.id,

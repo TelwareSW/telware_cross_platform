@@ -86,6 +86,8 @@ class ChatRemoteRepository {
           mediaUrl: lastMessage['mediaUrl'],
         );
 
+        final threadMessages = (lastMessage['threadMessages'] as List).map((e) => e as String).toList();
+
         // todo(ahmed): add (parentMsgId)
         // the connumicationType attribute is extra
         lastMessageMap[message['chatId']] = MessageModel(
@@ -101,7 +103,7 @@ class ChatRemoteRepository {
           isForward: lastMessage['isForward'] ?? false,
           isPinned: lastMessage['isPinned'] ?? false,
           isAnnouncement: lastMessage['isAnnouncement'],
-          threadMessages: lastMessage['threadMessages']
+          threadMessages: threadMessages
         );
       }
 

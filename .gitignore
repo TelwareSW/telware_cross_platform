@@ -21,3 +21,5 @@ flutter_*.png
 *.iml
 .flutter-plugins*
 coverage/
+
+*.g.dart
