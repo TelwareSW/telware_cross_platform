@@ -190,6 +190,15 @@ class ChattingController {
     }
   }
 
+  void clear() {
+    _eventHandler.clear();
+    final userId = (_ref.read(userProvider))?.id! ?? '';
+    _localRepository.clearChats(userId);
+    _localRepository.clearOtherUsers(userId);
+    _localRepository.clearEventQueue(userId);
+    _ref.read(chatsViewModelProvider.notifier).clear();
+  }
+
   /// Send a text message.
   /// Must specify either the chatID or userID in case of new chat,
   /// otherwise, it will throw an error

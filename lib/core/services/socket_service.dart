@@ -84,7 +84,7 @@ class SocketService {
     });
   }
 
-  void _disconnect() {
+  void disconnect() {
     _socket.disconnect();
     isConnected = false;
   }

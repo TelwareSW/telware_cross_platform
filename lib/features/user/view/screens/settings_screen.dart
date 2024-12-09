@@ -10,6 +10,7 @@ import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
+import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 import 'package:telware_cross_platform/features/stories/view/screens/add_my_image_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/change_number_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/change_username_screen.dart';
@@ -149,6 +150,7 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
                     const SizedBox(width: 16),
                     IconButton(
                         onPressed: () {
+                          ref.read(chattingControllerProvider).clear();
                           ref.read(authViewModelProvider.notifier).logOut();
                           context.go(Routes.logIn);
                         },

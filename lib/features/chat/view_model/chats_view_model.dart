@@ -28,6 +28,11 @@ class ChatsViewModel extends _$ChatsViewModel {
     return [];
   }
 
+  void clear() {
+    state = [];
+    _otherUsers = {};
+  }
+
   void setOtherUsers(Map<String, UserModel> otherUsers) {
     _otherUsers = otherUsers;
   }
