@@ -252,13 +252,6 @@ class MessageTileWidget extends ConsumerWidget {
                               : const SizedBox(),
                           Wrap(
                             children: [
-                              SenderNameWidget(
-                                keyValue,
-                                nameColor,
-                                showInfo: showInfo,
-                                isSentByMe: isSentByMe,
-                                userId: messageModel.senderId,
-                              ),
                               Wrap(
                                 children: [
                                   HighlightTextWidget(
