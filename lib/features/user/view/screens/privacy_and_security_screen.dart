@@ -104,7 +104,7 @@ class _PrivacySettingsScreen extends ConsumerState<PrivacySettingsScreen> {
             "icon": Icons.front_hand_outlined,
             "text": 'Blocked Users',
             "routes": BlockedUsersScreen.route,
-            "trailing": "None"
+            "trailing": "${user?.blockedUsers?.length ?? 0}"
           },
           {"icon": Icons.devices, "text": 'Devices', "trailing": "1"},
         ],

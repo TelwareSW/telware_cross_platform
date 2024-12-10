@@ -45,9 +45,10 @@ class UserRemoteRepository {
       }
 
       final List<dynamic> users = response.data?['data']['users'] ?? [];
-      debugPrint("Fetched: $users");
+
       var filteredUsers = await Future.wait(
           (users).map((user) => UserModel.fromMap(user)).toList());
+
       filteredUsers = await Future.wait(filteredUsers.map((user) async {
         if (user.photo != null) {
           return user.copyWith(photo: await downloadAndSaveFile(user.photo!));
@@ -317,6 +318,54 @@ class UserRemoteRepository {
       debugPrint('Change invite permissions error:\n${error.toString()}');
       return Left(AppError(
           "Couldn't change invite permissions now. Please, try again later."));
+    }
+  }
+
+  Future<Either<AppError, void>> blockUser({required String userId}) async {
+    try {
+      final sessionId = await _getSessionId();
+      final response = await _dio.post(
+        '/users/block/$userId',
+        options: Options(
+          headers: {'X-Session-Token': sessionId},
+        ),
+      );
+
+      if (response.statusCode! >= 400) {
+        final String message = response.data?['message'] ?? 'Unexpected Error';
+        return Left(AppError(message));
+      }
+      return const Right(null);
+    } on DioException catch (dioException) {
+      return Left(handleDioException(dioException));
+    } catch (error) {
+      debugPrint('block user error:\n${error.toString()}');
+      return Left(
+          AppError("Couldn't block user now. Please, try again later."));
+    }
+  }
+
+  Future<Either<AppError, void>> unblockUser({required String userId}) async {
+    try {
+      final sessionId = await _getSessionId();
+      final response = await _dio.delete(
+        '/users/block/$userId',
+        options: Options(
+          headers: {'X-Session-Token': sessionId},
+        ),
+      );
+
+      if (response.statusCode! >= 400) {
+        final String message = response.data?['message'] ?? 'Unexpected Error';
+        return Left(AppError(message));
+      }
+      return const Right(null);
+    } on DioException catch (dioException) {
+      return Left(handleDioException(dioException));
+    } catch (error) {
+      debugPrint('block user error:\n${error.toString()}');
+      return Left(
+          AppError("Couldn't block user now. Please, try again later."));
     }
   }
 

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
+import 'package:telware_cross_platform/core/models/user_model.dart';
 
 import 'package:telware_cross_platform/core/view/screen/splash_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/change_number_form_screen.dart';
@@ -12,6 +13,7 @@ import 'package:telware_cross_platform/features/auth/view/screens/sign_up_screen
 import 'package:telware_cross_platform/features/auth/view/screens/social_auth_loading_screen.dart';
 import 'package:telware_cross_platform/features/auth/view/screens/verification_screen.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
+import 'package:telware_cross_platform/features/chat/view/screens/call_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/chat_info_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/chat_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/create_chat_screen.dart';
@@ -77,14 +79,14 @@ class Routes {
   static const String chatInfoScreen = ChatInfoScreen.route;
   static const String createGroupScreen = CreateGroupScreen.route;
   static const String groupCreationDetails = GroupCreationDetails.route;
-
+  static const String callScreen = CallScreen.route;
 
   static GoRouter appRouter(WidgetRef ref) => GoRouter(
         initialLocation: Routes.splash,
         redirect: (context, state) {
           final isAuthorized =
               ref.read(authViewModelProvider.notifier).isAuthorized();
-          debugPrint('fullPath: ${state.fullPath}');
+          // debugPrint('fullPath: ${state.fullPath}');
           if (!isAuthorized) {
             if ((state.fullPath?.startsWith(Routes.socialAuthLoading) ??
                 false)) {
@@ -291,6 +293,13 @@ class Routes {
             builder: (context, state) {
               final List<UserModel> members = state.extra as List<UserModel>;
               return GroupCreationDetails(members: members);
+            }
+           ),
+          GoRoute(
+            path: Routes.callScreen,
+            builder: (context, state) {
+              final UserModel? userModel = state.extra as UserModel?;
+              return CallScreen(callee: userModel);
             },
           ),
         ],

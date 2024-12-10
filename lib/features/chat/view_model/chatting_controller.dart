@@ -208,12 +208,13 @@ class ChattingController {
     required MessageContentType contentType,
     required ChatType chatType,
     ChatModel? chatModel,
-    String? userID,
+    String? parentMessgeId,
   }) async {
     String? chatID = chatModel?.id;
     bool isChatNew = chatID == null;
 
     if (chatID == null && chatModel != null) {
+      // todo(ahmed): handle correct creation of a new chat
       // Create a new chat if chatID is null
       final response = await _remoteRepository.createChat(
         _ref.read(tokenProvider)!,
@@ -224,6 +225,7 @@ class ChattingController {
 
       if (response.appError != null) {
         debugPrint('Error: Could not create the chat');
+        return;
       } else {
         chatID = response.chat!.id;
         chatModel.id = chatID;
@@ -235,17 +237,29 @@ class ChattingController {
         .read(chatsViewModelProvider.notifier)
         .addSentMessage(content, chatID!, msgType, contentType);
 
+    debugPrint(
+        '^^^ new message identifier: ${identifier.chatId} ${identifier.msgLocalId}');
+
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
 
-    final msgEvent = SendMessageEvent({
-      'chatId': chatID,
-      'content': content.getContent(),
-      'contentType': contentType.content,
-      'senderId': _ref.read(userProvider)!.id,
-      'isFirstTime': isChatNew,
-      'chatType': chatType.type
-    }, controller: this, identifier: identifier);
+    final msgEvent = SendMessageEvent(
+      {
+        'chatId': chatID,
+        'media': null,
+        'content': content.getContent(),
+        'contentType': contentType.content,
+        'parentMessageId': null,
+        'senderId': _ref.read(userProvider)!.id,
+        'isFirstTime': isChatNew,
+        'chatType': chatType.type,
+        'isReplay': false,
+        'isForward': false,
+      },
+      controller: this,
+      msgId: identifier.msgLocalId,
+      chatId: identifier.chatId
+    );
 
     _eventHandler.addEvent(msgEvent);
   }
@@ -258,34 +272,34 @@ class ChattingController {
 
   // delete a message
   void deleteMsg(String msgID, String chatID, DeleteMessageType deleteType) {
-    final msgEvent = DeleteMessageEvent({
-      'messageId': msgID,
-    }, controller: this);
+    // final msgEvent = DeleteMessageEvent({
+    //   'messageId': msgID,
+    // }, controller: this);
 
-    _eventHandler.addEvent(msgEvent);
+    // _eventHandler.addEvent(msgEvent);
 
-    _ref.read(chatsViewModelProvider.notifier).deleteMessage(msgID, chatID);
-    _localRepository.setChats(
-        _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
+    // _ref.read(chatsViewModelProvider.notifier).deleteMessage(msgID, chatID);
+    // _localRepository.setChats(
+    //     _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
 
   // edit a message
 
   void editMsg(String msgID, String chatID, MessageContent content) {
-    final msgEvent = EditMessageEvent({
-      'chatId': chatID,
-      'senderId': _ref.read(userProvider)!.id,
-      'messageId': msgID,
-      'content': content
-    }, controller: this);
+    // final msgEvent = EditMessageEvent({
+    //   'chatId': chatID,
+    //   'senderId': _ref.read(userProvider)!.id,
+    //   'messageId': msgID,
+    //   'content': content
+    // }, controller: this);
 
-    _eventHandler.addEvent(msgEvent);
+    // _eventHandler.addEvent(msgEvent);
 
-    _ref
-        .read(chatsViewModelProvider.notifier)
-        .editMessage(msgID, chatID, content);
-    _localRepository.setChats(
-        _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
+    // _ref
+    //     .read(chatsViewModelProvider.notifier)
+    //     .editMessage(msgID, chatID, content);
+    // _localRepository.setChats(
+    //     _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
 
   // receive a message
@@ -406,8 +420,15 @@ class ChattingController {
     }
   }
 
-  void updateMessageId(String msgId, Map<String, String> identifier) {
-    _ref.read(chatsViewModelProvider.notifier).updateMsgId(msgId, identifier);
+  void updateMessageId(
+      {required String msgId,
+      required String msgLocalId,
+      required String chatId}) {
+    _ref.read(chatsViewModelProvider.notifier).updateMsgId(
+          newMsgId: msgId,
+          msgLocalId: msgLocalId,
+          chatId: chatId,
+        );
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
@@ -448,20 +469,20 @@ class ChattingController {
     }
 
     // create send draft event
-    final msgEvent = UpdateDraftEvent({
-      'chatId': chatID,
-      'content': draft,
-      'senderId': _ref.read(userProvider)!.id,
-    }, controller: this);
-    _eventHandler.addEvent(msgEvent);
-    final chats = _localRepository.getChats(userId);
-    final chat = chats.firstWhere((element) => element.id == chatID);
-    final updatedChat = chat.copyWith(draft: draft);
-    final updatedChats =
-        chats.map((e) => e.id == chatID ? updatedChat : e).toList();
-    _localRepository.setChats(updatedChats, userId);
-    _ref.read(chatsViewModelProvider.notifier).setChats(updatedChats);
-    debugPrint('!!! draft updated remotely and locally: ${updatedChat.draft}');
+    // final msgEvent = UpdateDraftEvent({
+    //   'chatId': chatID,
+    //   'content': draft,
+    //   'senderId': _ref.read(userProvider)!.id,
+    // }, controller: this);
+    // _eventHandler.addEvent(msgEvent);
+    // final chats = _localRepository.getChats(userId);
+    // final chat = chats.firstWhere((element) => element.id == chatID);
+    // final updatedChat = chat.copyWith(draft: draft);
+    // final updatedChats =
+    //     chats.map((e) => e.id == chatID ? updatedChat : e).toList();
+    // _localRepository.setChats(updatedChats, userId);
+    // _ref.read(chatsViewModelProvider.notifier).setChats(updatedChats);
+    // debugPrint('!!! draft updated remotely and locally: ${updatedChat.draft}');
   }
 
   Future<String?> getDraft(String chatID) async {

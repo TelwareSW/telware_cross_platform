@@ -1,25 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/contact_service.dart';
+import 'package:telware_cross_platform/core/models/chat_model.dart';
+import 'package:telware_cross_platform/core/models/user_model.dart';
+import 'package:telware_cross_platform/core/utils.dart';
+import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
+import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
+import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 import 'package:telware_cross_platform/features/user/view/widget/empty_chats.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/features/user/view/widget/user_chats.dart';
 import 'package:hive/hive.dart';
 import 'package:telware_cross_platform/core/models/contact_model.dart';
 import 'package:flexible_scrollbar/flexible_scrollbar.dart';
-
 import 'package:telware_cross_platform/features/auth/view/widget/confirmation_dialog.dart';
+import 'package:telware_cross_platform/features/user/view_model/user_view_model.dart';
 
-class BlockUserScreen extends StatefulWidget {
+class BlockUserScreen extends ConsumerStatefulWidget {
   static const String route = '/block-user';
 
   const BlockUserScreen({super.key});
 
   @override
-  State<BlockUserScreen> createState() => _BlockUserScreen();
+  ConsumerState<BlockUserScreen> createState() => _BlockUserScreen();
 }
 
-class _BlockUserScreen extends State<BlockUserScreen>
+class _BlockUserScreen extends ConsumerState<BlockUserScreen>
     with TickerProviderStateMixin {
   final ContactService _contactService = ContactService();
   late List<Map<String, dynamic>> userChats;
@@ -27,7 +34,7 @@ class _BlockUserScreen extends State<BlockUserScreen>
   late TabController _tabController;
   final ScrollController scrollController = ScrollController();
 
-  void blockConfirmationDialog(String user) {
+  void blockConfirmationDialog(String user, {String? userId}) {
     showConfirmationDialog(
       context: context,
       title: 'Block user',
@@ -43,10 +50,14 @@ class _BlockUserScreen extends State<BlockUserScreen>
       confirmPadding: const EdgeInsets.only(left: 40.0),
       cancelText: 'Cancel',
       cancelColor: const Color.fromRGBO(100, 181, 239, 1),
-      onConfirm: () => {
-        context.pop(),
+      onConfirm: () {
+        // Block the user
+        if (userId != null) {
+          ref.read(userViewModelProvider.notifier).blockUser(userId: userId);
+        }
+        context.pop();
         // Close the dialog
-        context.pop(),
+        context.pop();
         // Return to Blocked Users screen which is the previous screen.
       },
       onCancel: () => {context.pop()},
@@ -132,10 +143,61 @@ class _BlockUserScreen extends State<BlockUserScreen>
         ],
       },
     ];
+  }
+
+  void _updateBlockScreenChats(List<ChatModel> chats) {
+    userChats[0]["options"] = chats.map((chat) {
+      // because this is a private chat we will have only one user
+      List<UserModel?> users =
+          ref.read(chatsViewModelProvider.notifier).getChatUsers(chat.id!);
+      if (users.isEmpty || users[0] == null) return {};
+      UserModel otherUser = users[0]!;
+      String displayName = (otherUser.screenFirstName.isEmpty) &&
+              (otherUser.screenLastName.isEmpty)
+          ? otherUser.username
+          : '${otherUser.screenFirstName} ${otherUser.screenLastName}'.trim();
+      MessageContent? lastMessageContent = chat.messages.last.content;
+      MessageContentType lastMessageContentType =
+          chat.messages.last.messageContentType;
+      String lastMessage = '';
+      bool changeColor = false;
+      if (lastMessageContent != null) {
+        if (lastMessageContentType == MessageContentType.text) {
+          lastMessage = (lastMessageContent as TextContent).text;
+        } else {
+          lastMessage = lastMessageContentType.content[0].toUpperCase() +
+              lastMessageContentType.content.substring(1).toLowerCase();
+
+          changeColor = true;
+        }
+      } else {
+        lastMessage = 'History was cleared';
+        changeColor = true;
+      }
+      return {
+        "text": displayName,
+        "imagePath": chat.photo,
+        "subtext": lastMessage,
+        "trailing": formatTimestamp(chat.messages.last.timestamp),
+        "userId": otherUser.id,
+        "changeColor": changeColor
+      };
+    }).toList();
+    // filter empty options
+    List<Map<String, dynamic>> filteredOptions = [];
+    for (var option in userChats[0]["options"]) {
+      if (option.isNotEmpty) {
+        filteredOptions.add(option);
+      }
+    }
+    userChats[0]["options"] = filteredOptions;
 
     for (var option in userChats[0]["options"]) {
       option["trailingFontSize"] = 13.0;
+      option["avatar"] = true;
       option["trailingPadding"] = const EdgeInsets.only(bottom: 20.0);
+      option["subtextColor"] =
+          option["changeColor"] ? Palette.accent : Palette.accentText;
       option["trailingColor"] = Palette.accentText;
       option["color"] = Palette.primaryText;
       option["fontSize"] = 18.0;
@@ -143,7 +205,8 @@ class _BlockUserScreen extends State<BlockUserScreen>
       option["fontWeight"] = FontWeight.w500;
       option["imageWidth"] = 55.0;
       option["imageHeight"] = 55.0;
-      option["onTap"] = () => blockConfirmationDialog(option["text"]);
+      option["onTap"] = () =>
+          blockConfirmationDialog(option["text"], userId: option["userId"]);
     }
   }
 
@@ -155,6 +218,8 @@ class _BlockUserScreen extends State<BlockUserScreen>
 
   @override
   Widget build(BuildContext context) {
+    final chats = ref.watch(chatsViewModelProvider.notifier).getPrivateChats();
+    _updateBlockScreenChats(chats);
     return Scaffold(
       backgroundColor: Palette.secondary,
       appBar: AppBar(

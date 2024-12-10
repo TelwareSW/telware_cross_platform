@@ -8,6 +8,7 @@ import 'package:telware_cross_platform/core/mock/token_mock.dart';
 import 'package:telware_cross_platform/core/mock/user_mock.dart';
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/models/signup_result.dart';
+import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_local_repository.dart';
@@ -15,6 +16,8 @@ import 'package:telware_cross_platform/features/auth/repository/auth_remote_repo
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
+import 'package:telware_cross_platform/features/user/repository/user_remote_repository.dart';
+import 'package:telware_cross_platform/features/user/view_model/user_view_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 part 'auth_view_model.g.dart';
@@ -195,11 +198,15 @@ class AuthViewModel extends _$AuthViewModel {
         state = AuthState.fail(appError.error);
       }
     }, (logInResponse) async {
-      ref.read(authLocalRepositoryProvider).setUser(logInResponse.user);
-      ref.read(userProvider.notifier).update((_) => logInResponse.user);
-
+      // get the blocked users and set them
+      UserModel user = logInResponse.user;
       ref.read(authLocalRepositoryProvider).setToken(logInResponse.token);
       ref.read(tokenProvider.notifier).update((_) => logInResponse.token);
+      List<UserModel> blockedUsers = await getBlockedUsers();
+      user = user.copyWith(blockedUsers: blockedUsers);
+      ref.read(authLocalRepositoryProvider).setUser(user);
+      ref.read(userProvider.notifier).update((_) => user);
+
       await ref.read(chattingControllerProvider).newLoginInit();
       state = AuthState.authenticated;
     });
@@ -340,11 +347,26 @@ class AuthViewModel extends _$AuthViewModel {
     // try getting updated user data
     final response = await ref.read(authRemoteRepositoryProvider).getMe(token!);
 
-    response.match((appError) {}, (user) {
+    response.match((appError) {}, (user) async {
       debugPrint('** getMe is called\nuser supposed to have img');
       debugPrint(user.toString());
       ref.read(authLocalRepositoryProvider).setUser(user);
       ref.read(userProvider.notifier).update((_) => user);
     });
+  }
+
+  Future<List<UserModel>> getBlockedUsers() async {
+    String? token = ref.read(tokenProvider);
+    final response =
+        await ref.read(authRemoteRepositoryProvider).getBlockedUsers(token!);
+
+    return response.fold(
+      (appError) {
+        return [];
+      },
+      (blockedUsers) {
+        return blockedUsers;
+      },
+    );
   }
 }

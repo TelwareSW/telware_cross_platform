@@ -193,37 +193,6 @@ class ChatModel {
     };
   }
 
-  static Future<ChatModel> fromMap(Map<String, dynamic> map) async {
-    final chat = ChatModel(
-      title: map['title'] as String,
-      userIds: (map['userIds'] as List<dynamic>).cast<String>(),
-      type: ChatType.values.firstWhere(
-            (e) => e.toString().split('.').last == map['type'],
-        orElse: () => ChatType.private,
-      ),
-      photo: map['photo'] as String?,
-      id: map['id'] as String?,
-      admins: (map['admins'] as List<dynamic>?)?.cast<String>(),
-      description: map['description'] as String?,
-      lastMessageTimestamp: map['lastMessageTimestamp'] != null
-          ? DateTime.parse(map['lastMessageTimestamp'] as String)
-          : null,
-      isArchived: map['isArchived'] as bool? ?? false,
-      isMuted: (map['isMuted'] as bool? ?? false) || (map['muteUntil'] as bool? ?? false),
-      muteUntil: map['muteUntil'] != ''
-          ? (map['muteUntil'] == '-1'
-          ? DateTime.now().add(const Duration(days: 365 * 100))
-          : DateTime.now().add(Duration(seconds: map['muteUntil'] as int))) : null,
-      draft: map['draft'] as String?,
-      isMentioned: map['isMentioned'] as bool? ?? false,
-      messages: await Future.wait(
-          (map['messages'] as List<dynamic>)
-              .map((msg) async => await MessageModel.fromMap(msg as Map<String, dynamic>))
-      ),
-    );
-    await chat._setPhotoBytes();
-    return chat;
-  }
 
   String toJson() => json.encode(toMap());
 
