@@ -1,13 +1,18 @@
+import 'dart:io';
+
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
+import 'package:telware_cross_platform/features/stories/view/screens/add_my_image_screen.dart';
 
 import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/sizes.dart';
 import '../../../chat/view/widget/member_tile_widget.dart';
+import '../../../stories/view/widget/pick_from_gallery.dart';
 import '../widget/emoji_only_picker_widget.dart';
 
 class GroupCreationDetails extends ConsumerStatefulWidget {
@@ -26,6 +31,7 @@ class _GroupCreationDetailsState extends ConsumerState<GroupCreationDetails> {
   final TextEditingController searchController = TextEditingController();
   bool _isEmojiKeyboardVisible = false;
   bool _quickDeleteVisible = false;
+  File? groupImage;
   int autoDelete = -1;
   late RenderBox renderBox;
   late Offset offset;
@@ -183,14 +189,28 @@ class _GroupCreationDetailsState extends ConsumerState<GroupCreationDetails> {
     );
   }
 
+  Future<File?> pickImageFromGallery() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? pickedImage = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedImage != null) {
+      return File(pickedImage.path);
+    } else {
+      debugPrint("No image selected.");
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: Icon(Icons.arrow_forward_outlined),
+        onPressed: () {
+          print('group name ${searchController.text} \n image ${groupImage} \n members ${widget.members}');
+        },
         backgroundColor: Palette.primary,
-        shape: CircleBorder(),
+        shape: const CircleBorder(),
+        child: const Icon(Icons.arrow_forward_outlined),
       ),
       backgroundColor: Palette.background,
       appBar: AppBar(
@@ -235,12 +255,26 @@ class _GroupCreationDetailsState extends ConsumerState<GroupCreationDetails> {
                       ),
                       child: Row(
                         children: [
-                          const CircleAvatar(
-                            backgroundColor: Palette.primary,
-                            radius: 35,
-                            child: Icon(
-                              Icons.add_a_photo,
-                              size: 30,
+                          GestureDetector(
+                            onTap: (){
+                              setState(() async{
+                                groupImage = await pickImageFromGallery();
+                              });
+                            },
+                            child: CircleAvatar(
+                              backgroundColor: Palette.primary,
+                              radius: 35,
+                              child: groupImage == null ? const Icon(
+                                Icons.add_a_photo,
+                                size: 30,
+                              ) : ClipOval(
+                                child: Image.file(
+                                  groupImage!,
+                                  width: 70, // Match the CircleAvatar diameter (2 * radius).
+                                  height: 70,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 15),
