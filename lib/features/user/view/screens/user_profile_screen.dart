@@ -35,7 +35,7 @@ class UserProfileScreen extends ConsumerStatefulWidget {
 
 class _UserProfileScreen extends ConsumerState<UserProfileScreen>
     with SingleTickerProviderStateMixin {
-  late UserModel _user;
+  late UserModel? _user;
   late final bool _isCurrentUser;
   late final TabController _tabController;
 
@@ -45,7 +45,7 @@ class _UserProfileScreen extends ConsumerState<UserProfileScreen>
         widget.userId == ref.read(userLocalRepositoryProvider).getUser()!.id;
     _tabController = TabController(length: _isCurrentUser ? 2 : 5, vsync: this);
     _user = !_isCurrentUser
-        ? ref.read(chatsViewModelProvider.notifier).getOtherUsers()[widget.userId]!
+        ? ref.read(chatsViewModelProvider.notifier).getOtherUsers()[widget.userId] ?? null
     : ref.read(userLocalRepositoryProvider).getUser()!;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (widget.userId != null) {
@@ -66,7 +66,7 @@ class _UserProfileScreen extends ConsumerState<UserProfileScreen>
     UserModel myUser = ref.read(userLocalRepositoryProvider).getUser()!;
     // Check if a chat already exists between the two users
     final ChatModel chat = ref.read(chatsViewModelProvider.notifier).getChat(
-        myUser, _user, ChatType.private);
+        myUser, _user!, ChatType.private);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.go(Routes.home);
       context.push(ChatScreen.route, extra: chat);
@@ -76,7 +76,9 @@ class _UserProfileScreen extends ConsumerState<UserProfileScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
+      body: _user == null ?
+      const Center(child: CircularProgressIndicator()) :
+      Stack(
         children: [
           CustomScrollView(
             slivers: [
@@ -155,12 +157,13 @@ class _UserProfileScreen extends ConsumerState<UserProfileScreen>
                 ],
                 flexibleSpace: LayoutBuilder(
                   builder: (context, constraints) {
+                    UserModel user = _user!;
                     return FlexibleSpaceBar(
                       title: ProfileHeader(
                         constraints: constraints,
-                        photoBytes: _user.photoBytes,
-                        displayName: '${_user.screenFirstName} ${_user.screenLastName}',
-                        substring: _user.status,
+                        photoBytes: user.photoBytes,
+                        displayName: '${user.screenFirstName} ${user.screenLastName}',
+                        substring: user.status,
                       ),
                       centerTitle: true,
                       background: Container(
@@ -180,22 +183,22 @@ class _UserProfileScreen extends ConsumerState<UserProfileScreen>
                       settingsOptions: const [],
                       actions: [
                         SettingsOptionWidget(
-                          text: _user.phone,
+                          text: _user!.phone,
                           icon: null,
                           subtext: "Mobile",
-                          showDivider: _user.bio.isNotEmpty || _user.username.isNotEmpty,
+                          showDivider: _user!.bio.isNotEmpty || _user!.username.isNotEmpty,
                         ),
-                        if (_user.bio.isNotEmpty)
+                        if (_user!.bio.isNotEmpty)
                           SettingsOptionWidget(
                               icon: null,
-                              text: _user.bio,
+                              text: _user!.bio,
                               subtext: "Bio",
-                              showDivider: _user.username.isNotEmpty
+                              showDivider: _user!.username.isNotEmpty
                           ),
-                        if (_user.username.isNotEmpty)
+                        if (_user!.username.isNotEmpty)
                           SettingsOptionWidget(
                               icon: null,
-                              text: "@${_user.username}",
+                              text: "@${_user!.username}",
                               subtext: "Username",
                               showDivider: false
                           ),

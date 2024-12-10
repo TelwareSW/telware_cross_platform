@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
+import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/timer_display.dart';
@@ -26,64 +27,84 @@ class CallScreen extends ConsumerStatefulWidget {
 }
 
 class _CallScreen extends ConsumerState<CallScreen> {
-  Signaling signaling = Signaling();
+  final Signaling _signaling = Signaling();
   final RTCVideoRenderer _localRenderer = RTCVideoRenderer();
   final RTCVideoRenderer _remoteRenderer = RTCVideoRenderer();
   String? roomId;
-  TextEditingController textEditingController = TextEditingController();
   UserModel? callee;
 
   @override
   void initState() {
-    // Add the callee data to the call state
+    super.initState();
+
     callee = widget.callee ?? ref.read(callStateProvider).callee;
-    debugPrint("callee: $callee");
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.callee != null) {
-        ref.read(callStateProvider.notifier).setCallee(callee!);
-        ref.read(callStateProvider.notifier).startCall();
-      }
-    });
     _localRenderer.initialize();
     _remoteRenderer.initialize();
-    signaling.onAddRemoteStream = (stream) {
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (callee != null) {
+        ref.read(callStateProvider.notifier).setCallee(callee!);
+        ref.read(callStateProvider.notifier).startCall();
+        _initializeSignaling();
+      }
+    });
+  }
+
+  void _initializeSignaling() {
+    _signaling.onAddRemoteStream = (stream) {
       _remoteRenderer.srcObject = stream;
       setState(() {});
     };
 
-    super.initState();
+    _signaling.onOffer = (description) async {
+      await _signaling.setRemoteDescription(description);
+      final answer = await _signaling.createAnswer();
+      _signaling.setLocalDescription(answer);
+      _signaling.sendAnswer(answer);
+    };
+
+    _signaling.onAnswer = (description) async {
+      await _signaling.setRemoteDescription(description);
+    };
+
+    _signaling.onICECandidate = (candidate) {
+      _signaling.addCandidate(candidate);
+    };
+
+    if (ref.read(callStateProvider).callee?.id != ref.read(userProvider)!.id) {
+      _signaling.createOffer().then((offer) {
+        _signaling.setLocalDescription(offer);
+        _signaling.sendOffer(offer);
+      });
+    }
   }
 
   @override
   void dispose() {
     _localRenderer.dispose();
     _remoteRenderer.dispose();
+    _signaling.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    print("CallScreen");
-    // Get the call state
     final callState = ref.watch(callStateProvider);
-    // Get the call notifier
     final callNotifier = ref.read(callStateProvider.notifier);
-    final displayName = callee != null ?
-    '${callee?.screenFirstName} ${callee?.screenLastName}' : 'Group Call';
-    final String? photo = callee?.photo;
+    final displayName = callee != null
+        ? '${callee?.screenFirstName} ${callee?.screenLastName}'
+        : 'Group Call';
     final Uint8List? imageBytes = callee?.photoBytes;
 
     return Scaffold(
       body: Stack(
-        // Create gradient background
         children: [
+          // Remote video
           if (callState.isVideoCall) ...[
-            Positioned.fill(
-              child: RTCVideoView(_remoteRenderer),
-            ),
+            Positioned.fill(child: RTCVideoView(_remoteRenderer)),
             Positioned(
-              bottom: 0,
-              right: 0,
+              bottom: 20,
+              right: 20,
               child: Container(
                 width: 100,
                 height: 150,
@@ -91,6 +112,8 @@ class _CallScreen extends ConsumerState<CallScreen> {
               ),
             ),
           ],
+
+          // Gradient background
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -100,43 +123,37 @@ class _CallScreen extends ConsumerState<CallScreen> {
               ),
             ),
           ),
-          // Main content
+
+          // UI Elements
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Minimize and encryption emojis
+              // Top bar
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Minimize button
                     IconButton(
                       onPressed: () {
                         callNotifier.minimizeCall();
                         context.pop();
                       },
-                      icon: const Icon(
-                        Icons.zoom_in_map,
-                        color: Palette.primaryText,
-                      ),
+                      icon: const Icon(Icons.zoom_in_map, color: Palette.primaryText),
                     ),
-                    // Encryption icon
-                    const Icon(
-                      Icons.lock,
-                      color: Palette.primaryText,
-                    ),
+                    const Icon(Icons.lock, color: Palette.primaryText),
                   ],
                 ),
               ),
+
               const SizedBox(height: 20),
-              // Contact initials
+
+              // Profile avatar
               CircleAvatar(
                 radius: 40,
                 backgroundImage:
                 imageBytes != null ? MemoryImage(imageBytes) : null,
-                backgroundColor:
-                imageBytes == null ? Palette.primary : null,
+                backgroundColor: imageBytes == null ? Palette.primary : null,
                 child: imageBytes == null
                     ? Text(
                   getInitials(displayName),
@@ -148,8 +165,10 @@ class _CallScreen extends ConsumerState<CallScreen> {
                 )
                     : null,
               ),
+
               const SizedBox(height: 20),
-              // Contact name
+
+              // Display name
               Text(
                 displayName,
                 style: const TextStyle(
@@ -158,124 +177,87 @@ class _CallScreen extends ConsumerState<CallScreen> {
                   color: Palette.primaryText,
                 ),
               ),
+
               const SizedBox(height: 10),
-              // Call duration
+
+              // Call status or timer
               if (callState.isCallActive)
                 TimerDisplay(startDateTime: callState.startTime!)
               else
                 const Text(
-                  "Requesting...",
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Palette.primaryText,
-                  ),
+                  "Connecting...",
+                  style: TextStyle(fontSize: 18, color: Palette.primaryText),
                 ),
+
               const Spacer(),
-              // Bottom buttons
+
+              // Call control buttons
               Padding(
                 padding: const EdgeInsets.only(bottom: 40),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    // Speaker button
-                    InkWell(
-                      onTap: () {
-                        callNotifier.toggleSpeaker();
-                      },
-                      borderRadius: BorderRadius.circular(50),
-                      splashColor: Colors.greenAccent,
-                      child: Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: Color.fromRGBO(255, 255, 255, callState.isSpeakerOn ? 1 : 0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          callState.isSpeakerOn ? Icons.volume_down : Icons.volume_up,
-                          color: !callState.isSpeakerOn ? Colors.white : Colors.blue.shade300,
-                          size: 30,
-                        ),
-                      ),
+                    _controlButton(
+                      icon: callState.isSpeakerOn
+                          ? Icons.volume_down
+                          : Icons.volume_up,
+                      isActive: callState.isSpeakerOn,
+                      onTap: callNotifier.toggleSpeaker,
                     ),
-                    // Video toggle button
-                    InkWell(
-                      onTap: () {
-                        // signaling.toggleVideo(_localRenderer, !callState.isVideoCall);
-                        callNotifier.toggleVideoCall();
-                      },
-                      borderRadius: BorderRadius.circular(50),
-                      splashColor: Colors.greenAccent,
-                      child: Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: Color.fromRGBO(255, 255, 255, callState.isVideoCall ? 1 : 0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          callState.isVideoCall ? Icons.videocam_off : Icons.videocam,
-                          color: !callState.isVideoCall ? Colors.white : Colors.blue.shade300,
-                          size: 30,
-                        ),
-                      ),
+                    _controlButton(
+                      icon: callState.isVideoCall
+                          ? Icons.videocam_off
+                          : Icons.videocam,
+                      isActive: callState.isVideoCall,
+                      onTap: callNotifier.toggleVideoCall,
                     ),
-                    // Mute button
-                    InkWell(
-                      onTap: () {
-                        // Mute action
-                        // signaling.mute(_localRenderer, !callState.isMuted);
-                        callNotifier.toggleMute();
-                      },
-                      borderRadius: BorderRadius.circular(50),
-                      splashColor: Colors.greenAccent,
-                      child: Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: Color.fromRGBO(255, 255, 255, callState.isMuted ? 1 : 0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          callState.isMuted ? Icons.mic_off : Icons.mic,
-                          color: !callState.isMuted ? Colors.white : Colors.blue.shade300,
-                          size: 30,
-                        ),
-                      ),
+                    _controlButton(
+                      icon: callState.isMuted ? Icons.mic_off : Icons.mic,
+                      isActive: callState.isMuted,
+                      onTap: callNotifier.toggleMute,
                     ),
-                    // End call button
-                    InkWell(
-                      onTap: () async {
-                        // End call action
-                        // await signaling.hangUp(_localRenderer);
+                    _controlButton(
+                      icon: Icons.call_end,
+                      isActive: true,
+                      isEndCall: true,
+                      onTap: () {
                         callNotifier.endCall();
-                        print("Call ended");
                         context.pop();
                       },
-                      borderRadius: BorderRadius.circular(50),
-                      splashColor: Colors.redAccent,
-                      child: Container(
-                        width: 60,
-                        height: 60,
-                        decoration: const BoxDecoration(
-                          color: Colors.red, // Red background
-                          shape: BoxShape.circle, // Circular shape
-                        ),
-                        child: const Icon(
-                          Icons.call_end,
-                          color: Colors.white, // White icon
-                          size: 30,
-                        ),
-                      ),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-        ]
+        ],
+      ),
+    );
+  }
 
-      )
+  Widget _controlButton({
+    required IconData icon,
+    required bool isActive,
+    required VoidCallback onTap,
+    bool isEndCall = false,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(50),
+      splashColor: isEndCall ? Colors.redAccent : Colors.greenAccent,
+      child: Container(
+        width: 60,
+        height: 60,
+        decoration: BoxDecoration(
+          color: isEndCall
+              ? Colors.red
+              : Color.fromRGBO(255, 255, 255, isActive ? 1 : 0.2),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon,
+            color: isEndCall || isActive ? Colors.white : Colors.blue.shade300,
+            size: 30),
+      ),
     );
   }
 }
