@@ -226,6 +226,7 @@ class ChattingController {
 
       if (response.appError != null) {
         debugPrint('Error: Could not create the chat');
+        return;
       } else {
         chatID = response.chat!.id;
         chatModel.id = chatID;
@@ -257,7 +258,8 @@ class ChattingController {
     },
         controller: this,
         msgId: identifier.msgLocalId,
-        chatId: identifier.chatId);
+        chatId: identifier.chatId
+     );
 
     _eventHandler.addEvent(msgEvent);
   }

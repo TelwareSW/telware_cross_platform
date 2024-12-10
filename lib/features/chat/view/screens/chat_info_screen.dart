@@ -9,13 +9,13 @@ import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/core/utils.dart';
+import 'package:telware_cross_platform/core/view/widget/tab_bar_widget.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/core/view/widget/popup_menu_widget.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/member_tile_widget.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
-import 'package:telware_cross_platform/features/user/view/widget/avatar_generator.dart';
 import 'package:telware_cross_platform/features/user/view/widget/profile_header_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_toggle_switch_widget.dart';
 
@@ -304,35 +304,13 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
                 color: Palette.secondary,
                 child: Column(
                     children: [
-                      TabBar(
+                      TabBarWidget(
                         controller: _tabController,
-                        padding: const EdgeInsets.only(left: 4.0, right: 4.0),
-                        indicator: const BoxDecoration(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(3),
-                            topRight: Radius.circular(3),
-                          ),
-                          border: Border(
-                            top: BorderSide(
-                              color: Palette.primary,
-                              width: 4.0,
-                            ),
-                          ),
-                        ),
-                        indicatorPadding: const EdgeInsets.only(top: 44),
-                        labelStyle: const TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 15,
-                          color: Palette.primary,
-                        ),
-                        unselectedLabelColor: Palette.accentText,
-                        physics: const BouncingScrollPhysics(),
-                        labelPadding:
-                        const EdgeInsets.only(left: 18.0, right: 18.0, top: 2.0),
                         tabs: const [
                           Tab(text: 'Media'),
                           Tab(text: 'Voice'),
                         ],
+
                       ),
                       Flexible(
                         fit: FlexFit.loose,

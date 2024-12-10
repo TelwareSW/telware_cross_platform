@@ -78,7 +78,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
           onRefresh: _refreshPage,
           child: CustomScrollView(
             controller: _scrollController,
-            physics: const BouncingScrollPhysics(),
+            physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverAppBar(
                 backgroundColor: Palette.secondary,
