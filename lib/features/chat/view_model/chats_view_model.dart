@@ -58,6 +58,7 @@ class ChatsViewModel extends _$ChatsViewModel {
   }
 
   Future<UserModel?> getUser(String id) async {
+    debugPrint('!!!** called');
     if (id == ref.read(userProvider)!.id) {
       debugPrint('!!!** returning the current user');
       return ref.read(userProvider);
@@ -151,7 +152,7 @@ class ChatsViewModel extends _$ChatsViewModel {
   Future<void> addReceivedMessage(Map<String, dynamic> response) async {
     var chatId = response["chatId"] as String;
     final chatIndex = getChatIndex(chatId);
-    var chat = chatIndex > 0 ? state[chatIndex] : null;
+    var chat = chatIndex >= 0 ? state[chatIndex] : null;
 
     Map<String, MessageState> userStates = {
       ref.read(userProvider)!.id!: MessageState.read

@@ -29,6 +29,7 @@ import 'package:telware_cross_platform/features/chat/view/widget/date_label_widg
 import 'package:telware_cross_platform/features/chat/view/widget/magic_recording_button.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/message_tile_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/new_chat_screen_sticker.dart';
+import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
 import '../../../../core/routes/routes.dart';
@@ -61,11 +62,11 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   List<MessageModel> pinnedMessages = [];
   int indexInPinnedMessage = 0;
 
-  ChatModel? chatModel;
+  late ChatModel chatModel;
   bool isSearching = false;
   bool isShowAsList = false;
   int _numberOfMatches = 0;
-  late bool _isMuted = false;
+  bool _isMuted = false;
   bool isLoading = true;
   bool isTextEmpty = true;
   bool showMuteOptions = false;
@@ -89,21 +90,11 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     _messageController.text = widget.chatModel?.draft ?? "";
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      chatModel = widget.chatModel ?? ref.watch(chatProvider(widget.chatId));
-      setState(() {
-        _isMuted = chatModel!.isMuted;
-        _messageController.text = chatModel!.draft ?? "";
-      });
-      final messages = chatModel?.messages ?? [];
-      _updateChatMessages(messages);
-      pinnedMessages = messages.where((message) => message.isPinned).toList();
       if (widget.forwardedMessages != null) {
         _sendForwardedMessages();
       }
     });
     _chosenAnimation = getRandomLottieAnimation();
-    // _scrollToBottom();
-
     // Initialize the AudioRecorderService
     _audioRecorderService = AudioRecorderService(updateUI: setState);
 
@@ -148,15 +139,13 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   }
 
   void _updateChatMessages(List<MessageModel> messages) async {
-    _generateChatContentWithDateLabels(messages).then((content) {
-      setState(() {
-        chatContent = content;
-      });
+    setState(() {
+      chatContent = _generateChatContentWithDateLabels(messages);
     });
   }
 
-  Future<List<dynamic>> _generateChatContentWithDateLabels(
-      List<MessageModel> messages) async {
+  List<dynamic> _generateChatContentWithDateLabels(
+      List<MessageModel> messages) {
     List<dynamic> chatContent = [];
     for (int i = 0; i < messages.length; i++) {
       if (i == 0 ||
@@ -394,17 +383,29 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     debugPrint('&*&**&**& rebuild chat screen');
     // ref.watch(chatsViewModelProvider);
     final popupMenu = buildPopupMenu();
-    final chatModelImage = chatModel ?? ref.watch(chatProvider(widget.chatId))!;
+
+    final chats = ref.watch(chatsViewModelProvider);
+    final index = chats.indexWhere((chat) => chat.id == widget.chatId);
+    final ChatModel? chat = (index == -1) ? null: chats[index];  // Chat not found
+    chatModel = widget.chatModel ?? chat!;
     _updateDraft();
-    final type = chatModelImage.type;
-    final String title = chatModelImage.title;
-    final membersNumber = chatModelImage.userIds.length;
-    final String subtitle = chatModelImage.type == ChatType.private
+    final type = chatModel.type;
+    final String title = chatModel.title;
+    final membersNumber = chatModel.userIds.length;
+    final imageBytes = chatModel.photoBytes;
+    final photo = chatModel.photo;
+    final messages = chatModel.messages;
+    final chatID = chatModel.id;
+    final String subtitle = chatModel.type == ChatType.private
         ? "last seen a long time ago"
         : "$membersNumber Member${membersNumber > 1 ? "s" : ""}";
-    final imageBytes = chatModelImage.photoBytes;
-    final photo = chatModelImage.photo;
-    final chatID = chatModelImage.id;
+
+    debugPrint('(^) number of messages: ${messages.length}');
+
+    _isMuted = chatModel.isMuted;
+    _messageController.text = chatModel.draft ?? "";
+    chatContent = _generateChatContentWithDateLabels(messages);
+    pinnedMessages = messages.where((message) => message.isPinned).toList();
 
     return Scaffold(
         appBar: selectedMessages.isEmpty
@@ -559,11 +560,11 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                               replyMessage: replyMessage,
                               chatId: chatID,
                               pinnedMessages: pinnedMessages,
-                              updateChatMessages: _updateChatMessages,
+                              updateChatMessages:
+                                  _generateChatContentWithDateLabels,
                               onPin: _onPin,
                               onLongPress: _onLongPress,
-                              onReply: _onReply
-                            ),
+                              onReply: _onReply),
                 ),
                 if (replyMessage != null)
                   ReplyWidget(
@@ -1165,9 +1166,6 @@ class _ChatMessagesListState extends ConsumerState<ChatMessagesList> {
                     onPin: widget.onPin,
                     onPress: widget.selectedMessages.isEmpty ? null : () {},
                     onLongPress: widget.onLongPress,
-                    onDelete: (msg, _, id) {
-                      debugPrint('!@! clicked on deleting');
-                    },
                   ),
                 ],
               );

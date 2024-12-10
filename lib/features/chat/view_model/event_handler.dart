@@ -66,12 +66,8 @@ class EventHandler {
       final currentEvent = _queue.first;
 
       if (!_socket.isConnected) {
-        _socket.connect(
-          serverUrl: SOCKET_URL,
-          userId: _userId,
-          onConnect: _onSocketConnect,
-          sessionId: _sessionId,
-        );
+        debugPrint('&%^ called the connect from handler loop');
+        _socket.onError();
         break;
       }
 

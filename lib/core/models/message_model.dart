@@ -6,10 +6,6 @@ import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 
 import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
 
-import 'package:telware_cross_platform/features/stories/utils/utils_functions.dart';
-
-import '../constants/server_constants.dart';
-
 part 'message_model.g.dart';
 
 @HiveType(typeId: 6)

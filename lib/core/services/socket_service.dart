@@ -46,6 +46,8 @@ class SocketService {
       'auth': {'sessionId': _sessionId}
     });
 
+    _socket.io.options?['debug'] = true; // Enable debug logs
+
     _socket.connect();
 
     _socket.onConnect((_) {
@@ -57,17 +59,18 @@ class SocketService {
     });
 
     _socket.onConnectError((error) {
-      debugPrint('Connection error: $error');
+      debugPrint('### Connection error: $error');
       onError();
     });
 
     _socket.onError((error) {
-      debugPrint('Socket error: $error');
+      debugPrint('### Socket error: $error');
       onError();
     });
 
     _socket.onDisconnect((_) {
       debugPrint('Disconnected from server');
+      _isReconnecting = false;
     });
   }
 
@@ -85,6 +88,7 @@ class SocketService {
   }
 
   void disconnect() {
+    debugPrint('*** called the socket disconnect');
     _socket.disconnect();
     isConnected = false;
   }
