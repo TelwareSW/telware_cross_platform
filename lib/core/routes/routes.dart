@@ -17,7 +17,8 @@ import 'package:telware_cross_platform/features/chat/view/screens/call_screen.da
 import 'package:telware_cross_platform/features/chat/view/screens/chat_info_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/chat_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/create_chat_screen.dart';
-import 'package:telware_cross_platform/features/chat/view/screens/create_group_screen.dart';
+import 'package:telware_cross_platform/features/groups/view/screens/create_group_screen.dart';
+import 'package:telware_cross_platform/features/groups/view/screens/group_creation_details.dart';
 import 'package:telware_cross_platform/features/home/view/screens/home_screen.dart';
 import 'package:telware_cross_platform/features/home/view/screens/inbox_screen.dart';
 import 'package:telware_cross_platform/features/stories/view/screens/add_my_image_screen.dart';
@@ -41,6 +42,7 @@ import 'package:telware_cross_platform/features/user/view/screens/user_profile_s
 import '../../features/chat/view/screens/pinned_messages_screen.dart';
 import '../../features/stories/view/screens/crop_image_screen.dart';
 import '../../features/user/view/screens/devices_screen.dart';
+import '../models/user_model.dart';
 
 class Routes {
   static const String home = HomeScreen.route;
@@ -76,6 +78,7 @@ class Routes {
   static const String createChatScreen = CreateChatScreen.route;
   static const String chatInfoScreen = ChatInfoScreen.route;
   static const String createGroupScreen = CreateGroupScreen.route;
+  static const String groupCreationDetails = GroupCreationDetails.route;
   static const String callScreen = CallScreen.route;
 
   static GoRouter appRouter(WidgetRef ref) => GoRouter(
@@ -285,6 +288,13 @@ class Routes {
             path: Routes.createGroupScreen,
             builder: (context, state) => const CreateGroupScreen(),
           ),
+          GoRoute(
+            path: Routes.groupCreationDetails,
+            builder: (context, state) {
+              final List<UserModel> members = state.extra as List<UserModel>;
+              return GroupCreationDetails(members: members);
+            }
+           ),
           GoRoute(
             path: Routes.callScreen,
             builder: (context, state) {

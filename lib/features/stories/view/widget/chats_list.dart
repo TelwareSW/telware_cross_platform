@@ -21,7 +21,7 @@ class ChatsList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final chatsList = ref.watch(chatsViewModelProvider);
-    debugPrint('chat list ${chatsList.toString()}');
+    // debugPrint('chat list ${chatsList.toString()}');
     debugPrint('Building chats_list...');
     ChatKeys.resetChatTilePrefixSubvalue();
 

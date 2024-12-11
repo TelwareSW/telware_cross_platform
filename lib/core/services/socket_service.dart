@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:socket_io_client/socket_io_client.dart';
 import 'package:flutter/foundation.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
+import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/features/chat/view_model/event_handler.dart';
 
 class SocketService {
@@ -32,7 +33,7 @@ class SocketService {
   }
 
   void _connect() {
-    if (isConnected) return;
+    if (isConnected || USE_MOCK_DATA) return;
     debugPrint('*** Entered the connect method');
     debugPrint(_serverUrl);
     debugPrint(_userId);
@@ -45,6 +46,8 @@ class SocketService {
       'auth': {'sessionId': _sessionId}
     });
 
+    _socket.io.options?['debug'] = true; // Enable debug logs
+
     _socket.connect();
 
     _socket.onConnect((_) {
@@ -56,17 +59,18 @@ class SocketService {
     });
 
     _socket.onConnectError((error) {
-      debugPrint('Connection error: $error');
+      debugPrint('### Connection error: $error');
       onError();
     });
 
     _socket.onError((error) {
-      debugPrint('Socket error: $error');
+      debugPrint('### Socket error: $error');
       onError();
     });
 
     _socket.onDisconnect((_) {
       debugPrint('Disconnected from server');
+      _isReconnecting = false;
     });
   }
 
@@ -83,7 +87,8 @@ class SocketService {
     });
   }
 
-  void _disconnect() {
+  void disconnect() {
+    debugPrint('*** called the socket disconnect');
     _socket.disconnect();
     isConnected = false;
   }
