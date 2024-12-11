@@ -11,6 +11,7 @@ import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
+import 'package:telware_cross_platform/features/chat/view/screens/chat_screen.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 
 part 'chats_view_model.g.dart';
@@ -110,16 +111,15 @@ class ChatsViewModel extends _$ChatsViewModel {
         senderId + DateTime.now().millisecondsSinceEpoch.toString();
 
     final MessageModel msg = MessageModel(
-      senderId: senderId,
-      timestamp: DateTime.now(),
-      content: content,
-      messageContentType: msgContentType,
-      messageType: msgType,
-      userStates: {},
-      id: USE_MOCK_DATA ? getUniqueMessageId() : null,
-      localId: msgLocalId,
-      parentMessage: parentMessageId
-    );
+        senderId: senderId,
+        timestamp: DateTime.now(),
+        content: content,
+        messageContentType: msgContentType,
+        messageType: msgType,
+        userStates: {},
+        id: USE_MOCK_DATA ? getUniqueMessageId() : null,
+        localId: msgLocalId,
+        parentMessage: parentMessageId);
 
     chat.messages.add(msg);
 
@@ -156,6 +156,16 @@ class ChatsViewModel extends _$ChatsViewModel {
     final chatIndex = getChatIndex(chatId);
     var chat = chatIndex >= 0 ? state[chatIndex] : null;
 
+    final msgId = response['id'] as String;
+
+    if (chat == null) {
+      chat = await ref.read(chattingControllerProvider).getChat(chatId);
+      state.insert(0, chat);
+    }
+
+    final msgIndex = chat.messages.indexWhere((msg) => msg.id == msgId);
+    if (msgIndex != -1) return;
+
     Map<String, MessageState> userStates = {
       ref.read(userProvider)!.id!: MessageState.read
     };
@@ -172,23 +182,19 @@ class ChatsViewModel extends _$ChatsViewModel {
     );
 
     final msg = MessageModel(
-        id: response['id'],
-        senderId: response['senderId'],
-        messageContentType: contentType,
-        messageType: MessageType.getType(response['type'] ?? 'unknown'),
-        content: content,
-        timestamp: response['timestamp'] == null
-            ? DateTime.parse(response['timestamp'])
-            : DateTime.now(),
-        userStates: userStates,
-        parentMessage: response['parentMessageId'],
-        isPinned: response['isPinned'],
-        isForward: response['isForward']);
-
-    if (chat == null) {
-      chat = await ref.read(chattingControllerProvider).getChat(chatId);
-      state.insert(0, chat);
-    }
+      id: msgId,
+      senderId: response['senderId'],
+      messageContentType: contentType,
+      messageType: MessageType.getType(response['type'] ?? 'unknown'),
+      content: content,
+      timestamp: response['timestamp'] == null
+          ? DateTime.parse(response['timestamp'])
+          : DateTime.now(),
+      userStates: userStates,
+      parentMessage: response['parentMessageId'],
+      isPinned: response['isPinned'],
+      isForward: response['isForward'],
+    );
 
     chat.messages.add(msg);
 
