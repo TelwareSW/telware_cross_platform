@@ -20,7 +20,7 @@ class MemberTileWidget extends StatelessWidget {
     this.moreInfo,
     this.onTap,
     this.showDivider = true,
-    this.showSelected = true,
+    this.showSelected = false,
   });
 
   @override

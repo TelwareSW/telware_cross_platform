@@ -266,10 +266,12 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
                         return Column(
                           children: [
                             for (final UserModel? user in users) ...[
+                              user == null ?
+                              const SizedBox.shrink() :
                               Container(
                                 color: Palette.secondary,
                                 child: MemberTileWidget(
-                                  imagePath: user!.photo,
+                                  imagePath: user.photo,
                                   text: '${user.screenFirstName} ${user.screenLastName}',
                                   subtext: user.status,
                                   showDivider: false,
@@ -313,12 +315,13 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
                         ],
 
                       ),
-                      Flexible(
-                        fit: FlexFit.loose,
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 300),
                         child: TabBarView(
                           controller: _tabController,
                           children: List.generate(2, (index) {
                             return const Column(
+                              mainAxisSize: MainAxisSize.min,
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
