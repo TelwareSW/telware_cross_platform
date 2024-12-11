@@ -28,6 +28,11 @@ class ChatsViewModel extends _$ChatsViewModel {
     return [];
   }
 
+  void clear() {
+    state = [];
+    _otherUsers = {};
+  }
+
   void setOtherUsers(Map<String, UserModel> otherUsers) {
     _otherUsers = otherUsers;
   }
@@ -53,6 +58,7 @@ class ChatsViewModel extends _$ChatsViewModel {
   }
 
   Future<UserModel?> getUser(String id) async {
+    debugPrint('!!!** called');
     if (id == ref.read(userProvider)!.id) {
       debugPrint('!!!** returning the current user');
       return ref.read(userProvider);
@@ -72,7 +78,7 @@ class ChatsViewModel extends _$ChatsViewModel {
       ref.read(chattingControllerProvider).restoreOtherUsers(_otherUsers);
     }
 
-    debugPrint('!!!** returning a user from the other users map: $user');
+    // debugPrint('!!!** returning a user from the other users map: $user');
     return user;
   }
 
@@ -146,7 +152,7 @@ class ChatsViewModel extends _$ChatsViewModel {
   Future<void> addReceivedMessage(Map<String, dynamic> response) async {
     var chatId = response["chatId"] as String;
     final chatIndex = getChatIndex(chatId);
-    var chat = chatIndex > 0 ? state[chatIndex] : null;
+    var chat = chatIndex >= 0 ? state[chatIndex] : null;
 
     Map<String, MessageState> userStates = {
       ref.read(userProvider)!.id!: MessageState.read
