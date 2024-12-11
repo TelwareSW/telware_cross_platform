@@ -48,9 +48,11 @@ class AudioContent extends MessageContent {
   final int? duration;
   @HiveField(2)
   final String? filePath;
-  @HiveField(3)
-  final List<double>? waveformData;
   @HiveField(4)
+  final String? fileName;
+  @HiveField(5)
+  final List<double>? waveformData;
+  @HiveField(6)
   final bool? isMusic;
 
   AudioContent(
@@ -58,6 +60,7 @@ class AudioContent extends MessageContent {
       this.audioUrl,
       this.duration,
       this.filePath,
+      this.fileName,
       this.waveformData});
 
   @override
@@ -65,6 +68,7 @@ class AudioContent extends MessageContent {
         'audioUrl': audioUrl,
         'duration': duration,
         'filePath': filePath,
+        'fileName': fileName,
         'waveformData': waveformData,
         'isMusic': isMusic,
       };
@@ -74,6 +78,7 @@ class AudioContent extends MessageContent {
     String? audioUrl,
     int? duration,
     String? filePath,
+    String? fileName,
     List<double>? waveformData,
     bool? isMusic,
   }) {
@@ -81,6 +86,7 @@ class AudioContent extends MessageContent {
       audioUrl: audioUrl ?? this.audioUrl,
       duration: duration ?? this.duration,
       filePath: filePath ?? this.filePath,
+      fileName: fileName ?? this.fileName,
       waveformData: waveformData ?? this.waveformData,
       isMusic: isMusic ?? this.isMusic,
     );
@@ -140,15 +146,23 @@ class ImageContent extends MessageContent {
   @HiveField(2)
   final String? filePath;
   @HiveField(3)
+  final String? fileName;
+  @HiveField(4)
   final String? caption;
 
-  ImageContent({this.imageUrl, this.imageBytes, this.filePath, this.caption});
+  ImageContent(
+      {this.imageUrl,
+      this.imageBytes,
+      this.filePath,
+      this.fileName,
+      this.caption});
 
   @override
   Map<String, dynamic> toJson() => {
         'imageUrl': imageUrl,
         'imageBytes': imageBytes,
         "filePath": filePath,
+        "fileName": fileName,
         "caption": caption
       };
 
@@ -157,12 +171,14 @@ class ImageContent extends MessageContent {
     String? imageUrl,
     Uint8List? imageBytes,
     String? filePath,
+    String? fileName,
     String? caption,
   }) {
     return ImageContent(
       imageUrl: imageUrl ?? this.imageUrl,
       imageBytes: imageBytes ?? this.imageBytes,
       filePath: filePath ?? this.filePath,
+      fileName: fileName ?? this.fileName,
       caption: caption ?? this.caption,
     );
   }
@@ -182,14 +198,17 @@ class VideoContent extends MessageContent {
   final int? duration;
   @HiveField(2)
   final String? filePath;
+  @HiveField(3)
+  final String? fileName;
 
-  VideoContent({this.videoUrl, this.duration, this.filePath});
+  VideoContent({this.videoUrl, this.duration, this.fileName, this.filePath});
 
   @override
   Map<String, dynamic> toJson() => {
         'videoUrl': videoUrl,
         'duration': duration,
         'filePath': filePath,
+        'fileName': fileName,
       };
 
   @override
@@ -197,11 +216,13 @@ class VideoContent extends MessageContent {
     String? videoUrl,
     int? duration,
     String? filePath,
+    String? fileName,
   }) {
     return VideoContent(
       videoUrl: videoUrl ?? this.videoUrl,
       duration: duration ?? this.duration,
       filePath: filePath ?? this.filePath,
+      fileName: fileName ?? this.fileName,
     );
   }
 

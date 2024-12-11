@@ -271,6 +271,9 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
     if (mediaUrl != null) {
       messageText = caption ?? '';
+      if (messageContentType == MessageContentType.audio) {
+        messageText = isMusic ? 'Music' : 'Voice';
+      }
     }
 
     content = createMessageContent(
