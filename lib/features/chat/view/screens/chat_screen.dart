@@ -1020,10 +1020,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     var items = [];
     if (showMuteOptions) {
       items = [
-        {'icon': Icons.arrow_back, 'text': 'Back', 'value': 'no-close',
-          'trailing': const Icon(Icons.arrow_forward_ios_rounded,
-              color: Palette.inactiveSwitch, size: 16)
-        },
+        {'icon': Icons.arrow_back, 'text': 'Back', 'value': 'no-close'},
         {'icon': Icons.music_off_outlined, 'text': 'Disable sound', 'value': 'disable-sound'},
         {'icon': Icons.access_time_rounded, 'text': 'Mute for 30m', 'value': 'mute-30m'},
         {'icon': Icons.notifications_paused_outlined, 'text': 'Mute for...', 'value': 'mute-custom'},
@@ -1053,7 +1050,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     }
 
     final renderBox = context.findRenderObject() as RenderBox;
-    final position = Offset(renderBox.size.width, -305);
+    final position = Offset(renderBox.size.width, -350);
 
     PopupMenuWidget.showPopupMenu(
         context: context,
