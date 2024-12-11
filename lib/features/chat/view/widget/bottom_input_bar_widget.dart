@@ -23,6 +23,7 @@ class BottomInputBarWidget extends ConsumerStatefulWidget {
   final void Function({
     required String contentType,
     required WidgetRef ref,
+    String? fileName,
     String? caption,
     String? filePath,
     bool? getRecordingPath,
@@ -161,6 +162,7 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
         widget.sendMessage(
           ref: ref,
           contentType: contentType,
+          fileName: fileName,
           filePath: localPath,
         );
 
@@ -205,6 +207,7 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
       widget.sendMessage(
         filePath: newFilePath,
         ref: ref,
+        fileName: fileName,
         contentType: mediaType,
       );
     } catch (e) {

@@ -336,6 +336,7 @@ class MessageTileWidget extends ConsumerWidget {
           onDownloadTap: onDownloadTap,
           filePath: messageModel.content?.toJson()["filePath"],
           url: messageModel.content?.toJson()["fileUrl"],
+          fileName: messageModel.content?.toJson()["fileName"],
           openOptions: () {},
         );
       case MessageContentType.sticker:
@@ -343,6 +344,7 @@ class MessageTileWidget extends ConsumerWidget {
           onDownloadTap: onDownloadTap,
           filePath: messageModel.content?.toJson()["filePath"],
           url: messageModel.content?.toJson()["stickerUrl"],
+          stickerName: messageModel.content?.toJson()["stickerName"],
         );
       case MessageContentType.gif:
         return ImageMessageWidget(

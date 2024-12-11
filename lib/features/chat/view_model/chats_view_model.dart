@@ -234,11 +234,13 @@ class ChatsViewModel extends _$ChatsViewModel {
   int getChatIndex(String chatId) =>
       state.indexWhere((chat) => chat.id == chatId);
 
-  void updateMessageFilePath(String chatId, String msgId, String filePath) {
+  void updateMessageFilePath(
+      String chatId, String messageLocalId, String filePath) {
     final chatIndex = getChatIndex(chatId);
     final chat = state[chatIndex];
     // Find the msg with the specified ID
-    final msgIndex = chat.messages.indexWhere((msg) => msg.id == msgId);
+    final msgIndex =
+        chat.messages.indexWhere((msg) => msg.localId == messageLocalId);
 
     if (msgIndex != -1) {
       MessageModel? message = chat.messages[msgIndex];
@@ -251,7 +253,6 @@ class ChatsViewModel extends _$ChatsViewModel {
       debugPrint(
           "hmmmmmm  ${chat.messages[msgIndex].content?.toJson()["filePath"]}");
       state = List.from(state); // Update the state to trigger a rebuild
-
     }
   }
 
@@ -284,11 +285,11 @@ class ChatsViewModel extends _$ChatsViewModel {
     return state.firstWhere(
       (chat) =>
           chat.type == private &&
-            chat.userIds.contains(myInfo.id) &&
-            chat.userIds.contains(otherInfo.id),
+          chat.userIds.contains(myInfo.id) &&
+          chat.userIds.contains(otherInfo.id),
       orElse: () => ChatModel(
         title: '${otherInfo.screenFirstName} ${otherInfo.screenLastName}',
-              userIds: [myInfo.id!, otherInfo.id!],
+        userIds: [myInfo.id!, otherInfo.id!],
         type: ChatType.private,
         messages: [],
         photo: otherInfo.photo,

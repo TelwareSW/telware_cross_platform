@@ -7,6 +7,7 @@ import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
 class DownloadWidget extends StatefulWidget {
   final void Function(String?) onTap;
   final String? url;
+  final String? fileName;
   final Color? color;
 
   const DownloadWidget({
@@ -14,6 +15,7 @@ class DownloadWidget extends StatefulWidget {
     required this.onTap,
     required this.url,
     this.color = Colors.transparent,
+    this.fileName,
   });
 
   @override
@@ -37,7 +39,7 @@ class DownloadWidgetState extends State<DownloadWidget> {
       widget.onTap(widget.url);
       return;
     }
-    String? filePath = await downloadAndSaveFile(widget.url);
+    String? filePath = await downloadAndSaveFile(widget.url, widget.fileName);
     widget.onTap(filePath);
   }
 

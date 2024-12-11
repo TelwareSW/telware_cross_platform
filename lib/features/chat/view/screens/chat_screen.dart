@@ -239,6 +239,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   void _sendMessage({
     required WidgetRef ref,
     required String contentType,
+    String? fileName,
     String? caption,
     String? filePath,
     bool? getRecordingPath,
@@ -267,13 +268,14 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       }
     }
 
-    // if (mediaUrl != null) {
-    messageText = caption ?? '';
-    // }
+    if (mediaUrl != null) {
+      messageText = caption ?? '';
+    }
 
     content = createMessageContent(
       contentType: messageContentType,
       filePath: filePath,
+      fileName: fileName,
       mediaUrl: mediaUrl,
       text: messageText,
     );

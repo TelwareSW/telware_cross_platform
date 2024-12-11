@@ -11,7 +11,8 @@ import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-Future<String?> downloadAndSaveFile(String? url) async {
+Future<String?> downloadAndSaveFile(
+    String? url, String? originalFileName) async {
   if (url == null || url.isEmpty) {
     return null;
   }
@@ -28,8 +29,9 @@ Future<String?> downloadAndSaveFile(String? url) async {
       Uint8List fileBytes = response.bodyBytes;
 
       // Determine the local path to save the file
-      final Directory directory = await getApplicationDocumentsDirectory();
-      final String fileName = url.split('/').last; // Extract file name from URL
+      final Directory directory = await getTemporaryDirectory();
+      final String fileName =
+          originalFileName ?? url.split('/').last; // Extract file name from URL
       final String filePath = '${directory.path}/$fileName';
 
       // Save the file locally

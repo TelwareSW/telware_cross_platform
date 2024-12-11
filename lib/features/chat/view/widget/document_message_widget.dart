@@ -9,6 +9,7 @@ import '../../utils/chat_utils.dart';
 
 class DocumentMessageWidget extends StatefulWidget {
   final String? filePath;
+  final String? fileName;
   final void Function(String?) onDownloadTap;
   final String? url;
   final void Function() openOptions;
@@ -16,6 +17,7 @@ class DocumentMessageWidget extends StatefulWidget {
   const DocumentMessageWidget({
     super.key,
     this.filePath,
+    this.fileName,
     required this.openOptions,
     required this.onDownloadTap,
     this.url,
@@ -38,19 +40,20 @@ class DocumentMessageWidgetState extends State<DocumentMessageWidget> {
   @override
   void didUpdateWidget(DocumentMessageWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.filePath != widget.filePath) {
+    if (oldWidget.filePath != widget.filePath ||
+        oldWidget.fileName != widget.fileName) {
       _initializeFileDetails();
     }
   }
 
   void _initializeFileDetails() {
     if (widget.filePath == null || !doesFileExistSync(widget.filePath!)) {
-      fileName = 'Document';
+      fileName = widget.fileName ?? 'Document';
       fileSize = '0 MB';
       return;
     }
     final file = File(widget.filePath!);
-    fileName = file.uri.pathSegments.last;
+    fileName = widget.fileName ?? file.uri.pathSegments.last;
     fileSize = '${(file.lengthSync() / 1024 / 1024).toStringAsFixed(2)} MB';
   }
 
@@ -86,6 +89,7 @@ class DocumentMessageWidgetState extends State<DocumentMessageWidget> {
                     child: DownloadWidget(
                       onTap: widget.onDownloadTap,
                       url: widget.url,
+                      fileName: fileName,
                       color: Colors.white,
                     ),
                   ),
