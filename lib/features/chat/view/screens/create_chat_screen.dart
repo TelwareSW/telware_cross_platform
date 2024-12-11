@@ -135,9 +135,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
           tabs: const [
             Tab(text: 'Chats'),
             Tab(text: 'Channels'),
-            Tab(text: 'Apps'),
             Tab(text: 'Media'),
-            Tab(text: 'Downloads'),
             Tab(text: 'Links'),
             Tab(text: 'Files'),
             Tab(text: 'Music'),
@@ -155,7 +153,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
                     child:
-                    CircularProgressIndicator(), // Show a loading indicator while data is loading
+                        CircularProgressIndicator(), // Show a loading indicator while data is loading
                   );
                 } else if (snapshot.hasError) {
                   return Center(
@@ -179,7 +177,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
                   }
                   return TabBarView(
                     controller: _tabController,
-                    children: List.generate(9, (index) {
+                    children: List.generate(7, (index) {
                       if (index == 0 && userChats[0]["options"].isEmpty) {
                         return const Column(
                           mainAxisAlignment: MainAxisAlignment.center,
