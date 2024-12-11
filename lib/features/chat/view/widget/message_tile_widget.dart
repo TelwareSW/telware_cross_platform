@@ -8,6 +8,7 @@ import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/audio_message_widget.dart';
+import 'package:telware_cross_platform/features/chat/view/widget/delete_popup_menu.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/document_message_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/image_message_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/sticker_message_widget.dart';
@@ -20,6 +21,7 @@ import 'floating_menu_overlay.dart';
 
 class MessageTileWidget extends ConsumerWidget {
   final MessageModel messageModel;
+  final String chatId;
   final bool isSentByMe;
   final bool showInfo;
   final Color nameColor;
@@ -29,25 +31,25 @@ class MessageTileWidget extends ConsumerWidget {
   final Function(MessageModel) onReply;
   final Function(MessageModel) onLongPress;
   final Function(MessageModel) onPin;
-  final Function(String, String, DeleteMessageType) onDelete;
   final Function()? onPress;
   final MessageModel? parentMessage;
 
-  const MessageTileWidget(
-      {super.key,
-      required this.messageModel,
-      required this.isSentByMe,
-      this.showInfo = false,
-      this.nameColor = Palette.primary,
-      this.imageColor = Palette.primary,
-      this.highlights = const [],
-      required this.onDownloadTap,
-      required this.onReply,
-      required this.onLongPress,
-      required this.onPress,
-      required this.onPin,
-      this.parentMessage,
-      required this.onDelete});
+  const MessageTileWidget({
+    super.key,
+    required this.messageModel,
+    required this.chatId,
+    required this.isSentByMe,
+    this.showInfo = false,
+    this.nameColor = Palette.primary,
+    this.imageColor = Palette.primary,
+    this.highlights = const [],
+    required this.onDownloadTap,
+    required this.onReply,
+    required this.onLongPress,
+    required this.onPress,
+    required this.onPin,
+    this.parentMessage,
+  });
 
   // Function to format timestamp to "hh:mm AM/PM"
   String formatTimestamp(DateTime timestamp) {
@@ -244,6 +246,9 @@ class MessageTileWidget extends ConsumerWidget {
                     },
                     onDelete: () {
                       overlayEntry.remove();
+                      final msgId = messageModel.id ?? messageModel.localId;
+                      showDeleteMessageAlert(
+                          context: context, msgId: msgId, chatId: chatId);
                     },
                     pinned: messageModel.isPinned,
                   ),
@@ -279,33 +284,34 @@ class MessageTileWidget extends ConsumerWidget {
                   messageModel.messageContentType, keyValue, ref),
               // The timestamp is always in the bottom-right corner if there's space
               Positioned(
-                bottom: 5,
-                right: 5,
+                bottom: 0,
+                right: 0,
                 child: Container(
-                    padding: const EdgeInsets.only(top: 5),
-                    // Add some space above the timestamp
-                    child: Row(
-                      children: [
-                        Text(
-                          key: ValueKey(
-                              '$keyValue${MessageKeys.messageTimePostfix.value}'),
-                          formatTimestamp(messageModel.timestamp),
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Palette.primaryText,
-                          ),
+                  padding: const EdgeInsets.only(top: 5),
+                  // Add some space above the timestamp
+                  child: Row(
+                    children: [
+                      Text(
+                        key: ValueKey(
+                            '$keyValue${MessageKeys.messageTimePostfix.value}'),
+                        formatTimestamp(messageModel.timestamp),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Palette.primaryText,
                         ),
-                        if (isSentByMe) ...[
-                          const SizedBox(width: 4),
-                          Icon(
-                              key: ValueKey(
-                                  '$keyValue${MessageKeys.messageStatusPostfix.value}'),
-                              messageState,
-                              size: 12,
-                              color: Palette.primaryText),
-                        ]
-                      ],
-                    )),
+                      ),
+                      if (isSentByMe) ...[
+                        const SizedBox(width: 4),
+                        Icon(
+                            key: ValueKey(
+                                '$keyValue${MessageKeys.messageStatusPostfix.value}'),
+                            messageState,
+                            size: 12,
+                            color: Palette.primaryText),
+                      ]
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
@@ -427,4 +433,23 @@ class _SenderNameWidgetState extends ConsumerState<SenderNameWidget> {
         : const SizedBox.shrink();
     return senderNameWidget;
   }
+}
+
+Future<void> showDeleteMessageAlert({
+  required BuildContext context,
+  required String msgId,
+  required String chatId,
+}) {
+  /// the msgId could be the id or the local id, whichever is available
+  return showDialog<void>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        content: DeletePopUpMenu(
+          chatId: chatId,
+          messageId: msgId,
+        ),
+      );
+    },
+  );
 }
