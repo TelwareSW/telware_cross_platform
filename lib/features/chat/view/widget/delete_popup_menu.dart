@@ -5,19 +5,17 @@ import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 
-class DeletePopUpMenu extends StatelessWidget {
-  final WidgetRef ref;
+class DeletePopUpMenu extends ConsumerWidget {
   final String chatId;
   final String messageId;
   const DeletePopUpMenu({
     super.key,
-    required this.ref,
     required this.chatId,
     required this.messageId,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return PopupMenuButton<String>(
       padding: EdgeInsets.zero,
       color: Palette.secondary,

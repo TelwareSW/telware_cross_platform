@@ -32,6 +32,7 @@ class MessageEvent {
   final String chatId;
 
   final ChattingController? _controller;
+  static const int _timeOutSeconds = 10;
 
   MessageEvent(
     this.payload, {
@@ -41,7 +42,7 @@ class MessageEvent {
   }) : _controller = controller;
 
   Future<bool> execute(SocketService socket,
-      {Duration timeout = const Duration(seconds: 10)}) async {
+      {Duration timeout = const Duration(seconds: _timeOutSeconds)}) async {
     debugPrint('!!! this is the one excuted');
     return true;
   }
@@ -94,15 +95,16 @@ class SendMessageEvent extends MessageEvent {
   @override
   Future<bool> execute(
     SocketService socket, {
-    Duration timeout = const Duration(seconds: 10),
+    Duration timeout = const Duration(seconds: MessageEvent._timeOutSeconds),
   }) async {
     debugPrint('!!! Sending event statrted');
-    print(payload as Map);
+    // print(payload as Map);
     debugPrint('--- did not reach here in sending event');
 
     return await _execute(
       socket,
       EventType.sendMessage.event,
+      timeout: timeout,
       ackCallback: (res, timer, completer) {
         try {
           final response = res as Map<String, dynamic>;
@@ -234,7 +236,7 @@ class EditMessageEvent extends MessageEvent {
   }
 }
 
-@HiveType(typeId: 11)
+@HiveType(typeId: 23)
 class UpdateDraftEvent extends MessageEvent {
   UpdateDraftEvent(
     super.payload, {
@@ -278,6 +280,47 @@ class UpdateDraftEvent extends MessageEvent {
       controller: controller ?? _controller,
       msgId: msgId ?? this.msgId,
       chatId: chatId ?? this.chatId,
+    );
+  }
+}
+
+@HiveType(typeId: 24)
+class PinMessageEvent extends MessageEvent {
+  PinMessageEvent(
+    super.payload, {
+    super.controller,
+    required super.msgId,
+    required super.chatId,
+    required this.isToPin,
+  });
+
+  @HiveField(3)
+  bool isToPin;
+
+  @override
+  Future<bool> execute(
+    SocketService socket, {
+    Duration timeout = const Duration(seconds: MessageEvent._timeOutSeconds),
+  }) async {
+    final event = isToPin ? EventType.pinMessageClient.event: EventType.unpinMessageClient.event;
+    socket.emit(event, payload);
+    return true;
+  }
+
+  @override
+  PinMessageEvent copyWith({
+    dynamic payload,
+    ChattingController? controller,
+    String? msgId,
+    String? chatId,
+    bool? isToPin,
+  }) {
+    return PinMessageEvent(
+      payload ?? this.payload,
+      controller: controller ?? _controller,
+      msgId: msgId ?? this.msgId,
+      chatId: chatId ?? this.chatId,
+      isToPin: isToPin ?? this.isToPin,
     );
   }
 }

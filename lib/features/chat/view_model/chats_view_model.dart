@@ -93,12 +93,13 @@ class ChatsViewModel extends _$ChatsViewModel {
   ({
     String msgLocalId,
     String chatId,
-  }) addSentMessage(
-    MessageContent content,
-    String chatId,
-    MessageType msgType,
-    MessageContentType msgContentType,
-  ) {
+  }) addSentMessage({
+    required MessageContent content,
+    required String chatId,
+    required MessageType msgType,
+    required MessageContentType msgContentType,
+    required String? parentMessageId,
+  }) {
     final chatIndex = getChatIndex(chatId);
     final chat = state[chatIndex];
     // todo(ahmed): make sure that new chats are added to the map first
@@ -117,6 +118,7 @@ class ChatsViewModel extends _$ChatsViewModel {
       userStates: {},
       id: USE_MOCK_DATA ? getUniqueMessageId() : null,
       localId: msgLocalId,
+      parentMessage: parentMessageId
     );
 
     chat.messages.add(msg);
@@ -132,7 +134,7 @@ class ChatsViewModel extends _$ChatsViewModel {
     required String chatId,
   }) {
     final chatIndex = getChatIndex(chatId);
-    final chat = chatIndex > 0 ? state[chatIndex] : null;
+    final chat = chatIndex >= 0 ? state[chatIndex] : null;
 
     if (chat != null) {
       debugPrint('### found the chat');
@@ -191,6 +193,29 @@ class ChatsViewModel extends _$ChatsViewModel {
     chat.messages.add(msg);
 
     _moveChatToFront(chatIndex, chat);
+  }
+
+  bool pinMessage(String msgId, String chatId) {
+    final chatIndex = getChatIndex(chatId);
+    final chat = chatIndex >= 0 ? state[chatIndex] : null;
+
+    if (chat == null) return false;
+    final msgIndex = chat.messages.indexWhere((msg) => msg.id == msgId);
+
+    if (msgIndex != -1) {
+      final newMsg = chat.messages[msgIndex]
+          .copyWith(isPinned: !(chat.messages[msgIndex].isPinned));
+      chat.messages[msgIndex] = newMsg;
+
+      state = [
+        ...state.sublist(0, chatIndex),
+        chat.copyWith(),
+        ...state.sublist(chatIndex + 1),
+      ];
+      return newMsg.isPinned;
+    }
+
+    return false;
   }
 
   void deleteMessage(String msgId, String chatId) {
@@ -257,7 +282,6 @@ class ChatsViewModel extends _$ChatsViewModel {
       debugPrint(
           "hmmmmmm  ${chat.messages[msgIndex].content?.toJson()["filePath"]}");
       state = List.from(state); // Update the state to trigger a rebuild
-
     }
   }
 
@@ -290,11 +314,11 @@ class ChatsViewModel extends _$ChatsViewModel {
     return state.firstWhere(
       (chat) =>
           chat.type == private &&
-            chat.userIds.contains(myInfo.id) &&
-            chat.userIds.contains(otherInfo.id),
+          chat.userIds.contains(myInfo.id) &&
+          chat.userIds.contains(otherInfo.id),
       orElse: () => ChatModel(
         title: '${otherInfo.screenFirstName} ${otherInfo.screenLastName}',
-              userIds: [myInfo.id!, otherInfo.id!],
+        userIds: [myInfo.id!, otherInfo.id!],
         type: ChatType.private,
         messages: [],
         photo: otherInfo.photo,

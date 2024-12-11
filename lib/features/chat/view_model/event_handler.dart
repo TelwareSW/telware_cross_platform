@@ -112,9 +112,26 @@ class EventHandler {
     // receive a message
     _socket.on(EventType.receiveMessage.event, (response) async {
       try {
+        debugPrint('/|\\ got a message id: ${response['id']}');
         _chattingController.receiveMsg(response);
       } on Exception catch (e) {
         debugPrint('!!! Error in recieving a message:\n${e.toString()}');
+      }
+    });
+    // pin a message
+    _socket.on(EventType.pinMessageServer.event, (response) async {
+      try {
+        _chattingController.pinMessageServer(response['messageId'] as String, response['chatId'] as String);
+      } on Exception catch (e) {
+        debugPrint('!!! Error in pinning a message:\n${e.toString()}');
+      }
+    });
+    // pin a message
+    _socket.on(EventType.unpinMessageServer.event, (response) async {
+      try {
+        _chattingController.pinMessageServer(response['messageId'] as String, response['chatId'] as String);
+      } on Exception catch (e) {
+        debugPrint('!!! Error in unpinning a message:\n${e.toString()}');
       }
     });
 

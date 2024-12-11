@@ -332,6 +332,7 @@ class AuthViewModel extends _$AuthViewModel {
       state = AuthState.unauthenticated;
     } else {
       state = AuthState.fail(appError.error);
+      state = AuthState.unauthenticated;
     }
   }
 

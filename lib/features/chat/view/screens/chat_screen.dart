@@ -58,6 +58,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   final ScrollController _scrollController = ScrollController();
   late String _chosenAnimation;
   MessageModel? replyMessage;
+  MessageModel? editMessage;
   List<MessageModel> selectedMessages = [];
   List<MessageModel> pinnedMessages = [];
   int indexInPinnedMessage = 0;
@@ -266,23 +267,14 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       parentMessage: replyMessage?.id,
     );
     _messageController.clear();
-    _updateChatMessages([...?chatModel?.messages, newMessage]);
-    ref
-        .read(chattingControllerProvider)
-        .sendMsg(
-          content: newMessage.content!,
-          msgType: newMessage.messageType,
-          contentType: newMessage.messageContentType,
-          chatType: ChatType.private,
-          chatModel: chatModel,
-        )
-        .then((_) {
-      List<MessageModel> messages =
-          ref.read(chatProvider(chatModel!.id!))?.messages ?? [];
-      _updateChatMessages(messages);
-      // debugPrint(" ${messages.toString()}");
-      // _scrollToBottom();
-    });
+    _updateChatMessages([...chatModel.messages, newMessage]);
+    ref.read(chattingControllerProvider).sendMsg(
+        content: newMessage.content!,
+        msgType: newMessage.messageType,
+        contentType: newMessage.messageContentType,
+        chatType: ChatType.private,
+        chatModel: chatModel,
+        parentMessgeId: replyMessage?.id);
   }
 
   void _setChatMute(bool mute, DateTime? muteUntil) async {
@@ -386,7 +378,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
     final chats = ref.watch(chatsViewModelProvider);
     final index = chats.indexWhere((chat) => chat.id == widget.chatId);
-    final ChatModel? chat = (index == -1) ? null: chats[index];  // Chat not found
+    final ChatModel? chat =
+        (index == -1) ? null : chats[index]; // Chat not found
     chatModel = widget.chatModel ?? chat!;
     _updateDraft();
     final type = chatModel.type;
@@ -406,6 +399,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     _messageController.text = chatModel.draft ?? "";
     chatContent = _generateChatContentWithDateLabels(messages);
     pinnedMessages = messages.where((message) => message.isPinned).toList();
+    debugPrint('pinned Messages count after is : ${pinnedMessages.length}');
 
     return Scaffold(
         appBar: selectedMessages.isEmpty
@@ -552,6 +546,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                           ? NewChatScreenSticker(
                               chosenAnimation: _chosenAnimation)
                           : ChatMessagesList(
+                            messages: messages,
                               scrollController: _scrollController,
                               chatContent: chatContent,
                               selectedMessages: selectedMessages,
@@ -903,10 +898,13 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
   void _onPin(MessageModel message) {
     setState(() {
-      debugPrint('pin');
       pinnedMessages.contains(message)
           ? pinnedMessages.remove(message)
           : pinnedMessages.add(message);
+      ref.read(chattingControllerProvider).pinMessageClient(
+            message.id ?? '',
+            chatModel.id ?? '',
+          );
     });
   }
 
@@ -1082,6 +1080,7 @@ class ChatMessagesList extends ConsumerStatefulWidget {
     required this.replyMessage,
     required this.chatId,
     required this.pinnedMessages,
+    required this.messages,
     required this.updateChatMessages,
     required this.onPin,
     required this.onLongPress,
@@ -1092,6 +1091,7 @@ class ChatMessagesList extends ConsumerStatefulWidget {
   final ChatType type;
   final String? chatId;
   List chatContent;
+  List<MessageModel> messages;
   List<MessageModel> selectedMessages;
   List<MessageModel> pinnedMessages;
   Map<int, List<MapEntry<int, int>>> messageMatches;
@@ -1121,6 +1121,19 @@ class _ChatMessagesListState extends ConsumerState<ChatMessagesList> {
             if (item is DateLabelWidget) {
               return item;
             } else if (item is MessageModel) {
+              int parentIndex = -1;
+                if (item.content?.getContent() == 'god') {
+                  print('#############################');
+                  print(item);
+                  print('#############################');
+                }
+              MessageModel? parentMessage;
+              if (item.parentMessage != null && item.parentMessage!.isNotEmpty) {
+                parentIndex = widget.messages.indexWhere((msg)=> msg.id == item.parentMessage);
+              }
+              if (parentIndex >=0) {
+                parentMessage = widget.messages[parentIndex];
+              }
               return Row(
                 mainAxisAlignment: item.senderId == ref.read(userProvider)!.id
                     ? widget.selectedMessages.isNotEmpty
@@ -1166,6 +1179,7 @@ class _ChatMessagesListState extends ConsumerState<ChatMessagesList> {
                     onPin: widget.onPin,
                     onPress: widget.selectedMessages.isEmpty ? null : () {},
                     onLongPress: widget.onLongPress,
+                    parentMessage: parentMessage,
                   ),
                 ],
               );

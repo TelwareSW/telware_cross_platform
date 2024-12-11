@@ -233,9 +233,14 @@ class ChattingController {
       }
     }
 
-    final identifier = _ref
-        .read(chatsViewModelProvider.notifier)
-        .addSentMessage(content, chatID!, msgType, contentType);
+    final identifier =
+        _ref.read(chatsViewModelProvider.notifier).addSentMessage(
+              content: content,
+              chatId: chatID!,
+              msgType: msgType,
+              msgContentType: contentType,
+              parentMessageId: parentMessgeId,
+            );
 
     debugPrint(
         '^^^ new message identifier: ${identifier.chatId} ${identifier.msgLocalId}');
@@ -245,10 +250,10 @@ class ChattingController {
 
     final msgEvent = SendMessageEvent({
       'chatId': chatID,
-      'media': null,
+      'media': content,
       'content': content.getContent(),
       'contentType': contentType.content,
-      'parentMessageId': null,
+      'parentMessageId': parentMessgeId,
       'senderId': _ref.read(userProvider)!.id,
       'isFirstTime': isChatNew,
       'chatType': chatType.type,
@@ -266,6 +271,21 @@ class ChattingController {
     _ref.read(chatsViewModelProvider.notifier).addReceivedMessage(response);
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
+  }
+
+  void pinMessageClient(String msgId, String chatId) {
+    final isToPin =
+        _ref.read(chatsViewModelProvider.notifier).pinMessage(msgId, chatId);
+    _eventHandler.addEvent(
+      PinMessageEvent({
+        'chatId': chatId,
+        'messageId': msgId,
+      }, msgId: msgId, chatId: chatId, isToPin: isToPin),
+    );
+  }
+
+  void pinMessageServer(String msgId, String chatId) {
+    _ref.read(chatsViewModelProvider.notifier).pinMessage(msgId, chatId);
   }
 
   // delete a message

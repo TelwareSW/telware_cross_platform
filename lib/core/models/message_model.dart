@@ -71,6 +71,7 @@ class MessageModel {
 
     return other.messageType == messageType &&
         other.messageContentType == messageContentType &&
+        other.parentMessage == parentMessage &&
         other.senderId == senderId &&
         other.content == content &&
         other.timestamp == timestamp &&
@@ -93,6 +94,7 @@ class MessageModel {
         timestamp.hashCode ^
         id.hashCode ^
         isAnnouncement.hashCode ^
+        parentMessage.hashCode ^
         threadMessages.hashCode ^
         isForward.hashCode ^
         localId.hashCode ^
@@ -115,6 +117,7 @@ class MessageModel {
         'isForward: $isForward\n'
         'isPinned: $isPinned\n'
         'threadMessages: $threadMessages'
+        'parentMessage: $parentMessage'
         ')');
   }
 
@@ -134,6 +137,7 @@ class MessageModel {
     bool? isPinned,
     bool? isAnnouncement,
     List<String>? threadMessages,
+    String? parentMessage,
   }) {
     return MessageModel(
       senderId: senderId ?? this.senderId,
@@ -149,6 +153,7 @@ class MessageModel {
       isPinned: isPinned ?? this.isPinned,
       isAnnouncement: isAnnouncement ?? this.isAnnouncement,
       threadMessages: threadMessages ?? this.threadMessages,
+      parentMessage: parentMessage ?? this.parentMessage
     );
   }
 
@@ -170,6 +175,7 @@ class MessageModel {
       'isPinned': isPinned,
       'isAnnouncement': isAnnouncement,
       'threadMessages': threadMessages,
+      'parentMessage': parentMessage,
     };
 
     return map;
@@ -198,6 +204,7 @@ class MessageModel {
       isForward: map['isForward'] ?? false,
       isPinned: map['isPinned'] ?? false,
       isAnnouncement: map['isAnnouncement'] ?? false,
+      parentMessage: map['parentMessageId'] ?? ''
     );
   }
 
