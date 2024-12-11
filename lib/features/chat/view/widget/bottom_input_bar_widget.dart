@@ -27,6 +27,7 @@ class BottomInputBarWidget extends ConsumerStatefulWidget {
     String? caption,
     String? filePath,
     bool? getRecordingPath,
+    bool isMusic,
   }) sendMessage;
   final void Function() removeReply;
   final AudioRecorderService audioRecorderService;
@@ -160,11 +161,11 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
         }
 
         widget.sendMessage(
-          ref: ref,
-          contentType: contentType,
-          fileName: fileName,
-          filePath: localPath,
-        );
+            ref: ref,
+            contentType: contentType,
+            fileName: fileName,
+            filePath: localPath,
+            isMusic: true);
 
         // Add to the mediaFiles list with the updated local path
         mediaFiles.add(localPath);

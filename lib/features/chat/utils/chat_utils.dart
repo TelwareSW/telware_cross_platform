@@ -166,6 +166,7 @@ MessageContent createMessageContent({
   String? mediaUrl,
   int? duration,
   String text = '',
+  bool isMusic = false,
 }) {
   switch (contentType) {
     case MessageContentType.text || MessageContentType.link:
@@ -187,6 +188,7 @@ MessageContent createMessageContent({
         filePath: filePath,
         audioUrl: mediaUrl,
         duration: duration,
+        isMusic: isMusic,
       );
     case MessageContentType.file:
       return DocumentContent(

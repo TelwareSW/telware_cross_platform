@@ -243,6 +243,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     String? caption,
     String? filePath,
     bool? getRecordingPath,
+    bool isMusic = false,
   }) async {
     MessageContentType messageContentType =
         MessageContentType.getType(contentType);
@@ -277,6 +278,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       filePath: filePath,
       fileName: fileName,
       mediaUrl: mediaUrl,
+      isMusic: isMusic,
       text: messageText,
     );
     // TODO : Handle media attribute in the request of sending a message

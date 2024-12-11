@@ -50,9 +50,15 @@ class AudioContent extends MessageContent {
   final String? filePath;
   @HiveField(3)
   final List<double>? waveformData;
+  @HiveField(4)
+  final bool? isMusic;
 
   AudioContent(
-      {this.audioUrl, this.duration, this.filePath, this.waveformData});
+      {this.isMusic,
+      this.audioUrl,
+      this.duration,
+      this.filePath,
+      this.waveformData});
 
   @override
   Map<String, dynamic> toJson() => {
@@ -60,6 +66,7 @@ class AudioContent extends MessageContent {
         'duration': duration,
         'filePath': filePath,
         'waveformData': waveformData,
+        'isMusic': isMusic,
       };
 
   @override
@@ -68,12 +75,14 @@ class AudioContent extends MessageContent {
     int? duration,
     String? filePath,
     List<double>? waveformData,
+    bool? isMusic,
   }) {
     return AudioContent(
       audioUrl: audioUrl ?? this.audioUrl,
       duration: duration ?? this.duration,
       filePath: filePath ?? this.filePath,
       waveformData: waveformData ?? this.waveformData,
+      isMusic: isMusic ?? this.isMusic,
     );
   }
 
