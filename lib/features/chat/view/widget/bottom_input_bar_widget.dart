@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mime/mime.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:telware_cross_platform/core/constants/constant.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'dart:async';
 import 'dart:io';
@@ -18,11 +20,13 @@ import 'package:telware_cross_platform/features/chat/view/widget/slide_to_cancel
 class BottomInputBarWidget extends ConsumerStatefulWidget {
   final TextEditingController controller; // Accept controller as a parameter
   final String? chatID;
-  final void Function(
-      {required String contentType,
-      String? filePath,
-      required WidgetRef ref,
-      bool? getRecordingPath}) sendMessage;
+  final void Function({
+    required String contentType,
+    required WidgetRef ref,
+    String? caption,
+    String? filePath,
+    bool? getRecordingPath,
+  }) sendMessage;
   final void Function() removeReply;
   final AudioRecorderService audioRecorderService;
 
@@ -143,14 +147,42 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
           }
         }
 
+        if (contentType == 'image' && media.length == 1) {
+          if (mounted) {
+            Map<String, dynamic> extra = {
+              'filePath': localPath,
+              'sendCaptionMedia': _sendCaptionMedia
+            };
+            context.push(Routes.captionScreen, extra: extra);
+          }
+          return;
+        }
+
         widget.sendMessage(
-            ref: ref, contentType: contentType, filePath: localPath);
+          ref: ref,
+          contentType: contentType,
+          filePath: localPath,
+        );
 
         // Add to the mediaFiles list with the updated local path
         mediaFiles.add(localPath);
       }
     }
 
+    setState(() {});
+  }
+
+  // sends an image or video with a caption
+  void _sendCaptionMedia({
+    required String caption,
+    required String filePath,
+  }) {
+    widget.sendMessage(
+      ref: ref,
+      contentType: 'image',
+      caption: caption,
+      filePath: filePath,
+    );
     setState(() {});
   }
 
@@ -175,11 +207,50 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
         ref: ref,
         contentType: mediaType,
       );
-
-      debugPrint("$mediaType saved and sent: $newFilePath");
     } catch (e) {
       debugPrint("Error saving or sending sticker: $e");
     }
+  }
+
+  void _onLongPressUp() async {
+    if (widget.audioRecorderService.isRecordingLocked || isCanceled) {
+      return;
+    }
+    String? recordingPath = await widget.audioRecorderService.stopRecording();
+    widget.sendMessage(
+      ref: ref,
+      contentType: 'audio',
+      filePath: recordingPath,
+    );
+    widget.audioRecorderService.resetRecording();
+  }
+
+  void _onLongPressMoveUpdate(LongPressMoveUpdateDetails details) {
+    if (details.localPosition.dx.abs() > _cancelThreshold) {
+      isCanceled = true;
+      widget.audioRecorderService.cancelRecording();
+      setState(() {});
+      return;
+    }
+    widget.audioRecorderService
+        .lockRecordingDragPositionUpdate(details.localPosition.dy);
+    if (details.localPosition.dy.abs() > _lockThreshold) {
+      widget.audioRecorderService.lockRecording();
+      return;
+    }
+    setState(() {
+      _dragPosition = details.localPosition.dx;
+    });
+  }
+
+  void _onSend() {
+    if (widget.audioRecorderService.isRecordingCompleted) {
+      String? filePath = widget.audioRecorderService.resetRecording();
+      widget.sendMessage(ref: ref, contentType: 'audio', filePath: filePath);
+    } else {
+      widget.sendMessage(ref: ref, contentType: 'text');
+    }
+    widget.removeReply();
   }
 
   @override
@@ -342,38 +413,8 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                   GestureDetector(
                     onLongPress: () =>
                         widget.audioRecorderService.startRecording(context),
-                    onLongPressUp: () async {
-                      if (widget.audioRecorderService.isRecordingLocked ||
-                          isCanceled) {
-                        return;
-                      }
-                      String? recordingPath =
-                          await widget.audioRecorderService.stopRecording();
-                      widget.sendMessage(
-                        ref: ref,
-                        contentType: 'audio',
-                        filePath: recordingPath,
-                      );
-                      widget.audioRecorderService.resetRecording();
-                    },
-                    onLongPressMoveUpdate: (details) {
-                      if (details.localPosition.dx.abs() > _cancelThreshold) {
-                        isCanceled = true;
-                        widget.audioRecorderService.cancelRecording();
-                        setState(() {});
-                        return;
-                      }
-                      widget.audioRecorderService
-                          .lockRecordingDragPositionUpdate(
-                              details.localPosition.dy);
-                      if (details.localPosition.dy.abs() > _lockThreshold) {
-                        widget.audioRecorderService.lockRecording();
-                        return;
-                      }
-                      setState(() {
-                        _dragPosition = details.localPosition.dx;
-                      });
-                    },
+                    onLongPressUp: _onLongPressUp,
+                    onLongPressMoveUpdate: _onLongPressMoveUpdate,
                     child: const LottieViewer(
                       path: "assets/json/voice_to_video.json",
                       width: 29,
@@ -390,17 +431,7 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                   iconSize: 28,
                   icon: const Icon(Icons.send),
                   color: Palette.accent,
-                  onPressed: () {
-                    if (widget.audioRecorderService.isRecordingCompleted) {
-                      String? filePath =
-                          widget.audioRecorderService.resetRecording();
-                      widget.sendMessage(
-                          ref: ref, contentType: 'audio', filePath: filePath);
-                    } else {
-                      widget.sendMessage(ref: ref, contentType: 'text');
-                    }
-                    widget.removeReply();
-                  },
+                  onPressed: _onSend,
                 ),
               ],
             ],

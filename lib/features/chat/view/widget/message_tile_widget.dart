@@ -55,6 +55,138 @@ class MessageTileWidget extends ConsumerWidget {
     return formatter.format(timestamp);
   }
 
+  Widget textMessage(keyValue, ref) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      SenderNameWidget(
+        keyValue,
+        nameColor,
+        showInfo: showInfo,
+        isSentByMe: isSentByMe,
+        userId: messageModel.senderId,
+      ),
+      parentMessage != null
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                // First message
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: isSentByMe
+                        ? LinearGradient(
+                            colors: [
+                              Color.lerp(Colors.deepPurpleAccent, Colors.white,
+                                      0.4) ??
+                                  Colors.black,
+                              // Increase brightness by using 0.4
+                              Color.lerp(Colors.deepPurpleAccent, Colors.white,
+                                      0.2) ??
+                                  Colors.deepPurpleAccent,
+                              // Slightly brighten the bottom color
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          )
+                        : LinearGradient(
+                            colors: [
+                              Color.lerp(
+                                      Palette.secondary, Colors.white, 0.4) ??
+                                  Colors.black,
+                              // Increase brightness by using 0.4
+                              Color.lerp(
+                                      Palette.secondary, Colors.white, 0.2) ??
+                                  Palette.secondary,
+                              // Slightly brighten the bottom color
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                    borderRadius: const BorderRadius.all(
+                      Radius.circular(16),
+                    ),
+                  ),
+                  padding: const EdgeInsets.all(3),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      FutureBuilder<UserModel?>(
+                        future: ref
+                            .read(chatsViewModelProvider.notifier)
+                            .getUser(messageModel.senderId),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const CircularProgressIndicator(); // Show loading spinner
+                          } else if (snapshot.hasError) {
+                            return Text(
+                              'Error: ${snapshot.error}',
+                              style: const TextStyle(
+                                color: Colors.red,
+                              ),
+                            );
+                          } else if (snapshot.hasData) {
+                            return Text(
+                              snapshot.data!.username ?? '',
+                              style: const TextStyle(
+                                color: Palette.primaryText,
+                                fontSize: 16,
+                              ),
+                            );
+                          } else {
+                            return const Text(
+                              'No data',
+                              style: TextStyle(
+                                color: Colors.grey,
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                      Text(
+                        parentMessage?.content?.toJson()['text'] ?? "",
+                        style: const TextStyle(
+                          color: Palette.primaryText,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            )
+          : const SizedBox(),
+      Wrap(
+        children: [
+          SenderNameWidget(
+            keyValue,
+            nameColor,
+            showInfo: showInfo,
+            isSentByMe: isSentByMe,
+            userId: messageModel.senderId,
+          ),
+          Wrap(
+            children: [
+              HighlightTextWidget(
+                  key: ValueKey(
+                      '$keyValue${MessageKeys.messageContentPostfix.value}'),
+                  text: messageModel.content?.toJson()['text'] ?? "",
+                  normalStyle: const TextStyle(
+                    color: Palette.primaryText,
+                    fontSize: 16,
+                  ),
+                  highlightStyle: const TextStyle(
+                      color: Palette.primaryText,
+                      fontSize: 16,
+                      backgroundColor: Color.fromRGBO(246, 225, 2, 0.43)),
+                  highlights: highlights),
+              SizedBox(width: isSentByMe ? 70.0 : 55.0),
+              const Text("")
+            ],
+          )
+        ],
+      )
+    ]);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final keyValue = (key as ValueKey).value;
@@ -69,6 +201,7 @@ class MessageTileWidget extends ConsumerWidget {
         messageModel.messageContentType == MessageContentType.audio ||
             messageModel.messageContentType == MessageContentType.image ||
             messageModel.messageContentType == MessageContentType.video;
+
     return Align(
       alignment: messageAlignment,
       child: GestureDetector(
@@ -135,204 +268,8 @@ class MessageTileWidget extends ConsumerWidget {
           ),
           child: Stack(
             children: [
-              messageModel.messageContentType == MessageContentType.text
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                          SenderNameWidget(
-                            keyValue,
-                            nameColor,
-                            showInfo: showInfo,
-                            isSentByMe: isSentByMe,
-                            userId: messageModel.senderId,
-                          ),
-                          parentMessage != null
-                              ? Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    // First message
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        gradient: isSentByMe
-                                            ? LinearGradient(
-                                                colors: [
-                                                  Color.lerp(
-                                                          Colors
-                                                              .deepPurpleAccent,
-                                                          Colors.white,
-                                                          0.4) ??
-                                                      Colors.black,
-                                                  // Increase brightness by using 0.4
-                                                  Color.lerp(
-                                                          Colors
-                                                              .deepPurpleAccent,
-                                                          Colors.white,
-                                                          0.2) ??
-                                                      Colors.deepPurpleAccent,
-                                                  // Slightly brighten the bottom color
-                                                ],
-                                                begin: Alignment.topCenter,
-                                                end: Alignment.bottomCenter,
-                                              )
-                                            : LinearGradient(
-                                                colors: [
-                                                  Color.lerp(Palette.secondary,
-                                                          Colors.white, 0.4) ??
-                                                      Colors.black,
-                                                  // Increase brightness by using 0.4
-                                                  Color.lerp(Palette.secondary,
-                                                          Colors.white, 0.2) ??
-                                                      Palette.secondary,
-                                                  // Slightly brighten the bottom color
-                                                ],
-                                                begin: Alignment.topCenter,
-                                                end: Alignment.bottomCenter,
-                                              ),
-                                        borderRadius: const BorderRadius.all(
-                                          Radius.circular(16),
-                                        ),
-                                      ),
-                                      padding: const EdgeInsets.all(3),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          FutureBuilder<UserModel?>(
-                                            future: ref
-                                                .read(chatsViewModelProvider
-                                                    .notifier)
-                                                .getUser(messageModel.senderId),
-                                            builder: (context, snapshot) {
-                                              if (snapshot.connectionState ==
-                                                  ConnectionState.waiting) {
-                                                return const CircularProgressIndicator(); // Show loading spinner
-                                              } else if (snapshot.hasError) {
-                                                return Text(
-                                                  'Error: ${snapshot.error}',
-                                                  style: const TextStyle(
-                                                    color: Colors.red,
-                                                  ),
-                                                );
-                                              } else if (snapshot.hasData) {
-                                                return Text(
-                                                  snapshot.data!.username ?? '',
-                                                  style: const TextStyle(
-                                                    color: Palette.primaryText,
-                                                    fontSize: 16,
-                                                  ),
-                                                );
-                                              } else {
-                                                return const Text(
-                                                  'No data',
-                                                  style: TextStyle(
-                                                    color: Colors.grey,
-                                                  ),
-                                                );
-                                              }
-                                            },
-                                          ),
-                                          Text(
-                                            parentMessage?.content
-                                                    ?.toJson()['text'] ??
-                                                "",
-                                            style: const TextStyle(
-                                              color: Palette.primaryText,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              : const SizedBox(),
-                          Wrap(
-                            children: [
-                              SenderNameWidget(
-                                keyValue,
-                                nameColor,
-                                showInfo: showInfo,
-                                isSentByMe: isSentByMe,
-                                userId: messageModel.senderId,
-                              ),
-                              Wrap(
-                                children: [
-                                  HighlightTextWidget(
-                                      key: ValueKey(
-                                          '$keyValue${MessageKeys.messageContentPostfix.value}'),
-                                      text: messageModel.content
-                                              ?.toJson()['text'] ??
-                                          "",
-                                      normalStyle: const TextStyle(
-                                        color: Palette.primaryText,
-                                        fontSize: 16,
-                                      ),
-                                      highlightStyle: const TextStyle(
-                                          color: Palette.primaryText,
-                                          fontSize: 16,
-                                          backgroundColor: Color.fromRGBO(
-                                              246, 225, 2, 0.43)),
-                                      highlights: highlights),
-                                  SizedBox(width: isSentByMe ? 70.0 : 55.0),
-                                  const Text("")
-                                ],
-                              )
-                            ],
-                          )
-                        ])
-                  : messageModel.messageContentType == MessageContentType.audio
-                      ? AudioMessageWidget(
-                          duration: messageModel.content?.toJson()["duration"],
-                          filePath: messageModel.content?.toJson()["filePath"],
-                          url: messageModel.content?.toJson()["audioUrl"],
-                          onDownloadTap: onDownloadTap,
-                        )
-                      : messageModel.messageContentType ==
-                              MessageContentType.image
-                          ? ImageMessageWidget(
-                              onDownloadTap: onDownloadTap,
-                              filePath:
-                                  messageModel.content?.toJson()["filePath"],
-                              url: messageModel.content?.toJson()["imageUrl"],
-                            )
-                          : messageModel.messageContentType ==
-                                  MessageContentType.video
-                              ? VideoPlayerWidget(
-                                  onDownloadTap: onDownloadTap,
-                                  filePath: messageModel.content
-                                      ?.toJson()["filePath"],
-                                  url: messageModel.content
-                                      ?.toJson()["videoUrl"],
-                                )
-                              : messageModel.messageContentType ==
-                                      MessageContentType.file
-                                  ? DocumentMessageWidget(
-                                      onDownloadTap: onDownloadTap,
-                                      filePath: messageModel.content
-                                          ?.toJson()["filePath"],
-                                      url: messageModel.content
-                                          ?.toJson()["fileUrl"],
-                                      openOptions: () {},
-                                    )
-                                  : messageModel.messageContentType ==
-                                          MessageContentType.sticker
-                                      ? StickerMessageWidget(
-                                          onDownloadTap: onDownloadTap,
-                                          filePath: messageModel.content
-                                              ?.toJson()["filePath"],
-                                          url: messageModel.content
-                                              ?.toJson()["stickerUrl"],
-                                        )
-                                      : messageModel.messageContentType ==
-                                              MessageContentType.gif
-                                          ? ImageMessageWidget(
-                                              onDownloadTap: onDownloadTap,
-                                              filePath: messageModel.content
-                                                  ?.toJson()["filePath"],
-                                              url: messageModel.content
-                                                  ?.toJson()["gifUrl"],
-                                            )
-                                          : const SizedBox.shrink(),
+              _createMessageTile(
+                  messageModel.messageContentType, keyValue, ref),
               // The timestamp is always in the bottom-right corner if there's space
               Positioned(
                 bottom: 5,
@@ -368,6 +305,54 @@ class MessageTileWidget extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Widget _createMessageTile(MessageContentType contentType, keyValue, ref) {
+    switch (contentType) {
+      case MessageContentType.text || MessageContentType.link:
+        return textMessage(keyValue, ref);
+      case MessageContentType.image:
+        return ImageMessageWidget(
+          onDownloadTap: onDownloadTap,
+          filePath: messageModel.content?.toJson()["filePath"],
+          url: messageModel.content?.toJson()["imageUrl"],
+          caption: messageModel.content?.toJson()["caption"],
+        );
+      case MessageContentType.video:
+        return VideoPlayerWidget(
+          onDownloadTap: onDownloadTap,
+          filePath: messageModel.content?.toJson()["filePath"],
+          url: messageModel.content?.toJson()["videoUrl"],
+        );
+      case MessageContentType.audio:
+        return AudioMessageWidget(
+          duration: messageModel.content?.toJson()["duration"],
+          filePath: messageModel.content?.toJson()["filePath"],
+          url: messageModel.content?.toJson()["audioUrl"],
+          onDownloadTap: onDownloadTap,
+        );
+      case MessageContentType.file:
+        return DocumentMessageWidget(
+          onDownloadTap: onDownloadTap,
+          filePath: messageModel.content?.toJson()["filePath"],
+          url: messageModel.content?.toJson()["fileUrl"],
+          openOptions: () {},
+        );
+      case MessageContentType.sticker:
+        return StickerMessageWidget(
+          onDownloadTap: onDownloadTap,
+          filePath: messageModel.content?.toJson()["filePath"],
+          url: messageModel.content?.toJson()["stickerUrl"],
+        );
+      case MessageContentType.gif:
+        return ImageMessageWidget(
+          onDownloadTap: onDownloadTap,
+          filePath: messageModel.content?.toJson()["filePath"],
+          url: messageModel.content?.toJson()["gifUrl"],
+        );
+      default:
+        return const SizedBox.shrink();
+    }
   }
 }
 

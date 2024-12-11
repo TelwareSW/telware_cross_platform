@@ -172,6 +172,7 @@ MessageContent createMessageContent({
       return ImageContent(
         filePath: filePath,
         imageUrl: mediaUrl,
+        caption: text,
       );
     case MessageContentType.video:
       return VideoContent(

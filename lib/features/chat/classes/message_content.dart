@@ -130,23 +130,31 @@ class ImageContent extends MessageContent {
   final Uint8List? imageBytes;
   @HiveField(2)
   final String? filePath;
+  @HiveField(3)
+  final String? caption;
 
-  ImageContent({this.imageUrl, this.imageBytes, this.filePath});
+  ImageContent({this.imageUrl, this.imageBytes, this.filePath, this.caption});
 
   @override
-  Map<String, dynamic> toJson() =>
-      {'imageUrl': imageUrl, 'imageBytes': imageBytes, "filePath": filePath};
+  Map<String, dynamic> toJson() => {
+        'imageUrl': imageUrl,
+        'imageBytes': imageBytes,
+        "filePath": filePath,
+        "caption": caption
+      };
 
   @override
   ImageContent copyWith({
     String? imageUrl,
     Uint8List? imageBytes,
     String? filePath,
+    String? caption,
   }) {
     return ImageContent(
       imageUrl: imageUrl ?? this.imageUrl,
       imageBytes: imageBytes ?? this.imageBytes,
       filePath: filePath ?? this.filePath,
+      caption: caption ?? this.caption,
     );
   }
 
