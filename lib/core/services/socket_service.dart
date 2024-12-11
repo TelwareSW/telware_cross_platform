@@ -40,7 +40,7 @@ class SocketService {
     debugPrint(_sessionId);
 
     _socket = io(_serverUrl, <String, dynamic>{
-      // 'autoConnect': false,
+      'autoConnect': false,
       "transports": ["websocket"],
       'query': {'userId': _userId},
       'auth': {'sessionId': _sessionId}
@@ -75,8 +75,8 @@ class SocketService {
   }
 
   void onError() {
-    _socket.disconnect();
-    isConnected = false;
+    if (isConnected) return;
+    disconnect();
     _eventHandler.stopProcessing();
 
     if (_isReconnecting) return;
@@ -84,13 +84,17 @@ class SocketService {
     Timer(_retryDelay, () {
       _isReconnecting = false;
       _connect();
+      Timer(_retryDelay, () {
+        onError();
+      });
     });
   }
 
   void disconnect() {
-    debugPrint('*** called the socket disconnect');
     _socket.disconnect();
+    _socket.destroy();
     isConnected = false;
+    debugPrint('### Socket connection destroyed');
   }
 
   void on(String event, Function(dynamic data) callback) {
