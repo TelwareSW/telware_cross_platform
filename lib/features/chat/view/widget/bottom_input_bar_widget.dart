@@ -161,11 +161,12 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
         }
 
         widget.sendMessage(
-            ref: ref,
-            contentType: contentType,
-            fileName: fileName,
-            filePath: localPath,
-            isMusic: true);
+          ref: ref,
+          contentType: contentType,
+          fileName: fileName,
+          filePath: localPath,
+          isMusic: true,
+        );
 
         // Add to the mediaFiles list with the updated local path
         mediaFiles.add(localPath);
@@ -183,6 +184,7 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
     widget.sendMessage(
       ref: ref,
       contentType: 'image',
+      fileName: filePath.split('/').last,
       caption: caption,
       filePath: filePath,
     );
@@ -207,9 +209,9 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
       // Call the sendMessage function with the new file path
       widget.sendMessage(
         filePath: newFilePath,
-        ref: ref,
         fileName: fileName,
         contentType: mediaType,
+        ref: ref,
       );
     } catch (e) {
       debugPrint("Error saving or sending sticker: $e");
@@ -261,8 +263,9 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
-          horizontal: widget.audioRecorderService.isRecordingCompleted ? 0 : 10,
-          vertical: 0),
+        horizontal: widget.audioRecorderService.isRecordingCompleted ? 0 : 10,
+        vertical: 0,
+      ),
       color: Palette.trinary,
       child: Column(
         children: [

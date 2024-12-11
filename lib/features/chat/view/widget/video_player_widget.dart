@@ -8,11 +8,17 @@ import '../../utils/chat_utils.dart';
 
 class VideoPlayerWidget extends StatefulWidget {
   final String? filePath;
+  final String? fileName;
   final String? url;
   final void Function(String?) onDownloadTap;
 
-  const VideoPlayerWidget(
-      {super.key, this.filePath, this.url, required this.onDownloadTap});
+  const VideoPlayerWidget({
+    super.key,
+    this.filePath,
+    this.fileName,
+    this.url,
+    required this.onDownloadTap,
+  });
 
   @override
   State<VideoPlayerWidget> createState() => _VideoPlayerWidgetState();
@@ -107,6 +113,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
                         child: DownloadWidget(
                           onTap: widget.onDownloadTap,
                           url: widget.url,
+                          fileName: widget.fileName,
                           color: Colors.white,
                         ),
                       ),

@@ -10,6 +10,7 @@ import '../../utils/chat_utils.dart';
 
 class AudioMessageWidget extends StatefulWidget {
   final String? filePath;
+  final String? fileName;
   final String? url;
   final int? duration;
   final bool isMessage;
@@ -21,6 +22,7 @@ class AudioMessageWidget extends StatefulWidget {
     this.borderRadius = 30,
     this.duration,
     this.filePath,
+    this.fileName,
     required this.onDownloadTap,
     this.url,
     this.isMessage = true,
@@ -77,7 +79,9 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
   @override
   void didUpdateWidget(AudioMessageWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.filePath != widget.filePath) {
+    if (oldWidget.filePath != widget.filePath ||
+        oldWidget.url != widget.url ||
+        oldWidget.fileName != widget.fileName) {
       loadAudioFile();
     }
   }
@@ -96,9 +100,11 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
   }
 
   Future<void> loadAudioFile() async {
+    debugPrint('Loading audio file: test');
     if (widget.filePath == null || !doesFileExistSync(widget.filePath!)) {
       return;
     }
+    debugPrint('Loading audio file: ${widget.filePath}');
     await playerController.preparePlayer(
       path: widget.filePath!,
       shouldExtractWaveform: false,
@@ -227,7 +233,6 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 280,
       child: Row(
         children: [
           Container(
@@ -236,7 +241,7 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
             margin: EdgeInsets.only(
               right: widget.isMessage ? 10 : 0,
               left: widget.isMessage ? 10 : 0,
-              bottom: 10,
+              bottom: widget.isMessage ? 10 : 0,
             ),
             decoration: BoxDecoration(
               color: widget.isMessage ? Colors.white : Palette.accent,
@@ -248,27 +253,31 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
                 bottomRight: widget.isMessage,
               ), // Set border radius
             ),
-            child: widget.filePath == null ||
-                    !doesFileExistSync(widget.filePath!)
-                ? DownloadWidget(onTap: widget.onDownloadTap, url: widget.url)
-                : Align(
-                    alignment: Alignment.center,
-                    child: GestureDetector(
-                      onTap: () {
-                        _startOrStopPlaying();
-                      },
-                      child: Lottie.asset(
-                        "assets/json/play_pause${widget.isMessage ? '_message' : ''}.json",
-                        controller: controller,
-                        onLoaded: (composition) {
-                          controller.duration = composition.duration;
-                        },
-                        width: widget.isMessage ? 23 : 20,
-                        height: widget.isMessage ? 23 : 20,
-                        decoder: LottieComposition.decodeGZip,
+            child:
+                widget.filePath == null || !doesFileExistSync(widget.filePath!)
+                    ? DownloadWidget(
+                        onTap: widget.onDownloadTap,
+                        url: widget.url,
+                        fileName: widget.fileName,
+                      )
+                    : Align(
+                        alignment: Alignment.center,
+                        child: GestureDetector(
+                          onTap: () {
+                            _startOrStopPlaying();
+                          },
+                          child: Lottie.asset(
+                            "assets/json/play_pause${widget.isMessage ? '_message' : ''}.json",
+                            controller: controller,
+                            onLoaded: (composition) {
+                              controller.duration = composition.duration;
+                            },
+                            width: widget.isMessage ? 23 : 20,
+                            height: widget.isMessage ? 23 : 20,
+                            decoder: LottieComposition.decodeGZip,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
           ),
           if (!widget.isMessage) ...[
             audioWaveform(context),

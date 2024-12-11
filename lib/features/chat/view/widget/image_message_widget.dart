@@ -6,6 +6,7 @@ import 'package:telware_cross_platform/features/chat/view/widget/download_widget
 
 class ImageMessageWidget extends StatelessWidget {
   final String? filePath;
+  final String? fileName;
   final String? url;
   final String? caption;
   final void Function(String?) onDownloadTap;
@@ -13,6 +14,7 @@ class ImageMessageWidget extends StatelessWidget {
   const ImageMessageWidget({
     super.key,
     this.filePath,
+    this.fileName,
     required this.onDownloadTap,
     this.url,
     this.caption,
@@ -33,6 +35,7 @@ class ImageMessageWidget extends StatelessWidget {
                   child: Center(
                     child: DownloadWidget(
                       onTap: onDownloadTap,
+                      fileName: fileName,
                       url: url,
                       color: Colors.white,
                     ),

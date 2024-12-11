@@ -6,6 +6,12 @@ import 'package:hive/hive.dart';
 part 'message_content.g.dart'; // Part file for generated code
 
 abstract class MessageContent {
+  String? fileName;
+  String? filePath;
+  String? mediaUrl;
+
+  MessageContent({this.fileName, this.filePath, this.mediaUrl});
+
   Map<String, dynamic> toJson();
 
   MessageContent copyWith();
@@ -43,33 +49,24 @@ class TextContent extends MessageContent {
 @HiveType(typeId: 16)
 class AudioContent extends MessageContent {
   @HiveField(0)
-  final String? audioUrl;
-  @HiveField(1)
   final int? duration;
-  @HiveField(2)
-  final String? filePath;
-  @HiveField(4)
-  final String? fileName;
-  @HiveField(5)
-  final List<double>? waveformData;
-  @HiveField(6)
+  @HiveField(1)
   final bool? isMusic;
 
-  AudioContent(
-      {this.isMusic,
-      this.audioUrl,
-      this.duration,
-      this.filePath,
-      this.fileName,
-      this.waveformData});
+  AudioContent({
+    this.isMusic,
+    super.mediaUrl,
+    this.duration,
+    super.filePath,
+    super.fileName,
+  });
 
   @override
   Map<String, dynamic> toJson() => {
-        'audioUrl': audioUrl,
+        'audioUrl': super.mediaUrl,
         'duration': duration,
-        'filePath': filePath,
-        'fileName': fileName,
-        'waveformData': waveformData,
+        'filePath': super.filePath,
+        'fileName': super.fileName,
         'isMusic': isMusic,
       };
 
@@ -79,15 +76,13 @@ class AudioContent extends MessageContent {
     int? duration,
     String? filePath,
     String? fileName,
-    List<double>? waveformData,
     bool? isMusic,
   }) {
     return AudioContent(
-      audioUrl: audioUrl ?? this.audioUrl,
+      mediaUrl: audioUrl ?? super.mediaUrl,
       duration: duration ?? this.duration,
-      filePath: filePath ?? this.filePath,
-      fileName: fileName ?? this.fileName,
-      waveformData: waveformData ?? this.waveformData,
+      filePath: filePath ?? super.filePath,
+      fileName: fileName ?? super.fileName,
       isMusic: isMusic ?? this.isMusic,
     );
   }
@@ -101,20 +96,13 @@ class AudioContent extends MessageContent {
 // For Document Messages (PDFs, Docs)
 @HiveType(typeId: 17)
 class DocumentContent extends MessageContent {
-  @HiveField(0)
-  final String fileName;
-  @HiveField(1)
-  final String? fileUrl;
-  @HiveField(2)
-  final String? filePath;
-
-  DocumentContent({required this.fileName, this.fileUrl, this.filePath});
+  DocumentContent({super.fileName, super.mediaUrl, super.filePath});
 
   @override
   Map<String, dynamic> toJson() => {
-        'fileName': fileName,
-        'fileUrl': fileUrl,
-        'filePath': filePath,
+        'fileName': super.fileName,
+        'fileUrl': super.mediaUrl,
+        'filePath': super.filePath,
       };
 
   @override
@@ -124,9 +112,9 @@ class DocumentContent extends MessageContent {
     String? filePath,
   }) {
     return DocumentContent(
-      fileName: fileName ?? this.fileName,
-      fileUrl: fileUrl ?? this.fileUrl,
-      filePath: filePath ?? this.filePath,
+      fileName: fileName ?? super.fileName,
+      mediaUrl: fileUrl ?? super.mediaUrl,
+      filePath: filePath ?? super.filePath,
     );
   }
 
@@ -140,29 +128,15 @@ class DocumentContent extends MessageContent {
 @HiveType(typeId: 18)
 class ImageContent extends MessageContent {
   @HiveField(0)
-  final String? imageUrl;
-  @HiveField(1)
-  final Uint8List? imageBytes;
-  @HiveField(2)
-  final String? filePath;
-  @HiveField(3)
-  final String? fileName;
-  @HiveField(4)
   final String? caption;
 
-  ImageContent(
-      {this.imageUrl,
-      this.imageBytes,
-      this.filePath,
-      this.fileName,
-      this.caption});
+  ImageContent({super.mediaUrl, super.filePath, super.fileName, this.caption});
 
   @override
   Map<String, dynamic> toJson() => {
-        'imageUrl': imageUrl,
-        'imageBytes': imageBytes,
-        "filePath": filePath,
-        "fileName": fileName,
+        'imageUrl': super.mediaUrl,
+        "filePath": super.filePath,
+        "fileName": super.fileName,
         "caption": caption
       };
 
@@ -175,10 +149,9 @@ class ImageContent extends MessageContent {
     String? caption,
   }) {
     return ImageContent(
-      imageUrl: imageUrl ?? this.imageUrl,
-      imageBytes: imageBytes ?? this.imageBytes,
-      filePath: filePath ?? this.filePath,
-      fileName: fileName ?? this.fileName,
+      mediaUrl: imageUrl ?? super.mediaUrl,
+      filePath: filePath ?? super.filePath,
+      fileName: fileName ?? super.fileName,
       caption: caption ?? this.caption,
     );
   }
@@ -193,22 +166,16 @@ class ImageContent extends MessageContent {
 @HiveType(typeId: 19)
 class VideoContent extends MessageContent {
   @HiveField(0)
-  final String? videoUrl;
-  @HiveField(1)
   final int? duration;
-  @HiveField(2)
-  final String? filePath;
-  @HiveField(3)
-  final String? fileName;
 
-  VideoContent({this.videoUrl, this.duration, this.fileName, this.filePath});
+  VideoContent({super.mediaUrl, this.duration, super.fileName, super.filePath});
 
   @override
   Map<String, dynamic> toJson() => {
-        'videoUrl': videoUrl,
+        'videoUrl': super.mediaUrl,
         'duration': duration,
-        'filePath': filePath,
-        'fileName': fileName,
+        'filePath': super.filePath,
+        'fileName': super.fileName,
       };
 
   @override
@@ -219,10 +186,10 @@ class VideoContent extends MessageContent {
     String? fileName,
   }) {
     return VideoContent(
-      videoUrl: videoUrl ?? this.videoUrl,
+      mediaUrl: videoUrl ?? super.mediaUrl,
       duration: duration ?? this.duration,
-      filePath: filePath ?? this.filePath,
-      fileName: fileName ?? this.fileName,
+      filePath: filePath ?? super.filePath,
+      fileName: fileName ?? super.fileName,
     );
   }
 
@@ -235,19 +202,12 @@ class VideoContent extends MessageContent {
 // for emoji, gifs and stickers
 @HiveType(typeId: 20)
 class EmojiContent extends MessageContent {
-  @HiveField(0)
-  final String? emojiUrl;
-  @HiveField(1)
-  final String? emojiName;
-  @HiveField(2)
-  final String? filePath;
-
-  EmojiContent({this.emojiUrl, this.emojiName, this.filePath});
+  EmojiContent({super.mediaUrl, super.fileName, super.filePath});
 
   @override
   Map<String, dynamic> toJson() => {
-        'emojiUrl': emojiUrl,
-        'emojiName': emojiName,
+        'emojiUrl': super.mediaUrl,
+        'emojiName': super.fileName,
         'filePath': filePath,
       };
 
@@ -258,9 +218,9 @@ class EmojiContent extends MessageContent {
     String? filePath,
   }) {
     return EmojiContent(
-      emojiUrl: emojiUrl ?? this.emojiUrl,
-      emojiName: emojiName ?? this.emojiName,
-      filePath: filePath ?? this.filePath,
+      mediaUrl: emojiUrl ?? super.mediaUrl,
+      fileName: emojiName ?? super.fileName,
+      filePath: filePath ?? super.filePath,
     );
   }
 
@@ -272,20 +232,13 @@ class EmojiContent extends MessageContent {
 
 @HiveType(typeId: 21)
 class GIFContent extends MessageContent {
-  @HiveField(0)
-  final String? gifUrl;
-  @HiveField(1)
-  final String? gifName;
-  @HiveField(2)
-  final String? filePath;
-
-  GIFContent({this.gifUrl, this.gifName, this.filePath});
+  GIFContent({super.mediaUrl, super.fileName, super.filePath});
 
   @override
   Map<String, dynamic> toJson() => {
-        'gifUrl': gifUrl,
-        'gifName': gifName,
-        'filePath': filePath,
+        'gifUrl': super.mediaUrl,
+        'gifName': super.fileName,
+        'filePath': super.filePath,
       };
 
   @override
@@ -295,9 +248,9 @@ class GIFContent extends MessageContent {
     String? filePath,
   }) {
     return GIFContent(
-      gifUrl: gifUrl ?? this.gifUrl,
-      gifName: gifName ?? this.gifName,
-      filePath: filePath ?? this.filePath,
+      mediaUrl: gifUrl ?? super.mediaUrl,
+      fileName: gifName ?? super.fileName,
+      filePath: filePath ?? super.filePath,
     );
   }
 
@@ -309,20 +262,13 @@ class GIFContent extends MessageContent {
 
 @HiveType(typeId: 22)
 class StickerContent extends MessageContent {
-  @HiveField(0)
-  final String? stickerUrl;
-  @HiveField(1)
-  final String? stickerName;
-  @HiveField(2)
-  final String? filePath;
-
-  StickerContent({this.stickerUrl, this.stickerName, this.filePath});
+  StickerContent({super.mediaUrl, super.fileName, super.filePath});
 
   @override
   Map<String, dynamic> toJson() => {
-        'stickerUrl': stickerUrl,
-        'stickerName': stickerName,
-        'filePath': filePath,
+        'stickerUrl': super.mediaUrl,
+        'stickerName': super.fileName,
+        'filePath': super.filePath,
       };
 
   @override
@@ -332,9 +278,9 @@ class StickerContent extends MessageContent {
     String? filePath,
   }) {
     return StickerContent(
-      stickerUrl: stickerUrl ?? this.stickerUrl,
-      stickerName: stickerName ?? this.stickerName,
-      filePath: filePath ?? this.filePath,
+      mediaUrl: stickerUrl ?? super.mediaUrl,
+      fileName: stickerName ?? super.fileName,
+      filePath: filePath ?? super.filePath,
     );
   }
 

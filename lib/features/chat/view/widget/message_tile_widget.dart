@@ -315,6 +315,7 @@ class MessageTileWidget extends ConsumerWidget {
         return ImageMessageWidget(
           onDownloadTap: onDownloadTap,
           filePath: messageModel.content?.toJson()["filePath"],
+          fileName: messageModel.content?.toJson()["fileName"],
           url: messageModel.content?.toJson()["imageUrl"],
           caption: messageModel.content?.toJson()["caption"],
         );
@@ -322,12 +323,14 @@ class MessageTileWidget extends ConsumerWidget {
         return VideoPlayerWidget(
           onDownloadTap: onDownloadTap,
           filePath: messageModel.content?.toJson()["filePath"],
+          fileName: messageModel.content?.toJson()["fileName"],
           url: messageModel.content?.toJson()["videoUrl"],
         );
       case MessageContentType.audio:
         return AudioMessageWidget(
           duration: messageModel.content?.toJson()["duration"],
           filePath: messageModel.content?.toJson()["filePath"],
+          fileName: messageModel.content?.toJson()["fileName"],
           url: messageModel.content?.toJson()["audioUrl"],
           onDownloadTap: onDownloadTap,
         );
@@ -344,12 +347,13 @@ class MessageTileWidget extends ConsumerWidget {
           onDownloadTap: onDownloadTap,
           filePath: messageModel.content?.toJson()["filePath"],
           url: messageModel.content?.toJson()["stickerUrl"],
-          stickerName: messageModel.content?.toJson()["stickerName"],
+          stickerName: messageModel.content?.toJson()["stickerName"] ?? '',
         );
       case MessageContentType.gif:
         return ImageMessageWidget(
           onDownloadTap: onDownloadTap,
           filePath: messageModel.content?.toJson()["filePath"],
+          fileName: messageModel.content?.toJson()["gifName"],
           url: messageModel.content?.toJson()["gifUrl"],
         );
       default:

@@ -41,25 +41,24 @@ class MessageModel {
   @HiveField(12)
   final String localId;
   @HiveField(13)
-  final bool isForward;
+  final bool? isForward;
 
 //<editor-fold desc="Data Methods">
-  MessageModel({
-    this.autoDeleteTimestamp,
-    required this.senderId,
-    required this.messageType,
-    required this.messageContentType,
-    this.content,
-    required this.timestamp,
-    this.id,
-    this.photo,
-    this.photoBytes,
-    required this.userStates,
-    this.isPinned=false,
-    this.parentMessage,
-    this.localId = '',
-    this.isForward = false
-  });
+  MessageModel(
+      {this.autoDeleteTimestamp,
+      required this.senderId,
+      required this.messageType,
+      required this.messageContentType,
+      this.content,
+      required this.timestamp,
+      this.id,
+      this.photo,
+      this.photoBytes,
+      required this.userStates,
+      this.isPinned = false,
+      this.parentMessage,
+      this.localId = '',
+      this.isForward = false});
 
   Future<void> _setPhotoBytes() async {
     if (photo == null || photo!.isEmpty) return;
@@ -156,20 +155,19 @@ class MessageModel {
     bool? isPinned,
   }) {
     return MessageModel(
-      senderId: senderId ?? this.senderId,
-      content: content ?? this.content,
-      timestamp: timestamp ?? this.timestamp,
-      autoDeleteTimestamp: autoDeleteTimestamp ?? this.autoDeleteTimestamp,
-      id: id ?? this.id,
-      photo: photo ?? this.photo,
-      photoBytes: photoBytes ?? this.photoBytes,
-      userStates: userStates ?? Map.from(this.userStates),
-      messageType: messageType ?? this.messageType,
-      messageContentType: messageContentType ?? this.messageContentType,
-      localId: localId ?? this.localId,
-      isForward: isForward ?? this.isForward,
-      isPinned: isPinned ?? this.isPinned
-    );
+        senderId: senderId ?? this.senderId,
+        content: content ?? this.content,
+        timestamp: timestamp ?? this.timestamp,
+        autoDeleteTimestamp: autoDeleteTimestamp ?? this.autoDeleteTimestamp,
+        id: id ?? this.id,
+        photo: photo ?? this.photo,
+        photoBytes: photoBytes ?? this.photoBytes,
+        userStates: userStates ?? Map.from(this.userStates),
+        messageType: messageType ?? this.messageType,
+        messageContentType: messageContentType ?? this.messageContentType,
+        localId: localId ?? this.localId,
+        isForward: isForward ?? this.isForward,
+        isPinned: isPinned ?? this.isPinned);
   }
 
   Map<String, dynamic> toMap({bool forSender = false}) {

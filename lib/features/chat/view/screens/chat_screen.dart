@@ -269,11 +269,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       }
     }
 
-    if (mediaUrl != null) {
+    if (mediaUrl != null || !UPLOAD_MEDIA) {
       messageText = caption ?? '';
-      if (messageContentType == MessageContentType.audio) {
-        messageText = isMusic ? 'Music' : 'Voice';
-      }
     }
 
     content = createMessageContent(
