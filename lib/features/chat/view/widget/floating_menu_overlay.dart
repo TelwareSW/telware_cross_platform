@@ -24,6 +24,8 @@ class FloatingMenuOverlay extends StatelessWidget {
     required this.pinned,
   });
 
+  final textStyle = const TextStyle(fontSize: 14);
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -38,8 +40,8 @@ class FloatingMenuOverlay extends StatelessWidget {
         // Floating menu
         Positioned(
           top: MediaQuery.of(context).size.height * 0.4,
-          left: MediaQuery.of(context).size.width * 0.2,
-          right: MediaQuery.of(context).size.width * 0.2,
+          left: MediaQuery.of(context).size.width * 0.25,
+          right: MediaQuery.of(context).size.width * 0.25,
           child: Material(
             // color: Colors.green,
             child: Center(
@@ -62,32 +64,38 @@ class FloatingMenuOverlay extends StatelessWidget {
                     children: [
                       ListTile(
                         leading: const Icon(Icons.reply),
-                        title: const Text('Reply'),
+                        trailing: const Text('Reply'),
+                        leadingAndTrailingTextStyle: textStyle,
                         onTap: onReply,
                       ),
                       ListTile(
                         leading: const Icon(Icons.copy),
-                        title: const Text('Copy'),
+                        trailing: const Text('Copy'),
+                        leadingAndTrailingTextStyle: textStyle,
                         onTap: onCopy,
                       ),
                       ListTile(
                         leading: const Icon(FontAwesomeIcons.share),
-                        title: const Text('Forward'),
+                        trailing: const Text('Forward'),
+                        leadingAndTrailingTextStyle: textStyle,
                         onTap: onForward,
                       ),
                       ListTile(
                         leading: Icon(Icons.push_pin_outlined) ,
-                        title: pinned ? const Text('Unpin') : const Text('Pin'),
+                        trailing: pinned ? const Text('Unpin') : const Text('Pin'),
+                        leadingAndTrailingTextStyle: textStyle,
                         onTap: onPin,
                       ),
                       ListTile(
                         leading: const Icon(Icons.edit),
-                        title: const Text('Edit'),
+                        trailing: const Text('Edit'),
+                        leadingAndTrailingTextStyle: textStyle,
                         onTap: onEdit,
                       ),
                       ListTile(
                         leading: const Icon(Icons.delete),
-                        title: const Text('Delete'),
+                        trailing: const Text('Delete'),
+                        leadingAndTrailingTextStyle: textStyle,
                         onTap: onDelete,
                       ),
                     ],

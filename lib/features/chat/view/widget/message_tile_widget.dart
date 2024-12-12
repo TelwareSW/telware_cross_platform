@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -84,10 +85,7 @@ class MessageTileWidget extends ConsumerWidget {
         },
         onTap: onPress == null
             ? () {
-                final tileFocus = FocusScope.of(context);
-                if (!tileFocus.hasPrimaryFocus) {
-                  tileFocus.unfocus();
-                }
+                SystemChannels.textInput.invokeMethod('TextInput.hide');
                 late OverlayEntry overlayEntry;
                 overlayEntry = OverlayEntry(
                   builder: (context) => FloatingMenuOverlay(
