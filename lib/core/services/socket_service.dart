@@ -12,7 +12,8 @@ class SocketService {
   late String _sessionId;
   late Function() _onConnect;
   late EventHandler _eventHandler;
-  bool isConnected = false, _isReconnecting = false;
+  bool isConnected = false, _isReconnecting = false, _ignoreFirst = true;
+  Timer? timer1, timer2;
 
   final Duration _retryDelay =
       Duration(seconds: SOCKET_RECONNECT_DELAY_SECONDS);
@@ -29,6 +30,12 @@ class SocketService {
     _onConnect = onConnect ?? _onConnect;
     _eventHandler = eventHandler ?? _eventHandler;
 
+    isConnected = false;
+    _isReconnecting = false;
+    _ignoreFirst = true;
+    timer1?.cancel();
+    timer2?.cancel();
+
     _connect();
   }
 
@@ -40,7 +47,7 @@ class SocketService {
     debugPrint(_sessionId);
 
     _socket = io(_serverUrl, <String, dynamic>{
-      'autoConnect': false,
+      // 'autoConnect': false,
       "transports": ["websocket"],
       'query': {'userId': _userId},
       'auth': {'sessionId': _sessionId}
@@ -60,31 +67,39 @@ class SocketService {
 
     _socket.onConnectError((error) {
       debugPrint('### Connection error: $error');
+      isConnected = false;
       onError();
     });
 
     _socket.onError((error) {
       debugPrint('### Socket error: $error');
+      isConnected = false;
       onError();
     });
 
     _socket.onDisconnect((_) {
       debugPrint('Disconnected from server');
+      isConnected = false;
       _isReconnecting = false;
     });
   }
 
   void onError() {
     if (isConnected) return;
+    if (_ignoreFirst) {
+      _ignoreFirst = false;
+      return;
+    }
     disconnect();
     _eventHandler.stopProcessing();
 
     if (_isReconnecting) return;
     _isReconnecting = true;
-    Timer(_retryDelay, () {
+    timer1 = Timer(_retryDelay, () {
       _isReconnecting = false;
       _connect();
-      Timer(_retryDelay, () {
+      timer2 = Timer(_retryDelay, () {
+        _isReconnecting = false;
         onError();
       });
     });

@@ -295,7 +295,7 @@ class AuthViewModel extends _$AuthViewModel {
     debugPrint('===============================');
     debugPrint('log out operation ended');
     debugPrint('Error: ${appError?.error}');
-    await _handleLogOutState(appError);
+    await _handleLogOutState();
   }
 
   Future<void> logOutAllOthers() async {
@@ -314,26 +314,21 @@ class AuthViewModel extends _$AuthViewModel {
     state = AuthState.loading;
     final token = ref.read(tokenProvider);
 
-    final appError = await ref
+    await ref
         .read(authRemoteRepositoryProvider)
         .logOut(token: token!, route: 'auth/logout-all');
 
-    await _handleLogOutState(appError);
+    await _handleLogOutState();
   }
 
-  Future<void> _handleLogOutState(AppError? appError) async {
-    if (appError == null) {
-      // successful log out operation
-      await ref.read(authLocalRepositoryProvider).deleteToken();
-      ref.read(tokenProvider.notifier).update((_) => null);
+  Future<void> _handleLogOutState() async {
+    // successful log out operation
+    await ref.read(authLocalRepositoryProvider).deleteToken();
+    ref.read(tokenProvider.notifier).update((_) => null);
 
-      await ref.read(authLocalRepositoryProvider).deleteUser();
-      ref.read(userProvider.notifier).update((_) => null);
-      state = AuthState.unauthenticated;
-    } else {
-      state = AuthState.fail(appError.error);
-      state = AuthState.unauthenticated;
-    }
+    await ref.read(authLocalRepositoryProvider).deleteUser();
+    ref.read(userProvider.notifier).update((_) => null);
+    state = AuthState.unauthenticated;
   }
 
   Future<void> getMe() async {

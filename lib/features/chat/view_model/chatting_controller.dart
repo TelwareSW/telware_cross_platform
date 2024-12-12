@@ -128,7 +128,13 @@ class ChattingController {
     // get the events and give it to the handler from local
     final events = _localRepository.getEventQueue(_ref.read(userProvider)!.id!);
     final newEvents = events.map((e) => e.copyWith(controller: this));
-    _eventHandler.init(Queue<MessageEvent>.from(newEvents.toList()));
+    _eventHandler.init(
+      Queue<MessageEvent>.from(
+        newEvents.toList(),
+      ),
+      userId: _ref.read(userProvider)!.id!,
+      sessionId: _ref.read(tokenProvider)!,
+    );
   }
 
   Future<void> newLoginInit() async {
@@ -289,16 +295,16 @@ class ChattingController {
   }
 
   // delete a message
-  void deleteMsg(String msgID, String chatID, DeleteMessageType deleteType) {
-    // final msgEvent = DeleteMessageEvent({
-    //   'messageId': msgID,
-    // }, controller: this);
+  void deleteMsg(String msgId, String chatId, DeleteMessageType deleteType) {
+    final msgEvent = DeleteMessageEvent({
+      'messageId': msgId,
+    }, controller: this, msgId: msgId, chatId: chatId);
 
-    // _eventHandler.addEvent(msgEvent);
+    _eventHandler.addEvent(msgEvent);
 
-    // _ref.read(chatsViewModelProvider.notifier).deleteMessage(msgID, chatID);
-    // _localRepository.setChats(
-    //     _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
+    _ref.read(chatsViewModelProvider.notifier).deleteMessage(msgId, chatId);
+    _localRepository.setChats(
+        _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
 
   // edit a message
