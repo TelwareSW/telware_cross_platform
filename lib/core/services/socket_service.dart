@@ -12,7 +12,7 @@ class SocketService {
   late String _sessionId;
   late Function() _onConnect;
   late EventHandler _eventHandler;
-  bool isConnected = false, _isReconnecting = false, _ignoreFirst = true;
+  bool isConnected = false, _isReconnecting = false;
   Timer? timer1, timer2;
 
   final Duration _retryDelay =
@@ -32,7 +32,6 @@ class SocketService {
 
     isConnected = false;
     _isReconnecting = false;
-    _ignoreFirst = true;
     timer1?.cancel();
     timer2?.cancel();
 
@@ -86,10 +85,6 @@ class SocketService {
 
   void onError() {
     if (isConnected) return;
-    if (_ignoreFirst) {
-      _ignoreFirst = false;
-      return;
-    }
     disconnect();
     _eventHandler.stopProcessing();
 

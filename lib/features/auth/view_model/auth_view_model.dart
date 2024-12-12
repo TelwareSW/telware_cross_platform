@@ -53,6 +53,10 @@ class AuthViewModel extends _$AuthViewModel {
 
     response.match((appError) {
       state = AuthState.fail(appError.error);
+      if (appError.code == 401) {
+        _handleLogOutState();
+        return;
+      }
       // getting user data from local as remote failed
       final user = ref.read(authLocalRepositoryProvider).getMe();
       ref.read(userProvider.notifier).update((_) => user);
@@ -344,7 +348,11 @@ class AuthViewModel extends _$AuthViewModel {
     // try getting updated user data
     final response = await ref.read(authRemoteRepositoryProvider).getMe(token!);
 
-    response.match((appError) {}, (user) async {
+    response.match((appError) {
+      if (appError.code == 401) {
+        _handleLogOutState();
+      }
+    }, (user) async {
       debugPrint('** getMe is called\nuser supposed to have img');
       debugPrint(user.toString());
       List<UserModel> blockedUsers =
