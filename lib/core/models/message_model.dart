@@ -99,9 +99,9 @@ class MessageModel {
         id.hashCode ^
         isAnnouncement.hashCode ^
         parentMessage.hashCode ^
+        isEdited.hashCode ^
         threadMessages.hashCode ^
         isForward.hashCode ^
-        isEdited.hashCode ^
         localId.hashCode ^
         userStates.hashCode;
   }
@@ -143,8 +143,8 @@ class MessageModel {
     bool? isPinned,
     bool? isAnnouncement,
     bool? isEdited,
-    List<String>? threadMessages,
     String? parentMessage,
+    List<String>? threadMessages,
   }) {
     return MessageModel(
       senderId: senderId ?? this.senderId,

@@ -97,10 +97,6 @@ class SendMessageEvent extends MessageEvent {
     SocketService socket, {
     Duration timeout = const Duration(seconds: MessageEvent._timeOutSeconds),
   }) async {
-    debugPrint('!!! Sending event statrted');
-    // print(payload as Map);
-    debugPrint('--- did not reach here in sending event');
-
     return await _execute(
       socket,
       EventType.sendMessage.event,

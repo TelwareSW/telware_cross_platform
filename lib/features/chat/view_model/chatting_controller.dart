@@ -232,6 +232,7 @@ class ChattingController {
 
       if (response.appError != null) {
         debugPrint('Error: Could not create the chat');
+        return;
       } else {
         chatID = response.chat!.id;
         chatModel.id = chatID;
@@ -247,6 +248,9 @@ class ChattingController {
               msgContentType: contentType,
               parentMessageId: parentMessgeId,
             );
+
+    debugPrint(
+        '^^^ new message identifier: ${identifier.chatId} ${identifier.msgLocalId}');
 
     debugPrint(
         '^^^ new message identifier: ${identifier.chatId} ${identifier.msgLocalId}');
@@ -268,7 +272,8 @@ class ChattingController {
     },
         controller: this,
         msgId: identifier.msgLocalId,
-        chatId: identifier.chatId);
+        chatId: identifier.chatId
+     );
 
     _eventHandler.addEvent(msgEvent);
   }
@@ -300,11 +305,13 @@ class ChattingController {
       'messageId': msgId,
     }, controller: this, msgId: msgId, chatId: chatId);
 
-    _eventHandler.addEvent(msgEvent);
+
+    // _eventHandler.addEvent(msgEvent);
 
     _ref.read(chatsViewModelProvider.notifier).deleteMessage(msgId, chatId);
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
+
   }
 
   // edit a message
@@ -332,6 +339,7 @@ class ChattingController {
 
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
+
   }
 
   // receive a message
@@ -493,6 +501,7 @@ class ChattingController {
           content: content,
           chatId: chatId,
         );
+
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }

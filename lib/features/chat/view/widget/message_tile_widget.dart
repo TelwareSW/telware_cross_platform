@@ -317,9 +317,11 @@ Future<void> showDeleteMessageAlert({
   return showDialog<void>(
     context: context,
     builder: (context) {
-      return DeletePopUpMenu(
-        chatId: chatId,
-        messageId: msgId,
+      return AlertDialog(
+        content: DeletePopUpMenu(
+          chatId: chatId,
+          messageId: msgId,
+        ),
       );
     },
   );

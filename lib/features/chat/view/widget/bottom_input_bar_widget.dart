@@ -114,7 +114,7 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
       return;
     }
     final Directory appDir =
-        await getApplicationDocumentsDirectory(); // Local storage directory
+        await getTemporaryDirectory(); // Local storage directory
 
     for (var mediaFile in media) {
       final File file = File(mediaFile.path);
@@ -161,10 +161,10 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
   void sendGifsStickers(String mediaPath, String mediaType) async {
     try {
       // Get the app's documents directory
-      final directory = await getApplicationDocumentsDirectory();
+      final directory = await getTemporaryDirectory();
       final fileName = mediaPath.split('/').last; // Extract the file name
       final newFilePath = '${directory.path}/$fileName';
-
+      debugPrint('New Sticker Path: $newFilePath');
       // Copy the sticker asset to the new location
       final byteData = await rootBundle.load(mediaPath); // Load the asset
       final file = File(newFilePath);

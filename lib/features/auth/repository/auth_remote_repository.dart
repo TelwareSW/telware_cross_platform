@@ -6,6 +6,7 @@ import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
 import 'package:flutter/foundation.dart';
 import 'package:telware_cross_platform/features/auth/models/auth_response_model.dart';
+import 'package:telware_cross_platform/features/user/view_model/user_view_model.dart';
 
 part 'auth_remote_repository.g.dart';
 
@@ -112,10 +113,11 @@ class AuthRemoteRepository {
         final message = response.data['message'];
         return Left(AppError(message));
       }
-
       debugPrint('=========================================');
-      final user = await UserModel.fromMap(response.data['data']['user']);
       debugPrint('Get me was successful');
+      UserModel user = await UserModel.fromMap(response.data['data']['user']);
+      List<UserModel> blockedUsers = await _handleGetBlockedUsers(sessionId);
+      user = user.copyWith(blockedUsers: blockedUsers);
       return Right(user);
     } on DioException catch (dioException) {
       return Left(handleDioException(dioException));
@@ -195,9 +197,44 @@ class AuthRemoteRepository {
     return null;
   }
 
-  // todo(marwan): ask for verification code resend
+  Future<Either<AppError, List<UserModel>>> getBlockedUsers(
+      String sessionId) async {
+    try {
+      final response = await _dio.get(
+        '/users/block',
+        options: Options(
+          headers: {'X-Session-Token': sessionId},
+        ),
+      );
 
-  // todo(marwan): verify user. send the verification code to the back-end to check it
+      if (response.statusCode! >= 400) {
+        final String message = response.data?['message'] ?? 'Unexpected Error';
+        return Left(AppError(message));
+      }
+      final List<dynamic> users = response.data?['data']['users'] ?? [];
+      var blockedUsers = await Future.wait(
+          (users).map((user) => UserModel.fromMap(user)).toList());
+      return Right(blockedUsers);
+    } on DioException catch (dioException) {
+      return Left(handleDioException(dioException));
+    } catch (error) {
+      debugPrint('block user error:\n${error.toString()}');
+      return Left(
+          AppError("Couldn't block user now. Please, try again later."));
+    }
+  }
+
+  Future<List<UserModel>> _handleGetBlockedUsers(String sessionId) async {
+    final response = await getBlockedUsers(sessionId);
+    return response.fold(
+      (appError) {
+        return [];
+      },
+      (blockedUsers) {
+        return blockedUsers;
+      },
+    );
+  }
 
   AppError handleDioException(DioException dioException) {
     String? message;

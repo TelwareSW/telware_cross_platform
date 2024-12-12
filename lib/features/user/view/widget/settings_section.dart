@@ -20,18 +20,17 @@ class SettingsSection extends StatelessWidget {
   final String trailing;
   final List<Widget>? actions;
 
-  const SettingsSection({
-    super.key,
-    this.containerKey,
-    this.padding,
-    this.trailingFontSize,
-    this.trailingLineHeight,
-    this.titleFontSize,
-    this.title = "",
-    required this.settingsOptions,
-    this.trailing = "",
-    this.actions
-  });
+  const SettingsSection(
+      {super.key,
+      this.containerKey,
+      this.padding,
+      this.trailingFontSize,
+      this.trailingLineHeight,
+      this.titleFontSize,
+      this.title = "",
+      required this.settingsOptions,
+      this.trailing = "",
+      this.actions});
 
   void _navigateTo(BuildContext context, String route) {
     context.push(route);
@@ -39,7 +38,11 @@ class SettingsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ValueKey<String>? sectionKey = containerKey ?? (title != "" ? ValueKey("${toKebabCase(title)}${WidgetKeys.settingsSectionSuffix.value}") : null);
+    final ValueKey<String>? sectionKey = containerKey ??
+        (title != ""
+            ? ValueKey(
+                "${toKebabCase(title)}${WidgetKeys.settingsSectionSuffix.value}")
+            : null);
     return Column(
       children: [
         Container(
@@ -50,7 +53,8 @@ class SettingsSection extends StatelessWidget {
                 if (title != "")
                   SectionTitleWidget(
                     key: sectionKey != null
-                        ? ValueKey(sectionKey.value + WidgetKeys.titleSuffix.value)
+                        ? ValueKey(
+                            sectionKey.value + WidgetKeys.titleSuffix.value)
                         : null,
                     title: title,
                     fontSize: titleFontSize ?? 14,
@@ -96,6 +100,8 @@ class SettingsSection extends StatelessWidget {
                             iconColor:
                                 option["iconColor"] ?? Palette.accentText,
                             color: option["color"] ?? Palette.primaryText,
+                            subtextColor:
+                                option["subtextColor"] ?? Palette.accentText,
                             showDivider: index != settingsOptions.length - 1,
                             onTap: onTap,
                           );
@@ -109,15 +115,16 @@ class SettingsSection extends StatelessWidget {
             )),
         if (trailing != "")
           SettingsSectionTrailingWidget(
-            key: sectionKey != null ? ValueKey(sectionKey.value + WidgetKeys.trailingSuffix.value) : null,
+            key: sectionKey != null
+                ? ValueKey(sectionKey.value + WidgetKeys.trailingSuffix.value)
+                : null,
             padding: padding,
             actions: [
               Text(trailing,
                   style: TextStyle(
                       height: trailingLineHeight,
                       fontSize: trailingFontSize ?? Dimensions.fontSizeSmall,
-                      color: Palette.accentText)
-              ),
+                      color: Palette.accentText)),
             ],
           ),
       ],

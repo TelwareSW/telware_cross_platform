@@ -10,14 +10,13 @@ import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/app_theme.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
-
 import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
-
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
 import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
 import 'package:telware_cross_platform/features/stories/models/story_model.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 Future<void> main() async {
   await init();
@@ -26,6 +25,7 @@ Future<void> main() async {
 
 Future<void> init() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // await Firebase.initializeApp();
   Hive.registerAdapter(UserModelAdapter());
   Hive.registerAdapter(ContactModelAdapter());
   Hive.registerAdapter(StoryModelAdapter());

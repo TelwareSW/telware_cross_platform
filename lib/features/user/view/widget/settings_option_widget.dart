@@ -27,6 +27,7 @@ class SettingsOptionWidget extends StatelessWidget {
   final EdgeInsets? trailingPadding;
   final Color iconColor;
   final Color color;
+  final Color? subtextColor;
   final Color? trailingColor;
   final bool showDivider;
   final bool? avatar;
@@ -55,6 +56,7 @@ class SettingsOptionWidget extends StatelessWidget {
     this.trailingIconAction,
     this.trailingPadding,
     this.trailingColor = Palette.primary,
+    this.subtextColor = Palette.accentText,
     this.showDivider = true,
     this.onTap,
   });
@@ -131,7 +133,7 @@ class SettingsOptionWidget extends StatelessWidget {
                           Text(
                             subtext,
                             style: TextStyle(
-                              color: Palette.accentText,
+                              color: subtextColor ?? Palette.accentText,
                               fontSize: subtextFontSize ?? fontSize * 0.8,
                             ),
                             overflow: TextOverflow.ellipsis,

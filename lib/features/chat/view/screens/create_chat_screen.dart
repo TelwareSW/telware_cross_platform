@@ -13,6 +13,7 @@ import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
+import 'package:telware_cross_platform/features/chat/view/widget/call_overlay_widget.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 import 'package:telware_cross_platform/features/user/view/widget/user_chats.dart';
 import 'package:telware_cross_platform/features/user/view_model/user_view_model.dart';
@@ -38,7 +39,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
   final ScrollController scrollController = ScrollController();
   final TextEditingController searchController = TextEditingController();
 
-  late Future<List<UserModel>> _usersFuture;
+  Future<List<UserModel>> _usersFuture = Future.value(<UserModel>[]);
   bool _isUserContentSet = false;
 
   @override
@@ -67,6 +68,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
     final ChatModel chat = ref
         .read(chatsViewModelProvider.notifier)
         .getChat(myUser, userInfo, ChatType.private);
+    debugPrint('Opening Chat: $chat');
     context.push(ChatScreen.route, extra: chat);
   }
 
@@ -143,86 +145,93 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
           ],
         ),
       ),
-      body: FutureBuilder<List<UserModel>>(
-        future: _usersFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child:
-                  CircularProgressIndicator(), // Show a loading indicator while data is loading
-            );
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Error loading users: ${snapshot.error}',
-                style: const TextStyle(color: Colors.red),
-              ),
-            );
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(
-              child: LottieViewer(
-                path: 'assets/tgs/EasterDuck.tgs',
-                width: 100,
-                height: 100,
-              ),
-            );
-          } else {
-            if (!_isUserContentSet) {
-              userChats = _generateUsersList(snapshot.data!);
-              _isUserContentSet = true;
-            }
-            return TabBarView(
-              controller: _tabController,
-              children: List.generate(9, (index) {
-                if (index == 0 && userChats[0]["options"].isEmpty) {
-                  return const Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      LottieViewer(
-                        path: 'assets/tgs/EasterDuck.tgs',
-                        width: 100,
-                        height: 100,
-                      ),
-                      TitleElement(
-                        name: 'No results',
-                        color: Palette.primaryText,
-                        fontSize: Sizes.primaryText - 2,
-                        fontWeight: FontWeight.bold,
-                        padding: EdgeInsets.only(bottom: 0, top: 10),
-                      ),
-                    ],
-                  );
-                } else if (index == 0) {
-                  return SingleChildScrollView(
-                    child: UserChats(chatSections: userChats),
-                  );
-                } else {
+      body: Column(
+        children: [
+          const CallOverlay(),
+          Expanded(
+            child: FutureBuilder<List<UserModel>>(
+              future: _usersFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        LottieViewer(
-                          path: 'assets/tgs/EasterDuck.tgs',
-                          width: 100,
-                          height: 100,
-                        ),
-                        TitleElement(
-                          name: 'No results',
-                          color: Palette.primaryText,
-                          fontSize: Sizes.primaryText - 2,
-                          fontWeight: FontWeight.bold,
-                          padding: EdgeInsets.only(bottom: 0, top: 10),
-                        ),
-                      ],
+                    child:
+                    CircularProgressIndicator(), // Show a loading indicator while data is loading
+                  );
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Text(
+                      'Error loading users: ${snapshot.error}',
+                      style: const TextStyle(color: Colors.red),
                     ),
                   );
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(
+                    child: LottieViewer(
+                      path: 'assets/tgs/EasterDuck.tgs',
+                      width: 100,
+                      height: 100,
+                    ),
+                  );
+                } else {
+                  if (!_isUserContentSet) {
+                    userChats = _generateUsersList(snapshot.data!);
+                    _isUserContentSet = true;
+                  }
+                  return TabBarView(
+                    controller: _tabController,
+                    children: List.generate(9, (index) {
+                      if (index == 0 && userChats[0]["options"].isEmpty) {
+                        return const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            LottieViewer(
+                              path: 'assets/tgs/EasterDuck.tgs',
+                              width: 100,
+                              height: 100,
+                            ),
+                            TitleElement(
+                              name: 'No results',
+                              color: Palette.primaryText,
+                              fontSize: Sizes.primaryText - 2,
+                              fontWeight: FontWeight.bold,
+                              padding: EdgeInsets.only(bottom: 0, top: 10),
+                            ),
+                          ],
+                        );
+                      } else if (index == 0) {
+                        return SingleChildScrollView(
+                          child: UserChats(chatSections: userChats),
+                        );
+                      } else {
+                        return const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              LottieViewer(
+                                path: 'assets/tgs/EasterDuck.tgs',
+                                width: 100,
+                                height: 100,
+                              ),
+                              TitleElement(
+                                name: 'No results',
+                                color: Palette.primaryText,
+                                fontSize: Sizes.primaryText - 2,
+                                fontWeight: FontWeight.bold,
+                                padding: EdgeInsets.only(bottom: 0, top: 10),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                    }),
+                  );
                 }
-              }),
-            );
-          }
-        },
+              },
+            ),
+          )
+        ],
       ),
     );
   }

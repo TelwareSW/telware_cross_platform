@@ -16,15 +16,17 @@ import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
+import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
+import 'package:telware_cross_platform/core/view/widget/popup_menu_widget.dart';
 import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/providers/chat_provider.dart';
 import 'package:telware_cross_platform/core/utils.dart';
-import 'package:telware_cross_platform/core/view/widget/popup_menu_item_widget.dart';
 import 'package:telware_cross_platform/features/chat/services/audio_recording_service.dart';
 import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/bottom_input_bar_widget.dart';
+import 'package:telware_cross_platform/features/chat/view/widget/call_overlay_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/chat_header_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/date_label_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/magic_recording_button.dart';
@@ -89,6 +91,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   @override
   void initState() {
     super.initState();
+    chatModel = widget.chatModel;
     _messageController.text = widget.chatModel?.draft ?? "";
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -108,7 +111,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   @override
   void dispose() {
     _messageController.dispose();
-    _scrollController.dispose(); // Dispose of the ScrollController
+    _scrollController.dispose();
     _audioRecorderService.dispose();
     _draftTimer.cancel();
     SystemChannels.textInput.invokeMethod('TextInput.hide');
@@ -238,14 +241,16 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     bool needUploadMedia = contentType != 'text';
     String? mediaUrl;
     // Upload the media file before sending the message
-    if (needUploadMedia && UPLOAD_MEDIA) {
+    if (needUploadMedia) {
       if (filePath != null) {
-        mediaUrl = await ref
-            .read(chattingControllerProvider)
-            .uploadMedia(filePath, contentType);
-        if (mediaUrl == null) {
-          showToastMessage("Failed to upload media file");
-          return;
+        if (UPLOAD_MEDIA) {
+          mediaUrl = await ref
+              .read(chattingControllerProvider)
+              .uploadMedia(filePath, contentType);
+          if (mediaUrl == null) {
+            showToastMessage("Failed to upload media file");
+            return;
+          }
         }
       } else {
         showToastMessage("Media file is missing");
@@ -347,7 +352,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   }
 
   void _enableSearching() {
-    // Implement search functionality here
     setState(() {
       isSearching = true;
     });
@@ -386,7 +390,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   @override
   Widget build(BuildContext context) {
     debugPrint('&*&**&**& rebuild chat screen');
-    // ref.watch(chatsViewModelProvider);
     final popupMenu = buildPopupMenu();
 
     final chats = ref.watch(chatsViewModelProvider);
@@ -405,8 +408,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     final String subtitle = chatModel.type == ChatType.private
         ? "last seen a long time ago"
         : "$membersNumber Member${membersNumber > 1 ? "s" : ""}";
-
-    // debugPrint('(^) number of messages: ${messages.length}');
 
     _isMuted = chatModel.isMuted;
     if (chatModel.draft != null && chatModel.draft!.isNotEmpty) {
@@ -444,16 +445,23 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                   title: !isSearching
                       ? GestureDetector(
                           onTap: () {
+                          if (chatModel?.type == ChatType.private) {
+                            context.push(Routes.userProfile,
+                                extra: chatModel!.userIds.firstWhere(
+                                    (element) =>
+                                        element != ref.read(userProvider)!.id));
+                          } else {
                             context.push(Routes.chatInfoScreen,
                                 extra: chatModel!);
-                          },
-                          child: ChatHeaderWidget(
-                            title: title,
-                            subtitle: subtitle,
-                            photo: photo,
-                            imageBytes: imageBytes,
-                          ),
-                        )
+                          }
+                        },
+                        child: ChatHeaderWidget(
+                          title: title,
+                          subtitle: subtitle,
+                          photo: photo,
+                          imageBytes: imageBytes,
+                        ),
+                      )
                       : TextField(
                           key: ChatKeys.chatSearchInput,
                           autofocus: true,
@@ -478,15 +486,12 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                         ),
                   actions: [
                     if (!isSearching)
-                      PopupMenuButton<String>(
-                        icon: const Icon(Icons.more_vert),
-                        onSelected: _handlePopupMenuSelection,
-                        color: Palette.secondary,
-                        padding: EdgeInsets.zero,
-                        itemBuilder: popupMenu,
-                      ),
-                  ],
-                )
+                    IconButton(
+                      icon: const Icon(Icons.more_vert),
+                      onPressed: _showMoreSettings,
+                    ),
+                ],
+              )
               : AppBar(
                   backgroundColor: Palette.secondary,
                   leading: GestureDetector(
@@ -517,6 +522,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                             color: Colors.white),
                         onPressed: () {
                           context.push(CreateChatScreen.route);
+
                         },
                       ),
                       // Delete icon
@@ -529,7 +535,11 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                     ],
                   ),
                 ),
-          body: Stack(
+          body: Column(
+          children: [
+            const CallOverlay(),
+            Expanded(
+              child:Stack(
             children: [
               // Chat content area (with background SVG)
               Positioned.fill(
@@ -870,15 +880,63 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                         ref: ref, contentType: contentType, filePath: filePath);
                   })
             ],
-          )),
+              ),
+            )
+          ],
+        )
+    ),);
+  }
+
+  void _showMoreSettings() {
+    var items = [];
+    if (showMuteOptions) {
+      items = [
+        {'icon': Icons.arrow_back, 'text': 'Back', 'value': 'no-close'},
+        {'icon': Icons.music_off_outlined, 'text': 'Disable sound', 'value': 'disable-sound'},
+        {'icon': Icons.access_time_rounded, 'text': 'Mute for 30m', 'value': 'mute-30m'},
+        {'icon': Icons.notifications_paused_outlined, 'text': 'Mute for...', 'value': 'mute-custom'},
+        {'icon': Icons.tune_outlined, 'text': 'Customize', 'value': 'customize'},
+        {'icon': Icons.volume_off_outlined, 'text': 'Mute Forever', 'value': 'mute-forever', 'color': Palette.error},
+      ];
+    } else {
+      if (_isMuted) {
+        items = [
+          {'icon': Icons.volume_off_outlined, 'text': 'Unmute', 'value': 'unmute-chat'},
+        ];
+      } else {
+        items = [
+          {'icon': Icons.volume_up_outlined, 'text': 'Mute', 'value': 'no-close',
+            'trailing': const Icon(Icons.arrow_forward_ios_rounded,
+                color: Palette.inactiveSwitch, size: 16)
+          },
+        ];
+      }
+      items.addAll([
+        {'icon': Icons.videocam_outlined, 'text': 'Video Call', 'value': 'video-call'},
+        {'icon': Icons.search, 'text': 'Search', 'value': 'search'},
+        {'icon': Icons.wallpaper_rounded, 'text': 'Change Wallpaper', 'value': 'change-wallpaper'},
+        {'icon': Icons.cleaning_services, 'text': 'Clear History', 'value': 'clear-history'},
+        {'icon': Icons.delete_outline, 'text': 'Delete Chat', 'value': 'delete-chat'},
+      ]);
+    }
+
+    final renderBox = context.findRenderObject() as RenderBox;
+    final position = Offset(renderBox.size.width, -350);
+
+    PopupMenuWidget.showPopupMenu(
+        context: context,
+        position: position,
+        items: items,
+        onSelected: _handlePopupMenuSelection
     );
   }
 
   void _handlePopupMenuSelection(String value) {
     final bool noChat = chatModel?.id == null;
     switch (value) {
-      // case 'no-close':
-      //   break;
+      case 'no-close':
+        showMuteOptions = !showMuteOptions;
+        break;
       case 'search':
         if (noChat) {
           showToastMessage("There is nothing to search");
@@ -886,7 +944,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
         }
         _enableSearching();
         break;
-      case 'mute-chat':
+      case 'mute-custom':
         showMuteOptions = false;
         if (noChat) {
           showToastMessage("Maybe say something first...");
@@ -924,7 +982,15 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       case 'unmute-chat':
         _setChatMute(false, null);
         break;
-      case 'mute-chat-forever':
+      case 'mute-30m':
+        if (noChat) {
+          showToastMessage("You can't mute nothing");
+          return;
+        }
+        showMuteOptions = false;
+        _setChatMute(true, DateTime.now().add(const Duration(minutes: 30)));
+        break;
+      case 'mute-forever':
         if (noChat) {
           showToastMessage("Seriously? Mute what?");
           return;
@@ -1177,11 +1243,6 @@ class _ChatMessagesListState extends ConsumerState<ChatMessagesList> {
               return item;
             } else if (item is MessageModel) {
               int parentIndex = -1;
-              if (item.content?.getContent() == 'god') {
-                print('#############################');
-                print(item);
-                print('#############################');
-              }
               MessageModel? parentMessage;
               if (item.parentMessage != null &&
                   item.parentMessage!.isNotEmpty) {

@@ -411,29 +411,6 @@ class UserViewModel extends _$UserViewModel {
     );
   }
 
-  Future<List<UserModel>> getBlockedUsers() async {
-    state = UserState.loading;
-
-    if (USE_MOCK_DATA) {
-      state = UserState.success('blocked users fetched successfully');
-      return mockBlockedUsers;
-    }
-
-    final response =
-        await ref.read(userRemoteRepositoryProvider).getBlockedUsers();
-
-    return response.fold(
-      (appError) {
-        state = UserState.fail(appError.error);
-        return [];
-      },
-      (blockedUsers) {
-        state = UserState.success('blocked users fetched successfully');
-        return blockedUsers;
-      },
-    );
-  }
-
   Future<void> blockUser({required String userId}) async {
     state = UserState.loading;
 
@@ -442,9 +419,8 @@ class UserViewModel extends _$UserViewModel {
       return;
     }
 
-    final response = await ref
-        .read(userRemoteRepositoryProvider)
-        .blockedUser(userId: userId);
+    final response =
+        await ref.read(userRemoteRepositoryProvider).blockUser(userId: userId);
 
     response.fold(
       (appError) {
@@ -477,7 +453,7 @@ class UserViewModel extends _$UserViewModel {
 
     final response = await ref
         .read(userRemoteRepositoryProvider)
-        .unblockedUser(userId: userId);
+        .unblockUser(userId: userId);
 
     response.fold(
       (appError) {
