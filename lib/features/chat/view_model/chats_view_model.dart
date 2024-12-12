@@ -11,7 +11,6 @@ import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
-import 'package:telware_cross_platform/features/chat/view/screens/chat_screen.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 
 part 'chats_view_model.g.dart';

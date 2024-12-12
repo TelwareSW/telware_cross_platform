@@ -1,40 +1,41 @@
 // ignore_for_file: must_be_immutable
 
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_cupertino_datetime_picker/flutter_cupertino_datetime_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:collection/collection.dart';
-import 'package:flutter_cupertino_datetime_picker/flutter_cupertino_datetime_picker.dart';
+
 import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
-import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
+import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/popup_menu_widget.dart';
 import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/providers/chat_provider.dart';
-import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/features/chat/services/audio_recording_service.dart';
 import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/bottom_input_bar_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/call_overlay_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/chat_header_widget.dart';
+import 'package:telware_cross_platform/features/chat/view/widget/chat_messages_list.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/date_label_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/magic_recording_button.dart';
-import 'package:telware_cross_platform/features/chat/view/widget/message_tile_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/new_chat_screen_sticker.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
+
 import '../../../../core/routes/routes.dart';
 import '../widget/reply_widget.dart';
 import 'create_chat_screen.dart';
@@ -84,14 +85,13 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   List<int> _messageIndices = [];
 
   late Timer _draftTimer;
-  String _previousDraft = "";
+  // String _previousDraft = "";
 
   late ChatType type;
 
   @override
   void initState() {
     super.initState();
-    chatModel = widget.chatModel;
     _messageController.text = widget.chatModel?.draft ?? "";
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -121,27 +121,27 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
   void _updateDraft() async {
     // TODO : server return 500 status code every time try to fix it ASAP
-    return;
-    if (!mounted) return;
-    final currentDraft = _messageController.text;
-    if (currentDraft != _previousDraft) {
-      ref
-          .read(chattingControllerProvider)
-          .updateDraft(chatModel!, currentDraft);
-      _previousDraft = currentDraft;
-    } else if (chatModel?.id != null) {
-      // ref
-      //     .read(chattingControllerProvider)
-      //     .getDraft(chatModel!.id!)
-      //     .then((draft) {
-      //   if (draft != null && draft != _previousDraft) {
-      //     setState(() {
-      //       _messageController.text = draft;
-      //       _previousDraft = draft;
-      //     });
-      //   }
-      // });
-    }
+    // if (!mounted) return;
+    // final currentDraft = _messageController.text;
+    // if (currentDraft != _previousDraft) {
+    //   ref
+    //       .read(chattingControllerProvider)
+    //       .updateDraft(chatModel!, currentDraft);
+    //   _previousDraft = currentDraft;
+    // } else if (chatModel?.id != null) {
+    //   // ref
+    //   //     .read(chattingControllerProvider)
+    //   //     .getDraft(chatModel!.id!)
+    //   //     .then((draft) {
+    //   //   if (draft != null && draft != _previousDraft) {
+    //   //     setState(() {
+    //   //       _messageController.text = draft;
+    //   //       _previousDraft = draft;
+    //   //     });
+    //   //   }
+    //   // });
+    // }
+    // return;
   }
 
   void _updateChatMessages(List<MessageModel> messages) async {
@@ -296,7 +296,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
   void _setChatMute(bool mute, DateTime? muteUntil) async {
     if (!mute) {
-      ref.read(chattingControllerProvider).unmuteChat(chatModel!).then((_) {
+      ref.read(chattingControllerProvider).unmuteChat(chatModel).then((_) {
         debugPrint('Unmuted until: $muteUntil, chat: $chatModel');
         setState(() {
           _isMuted = false;
@@ -305,7 +305,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     } else {
       ref
           .read(chattingControllerProvider)
-          .muteChat(chatModel!, muteUntil)
+          .muteChat(chatModel, muteUntil)
           .then((_) {
         debugPrint('Muted until: $muteUntil, chat: $chatModel');
         setState(() {
@@ -390,8 +390,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   @override
   Widget build(BuildContext context) {
     debugPrint('&*&**&**& rebuild chat screen');
-    final popupMenu = buildPopupMenu();
-
     final chats = ref.watch(chatsViewModelProvider);
     final index = chats.indexWhere((chat) => chat.id == widget.chatId);
     final ChatModel? chat =
@@ -445,14 +443,14 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                   title: !isSearching
                       ? GestureDetector(
                           onTap: () {
-                          if (chatModel?.type == ChatType.private) {
+                          if (chatModel.type == ChatType.private) {
                             context.push(Routes.userProfile,
-                                extra: chatModel!.userIds.firstWhere(
+                                extra: chatModel.userIds.firstWhere(
                                     (element) =>
                                         element != ref.read(userProvider)!.id));
                           } else {
                             context.push(Routes.chatInfoScreen,
-                                extra: chatModel!);
+                                extra: chatModel);
                           }
                         },
                         child: ChatHeaderWidget(
@@ -932,7 +930,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   }
 
   void _handlePopupMenuSelection(String value) {
-    final bool noChat = chatModel?.id == null;
+    final bool noChat = chatModel.id == null;
     switch (value) {
       case 'no-close':
         showMuteOptions = !showMuteOptions;
@@ -1041,301 +1039,5 @@ class _ChatScreen extends ConsumerState<ChatScreen>
           message.content?.getContent() ?? 'what about this';
       debugPrint('${_messageController.text} look here');
     });
-  }
-
-  PopupMenuItemBuilder<String> buildPopupMenu() {
-    const double menuItemsHeight = 45.0;
-    if (!mounted) return (BuildContext context) => [];
-    return (BuildContext context) {
-      if (showMuteOptions) {
-        return [
-          PopupMenuItem<String>(
-              value: 'no-close',
-              padding: EdgeInsets.zero,
-              height: menuItemsHeight,
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    showMuteOptions = false;
-                  });
-                },
-                child: const PopupMenuItemWidget(
-                  icon: Icons.arrow_back,
-                  text: 'Back',
-                ),
-              )),
-          const PopupMenuItem<String>(
-            value: 'disable-sound',
-            padding: EdgeInsets.zero,
-            height: menuItemsHeight,
-            child: PopupMenuItemWidget(
-              icon: Icons.music_off_outlined,
-              text: 'Disable sound',
-            ),
-          ),
-          const PopupMenuItem<String>(
-            key: ChatKeys.chatSearchButton,
-            value: 'mute-chat',
-            padding: EdgeInsets.zero,
-            height: menuItemsHeight,
-            child: PopupMenuItemWidget(
-              icon: Icons.notifications_paused_outlined,
-              text: 'Mute for...',
-            ),
-          ),
-          const PopupMenuItem<String>(
-            value: 'customize-chat',
-            padding: EdgeInsets.zero,
-            height: menuItemsHeight,
-            child: PopupMenuItemWidget(
-              icon: Icons.tune_outlined,
-              text: 'Customize',
-            ),
-          ),
-          const PopupMenuItem<String>(
-            value: 'mute-chat-forever',
-            padding: EdgeInsets.zero,
-            height: menuItemsHeight,
-            child: PopupMenuItemWidget(
-              icon: Icons.volume_off_outlined,
-              text: 'Mute Forever',
-            ),
-          ),
-        ];
-      }
-      return [
-        if (_isMuted)
-          const PopupMenuItem<String>(
-              value: 'unmute-chat',
-              padding: EdgeInsets.zero,
-              height: menuItemsHeight,
-              child: PopupMenuItemWidget(
-                icon: Icons.volume_off_outlined,
-                text: 'Unmute',
-              ))
-        else
-          PopupMenuItem<String>(
-            value: 'no-close',
-            padding: EdgeInsets.zero,
-            height: menuItemsHeight,
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  showMuteOptions = true;
-                });
-              },
-              child: const PopupMenuItemWidget(
-                  icon: Icons.volume_up_rounded,
-                  text: 'Mute',
-                  trailing: Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    color: Palette.inactiveSwitch,
-                    size: 16,
-                  )),
-            ),
-          ),
-        const PopupMenuDivider(
-          height: 10,
-        ),
-        const PopupMenuItem<String>(
-          value: 'video-call',
-          padding: EdgeInsets.zero,
-          height: menuItemsHeight,
-          child: PopupMenuItemWidget(
-            icon: Icons.videocam_outlined,
-            text: 'Video Call',
-          ),
-        ),
-        const PopupMenuItem<String>(
-          key: ChatKeys.chatSearchButton,
-          value: 'search',
-          padding: EdgeInsets.zero,
-          height: menuItemsHeight,
-          child: PopupMenuItemWidget(
-            icon: Icons.search,
-            text: 'Search',
-          ),
-        ),
-        const PopupMenuItem<String>(
-          value: 'change-wallpaper',
-          padding: EdgeInsets.zero,
-          height: menuItemsHeight,
-          child: PopupMenuItemWidget(
-            icon: Icons.wallpaper_rounded,
-            text: 'Change Wallpaper',
-          ),
-        ),
-        const PopupMenuItem<String>(
-          value: 'clear-history',
-          padding: EdgeInsets.zero,
-          height: menuItemsHeight,
-          child: PopupMenuItemWidget(
-            icon: Icons.cleaning_services,
-            text: 'Clear History',
-          ),
-        ),
-        const PopupMenuItem<String>(
-          value: 'delete-chat',
-          padding: EdgeInsets.zero,
-          height: menuItemsHeight,
-          child: PopupMenuItemWidget(
-            icon: Icons.delete_outline,
-            text: 'Delete Chat',
-          ),
-        ),
-      ];
-    };
-  }
-}
-
-class ChatMessagesList extends ConsumerStatefulWidget {
-  ChatMessagesList({
-    super.key,
-    required this.scrollController,
-    required this.chatContent,
-    required this.selectedMessages,
-    required this.type,
-    required this.messageMatches,
-    required this.replyMessage,
-    required this.chatId,
-    required this.pinnedMessages,
-    required this.messages,
-    required this.updateChatMessages,
-    required this.onPin,
-    required this.onLongPress,
-    required this.onReply,
-    required this.onEdit,
-  });
-
-  final ScrollController scrollController;
-  final ChatType type;
-  final String? chatId;
-  List chatContent;
-  List<MessageModel> messages;
-  List<MessageModel> selectedMessages;
-  List<MessageModel> pinnedMessages;
-  Map<int, List<MapEntry<int, int>>> messageMatches;
-  MessageModel? replyMessage;
-  final Function(List<MessageModel> messages) updateChatMessages;
-  final Function(MessageModel message) onPin;
-  final Function(MessageModel message) onLongPress;
-  final Function(MessageModel message) onReply;
-  final Function(MessageModel message) onEdit;
-
-  @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
-      _ChatMessagesListState();
-}
-
-class _ChatMessagesListState extends ConsumerState<ChatMessagesList> {
-  var messagesIndex = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      reverse: true,
-      controller: widget.scrollController, // Use the ScrollController
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-        child: Column(
-          children: widget.chatContent.mapIndexed((index, item) {
-            if (item is DateLabelWidget) {
-              return item;
-            } else if (item is MessageModel) {
-              int parentIndex = -1;
-              MessageModel? parentMessage;
-              if (item.parentMessage != null &&
-                  item.parentMessage!.isNotEmpty) {
-                parentIndex = widget.messages
-                    .indexWhere((msg) => msg.id == item.parentMessage);
-              }
-              if (parentIndex >= 0) {
-                parentMessage = widget.messages[parentIndex];
-              }
-              return Row(
-                mainAxisAlignment: item.senderId == ref.read(userProvider)!.id
-                    ? widget.selectedMessages.isNotEmpty
-                        ? MainAxisAlignment.spaceBetween
-                        : MainAxisAlignment.end
-                    : MainAxisAlignment.start,
-                children: [
-                  if (widget.selectedMessages
-                      .isNotEmpty) // Show check icon only if selected
-                    Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                            color: Colors.white, width: 1), // White border
-                      ),
-                      child: CircleAvatar(
-                        radius: 12,
-                        backgroundColor:
-                            widget.selectedMessages.contains(item) == true
-                                ? Colors.green
-                                : Colors.transparent,
-                        child: widget.selectedMessages.contains(item) == true
-                            ? const Icon(Icons.check,
-                                color: Colors.white, size: 16)
-                            : const SizedBox(),
-                      ),
-                    ),
-                  if (widget.selectedMessages.contains(item))
-                    const SizedBox(width: 10),
-                  MessageTileWidget(
-                    key: ValueKey(
-                        '${MessageKeys.messagePrefix}${messagesIndex++}'),
-                    messageModel: item,
-                    chatId: widget.chatId ?? '',
-                    isSentByMe: item.senderId == ref.read(userProvider)!.id,
-                    showInfo: widget.type == ChatType.group,
-                    highlights:
-                        widget.messageMatches[index] ?? const [MapEntry(0, 0)],
-                    onDownloadTap: (String? filePath) {
-                      onMediaDownloaded(filePath, item.localId, widget.chatId);
-                    },
-                    onReply: widget.onReply,
-                    onEdit: widget.onEdit,
-                    onPin: widget.onPin,
-                    onPress: widget.selectedMessages.isEmpty ? null : () {},
-                    onLongPress: widget.onLongPress,
-                    parentMessage: parentMessage,
-                  ),
-                ],
-              );
-            } else {
-              return const SizedBox.shrink();
-            }
-          }).toList(),
-        ),
-      ),
-    );
-  }
-
-  //----------------------------------------------------------------------------
-  //-------------------------------Media----------------------------------------
-
-  void onMediaDownloaded(
-      String? filePath, String? messageLocalId, String? chatId) {
-    if (filePath == null) {
-      showToastMessage('File has been deleted ask the sender to resend it');
-      return;
-    }
-    if (messageLocalId == null) {
-      showToastMessage('File does not exist please upload it again');
-      return;
-    }
-    if (chatId == null) {
-      showToastMessage('Chat ID is missing');
-      return;
-    }
-    debugPrint("Downloaded file path: $filePath");
-    debugPrint("Message local ID: $messageLocalId");
-    debugPrint("Chat ID: $chatId");
-    ref
-        .read(chattingControllerProvider)
-        .editMessageFilePath(chatId, messageLocalId, filePath);
-    List<MessageModel> messages =
-        ref.watch(chatProvider(chatId))?.messages ?? [];
-    widget.updateChatMessages(messages);
   }
 }

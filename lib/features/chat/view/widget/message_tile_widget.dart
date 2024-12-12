@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+
 import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
+import 'package:telware_cross_platform/core/view/widget/highlight_text_widget.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/audio_message_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/delete_popup_menu.dart';
@@ -17,9 +19,7 @@ import 'package:telware_cross_platform/features/chat/view/widget/parent_message.
 import 'package:telware_cross_platform/features/chat/view/widget/sender_name_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/sticker_message_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/video_player_widget.dart';
-import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
-import 'package:telware_cross_platform/core/view/widget/highlight_text_widget.dart';
-import '../../../../core/models/user_model.dart';
+
 import '../screens/create_chat_screen.dart';
 import 'floating_menu_overlay.dart';
 
@@ -308,21 +308,3 @@ class MessageTileWidget extends ConsumerWidget {
   }
 }
 
-Future<void> showDeleteMessageAlert({
-  required BuildContext context,
-  required String msgId,
-  required String chatId,
-}) {
-  /// the msgId could be the id or the local id, whichever is available
-  return showDialog<void>(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        content: DeletePopUpMenu(
-          chatId: chatId,
-          messageId: msgId,
-        ),
-      );
-    },
-  );
-}

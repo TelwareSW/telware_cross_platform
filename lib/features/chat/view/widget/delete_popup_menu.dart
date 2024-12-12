@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 
@@ -43,4 +42,21 @@ class DeletePopUpMenu extends ConsumerWidget {
       ],
     );
   }
+}
+
+Future<void> showDeleteMessageAlert({
+  required BuildContext context,
+  required String msgId,
+  required String chatId,
+}) {
+  /// the msgId could be the id or the local id, whichever is available
+  return showDialog<void>(
+    context: context,
+    builder: (context) {
+      return DeletePopUpMenu(
+        chatId: chatId,
+        messageId: msgId,
+      );
+    },
+  );
 }
