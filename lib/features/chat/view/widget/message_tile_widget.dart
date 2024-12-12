@@ -84,6 +84,10 @@ class MessageTileWidget extends ConsumerWidget {
         },
         onTap: onPress == null
             ? () {
+                final tileFocus = FocusScope.of(context);
+                if (!tileFocus.hasPrimaryFocus) {
+                  tileFocus.unfocus();
+                }
                 late OverlayEntry overlayEntry;
                 overlayEntry = OverlayEntry(
                   builder: (context) => FloatingMenuOverlay(
@@ -298,11 +302,9 @@ Future<void> showDeleteMessageAlert({
   return showDialog<void>(
     context: context,
     builder: (context) {
-      return AlertDialog(
-        content: DeletePopUpMenu(
-          chatId: chatId,
-          messageId: msgId,
-        ),
+      return DeletePopUpMenu(
+        chatId: chatId,
+        messageId: msgId,
       );
     },
   );

@@ -18,7 +18,13 @@ class EventHandler {
   bool _isProcessing = false; // Flag to control processing loop
   bool _stopRequested = false; // Flag to request stopping the loop
 
-  void init(Queue<MessageEvent> eventsQueue) {
+  void init(
+    Queue<MessageEvent> eventsQueue, {
+    required String userId,
+    required String sessionId,
+  }) {
+    _userId = userId;
+    _sessionId = sessionId;
     _queue = eventsQueue;
     _socket.connect(
       serverUrl: SOCKET_URL,
@@ -96,7 +102,7 @@ class EventHandler {
       } catch (e) {
         debugPrint('Error processing event: ${currentEvent.runtimeType}, $e');
         if (failingCounter == EVENT_FAIL_LIMIT) {
-          _stopRequested =true;
+          _stopRequested = true;
           _socket.onError();
         }
         await Future.delayed(const Duration(seconds: 2));
@@ -121,7 +127,8 @@ class EventHandler {
     // pin a message
     _socket.on(EventType.pinMessageServer.event, (response) async {
       try {
-        _chattingController.pinMessageServer(response['messageId'] as String, response['chatId'] as String);
+        _chattingController.pinMessageServer(
+            response['messageId'] as String, response['chatId'] as String);
       } on Exception catch (e) {
         debugPrint('!!! Error in pinning a message:\n${e.toString()}');
       }
@@ -129,7 +136,8 @@ class EventHandler {
     // pin a message
     _socket.on(EventType.unpinMessageServer.event, (response) async {
       try {
-        _chattingController.pinMessageServer(response['messageId'] as String, response['chatId'] as String);
+        _chattingController.pinMessageServer(
+            response['messageId'] as String, response['chatId'] as String);
       } on Exception catch (e) {
         debugPrint('!!! Error in unpinning a message:\n${e.toString()}');
       }

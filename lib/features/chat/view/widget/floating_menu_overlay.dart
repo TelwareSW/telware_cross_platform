@@ -38,90 +38,62 @@ class FloatingMenuOverlay extends StatelessWidget {
         // Floating menu
         Positioned(
           top: MediaQuery.of(context).size.height * 0.4,
-          left: MediaQuery.of(context).size.width * 0.1,
-          right: MediaQuery.of(context).size.width * 0.1,
+          left: MediaQuery.of(context).size.width * 0.2,
+          right: MediaQuery.of(context).size.width * 0.2,
           child: Material(
-            color: Colors.transparent,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Emoji Row
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                  decoration: BoxDecoration(
-                    color: Palette.secondary,
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+            // color: Colors.green,
+            child: Center(
+              child: Container(
+                // width: 200,
+                decoration: BoxDecoration(
+                  color: Palette.secondary,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Column(
                     children: [
-                      Text('👍'),
-                      Text('👎'),
-                      Text('❤️'),
-                      Text('🔥'),
-                      Text('🥰'),
-                      Text('👏'),
-                      Text('😁'),
+                      ListTile(
+                        leading: const Icon(Icons.reply),
+                        title: const Text('Reply'),
+                        onTap: onReply,
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.copy),
+                        title: const Text('Copy'),
+                        onTap: onCopy,
+                      ),
+                      ListTile(
+                        leading: const Icon(FontAwesomeIcons.share),
+                        title: const Text('Forward'),
+                        onTap: onForward,
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.push_pin_outlined) ,
+                        title: pinned ? const Text('Unpin') : const Text('Pin'),
+                        onTap: onPin,
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.edit),
+                        title: const Text('Edit'),
+                        onTap: onEdit,
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.delete),
+                        title: const Text('Delete'),
+                        onTap: onDelete,
+                      ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 5),
-                // Menu Options
-                Center(
-                  child: Container(
-                    width: MediaQuery.of(context).size.width * 0.5,
-                    decoration: BoxDecoration(
-                      color: Palette.secondary,
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: Column(
-                        children: [
-                          ListTile(
-                            leading: const Icon(Icons.reply),
-                            title: const Text('Reply'),
-                            onTap: onReply,
-                          ),
-                          ListTile(
-                            leading: const Icon(Icons.copy),
-                            title: const Text('Copy'),
-                            onTap: onCopy,
-                          ),
-                          ListTile(
-                            leading: const Icon(FontAwesomeIcons.share),
-                            title: const Text('Forward'),
-                            onTap: onForward,
-                          ),
-                          ListTile(
-                            leading: Icon(Icons.push_pin_outlined) ,
-                            title: pinned ? const Text('Unpin') : const Text('Pin'),
-                            onTap: onPin,
-                          ),
-                          ListTile(
-                            leading: const Icon(Icons.edit),
-                            title: const Text('Edit'),
-                            onTap: onEdit,
-                          ),
-                          ListTile(
-                            leading: const Icon(Icons.delete),
-                            title: const Text('Delete'),
-                            onTap: onDelete,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
