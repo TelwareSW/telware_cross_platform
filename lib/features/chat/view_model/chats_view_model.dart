@@ -151,6 +151,35 @@ class ChatsViewModel extends _$ChatsViewModel {
     }
   }
 
+  void editMessage({
+    required String msgId,
+    required String content,
+    required String chatId,
+  }) {
+    final chatIndex = getChatIndex(chatId);
+    final chat = chatIndex >= 0 ? state[chatIndex] : null;
+
+    if (chat != null) {
+      final msgIndex = chat.messages.indexWhere((msg) => msg.id == msgId);
+
+      if (msgIndex != -1) {
+        final newMsg = chat.messages[msgIndex].copyWith(
+          content: (chat.messages[msgIndex].content as TextContent).copyWith(
+            text: content,
+          ),
+          isEdited: true,
+        );
+        chat.messages[msgIndex] = newMsg;
+
+        state = [
+          ...state.sublist(0, chatIndex),
+          chat.copyWith(),
+          ...state.sublist(chatIndex + 1),
+        ];
+      }
+    }
+  }
+
   Future<void> addReceivedMessage(Map<String, dynamic> response) async {
     var chatId = response["chatId"] as String;
     final chatIndex = getChatIndex(chatId);
@@ -232,23 +261,6 @@ class ChatsViewModel extends _$ChatsViewModel {
 
     if (msgIndex != -1) {
       chat.messages.removeAt(msgIndex);
-      state = [
-        ...state.sublist(0, chatIndex),
-        chat.copyWith(),
-        ...state.sublist(chatIndex + 1),
-      ];
-    }
-  }
-
-  void editMessage(String msgId, String chatId, MessageContent content) {
-    final chatIndex = getChatIndex(chatId);
-    final chat = state[chatIndex];
-    // Find the msg with the specified ID
-    final msgIndex = chat.messages.indexWhere((msg) => msg.id == msgId);
-
-    if (msgIndex != -1) {
-      chat.messages[msgIndex] =
-          chat.messages[msgIndex].copyWith(content: content);
       state = [
         ...state.sublist(0, chatIndex),
         chat.copyWith(),

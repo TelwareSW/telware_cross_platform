@@ -38,6 +38,8 @@ class MessageModel {
   final bool isAnnouncement;
   @HiveField(13)
   List<String> threadMessages;
+  @HiveField(14)
+  final bool isEdited;
 
 //<editor-fold desc="Data Methods">
   MessageModel({
@@ -49,13 +51,14 @@ class MessageModel {
     required this.timestamp,
     this.id,
     required this.userStates,
-    this.isPinned=false,
     this.parentMessage,
     this.localId = '',
+    this.isPinned = false,
+    this.isEdited = false,
     this.isForward = false,
     this.isAnnouncement = false,
     List<String>? threadMessages,
-}) : threadMessages = threadMessages ?? [];
+  }) : threadMessages = threadMessages ?? [];
 
   void updateUserState(String userId, MessageState state) {
     userStates[userId] = state;
@@ -81,6 +84,7 @@ class MessageModel {
         other.isAnnouncement == isAnnouncement &&
         other.localId == localId &&
         other.isForward == isForward &&
+        other.isEdited == isEdited &&
         other.userStates == userStates;
   }
 
@@ -97,6 +101,7 @@ class MessageModel {
         parentMessage.hashCode ^
         threadMessages.hashCode ^
         isForward.hashCode ^
+        isEdited.hashCode ^
         localId.hashCode ^
         userStates.hashCode;
   }
@@ -116,6 +121,7 @@ class MessageModel {
         'isAnnouncement: $isAnnouncement\n'
         'isForward: $isForward\n'
         'isPinned: $isPinned\n'
+        'isEdited: $isEdited\n'
         'threadMessages: $threadMessages'
         'parentMessage: $parentMessage'
         ')');
@@ -136,6 +142,7 @@ class MessageModel {
     bool? isForward,
     bool? isPinned,
     bool? isAnnouncement,
+    bool? isEdited,
     List<String>? threadMessages,
     String? parentMessage,
   }) {
@@ -153,7 +160,8 @@ class MessageModel {
       isPinned: isPinned ?? this.isPinned,
       isAnnouncement: isAnnouncement ?? this.isAnnouncement,
       threadMessages: threadMessages ?? this.threadMessages,
-      parentMessage: parentMessage ?? this.parentMessage
+      parentMessage: parentMessage ?? this.parentMessage,
+      isEdited: isEdited ?? this.isEdited,
     );
   }
 
@@ -173,6 +181,7 @@ class MessageModel {
       'localId': localId,
       'isForward': isForward,
       'isPinned': isPinned,
+      'isEdited': isEdited,
       'isAnnouncement': isAnnouncement,
       'threadMessages': threadMessages,
       'parentMessage': parentMessage,
@@ -183,29 +192,30 @@ class MessageModel {
 
   static Future<MessageModel> fromMap(Map<String, dynamic> map) async {
     return MessageModel(
-      senderId: map['senderId'] as String,
-      content: map['content'] as MessageContent?,
-      timestamp: DateTime.parse(map['timestamp'] as String),
-      id: map['messageId'] as String?,
-      messageType: MessageType.getType(map['messageType']),
-      messageContentType: MessageContentType.getType(map['messageContentType']),
-      autoDeleteTimestamp: map['autoDeleteTimeStamp'] != null
-          ? DateTime.parse(map['autoDeleteTimeStamp'])
-          : null,
-      userStates: (map['userStates'] as Map<String, dynamic>?)!.map(
-        (key, value) => MapEntry(
-          key,
-          MessageState.values.firstWhere(
-            (e) => e.toString().split('.').last == value,
-            orElse: () => MessageState.sent,
+        senderId: map['senderId'] as String,
+        content: map['content'] as MessageContent?,
+        timestamp: DateTime.parse(map['timestamp'] as String),
+        id: map['messageId'] as String?,
+        messageType: MessageType.getType(map['messageType']),
+        messageContentType:
+            MessageContentType.getType(map['messageContentType']),
+        autoDeleteTimestamp: map['autoDeleteTimeStamp'] != null
+            ? DateTime.parse(map['autoDeleteTimeStamp'])
+            : null,
+        userStates: (map['userStates'] as Map<String, dynamic>?)!.map(
+          (key, value) => MapEntry(
+            key,
+            MessageState.values.firstWhere(
+              (e) => e.toString().split('.').last == value,
+              orElse: () => MessageState.sent,
+            ),
           ),
         ),
-      ),
-      isForward: map['isForward'] ?? false,
-      isPinned: map['isPinned'] ?? false,
-      isAnnouncement: map['isAnnouncement'] ?? false,
-      parentMessage: map['parentMessageId'] ?? ''
-    );
+        isForward: map['isForward'] ?? false,
+        isPinned: map['isPinned'] ?? false,
+        isAnnouncement: map['isAnnouncement'] ?? false,
+        isEdited: map['isEdited'] ?? false,
+        parentMessage: map['parentMessageId'] ?? '');
   }
 
   String toJson({bool forSender = false}) =>

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
+import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
@@ -32,6 +33,7 @@ class MessageTileWidget extends ConsumerWidget {
   final List<MapEntry<int, int>> highlights;
   final void Function(String?) onDownloadTap;
   final Function(MessageModel) onReply;
+  final Function(MessageModel) onEdit;
   final Function(MessageModel) onLongPress;
   final Function(MessageModel) onPin;
   final Function()? onPress;
@@ -48,6 +50,7 @@ class MessageTileWidget extends ConsumerWidget {
     this.highlights = const [],
     required this.onDownloadTap,
     required this.onReply,
+    required this.onEdit,
     required this.onLongPress,
     required this.onPress,
     required this.onPin,
@@ -64,8 +67,10 @@ class MessageTileWidget extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final keyValue = (key as ValueKey).value;
     bool isPinned = messageModel.isPinned;
+    bool isEdited = messageModel.isEdited;
     String text = messageModel.content?.toJson()['text'] ?? "";
     if (text.length <= 35 && isPinned) text += '   ';
+    if (text.length <= 35 && isEdited) text += '        ';
     Alignment messageAlignment =
         isSentByMe ? Alignment.centerRight : Alignment.centerLeft;
     IconData messageState = getMessageStateIcon(messageModel);
@@ -89,6 +94,7 @@ class MessageTileWidget extends ConsumerWidget {
                 late OverlayEntry overlayEntry;
                 overlayEntry = OverlayEntry(
                   builder: (context) => FloatingMenuOverlay(
+                    isSentByMe: messageModel.senderId == ref.read(userProvider)!.id,
                     onDismiss: () {
                       overlayEntry.remove();
                     },
@@ -110,6 +116,7 @@ class MessageTileWidget extends ConsumerWidget {
                     },
                     onEdit: () {
                       overlayEntry.remove();
+                      onEdit(messageModel);
                     },
                     onDelete: () {
                       overlayEntry.remove();
@@ -257,6 +264,16 @@ class MessageTileWidget extends ConsumerWidget {
                                   180), // Convert degrees to radians
                           child: const Icon(Icons.push_pin_rounded, size: 12),
                         ),
+                        const SizedBox(
+                          width: 2,
+                        )
+                      ],
+                      if (isEdited) ...[
+                        const Text("edited",
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Palette.primaryText,
+                            )),
                         const SizedBox(
                           width: 2,
                         )

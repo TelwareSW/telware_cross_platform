@@ -309,21 +309,29 @@ class ChattingController {
 
   // edit a message
 
-  void editMsg(String msgID, String chatID, MessageContent content) {
-    // final msgEvent = EditMessageEvent({
-    //   'chatId': chatID,
-    //   'senderId': _ref.read(userProvider)!.id,
-    //   'messageId': msgID,
-    //   'content': content
-    // }, controller: this);
+  void editMsg(String msgId, String chatId, String content) {
+    final msgEvent = EditMessageEvent(
+      {
+        'chatId': chatId,
+        'senderId': _ref.read(userProvider)!.id,
+        'messageId': msgId,
+        'content': content
+      },
+      controller: this,
+      msgId: msgId,
+      chatId: chatId,
+    );
 
-    // _eventHandler.addEvent(msgEvent);
+    _eventHandler.addEvent(msgEvent);
 
-    // _ref
-    //     .read(chatsViewModelProvider.notifier)
-    //     .editMessage(msgID, chatID, content);
-    // _localRepository.setChats(
-    //     _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
+    _ref.read(chatsViewModelProvider.notifier).editMessage(
+          msgId: msgId,
+          chatId: chatId,
+          content: content,
+        );
+
+    _localRepository.setChats(
+        _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
 
   // receive a message
@@ -469,6 +477,20 @@ class ChattingController {
     _ref.read(chatsViewModelProvider.notifier).updateMsgId(
           newMsgId: msgId,
           msgLocalId: msgLocalId,
+          chatId: chatId,
+        );
+    _localRepository.setChats(
+        _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
+  }
+
+  void editMessageIdAck({
+    required String msgId,
+    required String content,
+    required String chatId,
+  }) {
+    _ref.read(chatsViewModelProvider.notifier).editMessage(
+          msgId: msgId,
+          content: content,
           chatId: chatId,
         );
     _localRepository.setChats(

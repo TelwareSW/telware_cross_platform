@@ -10,6 +10,7 @@ class FloatingMenuOverlay extends StatelessWidget {
   final VoidCallback onPin;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final bool isSentByMe;
   final bool pinned;
 
   const FloatingMenuOverlay({
@@ -21,6 +22,7 @@ class FloatingMenuOverlay extends StatelessWidget {
     required this.onPin,
     required this.onEdit,
     required this.onDelete,
+    required this.isSentByMe,
     required this.pinned,
   });
 
@@ -81,17 +83,19 @@ class FloatingMenuOverlay extends StatelessWidget {
                         onTap: onForward,
                       ),
                       ListTile(
-                        leading: Icon(Icons.push_pin_outlined) ,
-                        trailing: pinned ? const Text('Unpin') : const Text('Pin'),
+                        leading: const Icon(Icons.push_pin_outlined),
+                        trailing:
+                            pinned ? const Text('Unpin') : const Text('Pin'),
                         leadingAndTrailingTextStyle: textStyle,
                         onTap: onPin,
                       ),
-                      ListTile(
-                        leading: const Icon(Icons.edit),
-                        trailing: const Text('Edit'),
-                        leadingAndTrailingTextStyle: textStyle,
-                        onTap: onEdit,
-                      ),
+                      if (isSentByMe)
+                        ListTile(
+                          leading: const Icon(Icons.edit),
+                          trailing: const Text('Edit'),
+                          leadingAndTrailingTextStyle: textStyle,
+                          onTap: onEdit,
+                        ),
                       ListTile(
                         leading: const Icon(Icons.delete),
                         trailing: const Text('Delete'),

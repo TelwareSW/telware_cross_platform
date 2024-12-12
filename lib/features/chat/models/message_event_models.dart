@@ -216,11 +216,30 @@ class EditMessageEvent extends MessageEvent {
   }) async {
     return await _execute(
       socket,
-      EventType.deleteMessage.event,
-      ackCallback: (response, timer, completer) {
-        if (!completer.isCompleted) {
-          timer.cancel(); // Cancel the timeout timer
-          completer.complete(true);
+      EventType.editMessageClient.event,
+      ackCallback: (res, timer, completer) {
+        try {
+          final response = res as Map<String, dynamic>;
+          if (!completer.isCompleted) {
+            timer.cancel(); // Cancel the timer on acknowledgment
+            if (response['success'].toString() == 'true') {
+              final res = response['res']['message'] as Map<String, dynamic>;
+
+              _controller!.editMessageIdAck(
+                msgId: res['_id'] ?? res['id'] ?? msgId,
+                content: res['content'],
+                chatId: res['chatId'] ?? chatId,
+              );
+
+              completer.complete(true);
+            } else {
+              completer.complete(false);
+            }
+          }
+        } catch (e) {
+          debugPrint('--- Error in processing the acknowledgement of the edit');
+          debugPrint(e.toString());
+          completer.complete(false);
         }
       },
     );

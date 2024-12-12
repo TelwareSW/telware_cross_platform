@@ -111,6 +111,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     _scrollController.dispose(); // Dispose of the ScrollController
     _audioRecorderService.dispose();
     _draftTimer.cancel();
+    SystemChannels.textInput.invokeMethod('TextInput.hide');
     WidgetsBinding.instance.removeObserver(this); // Remove the observer
     super.dispose();
   }
@@ -268,7 +269,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       parentMessage: replyMessage?.id,
     );
     _messageController.clear();
-    _updateChatMessages([...chatModel.messages, newMessage]);
     ref.read(chattingControllerProvider).sendMsg(
         content: newMessage.content!,
         msgType: newMessage.messageType,
@@ -276,6 +276,17 @@ class _ChatScreen extends ConsumerState<ChatScreen>
         chatType: ChatType.private,
         chatModel: chatModel,
         parentMessgeId: replyMessage?.id);
+  }
+
+  void _editMessage() {
+    if (editMessage == null || _messageController.text.isEmpty) return;
+    // todo(ahmed): handle extreem cases like editing a message that is not yet sent
+    ref.read(chattingControllerProvider).editMsg(
+          (editMessage?.id)!,
+          (chatModel.id)!,
+          _messageController.text,
+        );
+    _messageController.text = '';
   }
 
   void _setChatMute(bool mute, DateTime? muteUntil) async {
@@ -299,9 +310,10 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     }
   }
 
-  void _removeReply() {
+  void _unreferenceMessages() {
     setState(() {
       replyMessage = null;
+      editMessage = null;
     });
   }
 
@@ -397,7 +409,9 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     // debugPrint('(^) number of messages: ${messages.length}');
 
     _isMuted = chatModel.isMuted;
-    _messageController.text = chatModel.draft ?? "";
+    if (chatModel.draft != null && chatModel.draft!.isNotEmpty) {
+      _messageController.text = chatModel.draft ?? '';
+    }
     chatContent = _generateChatContentWithDateLabels(messages);
     pinnedMessages = messages.where((message) => message.isPinned).toList();
     // debugPrint('pinned Messages count after is : ${pinnedMessages.length}');
@@ -565,19 +579,32 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                     _generateChatContentWithDateLabels,
                                 onPin: _onPin,
                                 onLongPress: _onLongPress,
-                                onReply: _onReply),
+                                onReply: _onReply,
+                                onEdit: _onEdit),
                   ),
                   if (replyMessage != null)
-                    ReplyWidget(
+                    ReplyEditFieldHeader(
                       message: replyMessage!,
+                      isReplyOrEdit: true,
                       onDiscard: () {
                         setState(() {
                           replyMessage = null;
+                          editMessage = null;
                         });
                       },
-                    )
-                  else
-                    const SizedBox(),
+                    ),
+                  if (editMessage != null)
+                    ReplyEditFieldHeader(
+                      message: editMessage!,
+                      isReplyOrEdit: false,
+                      onDiscard: () {
+                        setState(() {
+                          replyMessage = null;
+                          editMessage = null;
+                          _messageController.text = '';
+                        });
+                      },
+                    ),
                   if (selectedMessages.isNotEmpty)
                     Container(
                       color: Palette.secondary,
@@ -636,11 +663,13 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                     )
                   else if (!isSearching)
                     BottomInputBarWidget(
+                      isEditing: editMessage != null,
                       controller: _messageController,
                       audioRecorderService: _audioRecorderService,
                       chatID: chatID,
                       sendMessage: _sendMessage,
-                      removeReply: _removeReply,
+                      unreferenceMessages: _unreferenceMessages,
+                      editMessage: _editMessage,
                     )
                   else
                     Container(
@@ -932,6 +961,19 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     setState(() {
       debugPrint('reply');
       replyMessage = message;
+      editMessage = null;
+    });
+  }
+
+  void _onEdit(MessageModel message) {
+    setState(() {
+      debugPrint('edit');
+      editMessage = message;
+      replyMessage = null;
+      debugPrint(message.content?.getContent());
+      _messageController.text =
+          message.content?.getContent() ?? 'what about this';
+      debugPrint('${_messageController.text} look here');
     });
   }
 
@@ -1096,6 +1138,7 @@ class ChatMessagesList extends ConsumerStatefulWidget {
     required this.onPin,
     required this.onLongPress,
     required this.onReply,
+    required this.onEdit,
   });
 
   final ScrollController scrollController;
@@ -1111,6 +1154,7 @@ class ChatMessagesList extends ConsumerStatefulWidget {
   final Function(MessageModel message) onPin;
   final Function(MessageModel message) onLongPress;
   final Function(MessageModel message) onReply;
+  final Function(MessageModel message) onEdit;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
@@ -1189,6 +1233,7 @@ class _ChatMessagesListState extends ConsumerState<ChatMessagesList> {
                       onMediaDownloaded(filePath, item.localId, widget.chatId);
                     },
                     onReply: widget.onReply,
+                    onEdit: widget.onEdit,
                     onPin: widget.onPin,
                     onPress: widget.selectedMessages.isEmpty ? null : () {},
                     onLongPress: widget.onLongPress,

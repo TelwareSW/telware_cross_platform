@@ -133,13 +133,22 @@ class EventHandler {
         debugPrint('!!! Error in pinning a message:\n${e.toString()}');
       }
     });
-    // pin a message
+    // unpin a message
     _socket.on(EventType.unpinMessageServer.event, (response) async {
       try {
         _chattingController.pinMessageServer(
             response['messageId'] as String, response['chatId'] as String);
       } on Exception catch (e) {
         debugPrint('!!! Error in unpinning a message:\n${e.toString()}');
+      }
+    });
+    // edit a message
+    _socket.on(EventType.editMessageServer.event, (response) async {
+      try {
+        debugPrint('#!#! this is a response of edit:');
+        _chattingController.editMessageIdAck(chatId: response['chatId'], content: response['content'], msgId: response['id']);
+      } on Exception catch (e) {
+        debugPrint('!!! Error in editing a message:\n${e.toString()}');
       }
     });
 
