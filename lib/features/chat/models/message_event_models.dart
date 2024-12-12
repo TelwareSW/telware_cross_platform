@@ -171,8 +171,14 @@ class DeleteMessageEvent extends MessageEvent {
       EventType.deleteMessage.event,
       ackCallback: (response, timer, completer) {
         if (!completer.isCompleted) {
-          timer.cancel(); // Cancel the timeout timer
-          completer.complete(true);
+          timer.cancel(); // Cancel the timer on acknowledgment
+          if (response['success'].toString() == 'true') {
+            debugPrint('&()& delete msg sucessefully');
+            completer.complete(true);
+          } else {
+            debugPrint('&()& delete msg failed');
+            completer.complete(false);
+          }
         }
       },
     );
@@ -302,7 +308,9 @@ class PinMessageEvent extends MessageEvent {
     SocketService socket, {
     Duration timeout = const Duration(seconds: MessageEvent._timeOutSeconds),
   }) async {
-    final event = isToPin ? EventType.pinMessageClient.event: EventType.unpinMessageClient.event;
+    final event = isToPin
+        ? EventType.pinMessageClient.event
+        : EventType.unpinMessageClient.event;
     socket.emit(event, payload);
     return true;
   }
