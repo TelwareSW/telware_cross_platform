@@ -19,6 +19,8 @@ enum EventType {
   //////////////////////////////
   receiveMessage(event: 'RECEIVE_MESSAGE'),
   receiveReply(event: 'RECEIVE_REPLY'),
+  createGroup(event: 'CREATE_GROUP_CHANNEL'),
+  receiveCreateGroup(event: 'JOIN_GROUP_CHANNEL'),
   ;
 
   final String event;

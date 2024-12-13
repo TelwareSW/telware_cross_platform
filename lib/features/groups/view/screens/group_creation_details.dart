@@ -5,13 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
+import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/stories/view/screens/add_my_image_screen.dart';
 
 import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/sizes.dart';
+import '../../../chat/view/screens/chat_screen.dart';
 import '../../../chat/view/widget/member_tile_widget.dart';
+import '../../../chat/view_model/chatting_controller.dart';
 import '../../../stories/view/widget/pick_from_gallery.dart';
 import '../widget/emoji_only_picker_widget.dart';
 
@@ -78,112 +82,112 @@ class _GroupCreationDetailsState extends ConsumerState<GroupCreationDetails> {
         return Material(
           color: Colors.transparent,
           child: Container(
-              height: 280,
-              decoration: BoxDecoration(
-                color: Palette.secondary,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20.0),
-                  topRight: Radius.circular(20.0),
-                ),
+            height: 280,
+            decoration: BoxDecoration(
+              color: Palette.secondary,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20.0),
+                topRight: Radius.circular(20.0),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 15, vertical: 20),
-                    child: Text(
-                      'Auto-delete after ...',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                      ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 15, vertical: 20),
+                  child: Text(
+                    'Auto-delete after ...',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
                     ),
                   ),
-                  Expanded(
-                    child: ListWheelScrollView(
-                      onSelectedItemChanged: (int index) {
-                        setState(() {
-                          if (index >= 0 && index < 6) {
-                            autoDelete = index + 1;
-                          } else if (index >= 6 && index < 9) {
-                            autoDelete = (index - 5) * 7;
-                          } else if (index >= 9 && index < 15) {
-                            autoDelete = (index - 8) * 30;
-                          } else if (index == 15) {
-                            autoDelete = 365;
-                          } else if (index == 16) {
-                            autoDelete = -1;
-                          }
-                        });
-                      },
-                      itemExtent: 50,
-                      children: [
-                        for (int i = 1; i <= 6; i++)
-                          GestureDetector(
-                            onTap: () {},
-                            child: ListTile(
-                              title: Center(
-                                  child: Text('$i day${i > 1 ? 's' : ''}')),
-                            ),
-                          ),
-                        for (int i = 1; i <= 3; i++)
-                          GestureDetector(
-                            onTap: () {},
-                            child: ListTile(
-                              title: Center(
-                                  child: Text('$i week${i > 1 ? 's' : ''}')),
-                            ),
-                          ),
-                        for (int i = 1; i <= 6; i++)
-                          GestureDetector(
-                            onTap: () {},
-                            child: ListTile(
-                              title: Center(
-                                  child: Text('$i month${i > 1 ? 's' : ''}')),
-                            ),
-                          ),
-                        GestureDetector(
-                          onTap: () {},
-                          child: ListTile(
-                            title: Center(child: const Text('1 year')),
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () {},
-                          child: ListTile(
-                            title: Center(child: const Text('Disable')),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      context.pop();
+                ),
+                Expanded(
+                  child: ListWheelScrollView(
+                    onSelectedItemChanged: (int index) {
+                      setState(() {
+                        if (index >= 0 && index < 6) {
+                          autoDelete = index + 1;
+                        } else if (index >= 6 && index < 9) {
+                          autoDelete = (index - 5) * 7;
+                        } else if (index >= 9 && index < 15) {
+                          autoDelete = (index - 8) * 30;
+                        } else if (index == 15) {
+                          autoDelete = 365;
+                        } else if (index == 16) {
+                          autoDelete = -1;
+                        }
+                      });
                     },
-                    child: Padding(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-                      child: Container(
-                        decoration: BoxDecoration(
-                            color: Palette.primary,
-                            borderRadius: BorderRadius.circular(20)),
-                        width: double.infinity,
-                        height: 50,
-                        child: Center(
-                          child: Text(
-                            'Set Auto-Delete',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                            ),
+                    itemExtent: 50,
+                    children: [
+                      for (int i = 1; i <= 6; i++)
+                        GestureDetector(
+                          onTap: () {},
+                          child: ListTile(
+                            title: Center(
+                                child: Text('$i day${i > 1 ? 's' : ''}')),
+                          ),
+                        ),
+                      for (int i = 1; i <= 3; i++)
+                        GestureDetector(
+                          onTap: () {},
+                          child: ListTile(
+                            title: Center(
+                                child: Text('$i week${i > 1 ? 's' : ''}')),
+                          ),
+                        ),
+                      for (int i = 1; i <= 6; i++)
+                        GestureDetector(
+                          onTap: () {},
+                          child: ListTile(
+                            title: Center(
+                                child: Text('$i month${i > 1 ? 's' : ''}')),
+                          ),
+                        ),
+                      GestureDetector(
+                        onTap: () {},
+                        child: ListTile(
+                          title: Center(child: const Text('1 year')),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {},
+                        child: ListTile(
+                          title: Center(child: const Text('Disable')),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    context.pop();
+                  },
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                    child: Container(
+                      decoration: BoxDecoration(
+                          color: Palette.primary,
+                          borderRadius: BorderRadius.circular(20)),
+                      width: double.infinity,
+                      height: 50,
+                      child: Center(
+                        child: Text(
+                          'Set Auto-Delete',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
                           ),
                         ),
                       ),
                     ),
                   ),
-                ],
-              ),),
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
@@ -191,7 +195,8 @@ class _GroupCreationDetailsState extends ConsumerState<GroupCreationDetails> {
 
   Future<File?> pickImageFromGallery() async {
     final ImagePicker picker = ImagePicker();
-    final XFile? pickedImage = await picker.pickImage(source: ImageSource.gallery);
+    final XFile? pickedImage =
+        await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedImage != null) {
       return File(pickedImage.path);
@@ -205,12 +210,41 @@ class _GroupCreationDetailsState extends ConsumerState<GroupCreationDetails> {
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          print('group name ${searchController.text} \n image ${groupImage} \n members ${widget.members}');
+        onPressed: () async {
+          print(
+              'group name ${searchController.text} \n image ${groupImage} \n members ${widget.members}');
+          List<String> membersIds = widget.members
+              .where((user) => user.id != null)
+              .map((user) => user.id!)
+              .toList();
+          await ref.read(chattingControllerProvider).createGroup(
+            type: 'group',
+            name: searchController.text,
+            members: membersIds,
+            onEventComplete: (res) async {
+            if (res['success'] == true) {
+              debugPrint('Group created successfully');
+              final members = res['data']['members'] as List;
+              List<String> userIds = members.map((member) => member['user'] as String).toList();
+              final ChatModel chat = ChatModel(title: res['data']['name'], userIds: userIds, type: res['data']['type'] == 'group' ? ChatType.group:ChatType.channel, messages: []);
+              debugPrint('Opening Chat: $chat');
+              context.push(ChatScreen.route, extra: chat);
+            } else {
+              debugPrint('Failed to create group');
+              // Show a SnackBar if group creation failed
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Failed to create group'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+          );
         },
         backgroundColor: Palette.primary,
         shape: const CircleBorder(),
-        child: const Icon(Icons.arrow_forward_outlined),
+        child: const Icon(Icons.check),
       ),
       backgroundColor: Palette.background,
       appBar: AppBar(
@@ -256,25 +290,28 @@ class _GroupCreationDetailsState extends ConsumerState<GroupCreationDetails> {
                       child: Row(
                         children: [
                           GestureDetector(
-                            onTap: (){
-                              setState(() async{
+                            onTap: () {
+                              setState(() async {
                                 groupImage = await pickImageFromGallery();
                               });
                             },
                             child: CircleAvatar(
                               backgroundColor: Palette.primary,
                               radius: 35,
-                              child: groupImage == null ? const Icon(
-                                Icons.add_a_photo,
-                                size: 30,
-                              ) : ClipOval(
-                                child: Image.file(
-                                  groupImage!,
-                                  width: 70, // Match the CircleAvatar diameter (2 * radius).
-                                  height: 70,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
+                              child: groupImage == null
+                                  ? const Icon(
+                                      Icons.add_a_photo,
+                                      size: 30,
+                                    )
+                                  : ClipOval(
+                                      child: Image.file(
+                                        groupImage!,
+                                        width:
+                                            70, // Match the CircleAvatar diameter (2 * radius).
+                                        height: 70,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
                             ),
                           ),
                           const SizedBox(width: 15),
@@ -395,7 +432,7 @@ class _GroupCreationDetailsState extends ConsumerState<GroupCreationDetails> {
                         horizontal: 15,
                       ),
                       child: Text(
-                        'Automaticly delete messages in this group for everyone after period of time.',
+                        'Automatically delete messages in this group for everyone after period of time.',
                       ),
                     ),
                   ),
@@ -453,8 +490,7 @@ class _GroupCreationDetailsState extends ConsumerState<GroupCreationDetails> {
                 left: offset.dx,
                 top: offset.dy,
                 child: Material(
-                  color: Colors
-                      .transparent,
+                  color: Colors.transparent,
                   child: Builder(
                     builder: (BuildContext context) {
                       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -529,4 +565,3 @@ class _GroupCreationDetailsState extends ConsumerState<GroupCreationDetails> {
     );
   }
 }
-

@@ -272,8 +272,7 @@ class ChattingController {
     },
         controller: this,
         msgId: identifier.msgLocalId,
-        chatId: identifier.chatId
-     );
+        chatId: identifier.chatId, onEventComplete: (Map<String, dynamic>  res) {  });
 
     _eventHandler.addEvent(msgEvent);
   }
@@ -284,6 +283,12 @@ class ChattingController {
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
 
+  void receiveGroupCreation(Map<String, dynamic> response) {
+    // _ref.read(chatsViewModelProvider.notifier).get(response);
+    // _localRepository.setChats(
+    //     _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
+  }
+
   void pinMessageClient(String msgId, String chatId) {
     final isToPin =
         _ref.read(chatsViewModelProvider.notifier).pinMessage(msgId, chatId);
@@ -291,7 +296,7 @@ class ChattingController {
       PinMessageEvent({
         'chatId': chatId,
         'messageId': msgId,
-      }, msgId: msgId, chatId: chatId, isToPin: isToPin),
+      }, msgId: msgId, chatId: chatId, isToPin: isToPin, onEventComplete: (Map<String, dynamic>  res) {  }),
     );
   }
 
@@ -303,15 +308,13 @@ class ChattingController {
   void deleteMsg(String msgId, String chatId, DeleteMessageType deleteType) {
     final msgEvent = DeleteMessageEvent({
       'messageId': msgId,
-    }, controller: this, msgId: msgId, chatId: chatId);
-
+    }, controller: this, msgId: msgId, chatId: chatId, onEventComplete: (Map<String, dynamic>  res) {  });
 
     // _eventHandler.addEvent(msgEvent);
 
     _ref.read(chatsViewModelProvider.notifier).deleteMessage(msgId, chatId);
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
-
   }
 
   // edit a message
@@ -326,7 +329,7 @@ class ChattingController {
       },
       controller: this,
       msgId: msgId,
-      chatId: chatId,
+      chatId: chatId, onEventComplete: (Map<String, dynamic>  res) {  },
     );
 
     _eventHandler.addEvent(msgEvent);
@@ -339,7 +342,6 @@ class ChattingController {
 
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
-
   }
 
   // receive a message
@@ -580,5 +582,27 @@ class ChattingController {
     } catch (e) {
       return null;
     }
+  }
+
+  Future<bool> createGroup({
+    required String type,
+    required String name,
+    required List<String> members,
+    required Function(Map<String, dynamic>  res) onEventComplete,
+  }) async {
+    Map<String, dynamic> payload = {
+      "type": type,
+      "name": name,
+      "members": members,
+    };
+    final msgEvent = CreateGroupEvent(
+      payload,
+      controller: this,
+      msgId: '',
+      chatId: '',
+      onEventComplete: onEventComplete
+    );
+    _eventHandler.addEvent(msgEvent);
+    return true;
   }
 }
