@@ -463,3 +463,133 @@ class CreateGroupEvent extends MessageEvent {
     );
   }
 }
+
+@HiveType(typeId: 26)
+class DeleteGroupEvent extends MessageEvent {
+  DeleteGroupEvent(
+      super.payload, {
+        super.controller,
+        required super.msgId,
+        required super.chatId,
+        required super.onEventComplete,
+      });
+
+  @override
+  Future<bool> execute(
+      SocketService socket, {
+        Duration timeout = const Duration(seconds: MessageEvent._timeOutSeconds),
+      }) async {
+    return await _execute(
+      socket,
+      EventType.deleteGroup.event,
+      timeout: timeout,
+      ackCallback: (res, timer, completer) {
+        try {
+          final response = res as Map<String, dynamic>;
+          debugPrint('### I got a response ${response['success'].toString()}');
+          print(response);
+          if (!completer.isCompleted) {
+            timer.cancel();
+            if(_onEventComplete != null){
+              _onEventComplete(response);
+            }
+            if (response['success'].toString() == 'true') {
+              final res = response['data'] as Map<String, dynamic>;
+              print(res.toString());
+              _controller?.getUserChats();
+              completer.complete(true);
+            } else {
+              completer.complete(false);
+            }
+          }
+        } catch (e) {
+          debugPrint('--- Error in processing the acknowledgement');
+          debugPrint(e.toString());
+        }
+      },
+    );
+  }
+
+  @override
+  CreateGroupEvent copyWith({
+    dynamic payload,
+    ChattingController? controller,
+    String? msgId,
+    String? chatId,
+    bool? isToPin,
+    Function(Map<String, dynamic>  res)? onEventComplete,
+
+  }) {
+    return CreateGroupEvent(
+      payload ?? this.payload,
+      controller: controller ?? _controller,
+      msgId: msgId ?? this.msgId,
+      chatId: chatId ?? this.chatId,  onEventComplete: onEventComplete ?? _onEventComplete,
+    );
+  }
+}
+
+@HiveType(typeId: 27)
+class LeaveGroupEvent extends MessageEvent {
+  LeaveGroupEvent(
+      super.payload, {
+        super.controller,
+        required super.msgId,
+        required super.chatId,
+        required super.onEventComplete,
+      });
+
+  @override
+  Future<bool> execute(
+      SocketService socket, {
+        Duration timeout = const Duration(seconds: MessageEvent._timeOutSeconds),
+      }) async {
+    return await _execute(
+      socket,
+      EventType.leaveGroup.event,
+      timeout: timeout,
+      ackCallback: (res, timer, completer) {
+        try {
+          final response = res as Map<String, dynamic>;
+          debugPrint('### I got a response ${response['success'].toString()}');
+          print(response);
+          if (!completer.isCompleted) {
+            timer.cancel();
+            if(_onEventComplete != null){
+              _onEventComplete(response);
+            }
+            if (response['success'].toString() == 'true') {
+              final res = response['data'] as Map<String, dynamic>;
+              print(res.toString());
+              _controller?.getUserChats();
+              completer.complete(true);
+            } else {
+              completer.complete(false);
+            }
+          }
+        } catch (e) {
+          debugPrint('--- Error in processing the acknowledgement');
+          debugPrint(e.toString());
+        }
+      },
+    );
+  }
+
+  @override
+  CreateGroupEvent copyWith({
+    dynamic payload,
+    ChattingController? controller,
+    String? msgId,
+    String? chatId,
+    bool? isToPin,
+    Function(Map<String, dynamic>  res)? onEventComplete,
+
+  }) {
+    return CreateGroupEvent(
+      payload ?? this.payload,
+      controller: controller ?? _controller,
+      msgId: msgId ?? this.msgId,
+      chatId: chatId ?? this.chatId,  onEventComplete: onEventComplete ?? _onEventComplete,
+    );
+  }
+}

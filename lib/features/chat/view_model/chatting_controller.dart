@@ -605,4 +605,40 @@ class ChattingController {
     _eventHandler.addEvent(msgEvent);
     return true;
   }
+
+  Future<bool> deleteGroup({
+    required String chatId,
+    required Function(Map<String, dynamic>  res) onEventComplete,
+  }) async {
+    Map<String, dynamic> payload = {
+      "chatId": chatId,
+    };
+    final msgEvent = DeleteGroupEvent(
+        payload,
+        controller: this,
+        msgId: '',
+        chatId: '',
+        onEventComplete: onEventComplete
+    );
+    _eventHandler.addEvent(msgEvent);
+    return true;
+  }
+
+  Future<bool> leaveGroup({
+    required String chatId,
+    required Function(Map<String, dynamic>  res) onEventComplete,
+  }) async {
+    Map<String, dynamic> payload = {
+      "chatId": chatId,
+    };
+    final msgEvent = LeaveGroupEvent(
+        payload,
+        controller: this,
+        msgId: '',
+        chatId: '',
+        onEventComplete: onEventComplete
+    );
+    _eventHandler.addEvent(msgEvent);
+    return true;
+  }
 }

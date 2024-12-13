@@ -21,6 +21,10 @@ enum EventType {
   receiveReply(event: 'RECEIVE_REPLY'),
   createGroup(event: 'CREATE_GROUP_CHANNEL'),
   receiveCreateGroup(event: 'JOIN_GROUP_CHANNEL'),
+  leaveGroup(event: 'LEAVE_GROUP_CHANNEL_CLIENT'),
+  deleteGroup(event: 'DELETE_GROUP_CHANNEL_CLIENT'),
+  receiveDeleteGroup(event: 'DELETE_GROUP_CHANNEL_SERVER'),
+  receiveLeaveGroup(event: 'LEAVE_GROUP_CHANNEL_SERVER'),
   ;
 
   final String event;

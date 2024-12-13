@@ -162,6 +162,36 @@ class EventHandler {
       }
     });
 
+    _socket.on(EventType.receiveCreateGroup.event, (response) async {
+      try {
+        debugPrint('/|\\ got a group creation id:');
+        print(response.toString());
+        _chattingController.getUserChats();
+      } on Exception catch (e) {
+        debugPrint('!!! Error in recieving a message:\n${e.toString()}');
+      }
+    });
+
+    _socket.on(EventType.receiveDeleteGroup.event, (response) async {
+      try {
+        debugPrint('/|\\ got a delete group id:');
+        print(response.toString());
+        _chattingController.getUserChats();
+      } on Exception catch (e) {
+        debugPrint('!!! Error in recieving a event:\n${e.toString()}');
+      }
+    });
+
+    _socket.on(EventType.receiveLeaveGroup.event, (response) async {
+      try {
+        debugPrint('/|\\ got a leave group id:');
+        print(response.toString());
+        _chattingController.getUserChats();
+      } on Exception catch (e) {
+        debugPrint('!!! Error in recieving a event:\n${e.toString()}');
+      }
+    });
+
     // todo(ahmed): add the rest of the recieved events
   }
 

@@ -1,12 +1,16 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
+import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/stories/view/screens/add_my_image_screen.dart';
@@ -16,6 +20,7 @@ import '../../../../core/theme/sizes.dart';
 import '../../../chat/view/screens/chat_screen.dart';
 import '../../../chat/view/widget/member_tile_widget.dart';
 import '../../../chat/view_model/chatting_controller.dart';
+import '../../../stories/utils/utils_functions.dart';
 import '../../../stories/view/widget/pick_from_gallery.dart';
 import '../widget/emoji_only_picker_widget.dart';
 
@@ -226,7 +231,20 @@ class _GroupCreationDetailsState extends ConsumerState<GroupCreationDetails> {
               debugPrint('Group created successfully');
               final members = res['data']['members'] as List;
               List<String> userIds = members.map((member) => member['user'] as String).toList();
-              final ChatModel chat = ChatModel(title: res['data']['name'], userIds: userIds, type: res['data']['type'] == 'group' ? ChatType.group:ChatType.channel, messages: []);
+              uploadChatImage(groupImage!, '$API_URL/chats/picture/${res['data']['_id']}', ref.read(tokenProvider) ?? '');
+              Uint8List? imageBytes;
+
+              if (groupImage != null) {
+                imageBytes = await groupImage?.readAsBytes();
+              }
+
+              final ChatModel chat = ChatModel(
+                title: res['data']['name'],
+                userIds: userIds,
+                type: res['data']['type'] == 'group' ? ChatType.group : ChatType.channel,
+                messages: [],
+                photoBytes: imageBytes,
+              );
               debugPrint('Opening Chat: $chat');
               context.push(ChatScreen.route, extra: chat);
             } else {
