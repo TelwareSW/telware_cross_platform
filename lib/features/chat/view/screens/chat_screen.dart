@@ -418,6 +418,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     chatContent = _generateChatContentWithDateLabels(messages);
     pinnedMessages = messages.where((message) => message.isPinned).toList();
     // debugPrint('pinned Messages count after is : ${pinnedMessages.length}');
+
     if(chatModel.messagingPermission == false){
       setState(() {
         isAllowedToSend = chatModel.admins!.contains(ref.read(userProvider)?.id) ;
@@ -677,7 +678,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                         ),
                       ),
                     )
-                  else if (!isSearching && chat?.messagingPermission!=false)
+                  else if (!isSearching)
                     BottomInputBarWidget(
                       isEditing: editMessage != null,
                       controller: _messageController,

@@ -284,11 +284,13 @@ class ChattingController {
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
 
+
   void receiveGroupCreation(Map<String, dynamic> response) {
     // _ref.read(chatsViewModelProvider.notifier).get(response);
     // _localRepository.setChats(
     //     _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
+
 
   void pinMessageClient(String msgId, String chatId) {
     final isToPin =
@@ -318,6 +320,7 @@ class ChattingController {
         msgId: msgId,
         chatId: chatId,
         onEventComplete: (Map<String, dynamic> res) {});
+
 
     // _eventHandler.addEvent(msgEvent);
 

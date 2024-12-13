@@ -151,7 +151,6 @@ class EventHandler {
         debugPrint('!!! Error in editing a message:\n${e.toString()}');
       }
     });
-
     _socket.on(EventType.receiveCreateGroup.event, (response) async {
       try {
         debugPrint('/|\\ got a group creation id:');
@@ -231,6 +230,7 @@ class EventHandler {
         debugPrint('!!! Error in receiveSetPermissions a event:\n${e.toString()}');
       }
     });
+
 
     // todo(ahmed): add the rest of the recieved events
   }
