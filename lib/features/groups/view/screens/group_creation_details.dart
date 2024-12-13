@@ -231,11 +231,12 @@ class _GroupCreationDetailsState extends ConsumerState<GroupCreationDetails> {
               debugPrint('Group created successfully');
               final members = res['data']['members'] as List;
               List<String> userIds = members.map((member) => member['user'] as String).toList();
-              uploadChatImage(groupImage!, '$API_URL/chats/picture/${res['data']['_id']}', ref.read(tokenProvider) ?? '');
               Uint8List? imageBytes;
-
-              if (groupImage != null) {
-                imageBytes = await groupImage?.readAsBytes();
+              if(groupImage!=null) {
+                uploadChatImage(
+                    groupImage!, '$API_URL/chats/picture/${res['data']['_id']}',
+                    ref.read(tokenProvider) ?? '');
+                  imageBytes = await groupImage?.readAsBytes();
               }
 
               final ChatModel chat = ChatModel(
@@ -244,6 +245,7 @@ class _GroupCreationDetailsState extends ConsumerState<GroupCreationDetails> {
                 type: res['data']['type'] == 'group' ? ChatType.group : ChatType.channel,
                 messages: [],
                 photoBytes: imageBytes,
+                id: res['data']['_id'],
               );
               debugPrint('Opening Chat: $chat');
               context.push(ChatScreen.route, extra: chat);

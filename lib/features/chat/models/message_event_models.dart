@@ -576,7 +576,7 @@ class LeaveGroupEvent extends MessageEvent {
   }
 
   @override
-  CreateGroupEvent copyWith({
+  LeaveGroupEvent copyWith({
     dynamic payload,
     ChattingController? controller,
     String? msgId,
@@ -585,7 +585,267 @@ class LeaveGroupEvent extends MessageEvent {
     Function(Map<String, dynamic>  res)? onEventComplete,
 
   }) {
-    return CreateGroupEvent(
+    return LeaveGroupEvent(
+      payload ?? this.payload,
+      controller: controller ?? _controller,
+      msgId: msgId ?? this.msgId,
+      chatId: chatId ?? this.chatId,  onEventComplete: onEventComplete ?? _onEventComplete,
+    );
+  }
+}
+
+@HiveType(typeId: 28)
+class AddMembersEvent extends MessageEvent {
+  AddMembersEvent(
+      super.payload, {
+        super.controller,
+        required super.msgId,
+        required super.chatId,
+        required super.onEventComplete,
+      });
+
+  @override
+  Future<bool> execute(
+      SocketService socket, {
+        Duration timeout = const Duration(seconds: MessageEvent._timeOutSeconds),
+      }) async {
+    return await _execute(
+      socket,
+      EventType.addMember.event,
+      timeout: timeout,
+      ackCallback: (res, timer, completer) {
+        try {
+          final response = res as Map<String, dynamic>;
+          debugPrint('### I got a response ${response['success'].toString()}');
+          print(response);
+          if (!completer.isCompleted) {
+            timer.cancel();
+            if(_onEventComplete != null){
+              _onEventComplete(response);
+            }
+            if (response['success'].toString() == 'true') {
+              final res = response['data'] as Map<String, dynamic>;
+              print(res.toString());
+              _controller?.getUserChats();
+              completer.complete(true);
+            } else {
+              completer.complete(false);
+            }
+          }
+        } catch (e) {
+          debugPrint('--- Error in processing the acknowledgement');
+          debugPrint(e.toString());
+        }
+      },
+    );
+  }
+
+  @override
+  AddMembersEvent copyWith({
+    dynamic payload,
+    ChattingController? controller,
+    String? msgId,
+    String? chatId,
+    bool? isToPin,
+    Function(Map<String, dynamic>  res)? onEventComplete,
+
+  }) {
+    return AddMembersEvent(
+      payload ?? this.payload,
+      controller: controller ?? _controller,
+      msgId: msgId ?? this.msgId,
+      chatId: chatId ?? this.chatId,  onEventComplete: onEventComplete ?? _onEventComplete,
+    );
+  }
+}
+
+@HiveType(typeId: 29)
+class AddAdminEvent extends MessageEvent {
+  AddAdminEvent(
+      super.payload, {
+        super.controller,
+        required super.msgId,
+        required super.chatId,
+        required super.onEventComplete,
+      });
+
+  @override
+  Future<bool> execute(
+      SocketService socket, {
+        Duration timeout = const Duration(seconds: MessageEvent._timeOutSeconds),
+      }) async {
+    return await _execute(
+      socket,
+      EventType.addAdmin.event,
+      timeout: timeout,
+      ackCallback: (res, timer, completer) {
+        try {
+          final response = res as Map<String, dynamic>;
+          debugPrint('### I got a response ${response['success'].toString()}');
+          print(response);
+          if (!completer.isCompleted) {
+            timer.cancel();
+            if(_onEventComplete != null){
+              _onEventComplete(response);
+            }
+            if (response['success'].toString() == 'true') {
+              final res = response['data'] as Map<String, dynamic>;
+              print(res.toString());
+              _controller?.getUserChats();
+              completer.complete(true);
+            } else {
+              completer.complete(false);
+            }
+          }
+        } catch (e) {
+          debugPrint('--- Error in processing the acknowledgement');
+          debugPrint(e.toString());
+        }
+      },
+    );
+  }
+
+  @override
+  AddAdminEvent copyWith({
+    dynamic payload,
+    ChattingController? controller,
+    String? msgId,
+    String? chatId,
+    bool? isToPin,
+    Function(Map<String, dynamic>  res)? onEventComplete,
+
+  }) {
+    return AddAdminEvent(
+      payload ?? this.payload,
+      controller: controller ?? _controller,
+      msgId: msgId ?? this.msgId,
+      chatId: chatId ?? this.chatId,  onEventComplete: onEventComplete ?? _onEventComplete,
+    );
+  }
+}
+
+@HiveType(typeId: 30)
+class RemoveMemberEvent extends MessageEvent {
+  RemoveMemberEvent(
+      super.payload, {
+        super.controller,
+        required super.msgId,
+        required super.chatId,
+        required super.onEventComplete,
+      });
+
+  @override
+  Future<bool> execute(
+      SocketService socket, {
+        Duration timeout = const Duration(seconds: MessageEvent._timeOutSeconds),
+      }) async {
+    return await _execute(
+      socket,
+      EventType.removeMember.event,
+      timeout: timeout,
+      ackCallback: (res, timer, completer) {
+        try {
+          final response = res as Map<String, dynamic>;
+          debugPrint('### I got a response ${response['success'].toString()}');
+          print(response);
+          if (!completer.isCompleted) {
+            timer.cancel();
+            if(_onEventComplete != null){
+              _onEventComplete(response);
+            }
+            if (response['success'].toString() == 'true') {
+              final res = response['data'] as Map<String, dynamic>;
+              print(res.toString());
+              _controller?.getUserChats();
+              completer.complete(true);
+            } else {
+              completer.complete(false);
+            }
+          }
+        } catch (e) {
+          debugPrint('--- Error in processing the acknowledgement');
+          debugPrint(e.toString());
+        }
+      },
+    );
+  }
+
+  @override
+  RemoveMemberEvent copyWith({
+    dynamic payload,
+    ChattingController? controller,
+    String? msgId,
+    String? chatId,
+    bool? isToPin,
+    Function(Map<String, dynamic>  res)? onEventComplete,
+
+  }) {
+    return RemoveMemberEvent(
+      payload ?? this.payload,
+      controller: controller ?? _controller,
+      msgId: msgId ?? this.msgId,
+      chatId: chatId ?? this.chatId,  onEventComplete: onEventComplete ?? _onEventComplete,
+    );
+  }
+}
+
+@HiveType(typeId: 31)
+class SetPermissions extends MessageEvent {
+  SetPermissions(
+      super.payload, {
+        super.controller,
+        required super.msgId,
+        required super.chatId,
+        required super.onEventComplete,
+      });
+
+  @override
+  Future<bool> execute(
+      SocketService socket, {
+        Duration timeout = const Duration(seconds: MessageEvent._timeOutSeconds),
+      }) async {
+    return await _execute(
+      socket,
+      EventType.setPermissions.event,
+      timeout: timeout,
+      ackCallback: (res, timer, completer) {
+        try {
+          final response = res as Map<String, dynamic>;
+          debugPrint('### I got a response ${response['success'].toString()}');
+          print(response);
+          if (!completer.isCompleted) {
+            timer.cancel();
+            if(_onEventComplete != null){
+              _onEventComplete(response);
+            }
+            if (response['success'].toString() == 'true') {
+              final res = response['data'] as Map<String, dynamic>;
+              print(res.toString());
+              _controller?.getUserChats();
+              completer.complete(true);
+            } else {
+              completer.complete(false);
+            }
+          }
+        } catch (e) {
+          debugPrint('--- Error in processing the acknowledgement');
+          debugPrint(e.toString());
+        }
+      },
+    );
+  }
+
+  @override
+  SetPermissions copyWith({
+    dynamic payload,
+    ChattingController? controller,
+    String? msgId,
+    String? chatId,
+    bool? isToPin,
+    Function(Map<String, dynamic>  res)? onEventComplete,
+
+  }) {
+    return SetPermissions(
       payload ?? this.payload,
       controller: controller ?? _controller,
       msgId: msgId ?? this.msgId,

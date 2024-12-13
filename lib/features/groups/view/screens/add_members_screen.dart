@@ -1,32 +1,36 @@
 import 'dart:math';
-
+import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
+import 'package:typed_data/typed_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:telware_cross_platform/core/models/message_model.dart';
-import 'package:telware_cross_platform/core/models/user_model.dart';
-import 'package:telware_cross_platform/core/providers/user_provider.dart';
-import 'package:telware_cross_platform/core/theme/palette.dart';
-import 'package:telware_cross_platform/core/theme/sizes.dart';
-import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/auth_floating_action_button.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
-import 'package:telware_cross_platform/features/chat/view/widget/member_tile_widget.dart';
-import 'package:telware_cross_platform/features/groups/view/screens/group_creation_details.dart';
-import 'package:telware_cross_platform/features/user/view_model/user_view_model.dart';
+import 'package:telware_cross_platform/core/models/chat_model.dart';
+import 'package:telware_cross_platform/features/chat/view/screens/chat_info_screen.dart';
 
-import '../../../../core/routes/routes.dart';
+import '../../../../core/models/user_model.dart';
+import '../../../../core/providers/user_provider.dart';
+import '../../../../core/theme/palette.dart';
+import '../../../../core/theme/sizes.dart';
+import '../../../../core/view/widget/lottie_viewer.dart';
+import '../../../auth/view/widget/auth_floating_action_button.dart';
+import '../../../chat/view/widget/member_tile_widget.dart';
+import '../../../stories/utils/utils_functions.dart';
+import '../../../user/view_model/user_view_model.dart';
 
-class CreateGroupScreen extends ConsumerStatefulWidget {
+class AddMembersScreen extends ConsumerStatefulWidget {
   static const String route = '/create-group';
-  const CreateGroupScreen({super.key});
+  final String chatId;
+  const AddMembersScreen({
+    super.key,
+    required this.chatId,
+  });
 
   @override
-  ConsumerState<CreateGroupScreen> createState() => _CreateGroupScreen();
+  ConsumerState<AddMembersScreen> createState() => _AddMembersScreen();
 }
 
-class _CreateGroupScreen extends ConsumerState<CreateGroupScreen>
+class _AddMembersScreen extends ConsumerState<AddMembersScreen>
     with TickerProviderStateMixin {
   final List<UserModel> fullUserChats = [];
   late List<UserModel> userChats;
@@ -34,7 +38,6 @@ class _CreateGroupScreen extends ConsumerState<CreateGroupScreen>
 
   late Future<List<UserModel>> _usersFuture;
   bool _isUserContentSet = false;
-  int _numSelected = 0;
   final List<UserModel> _selectedUsers = <UserModel>[];
 
   @override
@@ -56,10 +59,8 @@ class _CreateGroupScreen extends ConsumerState<CreateGroupScreen>
   void _toggleSelectUser(UserModel user) {
     if (_selectedUsers.contains(user)) {
       _selectedUsers.remove(user);
-      _numSelected--;
     } else {
       _selectedUsers.add(user);
-      _numSelected++;
     }
     setState(() {});
   }
@@ -80,23 +81,14 @@ class _CreateGroupScreen extends ConsumerState<CreateGroupScreen>
             context.pop(); // Navigate back when pressed
           },
         ),
-        title: Column(
+        title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'New Group',
-              style: const TextStyle(
+              'Add Members',
+              style: TextStyle(
                 color: Palette.primaryText,
                 fontSize: Sizes.primaryText,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            Text(
-              _numSelected == 0 ? 'up to 200000 members'
-                  : '$_numSelected of 200000 selected',
-              style: const TextStyle(
-                color: Palette.accentText,
-                fontSize: Sizes.secondaryText,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -111,7 +103,7 @@ class _CreateGroupScreen extends ConsumerState<CreateGroupScreen>
               controller: searchController,
               onChanged: _filterView,
               decoration: const InputDecoration(
-                hintText: 'Who would you like to add?',
+                hintText: 'Search for people',
                 hintStyle: TextStyle(color: Palette.accentText),
                 prefixIcon: Icon(Icons.search, color: Palette.accentText),
                 border: InputBorder.none,
@@ -149,7 +141,8 @@ class _CreateGroupScreen extends ConsumerState<CreateGroupScreen>
                     _isUserContentSet = true;
                   }
                   return ListView.builder(
-                    shrinkWrap: true, // To allow proper layout within parent widgets
+                    shrinkWrap:
+                        true, // To allow proper layout within parent widgets
                     itemCount: userChats.length,
                     itemBuilder: (context, index) {
                       UserModel user = userChats[index];
@@ -170,13 +163,30 @@ class _CreateGroupScreen extends ConsumerState<CreateGroupScreen>
       ),
       floatingActionButton: AuthFloatingActionButton(
         onSubmit: () {
-          print('fdsafas');
           print(_selectedUsers);
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => GroupCreationDetails(members:_selectedUsers,)),
-          );
-          // context.push(GroupCreationDetails.route);
+          List<String> userIds = [];
+          for (var user in _selectedUsers) {
+            userIds.add(user.id ?? '');
+          }
+          print(widget.chatId);
+          ref.read(chattingControllerProvider).addMembers(
+                chatId: widget.chatId,
+                members: userIds,
+                onEventComplete: (res) async {
+                  if (res['success'] == true) {
+                    ref.read(chattingControllerProvider).getUserChats();
+                    Navigator.pop(context);
+                  } else {
+                    debugPrint('Failed to add members to group');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Failed to add members to group'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                },
+              );
         },
       ),
     );
@@ -193,7 +203,8 @@ class _CreateGroupScreen extends ConsumerState<CreateGroupScreen>
       filteredChats = List.from(fullUserChats);
     } else {
       filteredChats = fullUserChats.where((user) {
-        String text = '${user.screenFirstName} ${user.screenLastName}'.toLowerCase();
+        String text =
+            '${user.screenFirstName} ${user.screenLastName}'.toLowerCase();
         return text.contains(query.toLowerCase());
       }).toList();
     }

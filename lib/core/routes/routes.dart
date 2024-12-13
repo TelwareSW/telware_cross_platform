@@ -17,6 +17,8 @@ import 'package:telware_cross_platform/features/chat/view/screens/call_screen.da
 import 'package:telware_cross_platform/features/chat/view/screens/chat_info_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/chat_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/create_chat_screen.dart';
+import 'package:telware_cross_platform/features/groups/view/screens/members_screen.dart';
+import 'package:telware_cross_platform/features/groups/view/screens/add_members_screen.dart';
 import 'package:telware_cross_platform/features/groups/view/screens/create_group_screen.dart';
 import 'package:telware_cross_platform/features/groups/view/screens/group_creation_details.dart';
 import 'package:telware_cross_platform/features/home/view/screens/home_screen.dart';
@@ -82,6 +84,8 @@ class Routes {
   static const String groupCreationDetails = GroupCreationDetails.route;
   static const String callScreen = CallScreen.route;
   static const String editGroupScreen = EditGroup.route;
+  static const String addMembersScreen = AddMembersScreen.route;
+  static const String membersScreen = MembersScreen.route;
 
   static GoRouter appRouter(WidgetRef ref) => GoRouter(
         initialLocation: Routes.splash,
@@ -309,6 +313,20 @@ class Routes {
             builder: (context, state) {
               final ChatModel chat = state.extra as ChatModel;
               return EditGroup(chatModel: chat);
+            },
+          ),
+          GoRoute(
+            path: Routes.addMembersScreen,
+            builder: (context, state) {
+              final String chat = state.extra as String;
+              return AddMembersScreen(chatId: chat);
+            },
+          ),
+          GoRoute(
+            path: Routes.membersScreen,
+            builder: (context, state) {
+              final ChatModel chat = state.extra as ChatModel;
+              return MembersScreen(chatModel: chat,);
             },
           ),
         ],

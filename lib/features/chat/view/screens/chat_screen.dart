@@ -75,6 +75,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   bool isLoading = true;
   bool isTextEmpty = true;
   bool showMuteOptions = false;
+  bool isAllowedToSend = true;
+
 
   // ignore: prefer_final_fields
   int _currentMatch = 1;
@@ -93,6 +95,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   void initState() {
     super.initState();
     _messageController.text = widget.chatModel?.draft ?? "";
+
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.forwardedMessages != null) {
@@ -106,6 +109,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     _draftTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
       _updateDraft();
     });
+
   }
 
   @override
@@ -414,7 +418,11 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     chatContent = _generateChatContentWithDateLabels(messages);
     pinnedMessages = messages.where((message) => message.isPinned).toList();
     // debugPrint('pinned Messages count after is : ${pinnedMessages.length}');
-
+    if(chatModel.messagingPermission == false){
+      setState(() {
+        isAllowedToSend = chatModel.admins!.contains(ref.read(userProvider)?.id) ;
+      });
+    }
     return GestureDetector(
       onTap: () {
         SystemChannels.textInput.invokeMethod('TextInput.hide');
@@ -669,7 +677,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                         ),
                       ),
                     )
-                  else if (!isSearching)
+                  else if (!isSearching && chat?.messagingPermission!=false)
                     BottomInputBarWidget(
                       isEditing: editMessage != null,
                       controller: _messageController,
@@ -876,7 +884,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                       {required String contentType, String? filePath}) {
                     _sendMessage(
                         ref: ref, contentType: contentType, filePath: filePath);
-                  })
+                  }),
             ],
               ),
             )

@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
+import 'package:telware_cross_platform/core/providers/token_provider.dart';
+import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
@@ -16,6 +18,7 @@ import 'package:telware_cross_platform/features/auth/view/widget/title_element.d
 import 'package:telware_cross_platform/features/chat/view/widget/member_tile_widget.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
+import 'package:telware_cross_platform/features/groups/view/screens/add_members_screen.dart';
 import 'package:telware_cross_platform/features/groups/view/screens/edit_group.dart';
 import 'package:telware_cross_platform/features/user/view/widget/profile_header_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_toggle_switch_widget.dart';
@@ -195,44 +198,41 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
   }
 
   Future<void> _callSockets(bool isChecked) async {
-    if(isChecked){
+    if (isChecked) {
       await ref.read(chattingControllerProvider).deleteGroup(
-        chatId: chat.id ?? '',
-        onEventComplete: (res) async {
-          if (res['success'] == true) {
-            debugPrint('Group deleted successfully');
-
-          }
-          else {
-            debugPrint('Failed to delete group try again later');
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Failed to delete group try again later'),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-        },
-      );
-    }
-    else{
+            chatId: chat.id ?? '',
+            onEventComplete: (res) async {
+              if (res['success'] == true) {
+                debugPrint('Group deleted successfully');
+              } else {
+                debugPrint('Failed to delete group try again later');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Failed to delete group try again later'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+          );
+    } else {
       await ref.read(chattingControllerProvider).leaveGroup(
-        chatId: chat.id ?? '',
-        onEventComplete: (res) async {
-          if (res['success'] == true) {
-            debugPrint('Group deleted successfully');
-          } else {
-            debugPrint('Failed to leave group try again later');
-            // Show a SnackBar if group creation failed
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Failed to leave group try again later'),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-        },
-      );
+            chatId: chat.id ?? '',
+            onEventComplete: (res) async {
+              if (res['success'] == true) {
+                debugPrint('Group deleted successfully');
+              } else {
+                debugPrint('Failed to leave group try again later');
+                // Show a SnackBar if group creation failed
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Failed to leave group try again later'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+          );
     }
   }
 
@@ -408,8 +408,14 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
   }
 
   void _addMembers() {
-    // TODO: Implement this
-    context.go('/add-members', extra: {'chatId': chat.id});
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddMembersScreen(
+          chatId: chat.id??'',
+        ),
+      ),
+    );
   }
 
   @override
@@ -432,10 +438,35 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
               IconButton(
                   icon: const Icon(Icons.edit),
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => EditGroup(chatModel: widget.chatModel,)),
-                    );
+                    if(chat.admins!.contains(ref.read(userProvider)?.id)) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                EditGroup(
+                                  chatModel: widget.chatModel,
+                                )),
+                      );
+                    }
+                    else{
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Access Denied'),
+                            content: const Text('You do not have the necessary permissions to edit this group.'),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
                     // context.push(
                     //   Routes.editGroupScreen,
                     //   extra: widget.chatModel,
@@ -489,22 +520,24 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
               color: Palette.secondary,
               child: Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 22, top: 8),
-                    child: ListTile(
-                      leading: const Icon(
-                        Icons.person_add_outlined,
-                        color: Palette.primary,
-                      ),
-                      title: const Text('Add Members',
-                          style: TextStyle(
-                            color: Palette.primary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w400,
-                          )),
-                      onTap: _addMembers,
-                    ),
-                  ),
+                  chat.admins!.contains(ref.read(userProvider)?.id)
+                      ? Padding(
+                          padding: const EdgeInsets.only(left: 22, top: 8),
+                          child: ListTile(
+                            leading: const Icon(
+                              Icons.person_add_outlined,
+                              color: Palette.primary,
+                            ),
+                            title: const Text('Add Members',
+                                style: TextStyle(
+                                  color: Palette.primary,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w400,
+                                )),
+                            onTap: _addMembers,
+                          ),
+                        )
+                      : SizedBox(),
                   FutureBuilder(
                     future: usersInfoFuture,
                     builder: (context, snapshot) {
