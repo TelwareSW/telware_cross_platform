@@ -1,6 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:telware_cross_platform/core/models/chat_model.dart';
+import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/features/home/models/home_state.dart';
+import 'package:telware_cross_platform/features/home/repository/home_local_repository.dart';
 import 'package:telware_cross_platform/features/home/repository/home_remote_repository.dart';
 
 part 'home_view_model.g.dart';
@@ -28,11 +31,38 @@ class HomeViewModel extends _$HomeViewModel {
         filterType,
         isGlobalSearch,
       );
+      List<ChatModel> localSearchResultsChats = [];
+      List<MessageModel> localSearchResultsMessages = [];
+      List<List<MapEntry<int, int>>> localSearchResultsChatTitleMatches = [];
+      List<List<MapEntry<int, int>>> localSearchResultsChatMessagesMatches = [];
+      if (searchSpace.contains('chats')) {
+        final localResult =
+            // ignore: avoid_manual_providers_as_generated_provider_dependency
+            ref.read(homeLocalRepositoryProvider).searchLocally(
+                  query,
+                  filterType,
+                );
+        localSearchResultsChats = localResult.searchResultsChats;
+        localSearchResultsMessages = localResult.searchResultsMessages;
+        localSearchResultsChatTitleMatches =
+            localResult.searchResultsChatTitleMatches;
+        localSearchResultsChatMessagesMatches =
+            localResult.searchResultsChatMessagesMatches;
+      }
 
       if (result.appError != null) {
         debugPrint('Error: ${result.appError}');
       } else {
-        state = state.copyWith(searchResults: result.searchResults);
+        state = state.copyWith(
+          localSearchResultsChats: localSearchResultsChats,
+          localSearchResultsMessages: localSearchResultsMessages,
+          localSearchResultsChatTitleMatches:
+              localSearchResultsChatTitleMatches,
+          localSearchResultsChatMessagesMatches:
+              localSearchResultsChatMessagesMatches,
+          searchResults: result.searchResults,
+          globalSearchResults: result.globalSearchResults,
+        );
       }
     } catch (e) {
       debugPrint('Error: $e');
