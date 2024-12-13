@@ -269,7 +269,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       }
     }
 
-    if (mediaUrl != null || !UPLOAD_MEDIA) {
+    if (mediaUrl != null || (!UPLOAD_MEDIA && needUploadMedia)) {
       messageText = caption ?? '';
     }
 
