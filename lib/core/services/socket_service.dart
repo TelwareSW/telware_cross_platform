@@ -13,6 +13,7 @@ class SocketService {
   late Function() _onConnect;
   late EventHandler _eventHandler;
   bool isConnected = false, _isReconnecting = false;
+  Timer? timer1, timer2;
 
   final Duration _retryDelay =
       Duration(seconds: SOCKET_RECONNECT_DELAY_SECONDS);
@@ -28,6 +29,11 @@ class SocketService {
     _sessionId = sessionId ?? _sessionId;
     _onConnect = onConnect ?? _onConnect;
     _eventHandler = eventHandler ?? _eventHandler;
+
+    isConnected = false;
+    _isReconnecting = false;
+    timer1?.cancel();
+    timer2?.cancel();
 
     _connect();
   }
@@ -60,37 +66,45 @@ class SocketService {
 
     _socket.onConnectError((error) {
       debugPrint('### Connection error: $error');
+      isConnected = false;
       onError();
     });
 
     _socket.onError((error) {
       debugPrint('### Socket error: $error');
+      isConnected = false;
       onError();
     });
 
     _socket.onDisconnect((_) {
       debugPrint('Disconnected from server');
+      isConnected = false;
       _isReconnecting = false;
     });
   }
 
   void onError() {
-    _socket.disconnect();
-    isConnected = false;
+    if (isConnected) return;
+    disconnect();
     _eventHandler.stopProcessing();
 
     if (_isReconnecting) return;
     _isReconnecting = true;
-    Timer(_retryDelay, () {
+    timer1 = Timer(_retryDelay, () {
       _isReconnecting = false;
       _connect();
+      timer2 = Timer(_retryDelay, () {
+        _isReconnecting = false;
+        onError();
+      });
     });
   }
 
   void disconnect() {
-    debugPrint('*** called the socket disconnect');
     _socket.disconnect();
+    _socket.destroy();
     isConnected = false;
+    debugPrint('### Socket connection destroyed');
   }
 
   void on(String event, Function(dynamic data) callback) {

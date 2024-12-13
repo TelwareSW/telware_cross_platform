@@ -4,9 +4,14 @@ part 'chatting_enums.g.dart';
 
 enum EventType {
   sendMessage(event: 'SEND_MESSAGE'),
+  pinMessageClient(event: 'PIN_MESSAGE_CLIENT'),
+  unpinMessageClient(event: 'UNPIN_MESSAGE_CLIENT'),
+  pinMessageServer(event: 'PIN_MESSAGE_SERVER'),
+  unpinMessageServer(event: 'UNPIN_MESSAGE_SERVER'),
   sendAnnouncement(event: 'SEND_ANNOUNCEMENT'),
   updateDraft(event: 'UPDATE_DRAFT'),
-  editMessage(event: 'EDIT_MESSAGE'),
+  editMessageClient(event: 'EDIT_MESSAGE_CLIENT'),
+  editMessageServer(event: 'EDIT_MESSAGE_SERVER'),
   deleteMessage(event: 'DELETE_MESSAGE'),
   replyOnMessage(event: 'REPLY_MESSAGE'),
   forwardMessage(event: 'FORWARD_MESSAGE'),

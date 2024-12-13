@@ -18,7 +18,13 @@ class EventHandler {
   bool _isProcessing = false; // Flag to control processing loop
   bool _stopRequested = false; // Flag to request stopping the loop
 
-  void init(Queue<MessageEvent> eventsQueue) {
+  void init(
+    Queue<MessageEvent> eventsQueue, {
+    required String userId,
+    required String sessionId,
+  }) {
+    _userId = userId;
+    _sessionId = sessionId;
     _queue = eventsQueue;
     _socket.connect(
       serverUrl: SOCKET_URL,
@@ -96,7 +102,7 @@ class EventHandler {
       } catch (e) {
         debugPrint('Error processing event: ${currentEvent.runtimeType}, $e');
         if (failingCounter == EVENT_FAIL_LIMIT) {
-          _stopRequested =true;
+          _stopRequested = true;
           _socket.onError();
         }
         await Future.delayed(const Duration(seconds: 2));
@@ -112,9 +118,37 @@ class EventHandler {
     // receive a message
     _socket.on(EventType.receiveMessage.event, (response) async {
       try {
+        debugPrint('/|\\ got a message id: ${response['id']}');
         _chattingController.receiveMsg(response);
       } on Exception catch (e) {
         debugPrint('!!! Error in recieving a message:\n${e.toString()}');
+      }
+    });
+    // pin a message
+    _socket.on(EventType.pinMessageServer.event, (response) async {
+      try {
+        _chattingController.pinMessageServer(
+            response['messageId'] as String, response['chatId'] as String);
+      } on Exception catch (e) {
+        debugPrint('!!! Error in pinning a message:\n${e.toString()}');
+      }
+    });
+    // unpin a message
+    _socket.on(EventType.unpinMessageServer.event, (response) async {
+      try {
+        _chattingController.pinMessageServer(
+            response['messageId'] as String, response['chatId'] as String);
+      } on Exception catch (e) {
+        debugPrint('!!! Error in unpinning a message:\n${e.toString()}');
+      }
+    });
+    // edit a message
+    _socket.on(EventType.editMessageServer.event, (response) async {
+      try {
+        debugPrint('#!#! this is a response of edit:');
+        _chattingController.editMessageIdAck(chatId: response['chatId'], content: response['content'], msgId: response['id']);
+      } on Exception catch (e) {
+        debugPrint('!!! Error in editing a message:\n${e.toString()}');
       }
     });
 

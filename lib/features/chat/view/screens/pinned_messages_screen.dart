@@ -347,6 +347,7 @@ class _PinnedMessagesScreen extends ConsumerState<PinnedMessagesScreen>
                                               replyMessage = message;
                                             });
                                           },
+                                          onEdit: (_) {},
                                           onPin: (message) {
                                             setState(() {
                                               pinnedMessages.contains(message)
