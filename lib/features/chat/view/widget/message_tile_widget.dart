@@ -166,18 +166,25 @@ class MessageTileWidget extends ConsumerWidget {
           Wrap(
             children: [
               HighlightTextWidget(
-                  key: ValueKey(
-                      '$keyValue${MessageKeys.messageContentPostfix.value}'),
-                  text: messageModel.content?.toJson()['text'] ?? "",
-                  normalStyle: const TextStyle(
-                    color: Palette.primaryText,
-                    fontSize: 16,
+                key: ValueKey(
+                    '$keyValue${MessageKeys.messageContentPostfix.value}'),
+                text: messageModel.content?.toJson()['text'] ?? "",
+                normalStyle: const TextStyle(
+                  color: Palette.primaryText,
+                  fontSize: 16,
+                ),
+                highlightStyle: const TextStyle(
+                  color: Palette.primaryText,
+                  fontSize: 16,
+                  backgroundColor: Color.fromRGBO(
+                    246,
+                    225,
+                    2,
+                    0.43,
                   ),
-                  highlightStyle: const TextStyle(
-                      color: Palette.primaryText,
-                      fontSize: 16,
-                      backgroundColor: Color.fromRGBO(246, 225, 2, 0.43)),
-                  highlights: highlights),
+                ),
+                highlights: highlights,
+              ),
               SizedBox(width: isSentByMe ? 70.0 : 55.0),
               const Text("")
             ],

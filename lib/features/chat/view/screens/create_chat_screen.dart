@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
@@ -12,9 +13,15 @@ import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
+import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
+import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/call_overlay_widget.dart';
+import 'package:telware_cross_platform/features/chat/view/widget/chat_tile_widget.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
+import 'package:telware_cross_platform/features/home/models/home_state.dart';
+import 'package:telware_cross_platform/features/home/view_model/home_view_model.dart';
+import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
 import 'package:telware_cross_platform/features/user/view/widget/user_chats.dart';
 import 'package:telware_cross_platform/features/user/view_model/user_view_model.dart';
 
@@ -34,7 +41,12 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
     with TickerProviderStateMixin {
   late List<Map<String, dynamic>> fullUserChats;
   late List<Map<String, dynamic>> userChats;
-  late List<Map<String, dynamic>> channelChats;
+  List<ChatModel> globalSearchResults = [];
+  List<ChatModel> localSearchResultsChats = [];
+  List<MessageModel> localSearchResultsMessages = [];
+  List<List<MapEntry<int, int>>> localSearchResultsChatTitleMatches = [];
+  List<List<MapEntry<int, int>>> localSearchResultsChatMessagesMatches = [];
+  List<ChatModel> remoteSearchResults = [];
   late TabController _tabController;
   final ScrollController scrollController = ScrollController();
   final TextEditingController searchController = TextEditingController();
@@ -45,7 +57,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(vsync: this, length: 9);
+    _tabController = TabController(vsync: this, length: 7);
     fullUserChats = <Map<String, dynamic>>[
       {"options": <Map<String, dynamic>>[]}
     ];
@@ -72,8 +84,53 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
     context.push(ChatScreen.route, extra: chat);
   }
 
+  Widget sectionName(String name) {
+    final dynamic section = {
+      "trailingFontSize": 13.0,
+      "padding": const EdgeInsets.fromLTRB(25, 12, 9, 7),
+      "lineHeight": 1.2,
+      "options": <Map<String, dynamic>>[],
+      "trailingColor": Palette.background,
+      "trailing": name,
+    };
+    final title = section["title"] ?? "";
+    final trailingFontSize = section["trailingFontSize"];
+    final lineHeight = section["lineHeight"];
+    final padding = section["padding"];
+    final options = section["options"];
+    final trailing = section["trailing"] ?? "";
+    final titleFontSize = section["titleFontSize"];
+    final trailingColor = section["trailingColor"];
+    return SettingsSection(
+      title: title,
+      titleFontSize: titleFontSize,
+      padding: padding,
+      trailingFontSize: trailingFontSize,
+      trailingLineHeight: lineHeight,
+      settingsOptions: options,
+      trailing: trailing,
+      trailingColor: trailingColor,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    ref.listen<HomeState>(
+      homeViewModelProvider,
+      (_, state) {
+        globalSearchResults = state.globalSearchResults;
+        localSearchResultsChats = state.localSearchResultsChats;
+        localSearchResultsMessages = state.localSearchResultsMessages;
+        localSearchResultsChatTitleMatches =
+            state.localSearchResultsChatTitleMatches;
+        localSearchResultsChatMessagesMatches =
+            state.localSearchResultsChatMessagesMatches;
+        remoteSearchResults = state.searchResults;
+        setState(() {});
+      },
+    );
+
+    ChatKeys.resetChatTilePrefixSubvalue();
     return Scaffold(
       backgroundColor: Palette.secondary,
       appBar: AppBar(
@@ -133,10 +190,10 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
           labelPadding:
               const EdgeInsets.only(left: 18.0, right: 18.0, top: 2.0),
           tabs: const [
+            Tab(text: 'Users'),
             Tab(text: 'Chats'),
             Tab(text: 'Channels'),
             Tab(text: 'Media'),
-            Tab(text: 'Links'),
             Tab(text: 'Files'),
             Tab(text: 'Music'),
             Tab(text: 'Voice'),
@@ -202,23 +259,50 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
                           child: UserChats(chatSections: userChats),
                         );
                       } else {
-                        return const Center(
+                        if (globalSearchResults.isEmpty &&
+                            localSearchResultsChats.isEmpty &&
+                            localSearchResultsMessages.isEmpty &&
+                            remoteSearchResults.isEmpty) {
+                          return const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                LottieViewer(
+                                  path: 'assets/tgs/EasterDuck.tgs',
+                                  width: 100,
+                                  height: 100,
+                                ),
+                                TitleElement(
+                                  name: 'No results',
+                                  color: Palette.primaryText,
+                                  fontSize: Sizes.primaryText - 2,
+                                  fontWeight: FontWeight.bold,
+                                  padding: EdgeInsets.only(bottom: 0, top: 10),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                        return SingleChildScrollView(
                           child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              LottieViewer(
-                                path: 'assets/tgs/EasterDuck.tgs',
-                                width: 100,
-                                height: 100,
-                              ),
-                              TitleElement(
-                                name: 'No results',
-                                color: Palette.primaryText,
-                                fontSize: Sizes.primaryText - 2,
-                                fontWeight: FontWeight.bold,
-                                padding: EdgeInsets.only(bottom: 0, top: 10),
-                              ),
+                              if (globalSearchResults.isNotEmpty) ...[
+                                sectionName('Global Search'),
+                                ..._generateChatsList(globalSearchResults),
+                              ],
+                              if (localSearchResultsMessages.isNotEmpty ||
+                                  localSearchResultsChats.isNotEmpty ||
+                                  remoteSearchResults.isNotEmpty) ...[
+                                sectionName('Messages'),
+                                ..._generateChatTiles(
+                                  localSearchResultsChats,
+                                  localSearchResultsMessages,
+                                  localSearchResultsChatTitleMatches,
+                                  localSearchResultsChatMessagesMatches,
+                                ),
+                                ..._generateChatsList(remoteSearchResults),
+                              ],
                             ],
                           ),
                         );
@@ -232,6 +316,80 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
         ],
       ),
     );
+  }
+
+  List<Widget> _generateChatsList(List<ChatModel> chats) {
+    List<Widget> chatTiles = [];
+    int index = 0;
+    for (final chat in chats) {
+      final Random random = Random();
+      DateTime currentDate = DateTime.now().subtract(const Duration(days: 7));
+      final MessageModel fakeMessage = MessageModel(
+        senderId: ref.read(userProvider)!.id ?? '1234',
+        messageType: MessageType.normal,
+        messageContentType: MessageContentType.text,
+        content: TextContent("Hello! This is a fake message."),
+        timestamp: currentDate.add(Duration(
+          hours: random.nextInt(24),
+          minutes: random.nextInt(60),
+        )),
+        userStates: {},
+      );
+      final message =
+          chat.messages.isNotEmpty ? chat.messages.last : fakeMessage;
+
+      chatTiles.add(
+        ChatTileWidget(
+          key: ValueKey(ChatKeys.chatTilePrefix.value +
+              ChatKeys.chatTilePrefixSubvalue +
+              index.toString()),
+          chatModel: chat,
+          displayMessage: message,
+          sentByUser: message.senderId == ref.read(userProvider)!.id,
+          senderID: message.senderId,
+        ),
+      );
+      index++;
+    }
+    return chatTiles;
+  }
+
+  void _getSearchResults(String query, List<String> searchSpace,
+      String filterType, bool isGlobalSearch) async {
+    ref
+        .read(homeViewModelProvider.notifier)
+        .fetchSearchResults(query, searchSpace, filterType, isGlobalSearch);
+  }
+
+  List<Widget> _generateChatTiles(
+      List<ChatModel> localSearchResultsChats,
+      List<MessageModel> localSearchResultsMessages,
+      List<List<MapEntry<int, int>>> localSearchResultsChatTitleMatches,
+      List<List<MapEntry<int, int>>> localSearchResultsChatMessagesMatches) {
+    List<Widget> chatTiles = [];
+    int index = 0;
+    for (final message in localSearchResultsMessages) {
+      final ChatModel chat = localSearchResultsChats[index];
+      final List<MapEntry<int, int>> chatTitleMatches =
+          localSearchResultsChatTitleMatches[index];
+      final List<MapEntry<int, int>> chatMessagesMatches =
+          localSearchResultsChatMessagesMatches[index];
+      chatTiles.add(
+        ChatTileWidget(
+          key: ValueKey(ChatKeys.chatTilePrefix.value +
+              ChatKeys.chatTilePrefixSubvalue +
+              index.toString()),
+          chatModel: chat,
+          displayMessage: message,
+          sentByUser: message.senderId == ref.read(userProvider)!.id,
+          senderID: message.senderId,
+          highlights: chatMessagesMatches,
+          titleHighlights: chatTitleMatches,
+        ),
+      );
+      index++;
+    }
+    return chatTiles;
   }
 
   List<Map<String, dynamic>> _generateUsersList(List<UserModel> users) {
@@ -261,6 +419,38 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
   }
 
   void filterView(String query) {
+    int currentTabIndex = _tabController.index; // Get the current tab index
+    List<String> allSearchSpace = ['channels', 'groups', 'chats'];
+    switch (currentTabIndex) {
+      case 1:
+        _getSearchResults(query, allSearchSpace, 'text', true);
+        break;
+      case 2:
+        // channels
+        _getSearchResults(query, ['channels', 'groups'], 'text', true);
+        break;
+      case 3:
+        // media
+        _getSearchResults(query, allSearchSpace, 'images/videos', false);
+        break;
+      case 4:
+        // files
+        _getSearchResults(query, allSearchSpace, 'files', false);
+        break;
+      case 5:
+        // music
+        _getSearchResults(query, allSearchSpace, 'music', false);
+        break;
+      case 6:
+        // voice
+        _getSearchResults(query, allSearchSpace, 'voice', false);
+        break;
+      default:
+        break;
+    }
+  }
+
+  void filterUserChats(String query) {
     var filteredChats = <Map<String, dynamic>>[
       {"options": <Map<String, dynamic>>[]}
     ];
@@ -275,6 +465,12 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
     setState(() {
       userChats = filteredChats;
     });
+  }
+
+  void search(String query) {
+    if (query.isNotEmpty) {
+      _getSearchResults(query, ['channels'], 'channel', true);
+    }
   }
 
   String randomPrivacy() {

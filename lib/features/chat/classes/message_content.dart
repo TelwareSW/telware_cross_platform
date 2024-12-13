@@ -89,7 +89,7 @@ class AudioContent extends MessageContent {
 
   @override
   String getContent() {
-    return '';
+    return fileName ?? '';
   }
 }
 
@@ -120,7 +120,7 @@ class DocumentContent extends MessageContent {
 
   @override
   String getContent() {
-    return '';
+    return fileName ?? '';
   }
 }
 
@@ -158,7 +158,7 @@ class ImageContent extends MessageContent {
 
   @override
   String getContent() {
-    return '';
+    return caption ?? '';
   }
 }
 
@@ -195,7 +195,7 @@ class VideoContent extends MessageContent {
 
   @override
   String getContent() {
-    return '';
+    return fileName ?? '';
   }
 }
 
@@ -226,7 +226,7 @@ class EmojiContent extends MessageContent {
 
   @override
   String getContent() {
-    return '';
+    return fileName ?? '';
   }
 }
 
@@ -256,7 +256,7 @@ class GIFContent extends MessageContent {
 
   @override
   String getContent() {
-    return '';
+    return fileName ?? '';
   }
 }
 
@@ -286,6 +286,6 @@ class StickerContent extends MessageContent {
 
   @override
   String getContent() {
-    return '';
+    return fileName ?? '';
   }
 }
