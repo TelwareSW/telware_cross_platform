@@ -187,6 +187,7 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
                                         highlightStyle: const TextStyle(
                                           color: Palette.primary,
                                           fontSize: 16,
+                                          fontWeight: FontWeight.w500,
                                           backgroundColor: Colors.transparent,
                                         ),
                                         highlights: widget.titleHighlights,
@@ -282,7 +283,6 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
                                                 ),
                                                 highlightStyle: const TextStyle(
                                                   color: Palette.primary,
-                                                  fontSize: 16,
                                                   backgroundColor:
                                                       Colors.transparent,
                                                 ),

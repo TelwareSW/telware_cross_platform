@@ -12,6 +12,7 @@ import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
+import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
@@ -271,6 +272,14 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
     if (mediaUrl != null || (!UPLOAD_MEDIA && needUploadMedia)) {
       messageText = caption ?? '';
+      if (isMusic == false && contentType == 'audio') {
+        UserModel me = ref.read(userProvider)!;
+        String displayName =
+            (me.screenFirstName.isEmpty) && (me.screenLastName.isEmpty)
+                ? me.username
+                : '${me.screenFirstName} ${me.screenLastName}'.trim();
+        fileName = '$displayName ➜ ${chatModel?.title}';
+      }
     }
 
     content = createMessageContent(
