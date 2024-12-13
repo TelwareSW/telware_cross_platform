@@ -128,7 +128,13 @@ class ChattingController {
     // get the events and give it to the handler from local
     final events = _localRepository.getEventQueue(_ref.read(userProvider)!.id!);
     final newEvents = events.map((e) => e.copyWith(controller: this));
-    _eventHandler.init(Queue<MessageEvent>.from(newEvents.toList()));
+    _eventHandler.init(
+      Queue<MessageEvent>.from(
+        newEvents.toList(),
+      ),
+      userId: _ref.read(userProvider)!.id!,
+      sessionId: _ref.read(tokenProvider)!,
+    );
   }
 
   Future<void> newLoginInit() async {
@@ -234,9 +240,17 @@ class ChattingController {
       }
     }
 
-    final identifier = _ref
-        .read(chatsViewModelProvider.notifier)
-        .addSentMessage(content, chatID!, msgType, contentType);
+    final identifier =
+        _ref.read(chatsViewModelProvider.notifier).addSentMessage(
+              content: content,
+              chatId: chatID!,
+              msgType: msgType,
+              msgContentType: contentType,
+              parentMessageId: parentMessgeId,
+            );
+
+    debugPrint(
+        '^^^ new message identifier: ${identifier.chatId} ${identifier.msgLocalId}');
 
     debugPrint(
         '^^^ new message identifier: ${identifier.chatId} ${identifier.msgLocalId}');
@@ -246,10 +260,10 @@ class ChattingController {
 
     final msgEvent = SendMessageEvent({
       'chatId': chatID,
-      'media': null,
+      'media': content.getMediaURL(),
       'content': content.getContent(),
       'contentType': contentType.content,
-      'parentMessageId': null,
+      'parentMessageId': parentMessgeId,
       'senderId': _ref.read(userProvider)!.id,
       'isFirstTime': isChatNew,
       'chatType': chatType.type,
@@ -258,8 +272,7 @@ class ChattingController {
     },
         controller: this,
         msgId: identifier.msgLocalId,
-        chatId: identifier.chatId
-     );
+        chatId: identifier.chatId);
 
     _eventHandler.addEvent(msgEvent);
   }
@@ -270,36 +283,66 @@ class ChattingController {
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
 
+  void pinMessageClient(String msgId, String chatId) {
+    final isToPin =
+        _ref.read(chatsViewModelProvider.notifier).pinMessage(msgId, chatId);
+    _eventHandler.addEvent(
+      PinMessageEvent({
+        'chatId': chatId,
+        'messageId': msgId,
+      }, msgId: msgId, chatId: chatId, isToPin: isToPin),
+    );
+  }
+
+  void pinMessageServer(String msgId, String chatId) {
+    _ref.read(chatsViewModelProvider.notifier).pinMessage(msgId, chatId);
+  }
+
   // delete a message
-  void deleteMsg(String msgID, String chatID, DeleteMessageType deleteType) {
-    // final msgEvent = DeleteMessageEvent({
-    //   'messageId': msgID,
-    // }, controller: this);
+  void deleteMsg(
+    String msgId,
+    String chatId,
+    DeleteMessageType deleteType, {
+    bool isFromServer = false,
+  }) {
+    if (!isFromServer) {
+      final msgEvent = DeleteMessageEvent({
+        'messageId': msgId,
+      }, controller: this, msgId: msgId, chatId: chatId);
 
-    // _eventHandler.addEvent(msgEvent);
+      _eventHandler.addEvent(msgEvent);
+    }
 
-    // _ref.read(chatsViewModelProvider.notifier).deleteMessage(msgID, chatID);
-    // _localRepository.setChats(
-    //     _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
+    _ref.read(chatsViewModelProvider.notifier).deleteMessage(msgId, chatId);
+    _localRepository.setChats(
+        _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
 
   // edit a message
 
-  void editMsg(String msgID, String chatID, MessageContent content) {
-    // final msgEvent = EditMessageEvent({
-    //   'chatId': chatID,
-    //   'senderId': _ref.read(userProvider)!.id,
-    //   'messageId': msgID,
-    //   'content': content
-    // }, controller: this);
+  void editMsg(String msgId, String chatId, String content) {
+    final msgEvent = EditMessageEvent(
+      {
+        'chatId': chatId,
+        'senderId': _ref.read(userProvider)!.id,
+        'messageId': msgId,
+        'content': content
+      },
+      controller: this,
+      msgId: msgId,
+      chatId: chatId,
+    );
 
-    // _eventHandler.addEvent(msgEvent);
+    _eventHandler.addEvent(msgEvent);
 
-    // _ref
-    //     .read(chatsViewModelProvider.notifier)
-    //     .editMessage(msgID, chatID, content);
-    // _localRepository.setChats(
-    //     _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
+    _ref.read(chatsViewModelProvider.notifier).editMessage(
+          msgId: msgId,
+          chatId: chatId,
+          content: content,
+        );
+
+    _localRepository.setChats(
+        _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
 
   // receive a message
@@ -447,6 +490,21 @@ class ChattingController {
           msgLocalId: msgLocalId,
           chatId: chatId,
         );
+    _localRepository.setChats(
+        _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
+  }
+
+  void editMessageIdAck({
+    required String msgId,
+    required String content,
+    required String chatId,
+  }) {
+    _ref.read(chatsViewModelProvider.notifier).editMessage(
+          msgId: msgId,
+          content: content,
+          chatId: chatId,
+        );
+
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }

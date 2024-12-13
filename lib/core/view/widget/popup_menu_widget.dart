@@ -19,12 +19,12 @@ class PopupMenuWidget extends StatelessWidget {
     required Function onSelected,
   }) {
     final RenderBox renderBox = context.findRenderObject() as RenderBox;
-    position ??= renderBox.localToGlobal(Offset.zero);
+    final position = renderBox.localToGlobal(Offset.zero);  // Get position on screen
 
     showMenu(
       context: context,
       color: Palette.secondary,
-      position: RelativeRect.fromLTRB(position.dx, position.dy - renderBox.size.height, position.dx + 100, position.dy),
+      position: RelativeRect.fromLTRB(position.dx, position.dy + renderBox.size.height / 2, position.dx + 100, position.dy),
       items: <PopupMenuEntry<dynamic>>[
         ...items.map((item) {
           return PopupMenuItem<dynamic>(

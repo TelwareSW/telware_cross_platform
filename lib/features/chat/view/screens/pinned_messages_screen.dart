@@ -181,223 +181,230 @@ class _PinnedMessagesScreen extends ConsumerState<PinnedMessagesScreen>
     final type = chatModel.type;
     var messagesIndex = 0;
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            if (isShowAsList) {
-              setState(() {
-                isShowAsList = false;
-              });
-            } else if (isSearching) {
-              setState(() {
-                isSearching = false;
-                _messageMatches.clear();
-              });
-            } else {
-              Navigator.pop(context);
-            }
-          },
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              if (isShowAsList) {
+                setState(() {
+                  isShowAsList = false;
+                });
+              } else if (isSearching) {
+                setState(() {
+                  isSearching = false;
+                  _messageMatches.clear();
+                });
+              } else {
+                Navigator.pop(context);
+              }
+            },
+          ),
+          title:
+              Text('${chatModel.messages.length.toString()} Pinned Messages'),
         ),
-        title: Text('${chatModel.messages.length.toString()} Pinned Messages'),
-      ),
-      body: Stack(
-        children: [
-          // Chat content area (with background SVG)
-          Positioned.fill(
-            child: SvgPicture.asset(
-              'assets/svg/default_pattern.svg',
-              fit: BoxFit.cover,
-              colorFilter: const ColorFilter.mode(
-                Palette.trinary,
-                BlendMode.srcIn,
+        body: Stack(
+          children: [
+            // Chat content area (with background SVG)
+            Positioned.fill(
+              child: SvgPicture.asset(
+                'assets/svg/default_pattern.svg',
+                fit: BoxFit.cover,
+                colorFilter: const ColorFilter.mode(
+                  Palette.trinary,
+                  BlendMode.srcIn,
+                ),
               ),
             ),
-          ),
-          Column(
-            children: [
-              Expanded(
-                child: isShowAsList
-                    ? Container(
-                        color: Palette.background,
-                        child: Column(
-                          children: _messageIndices.map((index) {
-                            MessageModel msg = chatContent[index];
-                            return SettingsOptionWidget(
-                              imagePath: getRandomImagePath(),
-                              text: msg.senderId,
-                              subtext: msg.content?.toJson()['text'] ?? "",
-                              onTap: () => {
-                                // TODO (Mo): Create scroll to msg
-                              },
-                            );
-                          }).toList(),
-                        ),
-                      )
-                    : chatContent.isEmpty
-                        ? Center(
-                            child: Container(
-                              width: 210,
-                              margin:
-                                  const EdgeInsets.symmetric(horizontal: 24.0),
-                              padding: const EdgeInsets.all(22.0),
-                              decoration: BoxDecoration(
-                                color: const Color.fromRGBO(4, 86, 57, 0.30),
-                                borderRadius: BorderRadius.circular(16.0),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Colors.black26,
-                                    blurRadius: 4.0,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  const Text(
-                                    'No messages here yet...',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: Palette.primaryText,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  const SizedBox(height: 10),
-                                  const Text(
-                                    'Send a message or tap the greeting below.',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Palette.primaryText,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  LottieViewer(
-                                    path: _chosenAnimation,
-                                    width: 100,
-                                    height: 100,
-                                    isLooping: true,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )
-                        : SingleChildScrollView(
-                            controller:
-                                _scrollController, // Use the ScrollController
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 10),
-                              child: Column(
-                                children: chatContent.mapIndexed((index, item) {
-                                  if (item is DateLabelWidget) {
-                                    return item;
-                                  } else if (item is MessageModel) {
-                                    return Row(
-                                      mainAxisAlignment: item.senderId ==
-                                              ref.read(userProvider)!.id
-                                          ? selectedMessages.isNotEmpty
-                                              ? MainAxisAlignment.spaceBetween
-                                              : MainAxisAlignment.end
-                                          : MainAxisAlignment.start,
-                                      children: [
-                                        if (selectedMessages
-                                            .isNotEmpty) // Show check icon only if selected
-                                          Container(
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              border: Border.all(
-                                                  color: Colors.white,
-                                                  width: 1), // White border
-                                            ),
-                                            child: CircleAvatar(
-                                              radius: 12,
-                                              backgroundColor: selectedMessages
-                                                          .contains(item) ==
-                                                      true
-                                                  ? Colors.green
-                                                  : Colors.transparent,
-                                              child: selectedMessages
-                                                          .contains(item) ==
-                                                      true
-                                                  ? const Icon(Icons.check,
-                                                      color: Colors.white,
-                                                      size: 16)
-                                                  : const SizedBox(),
-                                            ),
-                                          ),
-                                        if (selectedMessages.contains(item))
-                                          const SizedBox(width: 10),
-                                        MessageTileWidget(
-                                          key: ValueKey(
-                                              '${MessageKeys.messagePrefix}${messagesIndex++}'),
-                                          chatId: chatModel.id ?? '',
-                                          messageModel: item,
-                                          isSentByMe: item.senderId ==
-                                              ref.read(userProvider)!.id,
-                                          showInfo: type == ChatType.group,
-                                          highlights: _messageMatches[index] ??
-                                              const [MapEntry(0, 0)],
-                                          onReply: (message) {
-                                            setState(() {
-                                              replyMessage = message;
-                                            });
-                                          },
-                                          onPin: (message) {
-                                            setState(() {
-                                              pinnedMessages.contains(message)
-                                                  ? pinnedMessages
-                                                      .remove(message)
-                                                  : pinnedMessages.add(message);
-                                            });
-                                          },
-                                          onPress: selectedMessages.isEmpty
-                                              ? null
-                                              : () {},
-                                          onLongPress: (message) {
-                                            setState(() {
-                                              replyMessage = null;
-                                              selectedMessages.contains(message)
-                                                  ? selectedMessages
-                                                      .remove(message)
-                                                  : selectedMessages
-                                                      .add(message);
-                                            });
-                                          },
-                                          onDownloadTap: (String? filePath) {},
-                                        ),
-                                      ],
-                                    );
-                                  } else {
-                                    return const SizedBox.shrink();
-                                  }
-                                }).toList(),
-                              ),
-                            ),
+            Column(
+              children: [
+                Expanded(
+                  child: isShowAsList
+                      ? Container(
+                          color: Palette.background,
+                          child: Column(
+                            children: _messageIndices.map((index) {
+                              MessageModel msg = chatContent[index];
+                              return SettingsOptionWidget(
+                                imagePath: getRandomImagePath(),
+                                text: msg.senderId,
+                                subtext: msg.content?.toJson()['text'] ?? "",
+                                onTap: () => {
+                                  // TODO (Mo): Create scroll to msg
+                                },
+                              );
+                            }).toList(),
                           ),
-              ),
-              GestureDetector(
-                child: Container(
-                    width: double.infinity,
-                    color: Palette.secondary,
-                    child: const Center(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 10),
-                        child: Text(
-                          'UNPIN ALL MESSAGES',
-                          style: TextStyle(color: Palette.primary),
+                        )
+                      : chatContent.isEmpty
+                          ? Center(
+                              child: Container(
+                                width: 210,
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 24.0),
+                                padding: const EdgeInsets.all(22.0),
+                                decoration: BoxDecoration(
+                                  color: const Color.fromRGBO(4, 86, 57, 0.30),
+                                  borderRadius: BorderRadius.circular(16.0),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Colors.black26,
+                                      blurRadius: 4.0,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    const Text(
+                                      'No messages here yet...',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: Palette.primaryText,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 10),
+                                    const Text(
+                                      'Send a message or tap the greeting below.',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Palette.primaryText,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    LottieViewer(
+                                      path: _chosenAnimation,
+                                      width: 100,
+                                      height: 100,
+                                      isLooping: true,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          : SingleChildScrollView(
+                              controller:
+                                  _scrollController, // Use the ScrollController
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 10),
+                                child: Column(
+                                  children:
+                                      chatContent.mapIndexed((index, item) {
+                                    if (item is DateLabelWidget) {
+                                      return item;
+                                    } else if (item is MessageModel) {
+                                      return Row(
+                                        mainAxisAlignment: item.senderId ==
+                                                ref.read(userProvider)!.id
+                                            ? selectedMessages.isNotEmpty
+                                                ? MainAxisAlignment.spaceBetween
+                                                : MainAxisAlignment.end
+                                            : MainAxisAlignment.start,
+                                        children: [
+                                          if (selectedMessages
+                                              .isNotEmpty) // Show check icon only if selected
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                    color: Colors.white,
+                                                    width: 1), // White border
+                                              ),
+                                              child: CircleAvatar(
+                                                radius: 12,
+                                                backgroundColor:
+                                                    selectedMessages.contains(
+                                                                item) ==
+                                                            true
+                                                        ? Colors.green
+                                                        : Colors.transparent,
+                                                child: selectedMessages
+                                                            .contains(item) ==
+                                                        true
+                                                    ? const Icon(Icons.check,
+                                                        color: Colors.white,
+                                                        size: 16)
+                                                    : const SizedBox(),
+                                              ),
+                                            ),
+                                          if (selectedMessages.contains(item))
+                                            const SizedBox(width: 10),
+                                          MessageTileWidget(
+                                            key: ValueKey(
+                                                '${MessageKeys.messagePrefix}${messagesIndex++}'),
+                                                chatId: chatModel.id ?? '',
+                                            messageModel: item,
+                                            isSentByMe: item.senderId ==
+                                                ref.read(userProvider)!.id,
+                                            showInfo: type == ChatType.group,
+                                            highlights:
+                                                _messageMatches[index] ??
+                                                    const [MapEntry(0, 0)],
+                                            onReply: (message) {
+                                              setState(() {
+                                                replyMessage = message;
+                                              });
+                                            },
+                                            onEdit: (_) {},
+                                            onPin: (message) {
+                                              setState(() {
+                                                pinnedMessages.contains(message)
+                                                    ? pinnedMessages
+                                                        .remove(message)
+                                                    : pinnedMessages
+                                                        .add(message);
+                                              });
+                                            },
+                                            onPress: selectedMessages.isEmpty
+                                                ? null
+                                                : () {},
+                                            onLongPress: (message) {
+                                              setState(() {
+                                                replyMessage = null;
+                                                selectedMessages
+                                                        .contains(message)
+                                                    ? selectedMessages
+                                                        .remove(message)
+                                                    : selectedMessages
+                                                        .add(message);
+                                              });
+                                            },
+                                            onDownloadTap:
+                                                (String? filePath) {},
+                                          ),
+                                        ],
+                                      );
+                                    } else {
+                                      return const SizedBox.shrink();
+                                    }
+                                  }).toList(),
+                                ),
+                              ),
+                            ),
+                ),
+                GestureDetector(
+                  child: Container(
+                      width: double.infinity,
+                      color: Palette.secondary,
+                      child: const Center(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 10),
+                          child: Text(
+                            'UNPIN ALL MESSAGES',
+                            style: TextStyle(color: Palette.primary),
+                          ),
                         ),
-                      ),
-                    )),
-              )
-            ],
-          ),
-        ],
-      ),
-    );
+                      )),
+                )
+              ],
+            ),
+          ],
+        ));
   }
 }

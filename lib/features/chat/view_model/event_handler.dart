@@ -5,6 +5,7 @@ import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/core/services/socket_service.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
+import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 
@@ -18,7 +19,13 @@ class EventHandler {
   bool _isProcessing = false; // Flag to control processing loop
   bool _stopRequested = false; // Flag to request stopping the loop
 
-  void init(Queue<MessageEvent> eventsQueue) {
+  void init(
+    Queue<MessageEvent> eventsQueue, {
+    required String userId,
+    required String sessionId,
+  }) {
+    _userId = userId;
+    _sessionId = sessionId;
     _queue = eventsQueue;
     _socket.connect(
       serverUrl: SOCKET_URL,
@@ -96,7 +103,7 @@ class EventHandler {
       } catch (e) {
         debugPrint('Error processing event: ${currentEvent.runtimeType}, $e');
         if (failingCounter == EVENT_FAIL_LIMIT) {
-          _stopRequested =true;
+          _stopRequested = true;
           _socket.onError();
         }
         await Future.delayed(const Duration(seconds: 2));
@@ -111,10 +118,59 @@ class EventHandler {
     debugPrint('!!! connected succeffully');
     // receive a message
     _socket.on(EventType.receiveMessage.event, (response) async {
+      // todo(ahmed): when the back returns this an object, remove the array
+      final message = response[0];
+      // todo(ahmed): Remove backend returns media
+      message['media'] = "8eee5713799015ff.jpg";
       try {
-        _chattingController.receiveMsg(response);
+        debugPrint('/|\\ got a message id: ${message['id']}');
+        _chattingController.receiveMsg(message);
       } on Exception catch (e) {
         debugPrint('!!! Error in recieving a message:\n${e.toString()}');
+      }
+    });
+    // pin a message
+    _socket.on(EventType.pinMessageServer.event, (response) async {
+      try {
+        _chattingController.pinMessageServer(
+            response['messageId'] as String, response['chatId'] as String);
+      } on Exception catch (e) {
+        debugPrint('!!! Error in pinning a message:\n${e.toString()}');
+      }
+    });
+    // unpin a message
+    _socket.on(EventType.unpinMessageServer.event, (response) async {
+      try {
+        _chattingController.pinMessageServer(
+            response['messageId'] as String, response['chatId'] as String);
+      } on Exception catch (e) {
+        debugPrint('!!! Error in unpinning a message:\n${e.toString()}');
+      }
+    });
+    // edit a message
+    _socket.on(EventType.editMessageServer.event, (response) async {
+      try {
+        debugPrint('#!#! this is a response of edit:');
+        _chattingController.editMessageIdAck(
+            chatId: response['chatId'],
+            content: response['content'],
+            msgId: response['id']);
+      } on Exception catch (e) {
+        debugPrint('!!! Error in editing a message:\n${e.toString()}');
+      }
+    });
+
+    _socket.on(EventType.deleteMessageServer.event, (response) async {
+      try {
+        debugPrint('#!#! this is a response of delete:');
+        _chattingController.deleteMsg(
+          response['id'],
+          response['chatId'],
+          DeleteMessageType.all,
+          isFromServer: true,
+        );
+      } on Exception catch (e) {
+        debugPrint('!!! Error in editing a message:\n${e.toString()}');
       }
     });
 

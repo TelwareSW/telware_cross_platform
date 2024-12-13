@@ -32,6 +32,7 @@ class MessageEvent {
   final String chatId;
 
   final ChattingController? _controller;
+  static const int _timeOutSeconds = 10;
 
   MessageEvent(
     this.payload, {
@@ -41,7 +42,7 @@ class MessageEvent {
   }) : _controller = controller;
 
   Future<bool> execute(SocketService socket,
-      {Duration timeout = const Duration(seconds: 10)}) async {
+      {Duration timeout = const Duration(seconds: _timeOutSeconds)}) async {
     debugPrint('!!! this is the one excuted');
     return true;
   }
@@ -94,15 +95,12 @@ class SendMessageEvent extends MessageEvent {
   @override
   Future<bool> execute(
     SocketService socket, {
-    Duration timeout = const Duration(seconds: 10),
+    Duration timeout = const Duration(seconds: MessageEvent._timeOutSeconds),
   }) async {
-    debugPrint('!!! Sending event statrted');
-    print(payload as Map);
-    debugPrint('--- did not reach here in sending event');
-
     return await _execute(
       socket,
       EventType.sendMessage.event,
+      timeout: timeout,
       ackCallback: (res, timer, completer) {
         try {
           final response = res as Map<String, dynamic>;
@@ -166,11 +164,18 @@ class DeleteMessageEvent extends MessageEvent {
   }) async {
     return await _execute(
       socket,
-      EventType.deleteMessage.event,
+      EventType.deleteMessageClient.event,
       ackCallback: (response, timer, completer) {
+        print(response);
         if (!completer.isCompleted) {
-          timer.cancel(); // Cancel the timeout timer
-          completer.complete(true);
+          timer.cancel(); // Cancel the timer on acknowledgment
+          if (response['success'].toString() == 'true') {
+            debugPrint('&()& delete msg sucessefully');
+            completer.complete(true);
+          } else {
+            debugPrint('&()& delete msg failed');
+            completer.complete(false);
+          }
         }
       },
     );
@@ -208,11 +213,30 @@ class EditMessageEvent extends MessageEvent {
   }) async {
     return await _execute(
       socket,
-      EventType.deleteMessage.event,
-      ackCallback: (response, timer, completer) {
-        if (!completer.isCompleted) {
-          timer.cancel(); // Cancel the timeout timer
-          completer.complete(true);
+      EventType.editMessageClient.event,
+      ackCallback: (res, timer, completer) {
+        try {
+          final response = res as Map<String, dynamic>;
+          if (!completer.isCompleted) {
+            timer.cancel(); // Cancel the timer on acknowledgment
+            if (response['success'].toString() == 'true') {
+              final res = response['res']['message'] as Map<String, dynamic>;
+
+              _controller!.editMessageIdAck(
+                msgId: res['_id'] ?? res['id'] ?? msgId,
+                content: res['content'],
+                chatId: res['chatId'] ?? chatId,
+              );
+
+              completer.complete(true);
+            } else {
+              completer.complete(false);
+            }
+          }
+        } catch (e) {
+          debugPrint('--- Error in processing the acknowledgement of the edit');
+          debugPrint(e.toString());
+          completer.complete(false);
         }
       },
     );
@@ -234,7 +258,7 @@ class EditMessageEvent extends MessageEvent {
   }
 }
 
-@HiveType(typeId: 11)
+@HiveType(typeId: 23)
 class UpdateDraftEvent extends MessageEvent {
   UpdateDraftEvent(
     super.payload, {
@@ -278,6 +302,49 @@ class UpdateDraftEvent extends MessageEvent {
       controller: controller ?? _controller,
       msgId: msgId ?? this.msgId,
       chatId: chatId ?? this.chatId,
+    );
+  }
+}
+
+@HiveType(typeId: 24)
+class PinMessageEvent extends MessageEvent {
+  PinMessageEvent(
+    super.payload, {
+    super.controller,
+    required super.msgId,
+    required super.chatId,
+    required this.isToPin,
+  });
+
+  @HiveField(3)
+  bool isToPin;
+
+  @override
+  Future<bool> execute(
+    SocketService socket, {
+    Duration timeout = const Duration(seconds: MessageEvent._timeOutSeconds),
+  }) async {
+    final event = isToPin
+        ? EventType.pinMessageClient.event
+        : EventType.unpinMessageClient.event;
+    socket.emit(event, payload);
+    return true;
+  }
+
+  @override
+  PinMessageEvent copyWith({
+    dynamic payload,
+    ChattingController? controller,
+    String? msgId,
+    String? chatId,
+    bool? isToPin,
+  }) {
+    return PinMessageEvent(
+      payload ?? this.payload,
+      controller: controller ?? _controller,
+      msgId: msgId ?? this.msgId,
+      chatId: chatId ?? this.chatId,
+      isToPin: isToPin ?? this.isToPin,
     );
   }
 }

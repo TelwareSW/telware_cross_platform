@@ -13,14 +13,13 @@ import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_floating_action_button.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/member_tile_widget.dart';
-import 'package:telware_cross_platform/features/groups/view/screens/group_creation_details.dart';
 import 'package:telware_cross_platform/features/user/view_model/user_view_model.dart';
-
-import '../../../../core/routes/routes.dart';
 
 class CreateGroupScreen extends ConsumerStatefulWidget {
   static const String route = '/create-group';
-  const CreateGroupScreen({super.key});
+  final List<MessageModel>? forwardedMessages;
+
+  const CreateGroupScreen({super.key, this.forwardedMessages = const []});
 
   @override
   ConsumerState<CreateGroupScreen> createState() => _CreateGroupScreen();
@@ -120,38 +119,38 @@ class _CreateGroupScreen extends ConsumerState<CreateGroupScreen>
               ),
             ),
           ),
-          Expanded(
-            child: FutureBuilder<List<UserModel>>(
-              future: _usersFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                } else if (snapshot.hasError) {
-                  return Center(
-                    child: Text(
-                      'Error loading users: ${snapshot.error}',
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  );
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(
-                    child: LottieViewer(
-                      path: 'assets/tgs/EasterDuck.tgs',
-                      width: 100,
-                      height: 100,
-                    ),
-                  );
-                } else {
-                  if (!_isUserContentSet) {
-                    userChats = _generateUsersList(snapshot.data!);
-                    _isUserContentSet = true;
-                  }
-                  return ListView.builder(
-                    shrinkWrap: true, // To allow proper layout within parent widgets
-                    itemCount: userChats.length,
-                    itemBuilder: (context, index) {
+          FutureBuilder<List<UserModel>>(
+            future: _usersFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child:
+                  CircularProgressIndicator(), // Show a loading indicator while data is loading
+                );
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Text(
+                    'Error loading users: ${snapshot.error}',
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                );
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(
+                  child: LottieViewer(
+                    path: 'assets/tgs/EasterDuck.tgs',
+                    width: 100,
+                    height: 100,
+                  ),
+                );
+              } else {
+                if (!_isUserContentSet) {
+                  userChats = _generateUsersList(snapshot.data!);
+                  _isUserContentSet = true;
+                }
+
+                return SingleChildScrollView(
+                  child: Column(
+                    children: List.generate(userChats.length, (index) {
                       UserModel user = userChats[index];
                       return MemberTileWidget(
                         text: '${user.screenFirstName} ${user.screenLastName}',
@@ -160,23 +159,18 @@ class _CreateGroupScreen extends ConsumerState<CreateGroupScreen>
                         onTap: () => _toggleSelectUser(user),
                         showSelected: _selectedUsers.contains(user),
                       );
-                    },
-                  );
-                }
-              },
-            ),
+                    }
+                    )
+                  ),
+                );
+              }
+            },
           ),
         ],
       ),
       floatingActionButton: AuthFloatingActionButton(
         onSubmit: () {
-          print('fdsafas');
-          print(_selectedUsers);
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => GroupCreationDetails(members:_selectedUsers,)),
-          );
-          // context.push(GroupCreationDetails.route);
+          context.go('/new-group');
         },
       ),
     );
@@ -184,6 +178,7 @@ class _CreateGroupScreen extends ConsumerState<CreateGroupScreen>
 
   List<UserModel> _generateUsersList(List<UserModel> users) {
     UserModel myUser = ref.read(userProvider)!;
+    // Return other users only
     return users.where((user) => user.id != myUser.id).toList();
   }
 
@@ -197,6 +192,7 @@ class _CreateGroupScreen extends ConsumerState<CreateGroupScreen>
         return text.contains(query.toLowerCase());
       }).toList();
     }
+    print(filteredChats);
     setState(() {
       userChats = filteredChats;
     });
