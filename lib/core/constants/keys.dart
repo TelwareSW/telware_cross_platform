@@ -77,9 +77,11 @@ class ChangeEmailKeys {
 }
 
 class ChatKeys {
+  static const ValueKey<String> chatsListKey = ValueKey('chats-list');
   static String chatTilePrefixSubvalue = DateTime.now().millisecondsSinceEpoch.toString();
   static void resetChatTilePrefixSubvalue() => chatTilePrefixSubvalue = DateTime.now().millisecondsSinceEpoch.toString();
-  
+
+  static const ValueKey<String> createChatButton = ValueKey('create-chat-button');
   static const ValueKey<String> chatSearchButton = ValueKey('chat-search-button');
   static const ValueKey<String> chatMuteButton = ValueKey('chat-mute-button');
   static const ValueKey<String> chatSearchInput = ValueKey('chat-search-input');
@@ -104,6 +106,11 @@ class ChatKeys {
 }
 
 class MessageKeys {
+  static const ValueKey<String> messagesContainer = ValueKey('messages-container');
+  static const ValueKey<String> messageInput = ValueKey('message-input');
+  static const ValueKey<String> messageSendButton = ValueKey('message-send-button');
+  static const ValueKey<String> messageAttachmentButton = ValueKey('message-attachment-button');
+  static const ValueKey<String> messageVoiceButton = ValueKey('message-voice-button');
   static const ValueKey<String> messagePrefix = ValueKey('message-');
   static const ValueKey<String> messageSenderPostfix = ValueKey('-sender');
   static const ValueKey<String> messageContentPostfix = ValueKey('-content');

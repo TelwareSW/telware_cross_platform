@@ -17,7 +17,7 @@ import 'package:telware_cross_platform/features/chat/view_model/chatting_control
 // see/read/open a chat - not in api
 // draft
 
-// recieve msg/reply/draft
+// receive msg/reply/draft
 // edit/delete msg
 
 part 'message_event_models.g.dart';
@@ -27,23 +27,23 @@ class MessageEvent {
   @HiveField(0)
   final Map<String, dynamic> payload;
   @HiveField(1)
-  final String msgId;
+  final String? msgId;
   @HiveField(2)
-  final String chatId;
+  final String? chatId;
 
   final ChattingController? _controller;
   static const int _timeOutSeconds = 10;
 
   MessageEvent(
     this.payload, {
-    required this.msgId,
-    required this.chatId,
+    this.msgId,
+    this.chatId,
     ChattingController? controller,
   }) : _controller = controller;
 
   Future<bool> execute(SocketService socket,
       {Duration timeout = const Duration(seconds: _timeOutSeconds)}) async {
-    debugPrint('!!! this is the one excuted');
+    debugPrint('!!! this is the one executed');
     return true;
   }
 
@@ -116,8 +116,8 @@ class SendMessageEvent extends MessageEvent {
 
               _controller!.updateMessageId(
                 msgId: messageId,
-                msgLocalId: msgId,
-                chatId: chatId,
+                msgLocalId: msgId!,
+                chatId: chatId!,
               );
               completer.complete(true);
             } else {
@@ -247,6 +247,12 @@ class EditMessageEvent extends MessageEvent {
     ChattingController? controller,
     String? msgId,
     String? chatId,
+    String? senderId,
+    String? targetId,
+    String? clientId,
+    String? voiceCallId,
+    String? type,
+    dynamic data,
   }) {
     return EditMessageEvent(
       payload ?? this.payload,
@@ -295,6 +301,12 @@ class UpdateDraftEvent extends MessageEvent {
     ChattingController? controller,
     String? msgId,
     String? chatId,
+    String? senderId,
+    String? targetId,
+    String? clientId,
+    String? voiceCallId,
+    String? type,
+    dynamic data,
   }) {
     return UpdateDraftEvent(
       payload ?? this.payload,
@@ -336,14 +348,135 @@ class PinMessageEvent extends MessageEvent {
     ChattingController? controller,
     String? msgId,
     String? chatId,
-    bool? isToPin,
   }) {
     return PinMessageEvent(
       payload ?? this.payload,
       controller: controller ?? _controller,
       msgId: msgId ?? this.msgId,
       chatId: chatId ?? this.chatId,
-      isToPin: isToPin ?? this.isToPin,
+      isToPin: isToPin,
+    );
+  }
+}
+
+@HiveType(typeId: 25)
+class CreateCallEvent extends MessageEvent {
+  CreateCallEvent(
+    super.payload, {
+    super.controller,
+    required super.chatId,
+  });
+
+  @override
+  Future<bool> execute(
+    SocketService socket, {
+    Duration timeout = const Duration(seconds: MessageEvent._timeOutSeconds),
+  }) async {
+    socket.emit(EventType.createCall.event, payload);
+    return true;
+  }
+
+  @override
+  CreateCallEvent copyWith({
+    dynamic payload,
+    ChattingController? controller,
+    String? msgId,
+    String? chatId,
+  }) {
+    return CreateCallEvent(
+      payload ?? this.payload,
+      controller: controller ?? _controller,
+      chatId: chatId ?? this.chatId,
+    );
+  }
+}
+
+@HiveType(typeId: 26)
+class JoinCallEvent extends MessageEvent {
+  JoinCallEvent(
+    super.payload, {
+    super.controller,
+  });
+
+  @override
+  Future<bool> execute(
+    SocketService socket, {
+    Duration timeout = const Duration(seconds: MessageEvent._timeOutSeconds),
+  }) async {
+    socket.emit(EventType.joinCall.event, payload);
+    return true;
+  }
+
+  @override
+  JoinCallEvent copyWith({
+    dynamic payload,
+    ChattingController? controller,
+    String? msgId,
+    String? chatId,
+  }) {
+    return JoinCallEvent(
+      payload ?? this.payload,
+      controller: controller ?? _controller,
+    );
+  }
+}
+
+@HiveType(typeId: 27)
+class SendSignalEvent extends MessageEvent {
+  SendSignalEvent(
+    super.payload, {
+    super.controller,
+  });
+
+  @override
+  Future<bool> execute(
+    SocketService socket, {
+    Duration timeout = const Duration(seconds: MessageEvent._timeOutSeconds),
+  }) async {
+    socket.emit(EventType.sendCallSignal.event, payload);
+    return true;
+  }
+
+  @override
+  SendSignalEvent copyWith({
+    dynamic payload,
+    ChattingController? controller,
+    String? msgId,
+    String? chatId,
+  }) {
+    return SendSignalEvent(
+      payload ?? this.payload,
+      controller: controller ?? _controller,
+    );
+  }
+}
+
+@HiveType(typeId: 28)
+class LeaveCallEvent extends MessageEvent {
+  LeaveCallEvent(
+    super.payload, {
+    super.controller,
+  });
+
+  @override
+  Future<bool> execute(
+    SocketService socket, {
+    Duration timeout = const Duration(seconds: MessageEvent._timeOutSeconds),
+  }) async {
+    socket.emit(EventType.leaveCall.event, payload);
+    return true;
+  }
+
+  @override
+  LeaveCallEvent copyWith({
+    dynamic payload,
+    ChattingController? controller,
+    String? msgId,
+    String? chatId,
+  }) {
+    return LeaveCallEvent(
+      payload ?? this.payload,
+      controller: controller ?? _controller,
     );
   }
 }

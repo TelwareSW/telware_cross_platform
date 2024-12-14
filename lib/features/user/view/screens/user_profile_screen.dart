@@ -98,9 +98,9 @@ class _UserProfileScreen extends ConsumerState<UserProfileScreen>
                     IconButton(
                       icon: const Icon(Icons.call),
                       onPressed: () {
-                        ref.read(callStateProvider.notifier).startCall();
+                        ref.read(callStateProvider.notifier).setCaller(true);
                         debugPrint("Sending user: $_user");
-                        context.push(Routes.callScreen, extra: _user);
+                        context.push(Routes.callScreen, extra: {"user": _user, "voiceCallId": null});
                       },
                     )
                   ],

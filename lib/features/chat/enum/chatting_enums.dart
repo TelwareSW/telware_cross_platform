@@ -19,6 +19,14 @@ enum EventType {
   //////////////////////////////
   receiveMessage(event: 'RECEIVE_MESSAGE'),
   receiveReply(event: 'RECEIVE_REPLY'),
+  createCall(event: 'CREATE-CALL'),
+  leaveCall(event: 'LEAVE'),
+  joinCall(event: 'JOIN-CALL'),
+  sendCallSignal(event: 'SIGNAL-SERVER'),
+  receiveJoinedCall(event: 'CLIENT-JOINED'),
+  receiveLeftCall(event: 'CLIENT-LEFT'),
+  receiveCallSignal(event: 'SIGNAL-CLIENT'),
+  receiveCallStarted(event: 'CALL-STARTED'),
   ;
 
   final String event;

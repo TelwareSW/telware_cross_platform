@@ -49,7 +49,8 @@ class SocketService {
       // 'autoConnect': false,
       "transports": ["websocket"],
       'query': {'userId': _userId},
-      'auth': {'sessionId': _sessionId}
+      'auth': {'sessionId': _sessionId},
+      'secure': true,
     });
 
     _socket.io.options?['debug'] = true; // Enable debug logs

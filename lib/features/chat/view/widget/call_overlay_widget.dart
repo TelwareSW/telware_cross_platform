@@ -20,15 +20,15 @@ class CallOverlay extends StatelessWidget {
         final callNotifier = ref.read(callStateProvider.notifier);
         final UserModel? callee = callState.callee;
         final String displayName = '${callee?.screenFirstName} ${callee?.screenLastName}';
-        debugPrint("CallOverlay: isCallActive: ${callState.isCallActive}, isMinimized: ${callState.isMinimized}");
-        if (!callState.isCallActive || !callState.isMinimized) {
+        debugPrint("CallOverlay: voiceCallId: ${callState.voiceCallId}, isMinimized: ${callState.isMinimized}");
+        if (callState.voiceCallId == null || !callState.isMinimized) {
           return const SizedBox.shrink(); // Do not show overlay if not minimized
         }
 
         return GestureDetector(
           onTap: () {
             callNotifier.maximizeCall();
-            context.push(Routes.callScreen);
+            context.push(Routes.callScreen, extra: {'user': callee, 'voiceCallId': callState.voiceCallId});
           },
           child: Container(
             decoration: const BoxDecoration(

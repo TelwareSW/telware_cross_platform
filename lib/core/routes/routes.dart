@@ -298,8 +298,8 @@ class Routes {
           GoRoute(
             path: Routes.callScreen,
             builder: (context, state) {
-              final UserModel? userModel = state.extra as UserModel?;
-              return CallScreen(callee: userModel);
+              final Map<String, dynamic>? extra = state.extra as Map<String, dynamic>?;
+              return CallScreen(callee: extra?['user'] as UserModel?, voiceCallId: extra?['voiceCallId'] as String?);
             },
           ),
         ],

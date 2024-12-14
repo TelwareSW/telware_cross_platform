@@ -574,6 +574,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                             ? NewChatScreenSticker(
                                 chosenAnimation: _chosenAnimation)
                             : ChatMessagesList(
+                                key: MessageKeys.messagesContainer,
                                 messages: messages,
                                 scrollController: _scrollController,
                                 chatContent: chatContent,

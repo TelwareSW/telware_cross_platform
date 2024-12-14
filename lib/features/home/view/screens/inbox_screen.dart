@@ -2,10 +2,12 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/create_chat_screen.dart';
+import 'package:telware_cross_platform/features/chat/view/widget/call_overlay_widget.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 import 'package:telware_cross_platform/features/home/view/widget/drawer.dart';
 import 'package:telware_cross_platform/features/stories/view/widget/chats_list.dart';
@@ -108,6 +110,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
                   Padding(
                       padding: const EdgeInsets.all(16),
                       child: IconButton(
+                          key: ChatKeys.createChatButton,
                           onPressed: () =>
                               {context.push(CreateChatScreen.route)},
                           icon: const Icon(
@@ -115,6 +118,9 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
                             size: Sizes.iconSize,
                           )))
                 ],
+              ),
+              const SliverToBoxAdapter(
+                child: CallOverlay(),
               ),
               const ChatsList(),
             ],

@@ -17,6 +17,7 @@ import 'package:telware_cross_platform/features/chat/classes/message_content.dar
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
+import 'package:telware_cross_platform/features/chat/providers/call_provider.dart';
 import 'package:telware_cross_platform/features/chat/repository/chat_local_repository.dart';
 import 'package:telware_cross_platform/features/chat/repository/chat_remote_repository.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
@@ -580,5 +581,18 @@ class ChattingController {
     } catch (e) {
       return null;
     }
+  }
+
+  Future<void> receiveCall(Map<String, dynamic> response) async {
+    // Check if user is in a call already
+    if (_ref.read(callStateProvider.notifier).isInCall()) {
+      // Send busy signal
+      debugPrint('!!! Call rejected: ${response['voiceCallId']}');
+      return;
+    }
+
+    UserModel? caller = await getOtherUser(response['snederId']);
+    _ref.read(callStateProvider.notifier).receiveCall(response['voiceCallId'], caller);
+    debugPrint('!!! Call received: ${response['voiceCallId']}');
   }
 }

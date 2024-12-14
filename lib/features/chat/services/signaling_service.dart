@@ -1,12 +1,16 @@
 import 'dart:convert';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
+import 'package:telware_cross_platform/features/chat/view_model/event_handler.dart';
 
 typedef StreamStateCallback = void Function(MediaStream stream);
-typedef DescriptionCallback = void Function(RTCSessionDescription description);
+typedef DescriptionCallback = void Function(RTCSessionDescription description, String senderId);
 typedef CandidateCallback = void Function(RTCIceCandidate candidate);
+typedef ResponseCallback = void Function(dynamic response);
 
 class Signaling {
+  final EventHandler _eventHandler = EventHandler.instance;
   Map<String, dynamic> configuration = {
     'iceServers': [
       {
@@ -25,152 +29,234 @@ class Signaling {
   DescriptionCallback? onOffer;
   DescriptionCallback? onAnswer;
   CandidateCallback? onICECandidate;
-
-  late IO.Socket socket;
+  ResponseCallback? onCallStarted;
+  ResponseCallback? onReceiveJoinedCall;
+  ResponseCallback? onReceiveLeftCall;
 
   String? roomId;
 
-  Signaling() {
-    _initializeSocket();
-  }
-
-  void _initializeSocket() {
-    socket = IO.io('http://localhost:3000', <String, dynamic>{
-      'transports': ['websocket'],
-    });
-
-    socket.onConnect((_) {
-      print('Connected to signaling server');
-    });
-
-    socket.on('signal', (data) {
-      handleSignal(data);
-    });
-
-    socket.onDisconnect((_) {
-      print('Disconnected from signaling server');
-    });
-  }
-
   void handleSignal(dynamic data) async {
-    Map<String, dynamic> message = jsonDecode(data);
+    debugPrint('Received message: $data');
 
-    if (message['type'] == 'offer') {
-      final description = RTCSessionDescription(message['sdp'], message['type']);
-      onOffer?.call(description);
-    } else if (message['type'] == 'answer') {
-      final description = RTCSessionDescription(message['sdp'], message['type']);
-      onAnswer?.call(description);
-    } else if (message['type'] == 'candidate') {
+
+    if (data['type'] == 'OFFER') {
+      final description = RTCSessionDescription(data['data'], "offer");
+      onOffer?.call(description, data['senderId']);
+    } else if (data['type'] == 'ANSWER') {
+      final description = RTCSessionDescription(data['data'], "answer");
+      onAnswer?.call(description, data['senderId']);
+    } else if (data['type'] == 'ICE') {
       final candidate = RTCIceCandidate(
-        message['candidate'],
-        message['sdpMid'],
-        message['sdpMLineIndex'],
+        data['data']['candidate'],
+        data['data']['sdpMid'],
+        data['data']['sdpMLineIndex'],
       );
       onICECandidate?.call(candidate);
     }
   }
 
-  Future<RTCSessionDescription> createOffer() async {
-    peerConnection = await createPeerConnection(configuration);
-    registerPeerConnectionListeners();
+  Future<RTCSessionDescription> createOffer(calleeId) async {
+    await registerPeerConnection(calleeId);
 
     localStream?.getTracks().forEach((track) {
-      peerConnection?.addTrack(track, localStream!);
+      peerConnection!.addTrack(track, localStream!);
     });
 
     var offer = await peerConnection!.createOffer();
-    await peerConnection!.setLocalDescription(offer);
-
-    socket.emit('signal', jsonEncode({
-      'type': 'offer',
-      'sdp': offer.sdp,
-      'room': roomId,
-    }));
+    await setLocalDescription(offer);
 
     return offer;
   }
 
   Future<RTCSessionDescription> createAnswer() async {
-    var answer = await peerConnection!.createAnswer();
-    await peerConnection!.setLocalDescription(answer);
+    localStream?.getTracks().forEach((track) {
+      peerConnection!.addTrack(track, localStream!);
+    });
 
-    socket.emit('signal', jsonEncode({
-      'type': 'answer',
-      'sdp': answer.sdp,
-      'room': roomId,
-    }));
+    peerConnection!.onTrack = (RTCTrackEvent event) async {
+      debugPrint('Remote stream added');
+      event.streams[0].getTracks().forEach((track) {
+        remoteStream!.addTrack(track);
+      });
+    };
+
+    var answer = await peerConnection!.createAnswer();
+    await setLocalDescription(answer);
 
     return answer;
   }
 
   Future<void> addCandidate(RTCIceCandidate candidate) async {
-    await peerConnection?.addCandidate(candidate);
+    await peerConnection!.addCandidate(candidate);
+  }
+
+  Future<void> registerPeerConnection(String callerId) async {
+    peerConnection ??= await createPeerConnection(configuration);
+    registerPeerConnectionListeners(callerId);
   }
 
   Future<void> setRemoteDescription(RTCSessionDescription description) async {
-    await peerConnection?.setRemoteDescription(description);
+    debugPrint('Setting remote description to: ${description.sdp}');
+    debugPrint('Remote SDP: ${description.sdp}');
+    await peerConnection!.setRemoteDescription(description);
   }
 
-  void setLocalDescription(RTCSessionDescription description) {
-    peerConnection?.setLocalDescription(description);
+  Future<void> setLocalDescription(RTCSessionDescription description) async {
+    debugPrint('Local SDP: ${description.sdp}');
+    await peerConnection!.setLocalDescription(description);
   }
 
-  Future<void> openUserMedia() async {
-    localStream = await navigator.mediaDevices.getUserMedia({
-      'video': true,
-      'audio': false,
-    });
-  }
+  Future<void> hangUp(RTCVideoRenderer localRenderer) async {
+    closeUserMedia(localRenderer);
 
-  Future<void> hangUp() async {
-    localStream?.getTracks().forEach((track) {
+    remoteStream?.getTracks().forEach((track) {
       track.stop();
     });
 
     if (peerConnection != null) peerConnection!.close();
-    socket.disconnect();
+    _eventHandler.addEvent(
+      LeaveCallEvent(
+        {
+          'voiceCallId': roomId,
+        }
+      )
+    );
+
+    localStream!.dispose();
+    remoteStream?.dispose();
   }
 
-  void registerPeerConnectionListeners() {
-    peerConnection?.onIceCandidate = (RTCIceCandidate? candidate) {
+  void registerPeerConnectionListeners(String calleeId) {
+    peerConnection!.onIceCandidate = (RTCIceCandidate? candidate) {
       if (candidate != null) {
-        socket.emit('signal', jsonEncode({
-          'type': 'candidate',
-          'candidate': candidate.candidate,
-          'sdpMid': candidate.sdpMid,
-          'sdpMLineIndex': candidate.sdpMLineIndex,
-          'room': roomId,
-        }));
+        debugPrint('Generated ICE Candidate: ${candidate.candidate}');
+        debugPrint('Sending to peer...');
+        _eventHandler.addEvent(
+          SendSignalEvent(
+            {
+              'type': 'ICE',
+              'data': {
+                'candidate': candidate.candidate,
+                'sdpMid': candidate.sdpMid,
+                'sdpMLineIndex': candidate.sdpMLineIndex,
+              },
+              'targetId': calleeId,
+              'voiceCallId': roomId,
+            },
+          )
+        );
       }
     };
 
-    peerConnection?.onTrack = (RTCTrackEvent event) {
-      event.streams[0].getTracks().forEach((track) {
-        remoteStream?.addTrack(track);
-      });
-      onAddRemoteStream?.call(event.streams[0]);
+    peerConnection!.onConnectionState = (RTCPeerConnectionState state) {
+      debugPrint('Connection state changed: $state');
+    };
+
+    peerConnection!.onSignalingState = (RTCSignalingState state) {
+      debugPrint('Signaling state changed: $state');
+    };
+
+    peerConnection!.onIceConnectionState = (RTCIceConnectionState state) {
+      debugPrint('ICE connection state changed: $state');
+    };
+
+    peerConnection!.onTrack = (RTCTrackEvent event) async {
+      if (event.streams.isNotEmpty) {
+        for (var track in event.streams[0].getTracks()) {
+          remoteStream?.addTrack(track);
+        }
+        onAddRemoteStream?.call(event.streams[0]);
+      }
+    };
+
+    peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
+      debugPrint('ICE gathering state changed: $state');
+    };
+
+    peerConnection!.onAddStream = (MediaStream stream) {
+      debugPrint('Remote stream added');
+      onAddRemoteStream?.call(stream);
+      remoteStream = stream;
     };
   }
 
-  void sendOffer(RTCSessionDescription offer) {
-    socket.emit('signal', jsonEncode({
-      'type': 'offer',
-      'sdp': offer.sdp,
-      'room': roomId,
-    }));
+  void sendOffer(RTCSessionDescription offer, String targetId) {
+    debugPrint('Sending offer to $targetId');
+    debugPrint('Offer: ${offer.sdp}');
+    _eventHandler.addEvent(
+      SendSignalEvent(
+        {
+          'type': 'OFFER',
+          'data': offer.sdp,
+          'targetId': targetId,
+          'voiceCallId': roomId,
+        },
+      )
+    );
   }
 
-  void sendAnswer(RTCSessionDescription answer) {
-    socket.emit('signal', jsonEncode({
-      'type': 'answer',
-      'sdp': answer.sdp,
-      'room': roomId,
-    }));
+  void sendAnswer(RTCSessionDescription answer, String targetId) {
+    debugPrint('Sending answer to $targetId');
+    _eventHandler.addEvent(
+      SendSignalEvent(
+        {
+          'type': 'ANSWER',
+          'data': answer.sdp,
+          'targetId': targetId,
+          'voiceCallId': roomId,
+        },
+      )
+    );
   }
 
-  void dispose() {
-    hangUp();
+  void createVoiceCall(String? chatId, String? targetId) {
+    _eventHandler.addEvent(
+      CreateCallEvent(
+        {
+          'chatId': chatId,
+          'targetId': targetId,
+        },
+        chatId: chatId,
+      )
+    );
   }
 
+  // Create a new instance of Signaling
+  Signaling._internal();
+
+  // Singleton instance
+  static final Signaling instance = Signaling._internal();
+
+  void joinCall(String voiceCallId) {
+    debugPrint('Chat: Joining call with id: $voiceCallId');
+    roomId = voiceCallId;
+    _eventHandler.addEvent(
+      JoinCallEvent(
+        {
+          'voiceCallId': voiceCallId,
+        }
+      )
+    );
+  }
+
+  Future<void> openUserMedia(RTCVideoRenderer localRenderer, RTCVideoRenderer remoteRenderer) async {
+    var stream = await navigator.mediaDevices.getUserMedia({
+      'audio': true,
+      'video': true,
+    });
+
+    localRenderer.srcObject = stream;
+    localStream = stream;
+
+    remoteRenderer.srcObject = await createLocalMediaStream('remoteStream');
+  }
+
+  Future<void> closeUserMedia(RTCVideoRenderer localRenderer) async {
+    localStream?.getTracks().forEach((track) {
+      track.stop();
+    });
+
+    // Optionally clear the renderer
+    localRenderer.srcObject = null;
+  }
 }
