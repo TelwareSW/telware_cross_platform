@@ -151,6 +151,86 @@ class EventHandler {
         debugPrint('!!! Error in editing a message:\n${e.toString()}');
       }
     });
+    _socket.on(EventType.receiveCreateGroup.event, (response) async {
+      try {
+        debugPrint('/|\\ got a group creation id:');
+        print(response.toString());
+        _chattingController.getUserChats();
+      } on Exception catch (e) {
+        debugPrint('!!! Error in recieving a message:\n${e.toString()}');
+      }
+    });
+
+    _socket.on(EventType.receiveCreateGroup.event, (response) async {
+      try {
+        debugPrint('/|\\ got a group creation id:');
+        print(response.toString());
+        _chattingController.getUserChats();
+      } on Exception catch (e) {
+        debugPrint('!!! Error in recieving a message:\n${e.toString()}');
+      }
+    });
+
+    _socket.on(EventType.receiveDeleteGroup.event, (response) async {
+      try {
+        debugPrint('/|\\ got a delete group id:');
+        print(response.toString());
+        _chattingController.getUserChats();
+      } on Exception catch (e) {
+        debugPrint('!!! Error in recieving a event:\n${e.toString()}');
+      }
+    });
+
+    _socket.on(EventType.receiveLeaveGroup.event, (response) async {
+      try {
+        debugPrint('/|\\ got a leave group id:');
+        print(response.toString());
+        _chattingController.getUserChats();
+      } on Exception catch (e) {
+        debugPrint('!!! Error in recieving a event:\n${e.toString()}');
+      }
+    });
+
+    _socket.on(EventType.receiveAddMember.event, (response) async {
+      try {
+        debugPrint('/|\\ got a AddMember :');
+        print(response.toString());
+        _chattingController.getUserChats();
+      } on Exception catch (e) {
+        debugPrint('!!! Error in recieving a event:\n${e.toString()}');
+      }
+    });
+
+    _socket.on(EventType.receiveAddAdmin.event, (response) async {
+      try {
+        debugPrint('/|\\ got a AddAdmin :');
+        print(response.toString());
+        _chattingController.getUserChats();
+      } on Exception catch (e) {
+        debugPrint('!!! Error in recieving a event:\n${e.toString()}');
+      }
+    });
+
+    _socket.on(EventType.receiveRemoveMember.event, (response) async {
+      try {
+        debugPrint('/|\\ got a receiveRemoveMember:');
+        print(response.toString());
+        _chattingController.getUserChats();
+      } on Exception catch (e) {
+        debugPrint('!!! Error in recieving a event:\n${e.toString()}');
+      }
+    });
+
+    _socket.on(EventType.receiveSetPermissions.event, (response) async {
+      try {
+        debugPrint('/|\\ got a receiveSetPermissions:');
+        print(response.toString());
+        _chattingController.getUserChats();
+      } on Exception catch (e) {
+        debugPrint('!!! Error in receiveSetPermissions a event:\n${e.toString()}');
+      }
+    });
+
 
     // todo(ahmed): add the rest of the recieved events
   }
