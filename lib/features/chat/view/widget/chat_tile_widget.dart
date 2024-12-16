@@ -69,40 +69,23 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
       case MessageContentType.text:
         return displayMessage.content?.getContent() ?? "";
       case MessageContentType.image:
-        _shiftHighlights("Photo: ");
         return "Photo$content";
       case MessageContentType.video:
-        _shiftHighlights("Video: ");
         return "Video$content";
       case MessageContentType.audio:
-        _shiftHighlights("Voice message: ");
         return "Voice message$content";
       case MessageContentType.file:
-        _shiftHighlights("File: ");
         return "File$content";
       case MessageContentType.sticker:
-        _shiftHighlights("Sticker: ");
         return "Sticker$content";
       case MessageContentType.emoji:
-        _shiftHighlights("Emoji: ");
         return "Emoji$content";
       case MessageContentType.gif:
-        _shiftHighlights("GIF: ");
         return "GIF$content";
       case MessageContentType.link:
-        _shiftHighlights("Link: ");
         return "Link$content";
       default:
         return "Unknown";
-    }
-  }
-
-  void _shiftHighlights(String prefix) {
-    for (int i = 0; i < widget.highlights.length; i++) {
-      widget.highlights[i] = MapEntry(
-        widget.highlights[i].key + prefix.length,
-        widget.highlights[i].value,
-      );
     }
   }
 

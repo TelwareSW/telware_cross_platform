@@ -44,6 +44,16 @@ class HomeLocalRepository {
       "music": "music",
       "text": "text",
     };
+    Map<String, String> shiftMappings = {
+      "image": "Photo: ",
+      "video": "Video: ",
+      "link": "Link: ",
+      "file": "File: ",
+      "audio": "Voice message: ",
+      "music": "Voice message: ",
+      "text": "",
+    };
+
     for (ChatModel chat in privateChats) {
       List<MessageModel> messages = chat.messages;
       for (MessageModel message in messages) {
@@ -57,7 +67,8 @@ class HomeLocalRepository {
             }
           }
           if (typeMappings[contentType] == filterType) {
-            List<MapEntry<int, int>> matches = kmp(content.getContent(), query);
+            List<MapEntry<int, int>> matches = _shiftHighlights(
+                shiftMappings[contentType]!, kmp(content.getContent(), query));
             List<MapEntry<int, int>> chatTitleMatches = kmp(chat.title, query);
             if (matches.isNotEmpty || chatTitleMatches.isNotEmpty) {
               searchResultsChats.add(chat);
@@ -76,4 +87,15 @@ class HomeLocalRepository {
       searchResultsChatMessagesMatches: searchResultsChatMessagesMatches
     );
   }
+}
+
+List<MapEntry<int, int>> _shiftHighlights(
+    String prefix, List<MapEntry<int, int>> highlights) {
+  for (int i = 0; i < highlights.length; i++) {
+    highlights[i] = MapEntry(
+      highlights[i].key + prefix.length,
+      highlights[i].value,
+    );
+  }
+  return highlights;
 }
