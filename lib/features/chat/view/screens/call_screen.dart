@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
@@ -61,6 +62,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     if (_localRenderer.srcObject == null) {
       _signaling.openUserMedia(_localRenderer, _remoteRenderer);
     }
+    _signaling.toggleVideoStream(false);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (callee != null && isCaller) {
@@ -159,7 +161,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
       body: Stack(
         children: [
           // Remote video
-          if (_signaling.checkRemoteVideoStream())
+          if (callState.isVideoCall)
             Positioned.fill(child: RTCVideoView(_remoteRenderer))
           else
             Container(
@@ -193,6 +195,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     IconButton(
+                      key: CallKeys.minimizeCallButton,
                       onPressed: () {
                         if (callState.voiceCallId == null) {
                           endCall();
@@ -244,22 +247,28 @@ class _CallScreenState extends ConsumerState<CallScreen> {
 
               // Call status or timer
               if (callState.isCallActive)
-                TimerDisplay(startDateTime: callState.startTime!)
+                TimerDisplay(
+                  key: CallKeys.callStatusText,
+                  startDateTime: callState.startTime!
+                )
               else if (callState.isCallInProgress)
                 const Text(
+                  key: CallKeys.callStatusText,
                   "Connecting...",
                   style: TextStyle(fontSize: 18, color: Palette.primaryText),
                 )
               else if (isCaller)
                   const Text(
+                    key: CallKeys.callStatusText,
                     "Requesting...",
                     style: TextStyle(fontSize: 18, color: Palette.primaryText),
                   )
                 else if (isReceivingCall)
-                    const Text(
-                      "Incoming call...",
-                      style: TextStyle(fontSize: 18, color: Palette.primaryText),
-                    ),
+                  const Text(
+                    key: CallKeys.callStatusText,
+                    "Incoming call...",
+                    style: TextStyle(fontSize: 18, color: Palette.primaryText),
+                  ),
 
               const Spacer(),
 
@@ -273,6 +282,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
                       Column(
                         children: [
                           InkWell(
+                            key: CallKeys.acceptCallButton,
                             onTap: () {
                               callNotifier.acceptCall();
                               _signaling.joinCall(voiceCallId!);
@@ -297,6 +307,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
                       Column(
                         children: [
                           InkWell(
+                            key: CallKeys.rejectCallButton,
                             onTap: () {
                               context.pop();
                               endCall();
@@ -321,6 +332,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
                     ]
                     else ...[
                       _controlButton(
+                        key: CallKeys.toggleSpeakerButton,
                         icon: callState.isSpeakerOn
                             ? Icons.volume_down
                             : Icons.volume_up,
@@ -328,6 +340,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
                         onTap: callNotifier.toggleSpeaker,
                       ),
                       _controlButton(
+                        key: CallKeys.toggleVideoButton,
                         icon: callState.isVideoCall
                             ? Icons.videocam_off
                             : Icons.videocam,
@@ -339,6 +352,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
                         },
                       ),
                       _controlButton(
+                        key: CallKeys.toggleMuteButton,
                         icon: callState.isMuted ? Icons.mic_off : Icons.mic,
                         isActive: callState.isMuted,
                         onTap: () {
@@ -347,6 +361,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
                         },
                       ),
                       _controlButton(
+                        key: CallKeys.endCallButton,
                         icon: Icons.call_end,
                         isActive: true,
                         isEndCall: true,
@@ -367,6 +382,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
   }
 
   Widget _controlButton({
+    Key? key,
     required IconData icon,
     required bool isActive,
     required VoidCallback onTap,
@@ -374,6 +390,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     bool isVideoCall = false,
   }) {
     return InkWell(
+      key: key,
       onTap: onTap,
       borderRadius: BorderRadius.circular(50),
       splashColor: isEndCall ? Colors.redAccent : Colors.greenAccent,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
@@ -96,6 +97,7 @@ class _UserProfileScreen extends ConsumerState<UserProfileScreen>
                   ]
                   else ...[
                     IconButton(
+                      key: CallKeys.startCallButton,
                       icon: const Icon(Icons.call),
                       onPressed: () {
                         ref.read(callStateProvider.notifier).setCaller(true);

@@ -442,6 +442,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                   ),
                   title: !isSearching
                       ? GestureDetector(
+                          key: ChatKeys.chatHeader,
                           onTap: () {
                           if (chatModel.type == ChatType.private) {
                             context.push(Routes.userProfile,

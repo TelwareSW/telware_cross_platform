@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cupertino_datetime_picker/flutter_cupertino_datetime_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
@@ -301,18 +302,19 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
                         final List<UserModel?> users = snapshot.data as List<UserModel?>;
                         return Column(
                           children: [
-                            for (final UserModel? user in users) ...[
-                              user == null ?
+                            for (int index = 0; index < users.length; index++) ...[
+                              users[index] == null ?
                               const SizedBox.shrink() :
                               Container(
                                 color: Palette.secondary,
                                 child: MemberTileWidget(
-                                  imagePath: user.photo,
-                                  text: '${user.screenFirstName} ${user.screenLastName}',
-                                  subtext: user.status,
+                                  key: ValueKey('${WidgetKeys.memberTilePrefix}$index'),
+                                  imagePath: users[index]!.photo,
+                                  text: '${users[index]!.screenFirstName} ${users[index]!.screenLastName}',
+                                  subtext: users[index]!.status,
                                   showDivider: false,
                                   onTap: () {
-                                    context.push(Routes.userProfile, extra: user.id);
+                                    context.push(Routes.userProfile, extra: users[index]!.id);
                                   },
                                 ),
                               ),

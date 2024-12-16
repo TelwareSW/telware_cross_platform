@@ -241,7 +241,7 @@ class Signaling {
   Future<void> openUserMedia(RTCVideoRenderer localRenderer, RTCVideoRenderer remoteRenderer) async {
     var stream = await navigator.mediaDevices.getUserMedia({
       'audio': true,
-      'video': false,
+      'video': true,
     });
 
     localRenderer.srcObject = stream;
@@ -260,53 +260,14 @@ class Signaling {
   }
 
   void toggleVideoStream(bool isVideoEnabled) {
-    debugPrint("Call: Video Stream is enabled: $isVideoEnabled");
-    if (isVideoEnabled) {
-      enableVideo();
-    } else {
-      disableVideo();
-    }
+    localStream?.getVideoTracks().forEach((track) {
+      track.enabled = isVideoEnabled;
+    });
   }
-
-  Future<void> enableVideo() async {
-    if (localStream != null) {
-      // Request video track
-      MediaStream videoStream = await navigator.mediaDevices.getUserMedia({
-        'video': true, // Enable video
-        'audio': false, // No need to request audio again
-      });
-
-      // Get the video track from the new stream
-      MediaStreamTrack videoTrack = videoStream.getVideoTracks()[0];
-
-      // Add the video track to the existing stream
-      localStream!.addTrack(videoTrack);
-
-      print("Video enabled");
-    }
-  }
-
-  void disableVideo() {
-    if (localStream != null) {
-      // Find and stop the video track
-      localStream!.getVideoTracks().forEach((track) {
-        track.stop();
-        localStream!.removeTrack(track);
-      });
-
-      print("Video disabled");
-    }
-  }
-
 
   void toggleAudioStream() {
     localStream?.getAudioTracks().forEach((track) {
       track.enabled = !track.enabled;
     });
-  }
-
-  bool checkRemoteVideoStream() {
-    final videoTracks = remoteStream?.getVideoTracks();
-    return (videoTracks?.isNotEmpty ?? false) && (videoTracks?.first.enabled ?? false);
   }
 }

@@ -16,6 +16,7 @@ class WidgetKeys {
       ValueKey('-switch-button');
   static const ValueKey<String> userChatCopyableLink =
       ValueKey("user-chat-copyable-link");
+  static const ValueKey<String> memberTilePrefix = ValueKey('member-tile-');
 
   WidgetKeys._();
 }
@@ -101,7 +102,7 @@ class ChatKeys {
   static const ValueKey<String> chatTileMessageStatusPostfix =
       ValueKey('-message');
   static const ValueKey<String> chatAvatarPostfix = ValueKey('-avatar');
-
+  static const ValueKey<String> chatHeader = ValueKey('chat-header');
   ChatKeys._();
 }
 
@@ -122,6 +123,19 @@ class MessageKeys {
   static const ValueKey<String> messageDeletePostfix = ValueKey('-delete');
 
   MessageKeys._();
+}
+
+class CallKeys {
+  static const ValueKey<String> acceptCallButton = ValueKey('accept-call-button');
+  static const ValueKey<String> rejectCallButton = ValueKey('reject-call-button');
+  static const ValueKey<String> endCallButton = ValueKey('end-call-button');
+  static const ValueKey<String> toggleMuteButton = ValueKey('toggle-mute-button');
+  static const ValueKey<String> toggleSpeakerButton = ValueKey('toggle-speaker-button');
+  static const ValueKey<String> toggleVideoButton = ValueKey('toggle-video-button');
+  static const ValueKey<String> minimizeCallButton = ValueKey('minimize-call-button');
+  static const ValueKey<String> callOverlayBar = ValueKey('call-overlay-bar');
+  static const ValueKey<String> callStatusText = ValueKey('call-status-text');
+  static const ValueKey<String> startCallButton = ValueKey('start-call-button');
 }
 
 
@@ -171,5 +185,7 @@ class Keys {
   // Stories
   static const storyAvatarPrefix = ValueKey('story_avatar_');
 
+  // General
+  static const popupMenuButton = ValueKey('popup_menu_button');
   Keys._();
 }
