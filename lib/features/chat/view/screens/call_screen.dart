@@ -142,7 +142,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
   @override
   void dispose() {
     // _localRenderer.dispose();
-    _remoteRenderer.dispose();
+    // _remoteRenderer.dispose();
     super.dispose();
   }
 
@@ -159,18 +159,8 @@ class _CallScreenState extends ConsumerState<CallScreen> {
       body: Stack(
         children: [
           // Remote video
-          if (callState.isVideoCall) ...[
-            Positioned.fill(child: RTCVideoView(_remoteRenderer)),
-            Positioned(
-              bottom: 120,
-              right: 20,
-              child: SizedBox(
-                width: 100,
-                height: 150,
-                child: RTCVideoView(_localRenderer, mirror: true),
-              ),
-            ),
-          ]
+          if (_signaling.checkRemoteVideoStream())
+            Positioned.fill(child: RTCVideoView(_remoteRenderer))
           else
             Container(
               decoration: BoxDecoration(
@@ -179,6 +169,16 @@ class _CallScreenState extends ConsumerState<CallScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
+              ),
+            ),
+          if (callState.isVideoCall)
+            Positioned(
+              bottom: 120,
+              right: 20,
+              child: SizedBox(
+                width: 100,
+                height: 150,
+                child: RTCVideoView(_localRenderer, mirror: true),
               ),
             ),
 
@@ -246,20 +246,20 @@ class _CallScreenState extends ConsumerState<CallScreen> {
               if (callState.isCallActive)
                 TimerDisplay(startDateTime: callState.startTime!)
               else if (callState.isCallInProgress)
-                  const Text(
-                    "Connecting...",
-                    style: TextStyle(fontSize: 18, color: Palette.primaryText),
-                  )
-              else if (isCaller)
                 const Text(
-                  "Requesting...",
+                  "Connecting...",
                   style: TextStyle(fontSize: 18, color: Palette.primaryText),
                 )
-              else if (isReceivingCall)
-                const Text(
-                  "Incoming call...",
-                  style: TextStyle(fontSize: 18, color: Palette.primaryText),
-                ),
+              else if (isCaller)
+                  const Text(
+                    "Requesting...",
+                    style: TextStyle(fontSize: 18, color: Palette.primaryText),
+                  )
+                else if (isReceivingCall)
+                    const Text(
+                      "Incoming call...",
+                      style: TextStyle(fontSize: 18, color: Palette.primaryText),
+                    ),
 
               const Spacer(),
 
@@ -333,12 +333,18 @@ class _CallScreenState extends ConsumerState<CallScreen> {
                             : Icons.videocam,
                         isActive: callState.isVideoCall,
                         isVideoCall: true,
-                        onTap: callNotifier.toggleVideoCall,
+                        onTap: () {
+                          _signaling.toggleVideoStream(!callState.isVideoCall);
+                          callNotifier.toggleVideoCall();
+                        },
                       ),
                       _controlButton(
                         icon: callState.isMuted ? Icons.mic_off : Icons.mic,
                         isActive: callState.isMuted,
-                        onTap: callNotifier.toggleMute,
+                        onTap: () {
+                          callNotifier.toggleMute();
+                          _signaling.toggleAudioStream();
+                        },
                       ),
                       _controlButton(
                         icon: Icons.call_end,

@@ -114,6 +114,7 @@ class Signaling {
     });
 
     if (peerConnection != null) peerConnection!.close();
+    peerConnection = null;
     _eventHandler.addEvent(
       LeaveCallEvent(
         {
@@ -129,8 +130,7 @@ class Signaling {
   void registerPeerConnectionListeners(String calleeId) {
     peerConnection!.onIceCandidate = (RTCIceCandidate? candidate) {
       if (candidate != null) {
-        debugPrint('Generated ICE Candidate: ${candidate.candidate}');
-        debugPrint('Sending to peer...');
+        debugPrint('Generated ICE Candidate');
         _eventHandler.addEvent(
           SendSignalEvent(
             {
@@ -182,7 +182,6 @@ class Signaling {
 
   void sendOffer(RTCSessionDescription offer, String targetId) {
     debugPrint('Sending offer to $targetId');
-    debugPrint('Offer: ${offer.sdp}');
     _eventHandler.addEvent(
       SendSignalEvent(
         {
@@ -242,7 +241,7 @@ class Signaling {
   Future<void> openUserMedia(RTCVideoRenderer localRenderer, RTCVideoRenderer remoteRenderer) async {
     var stream = await navigator.mediaDevices.getUserMedia({
       'audio': true,
-      'video': true,
+      'video': false,
     });
 
     localRenderer.srcObject = stream;
@@ -258,5 +257,56 @@ class Signaling {
 
     // Optionally clear the renderer
     localRenderer.srcObject = null;
+  }
+
+  void toggleVideoStream(bool isVideoEnabled) {
+    debugPrint("Call: Video Stream is enabled: $isVideoEnabled");
+    if (isVideoEnabled) {
+      enableVideo();
+    } else {
+      disableVideo();
+    }
+  }
+
+  Future<void> enableVideo() async {
+    if (localStream != null) {
+      // Request video track
+      MediaStream videoStream = await navigator.mediaDevices.getUserMedia({
+        'video': true, // Enable video
+        'audio': false, // No need to request audio again
+      });
+
+      // Get the video track from the new stream
+      MediaStreamTrack videoTrack = videoStream.getVideoTracks()[0];
+
+      // Add the video track to the existing stream
+      localStream!.addTrack(videoTrack);
+
+      print("Video enabled");
+    }
+  }
+
+  void disableVideo() {
+    if (localStream != null) {
+      // Find and stop the video track
+      localStream!.getVideoTracks().forEach((track) {
+        track.stop();
+        localStream!.removeTrack(track);
+      });
+
+      print("Video disabled");
+    }
+  }
+
+
+  void toggleAudioStream() {
+    localStream?.getAudioTracks().forEach((track) {
+      track.enabled = !track.enabled;
+    });
+  }
+
+  bool checkRemoteVideoStream() {
+    final videoTracks = remoteStream?.getVideoTracks();
+    return (videoTracks?.isNotEmpty ?? false) && (videoTracks?.first.enabled ?? false);
   }
 }
