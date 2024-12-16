@@ -17,7 +17,6 @@ abstract class MessageContent {
   MessageContent copyWith();
 
   String getContent();
-  String? getMediaURL();
 }
 
 // For Text Messages
@@ -43,11 +42,6 @@ class TextContent extends MessageContent {
   @override
   String getContent() {
     return text;
-  }
-  
-  @override
-  String? getMediaURL() {
-    return null;    
   }
 }
 
@@ -97,11 +91,6 @@ class AudioContent extends MessageContent {
   String getContent() {
     return fileName ?? '';
   }
-  
-  @override
-  String? getMediaURL() {
-    return audioUrl;
-  }
 }
 
 // For Document Messages (PDFs, Docs)
@@ -132,11 +121,6 @@ class DocumentContent extends MessageContent {
   @override
   String getContent() {
     return fileName ?? '';
-  }
-  
-  @override
-  String? getMediaURL() {
-    return fileUrl;
   }
 }
 
@@ -176,11 +160,6 @@ class ImageContent extends MessageContent {
   String getContent() {
     return caption ?? '';
   }
-  
-  @override
-  String? getMediaURL() {
-    return imageUrl;
-  }
 }
 
 // For Video Messages
@@ -218,11 +197,6 @@ class VideoContent extends MessageContent {
   String getContent() {
     return fileName ?? '';
   }
-  
-  @override
-  String? getMediaURL() {
-    return videoUrl;
-  }
 }
 
 // for emoji, gifs and stickers
@@ -254,11 +228,6 @@ class EmojiContent extends MessageContent {
   String getContent() {
     return fileName ?? '';
   }
-  
-  @override
-  String? getMediaURL() {
-    return emojiUrl;
-  }
 }
 
 @HiveType(typeId: 21)
@@ -289,11 +258,6 @@ class GIFContent extends MessageContent {
   String getContent() {
     return fileName ?? '';
   }
-  
-  @override
-  String? getMediaURL() {
-    return gifUrl;    
-  }
 }
 
 @HiveType(typeId: 22)
@@ -323,10 +287,5 @@ class StickerContent extends MessageContent {
   @override
   String getContent() {
     return fileName ?? '';
-  }
-  
-  @override
-  String? getMediaURL() {
-    return stickerUrl;
   }
 }

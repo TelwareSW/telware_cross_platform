@@ -23,7 +23,7 @@ class PopupMenuItemWidget extends StatelessWidget {
     return Container(
         color: Palette.secondary,
         child: Padding(
-          padding: const EdgeInsets.only(left: 12.0, top: 6.0, bottom: 6, right: 2.0),
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
           child: Row(
             children: [
               Icon(icon, color: color ?? Palette.accentText,),
@@ -34,6 +34,7 @@ class PopupMenuItemWidget extends StatelessWidget {
                   fontSize: 16,
                 ),
               ),
+              const SizedBox(width: 20),
               Expanded(
                 child: Align(
                   alignment: Alignment.centerRight,

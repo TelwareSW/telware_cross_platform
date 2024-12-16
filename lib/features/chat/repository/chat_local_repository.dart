@@ -51,10 +51,6 @@ class ChatLocalRepository {
     return chats;
   }
 
-  Future<void> clearChats(String userId) async {
-    await _chatsBox.delete(_chatsBoxKey+userId);
-  }
-
   /////////////////////////////////////
   // get other users
   Future<bool> setOtherUsers(Map<String, UserModel> otherUsers, String userId) async {
@@ -78,10 +74,6 @@ class ChatLocalRepository {
             <String, UserModel>{};
 
     return otherUsersMap;
-  }
-
-  void clearOtherUsers(String userId) async {
-    await _otherUsersBox.delete(_otherUsersBoxKey+userId);
   }
 
   /////////////////////////////////////
@@ -109,9 +101,5 @@ class ChatLocalRepository {
             <MessageEvent>[];
     final queue = Queue<MessageEvent>.from(eventsList);
     return queue;
-  }
-
-  Future<void> clearEventQueue(String userId) async {
-    await _eventsBox.delete(_eventsBoxKey+userId);
   }
 }

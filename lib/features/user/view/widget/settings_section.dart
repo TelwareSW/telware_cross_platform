@@ -35,9 +35,8 @@ class SettingsSection extends StatelessWidget {
     this.trailingColor = Colors.transparent,
   });
 
-  void _navigateTo(BuildContext context, String route, Object? extra) {
-    print('fdsfdsfdsfdsfdsffffffffffffffffffffffff');
-    context.push(route, extra: extra);
+  void _navigateTo(BuildContext context, String route) {
+    context.push(route);
   }
 
   @override
@@ -74,12 +73,11 @@ class SettingsSection extends StatelessWidget {
                               ? ValueKey("${option["key"]}")
                               : null;
                           final String route = option["routes"] ?? "";
-                          final Object? extra = option["extra"] ?? "";
                           final bool lockedRoute = route == 'locked';
                           final onTap = lockedRoute
                               ? () => showToastMessage("Coming Soon...")
                               : route != ""
-                                  ? () => _navigateTo(context, route, extra)
+                                  ? () => _navigateTo(context, route)
                                   : option["onTap"];
                           return SettingsOptionWidget(
                             key: key,

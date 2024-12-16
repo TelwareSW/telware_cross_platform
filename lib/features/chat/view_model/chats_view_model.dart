@@ -28,11 +28,6 @@ class ChatsViewModel extends _$ChatsViewModel {
     return [];
   }
 
-  void clear() {
-    state = [];
-    _otherUsers = {};
-  }
-
   void setOtherUsers(Map<String, UserModel> otherUsers) {
     _otherUsers = otherUsers;
   }
@@ -58,9 +53,8 @@ class ChatsViewModel extends _$ChatsViewModel {
   }
 
   Future<UserModel?> getUser(String id) async {
-    // debugPrint('!!!** called');
     if (id == ref.read(userProvider)!.id) {
-      // debugPrint('!!!** returning the current user');
+      debugPrint('!!!** returning the current user');
       return ref.read(userProvider);
     }
 
@@ -78,7 +72,7 @@ class ChatsViewModel extends _$ChatsViewModel {
       ref.read(chattingControllerProvider).restoreOtherUsers(_otherUsers);
     }
 
-    // debugPrint('!!!** returning a user from the other users map: $user');
+    debugPrint('!!!** returning a user from the other users map: $user');
     return user;
   }
 
@@ -93,13 +87,12 @@ class ChatsViewModel extends _$ChatsViewModel {
   ({
     String msgLocalId,
     String chatId,
-  }) addSentMessage({
-    required MessageContent content,
-    required String chatId,
-    required MessageType msgType,
-    required MessageContentType msgContentType,
-    required String? parentMessageId,
-  }) {
+  }) addSentMessage(
+    MessageContent content,
+    String chatId,
+    MessageType msgType,
+    MessageContentType msgContentType,
+  ) {
     final chatIndex = getChatIndex(chatId);
     final chat = state[chatIndex];
     // todo(ahmed): make sure that new chats are added to the map first
@@ -110,15 +103,15 @@ class ChatsViewModel extends _$ChatsViewModel {
         senderId + DateTime.now().millisecondsSinceEpoch.toString();
 
     final MessageModel msg = MessageModel(
-        senderId: senderId,
-        timestamp: DateTime.now(),
-        content: content,
-        messageContentType: msgContentType,
-        messageType: msgType,
-        userStates: {},
-        id: USE_MOCK_DATA ? getUniqueMessageId() : null,
-        localId: msgLocalId,
-        parentMessage: parentMessageId);
+      senderId: senderId,
+      timestamp: DateTime.now(),
+      content: content,
+      messageContentType: msgContentType,
+      messageType: msgType,
+      userStates: {},
+      id: USE_MOCK_DATA ? getUniqueMessageId() : null,
+      localId: msgLocalId,
+    );
 
     chat.messages.add(msg);
 
@@ -133,7 +126,7 @@ class ChatsViewModel extends _$ChatsViewModel {
     required String chatId,
   }) {
     final chatIndex = getChatIndex(chatId);
-    final chat = chatIndex >= 0 ? state[chatIndex] : null;
+    final chat = chatIndex > 0 ? state[chatIndex] : null;
 
     if (chat != null) {
       debugPrint('### found the chat');
@@ -150,49 +143,10 @@ class ChatsViewModel extends _$ChatsViewModel {
     }
   }
 
-  void editMessage({
-    required String msgId,
-    required String content,
-    required String chatId,
-  }) {
-    final chatIndex = getChatIndex(chatId);
-    final chat = chatIndex >= 0 ? state[chatIndex] : null;
-
-    if (chat != null) {
-      final msgIndex = chat.messages.indexWhere((msg) => msg.id == msgId);
-
-      if (msgIndex != -1) {
-        final newMsg = chat.messages[msgIndex].copyWith(
-          content: (chat.messages[msgIndex].content as TextContent).copyWith(
-            text: content,
-          ),
-          isEdited: true,
-        );
-        chat.messages[msgIndex] = newMsg;
-
-        state = [
-          ...state.sublist(0, chatIndex),
-          chat.copyWith(),
-          ...state.sublist(chatIndex + 1),
-        ];
-      }
-    }
-  }
-
   Future<void> addReceivedMessage(Map<String, dynamic> response) async {
     var chatId = response["chatId"] as String;
     final chatIndex = getChatIndex(chatId);
-    var chat = chatIndex >= 0 ? state[chatIndex] : null;
-
-    final msgId = response['id'] as String;
-
-    if (chat == null) {
-      chat = await ref.read(chattingControllerProvider).getChat(chatId);
-      state.insert(0, chat);
-    }
-
-    final msgIndex = chat.messages.indexWhere((msg) => msg.id == msgId);
-    if (msgIndex != -1) return;
+    var chat = chatIndex > 0 ? state[chatIndex] : null;
 
     Map<String, MessageState> userStates = {
       ref.read(userProvider)!.id!: MessageState.read
@@ -210,46 +164,27 @@ class ChatsViewModel extends _$ChatsViewModel {
     );
 
     final msg = MessageModel(
-      id: msgId,
-      senderId: response['senderId'],
-      messageContentType: contentType,
-      messageType: MessageType.getType(response['type'] ?? 'unknown'),
-      content: content,
-      timestamp: response['timestamp'] == null
-          ? DateTime.parse(response['timestamp'])
-          : DateTime.now(),
-      userStates: userStates,
-      parentMessage: response['parentMessageId'],
-      isPinned: response['isPinned'],
-      isForward: response['isForward'],
-    );
+        id: response['id'],
+        senderId: response['senderId'],
+        messageContentType: contentType,
+        messageType: MessageType.getType(response['type'] ?? 'unknown'),
+        content: content,
+        timestamp: response['timestamp'] == null
+            ? DateTime.parse(response['timestamp'])
+            : DateTime.now(),
+        userStates: userStates,
+        parentMessage: response['parentMessageId'],
+        isPinned: response['isPinned'],
+        isForward: response['isForward']);
+
+    if (chat == null) {
+      chat = await ref.read(chattingControllerProvider).getChat(chatId);
+      state.insert(0, chat);
+    }
 
     chat.messages.add(msg);
 
     _moveChatToFront(chatIndex, chat);
-  }
-
-  bool pinMessage(String msgId, String chatId) {
-    final chatIndex = getChatIndex(chatId);
-    final chat = chatIndex >= 0 ? state[chatIndex] : null;
-
-    if (chat == null) return false;
-    final msgIndex = chat.messages.indexWhere((msg) => msg.id == msgId);
-
-    if (msgIndex != -1) {
-      final newMsg = chat.messages[msgIndex]
-          .copyWith(isPinned: !(chat.messages[msgIndex].isPinned));
-      chat.messages[msgIndex] = newMsg;
-
-      state = [
-        ...state.sublist(0, chatIndex),
-        chat.copyWith(),
-        ...state.sublist(chatIndex + 1),
-      ];
-      return newMsg.isPinned;
-    }
-
-    return false;
   }
 
   void deleteMessage(String msgId, String chatId) {
@@ -260,6 +195,23 @@ class ChatsViewModel extends _$ChatsViewModel {
 
     if (msgIndex != -1) {
       chat.messages.removeAt(msgIndex);
+      state = [
+        ...state.sublist(0, chatIndex),
+        chat.copyWith(),
+        ...state.sublist(chatIndex + 1),
+      ];
+    }
+  }
+
+  void editMessage(String msgId, String chatId, MessageContent content) {
+    final chatIndex = getChatIndex(chatId);
+    final chat = state[chatIndex];
+    // Find the msg with the specified ID
+    final msgIndex = chat.messages.indexWhere((msg) => msg.id == msgId);
+
+    if (msgIndex != -1) {
+      chat.messages[msgIndex] =
+          chat.messages[msgIndex].copyWith(content: content);
       state = [
         ...state.sublist(0, chatIndex),
         chat.copyWith(),

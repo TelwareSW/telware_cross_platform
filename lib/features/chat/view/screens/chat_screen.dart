@@ -1,42 +1,38 @@
-// ignore_for_file: must_be_immutable
-
 import 'dart:async';
-
+import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_cupertino_datetime_picker/flutter_cupertino_datetime_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-
+import 'package:collection/collection.dart';
+import 'package:flutter_cupertino_datetime_picker/flutter_cupertino_datetime_picker.dart';
 import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
+import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
-import 'package:telware_cross_platform/core/utils.dart';
-import 'package:telware_cross_platform/core/view/widget/popup_menu_widget.dart';
+import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/providers/chat_provider.dart';
+import 'package:telware_cross_platform/core/utils.dart';
+import 'package:telware_cross_platform/core/view/widget/popup_menu_item_widget.dart';
 import 'package:telware_cross_platform/features/chat/services/audio_recording_service.dart';
 import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/bottom_input_bar_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/call_overlay_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/chat_header_widget.dart';
-import 'package:telware_cross_platform/features/chat/view/widget/chat_messages_list.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/date_label_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/magic_recording_button.dart';
-import 'package:telware_cross_platform/features/chat/view/widget/new_chat_screen_sticker.dart';
+import 'package:telware_cross_platform/features/chat/view/widget/message_tile_widget.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
-import 'package:telware_cross_platform/core/models/user_model.dart';
-
 import '../../../../core/routes/routes.dart';
 import '../widget/reply_widget.dart';
 import 'create_chat_screen.dart';
@@ -63,21 +59,18 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   final ScrollController _scrollController = ScrollController();
   late String _chosenAnimation;
   MessageModel? replyMessage;
-  MessageModel? editMessage;
   List<MessageModel> selectedMessages = [];
   List<MessageModel> pinnedMessages = [];
   int indexInPinnedMessage = 0;
 
-  late ChatModel chatModel;
+  ChatModel? chatModel;
   bool isSearching = false;
   bool isShowAsList = false;
   int _numberOfMatches = 0;
-  bool _isMuted = false;
+  late bool _isMuted = false;
   bool isLoading = true;
   bool isTextEmpty = true;
   bool showMuteOptions = false;
-  bool isAllowedToSend = true;
-
 
   // ignore: prefer_final_fields
   int _currentMatch = 1;
@@ -88,75 +81,85 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   List<int> _messageIndices = [];
 
   late Timer _draftTimer;
-  // String _previousDraft = "";
+  String _previousDraft = "";
 
   late ChatType type;
 
   @override
   void initState() {
     super.initState();
+    chatModel = widget.chatModel;
     _messageController.text = widget.chatModel?.draft ?? "";
-
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      chatModel = widget.chatModel ?? ref.watch(chatProvider(widget.chatId));
+      setState(() {
+        _isMuted = chatModel!.isMuted;
+        _messageController.text = chatModel!.draft ?? "";
+      });
+      final messages = chatModel?.messages ?? [];
+      _updateChatMessages(messages);
+      pinnedMessages = messages.where((message) => message.isPinned).toList();
       if (widget.forwardedMessages != null) {
         _sendForwardedMessages();
       }
     });
     _chosenAnimation = getRandomLottieAnimation();
+    // _scrollToBottom();
+
     // Initialize the AudioRecorderService
     _audioRecorderService = AudioRecorderService(updateUI: setState);
 
     _draftTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
       _updateDraft();
     });
-
   }
 
   @override
   void dispose() {
     _messageController.dispose();
-    _scrollController.dispose();
+    _scrollController.dispose(); // Dispose of the ScrollController
     _audioRecorderService.dispose();
     _draftTimer.cancel();
-    SystemChannels.textInput.invokeMethod('TextInput.hide');
     WidgetsBinding.instance.removeObserver(this); // Remove the observer
     super.dispose();
   }
 
   void _updateDraft() async {
     // TODO : server return 500 status code every time try to fix it ASAP
-    // if (!mounted) return;
-    // final currentDraft = _messageController.text;
-    // if (currentDraft != _previousDraft) {
-    //   ref
-    //       .read(chattingControllerProvider)
-    //       .updateDraft(chatModel!, currentDraft);
-    //   _previousDraft = currentDraft;
-    // } else if (chatModel?.id != null) {
-    //   // ref
-    //   //     .read(chattingControllerProvider)
-    //   //     .getDraft(chatModel!.id!)
-    //   //     .then((draft) {
-    //   //   if (draft != null && draft != _previousDraft) {
-    //   //     setState(() {
-    //   //       _messageController.text = draft;
-    //   //       _previousDraft = draft;
-    //   //     });
-    //   //   }
-    //   // });
-    // }
-    // return;
+    return;
+    if (!mounted) return;
+    final currentDraft = _messageController.text;
+    if (currentDraft != _previousDraft) {
+      ref
+          .read(chattingControllerProvider)
+          .updateDraft(chatModel!, currentDraft);
+      _previousDraft = currentDraft;
+    } else if (chatModel?.id != null) {
+      // ref
+      //     .read(chattingControllerProvider)
+      //     .getDraft(chatModel!.id!)
+      //     .then((draft) {
+      //   if (draft != null && draft != _previousDraft) {
+      //     setState(() {
+      //       _messageController.text = draft;
+      //       _previousDraft = draft;
+      //     });
+      //   }
+      // });
+    }
   }
 
   void _updateChatMessages(List<MessageModel> messages) async {
-    setState(() {
-      chatContent = _generateChatContentWithDateLabels(messages);
+    _generateChatContentWithDateLabels(messages).then((content) {
+      setState(() {
+        chatContent = content;
+      });
     });
   }
 
-  List<dynamic> _generateChatContentWithDateLabels(
-      List<MessageModel> messages) {
+  Future<List<dynamic>> _generateChatContentWithDateLabels(
+      List<MessageModel> messages) async {
     List<dynamic> chatContent = [];
     for (int i = 0; i < messages.length; i++) {
       if (i == 0 ||
@@ -234,7 +237,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   }
 
   //TODO: Implement the sendMsg method with another types of messages
-void _sendMessage({
+  void _sendMessage({
     required WidgetRef ref,
     required String contentType,
     String? fileName,
@@ -266,7 +269,7 @@ void _sendMessage({
         return;
       }
     }
-    
+
     if (mediaUrl != null || (!UPLOAD_MEDIA && needUploadMedia)) {
       messageText = caption ?? '';
       if (isMusic == false && contentType == 'audio') {
@@ -278,14 +281,14 @@ void _sendMessage({
         fileName = '$displayName ➜ ${chatModel?.title}';
       }
     }
-  
+
     content = createMessageContent(
-        contentType: messageContentType,
-        filePath: filePath,
-        fileName: fileName,
-        mediaUrl: mediaUrl,
-        isMusic: isMusic,
-        text: messageText,
+      contentType: messageContentType,
+      filePath: filePath,
+      fileName: fileName,
+      mediaUrl: mediaUrl,
+      isMusic: isMusic,
+      text: messageText,
     );
     // TODO : Handle media attribute in the request of sending a message
 
@@ -299,29 +302,28 @@ void _sendMessage({
       parentMessage: replyMessage?.id,
     );
     _messageController.clear();
-    ref.read(chattingControllerProvider).sendMsg(
-        content: newMessage.content!,
-        msgType: newMessage.messageType,
-        contentType: newMessage.messageContentType,
-        chatType: ChatType.private,
-        chatModel: chatModel,
-        parentMessgeId: replyMessage?.id);
-  }
-
-  void _editMessage() {
-    if (editMessage == null || _messageController.text.isEmpty) return;
-    // todo(ahmed): handle extreem cases like editing a message that is not yet sent
-    ref.read(chattingControllerProvider).editMsg(
-          (editMessage?.id)!,
-          (chatModel.id)!,
-          _messageController.text,
-        );
-    _messageController.text = '';
+    _updateChatMessages([...?chatModel?.messages, newMessage]);
+    ref
+        .read(chattingControllerProvider)
+        .sendMsg(
+          content: newMessage.content!,
+          msgType: newMessage.messageType,
+          contentType: newMessage.messageContentType,
+          chatType: ChatType.private,
+          chatModel: chatModel,
+        )
+        .then((_) {
+      List<MessageModel> messages =
+          ref.read(chatProvider(chatModel!.id!))?.messages ?? [];
+      _updateChatMessages(messages);
+      debugPrint(" ${messages.toString()}");
+      // _scrollToBottom();
+    });
   }
 
   void _setChatMute(bool mute, DateTime? muteUntil) async {
     if (!mute) {
-      ref.read(chattingControllerProvider).unmuteChat(chatModel).then((_) {
+      ref.read(chattingControllerProvider).unmuteChat(chatModel!).then((_) {
         debugPrint('Unmuted until: $muteUntil, chat: $chatModel');
         setState(() {
           _isMuted = false;
@@ -330,7 +332,7 @@ void _sendMessage({
     } else {
       ref
           .read(chattingControllerProvider)
-          .muteChat(chatModel, muteUntil)
+          .muteChat(chatModel!, muteUntil)
           .then((_) {
         debugPrint('Muted until: $muteUntil, chat: $chatModel');
         setState(() {
@@ -340,11 +342,38 @@ void _sendMessage({
     }
   }
 
-  void _unreferenceMessages() {
+  void _removeReply() {
     setState(() {
       replyMessage = null;
-      editMessage = null;
     });
+  }
+
+  //----------------------------------------------------------------------------
+  //-------------------------------Media----------------------------------------
+
+  void onMediaDownloaded(
+      String? filePath, String? messageLocalId, String? chatId) {
+    if (filePath == null) {
+      showToastMessage('File has been deleted ask the sender to resend it');
+      return;
+    }
+    if (messageLocalId == null) {
+      showToastMessage('File does not exist please upload it again');
+      return;
+    }
+    if (chatId == null) {
+      showToastMessage('Chat ID is missing');
+      return;
+    }
+    debugPrint("Downloaded file path: $filePath");
+    debugPrint("Message local ID: $messageLocalId");
+    debugPrint("Chat ID: $chatId");
+    ref
+        .read(chattingControllerProvider)
+        .editMessageFilePath(chatId, messageLocalId, filePath);
+    List<MessageModel> messages =
+        ref.watch(chatProvider(chatModel!.id!))?.messages ?? [];
+    _updateChatMessages(messages);
   }
 
   void _searchForText(searchText) async {
@@ -377,6 +406,7 @@ void _sendMessage({
   }
 
   void _enableSearching() {
+    // Implement search functionality here
     setState(() {
       isSearching = true;
     });
@@ -415,72 +445,53 @@ void _sendMessage({
   @override
   Widget build(BuildContext context) {
     debugPrint('&*&**&**& rebuild chat screen');
-    final chats = ref.watch(chatsViewModelProvider);
-    final index = chats.indexWhere((chat) => chat.id == widget.chatId);
-    final ChatModel? chat =
-        (index == -1) ? null : chats[index]; // Chat not found
-    chatModel = widget.chatModel ?? chat!;
+    // ref.watch(chatsViewModelProvider);
+    final popupMenu = buildPopupMenu();
+    final chatModelImage = chatModel ?? ref.watch(chatProvider(widget.chatId))!;
     _updateDraft();
-    final type = chatModel.type;
-    final String title = chatModel.title;
-    final membersNumber = chatModel.userIds.length;
-    final imageBytes = chatModel.photoBytes;
-    final photo = chatModel.photo;
-    final messages = chatModel.messages;
-    final chatID = chatModel.id;
-    final String subtitle = chatModel.type == ChatType.private
+    final type = chatModelImage.type;
+    final String title = chatModelImage.title;
+    final membersNumber = chatModelImage.userIds.length;
+    final String subtitle = chatModelImage.type == ChatType.private
         ? "last seen a long time ago"
         : "$membersNumber Member${membersNumber > 1 ? "s" : ""}";
+    final imageBytes = chatModelImage.photoBytes;
+    final photo = chatModelImage.photo;
+    final chatID = chatModelImage.id;
+    var messagesIndex = 0;
 
-    _isMuted = chatModel.isMuted;
-    if (chatModel.draft != null && chatModel.draft!.isNotEmpty) {
-      _messageController.text = chatModel.draft ?? '';
-    }
-    chatContent = _generateChatContentWithDateLabels(messages);
-    pinnedMessages = messages.where((message) => message.isPinned).toList();
-    // debugPrint('pinned Messages count after is : ${pinnedMessages.length}');
-
-    if(chatModel.messagingPermission == false){
-      setState(() {
-        isAllowedToSend = chatModel.admins!.contains(ref.read(userProvider)?.id) ;
-      });
-    }
-    return GestureDetector(
-      onTap: () {
-        SystemChannels.textInput.invokeMethod('TextInput.hide');
-      },
-      child: Scaffold(
-          appBar: selectedMessages.isEmpty
-              ? AppBar(
-                  leading: IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: () {
-                      if (isShowAsList) {
-                        setState(() {
-                          isShowAsList = false;
-                        });
-                      } else if (isSearching) {
-                        setState(() {
-                          isSearching = false;
-                          _messageMatches.clear();
-                        });
-                      } else {
-                        _updateDraft();
-                        context.push(Routes.home);
-                      }
-                    },
-                  ),
-                  title: !isSearching
-                      ? GestureDetector(
-                          onTap: () {
-                          if (chatModel.type == ChatType.private) {
+    return Scaffold(
+        appBar: selectedMessages.isEmpty
+            ? AppBar(
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () {
+                    if (isShowAsList) {
+                      setState(() {
+                        isShowAsList = false;
+                      });
+                    } else if (isSearching) {
+                      setState(() {
+                        isSearching = false;
+                        _messageMatches.clear();
+                      });
+                    } else {
+                      _updateDraft();
+                      Navigator.pop(context);
+                    }
+                  },
+                ),
+                title: !isSearching
+                    ? GestureDetector(
+                        onTap: () {
+                          if (chatModel?.type == ChatType.private) {
                             context.push(Routes.userProfile,
-                                extra: chatModel.userIds.firstWhere(
+                                extra: chatModel!.userIds.firstWhere(
                                     (element) =>
                                         element != ref.read(userProvider)!.id));
                           } else {
                             context.push(Routes.chatInfoScreen,
-                                extra: chatModel);
+                                extra: chatModel!);
                           }
                         },
                         child: ChatHeaderWidget(
@@ -490,481 +501,584 @@ void _sendMessage({
                           imageBytes: imageBytes,
                         ),
                       )
-                      : TextField(
-                          key: ChatKeys.chatSearchInput,
-                          autofocus: true,
-                          decoration: const InputDecoration(
-                            hintText: 'Search',
-                            hintStyle: TextStyle(
-                                color: Palette.accentText,
-                                fontWeight: FontWeight.w400),
-                            border: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                          ),
-                          onSubmitted: _searchForText,
-                          onChanged: (value) => {
-                            if (isShowAsList)
-                              {
-                                setState(() {
-                                  isShowAsList = false;
-                                })
-                              }
-                          },
+                    : TextField(
+                        key: ChatKeys.chatSearchInput,
+                        autofocus: true,
+                        decoration: const InputDecoration(
+                          hintText: 'Search',
+                          hintStyle: TextStyle(
+                              color: Palette.accentText,
+                              fontWeight: FontWeight.w400),
+                          border: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          enabledBorder: InputBorder.none,
                         ),
-                  actions: [
-                    if (!isSearching)
-                    IconButton(
+                        onSubmitted: _searchForText,
+                        onChanged: (value) => {
+                          if (isShowAsList)
+                            {
+                              setState(() {
+                                isShowAsList = false;
+                              })
+                            }
+                        },
+                      ),
+                actions: [
+                  if (!isSearching)
+                    PopupMenuButton<String>(
                       icon: const Icon(Icons.more_vert),
-                      onPressed: _showMoreSettings,
+                      onSelected: _handlePopupMenuSelection,
+                      color: Palette.secondary,
+                      padding: EdgeInsets.zero,
+                      itemBuilder: popupMenu,
                     ),
                 ],
               )
-              : AppBar(
-                  backgroundColor: Palette.secondary,
-                  leading: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        selectedMessages = [];
-                      });
-                    },
-                    child: const Icon(Icons.close),
-                  ),
-                  title: Row(
-                    children: [
-                      // Number
-                      Text(
-                        selectedMessages.length.toString(),
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 18),
-                      ),
-                      const Spacer(),
-                      // Copy icon
-                      IconButton(
-                        icon: const Icon(Icons.copy, color: Colors.white),
-                        onPressed: () {},
-                      ),
-                      // Share icon
-                      IconButton(
-                        icon: const Icon(FontAwesomeIcons.share,
-                            color: Colors.white),
-                        onPressed: () {
-                          context.push(CreateChatScreen.route);
-
-                        },
-                      ),
-                      // Delete icon
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.white),
-                        onPressed: () {
-                          // TODO call delete function
-                        },
-                      ),
-                    ],
-                  ),
+            : AppBar(
+                backgroundColor: Palette.secondary,
+                leading: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      selectedMessages = [];
+                    });
+                  },
+                  child: const Icon(Icons.close),
                 ),
-          body: Column(
+                title: Row(
+                  children: [
+                    // Number
+                    Text(
+                      selectedMessages.length.toString(),
+                      style: const TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                    const Spacer(),
+                    // Copy icon
+                    IconButton(
+                      icon: const Icon(Icons.copy, color: Colors.white),
+                      onPressed: () {},
+                    ),
+                    // Share icon
+                    IconButton(
+                      icon: const Icon(FontAwesomeIcons.share,
+                          color: Colors.white),
+                      onPressed: () {
+                        context.push(CreateChatScreen.route);
+                      },
+                    ),
+                    // Delete icon
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.white),
+                      onPressed: () {
+                        // TODO call delete function
+                      },
+                    ),
+                  ],
+                ),
+              ),
+        body: Column(
           children: [
             const CallOverlay(),
             Expanded(
-              child:Stack(
-            children: [
-              // Chat content area (with background SVG)
-              Positioned.fill(
-                child: SvgPicture.asset(
-                  'assets/svg/default_pattern.svg',
-                  fit: BoxFit.cover,
-                  colorFilter: const ColorFilter.mode(
-                    Palette.trinary,
-                    BlendMode.srcIn,
-                  ),
-                ),
-              ),
-              Column(
+              child: Stack(
                 children: [
-                  Expanded(
-                    child: isShowAsList
-                        ? Container(
-                            color: Palette.background,
-                            child: Column(
-                              children: _messageIndices.map((index) {
-                                MessageModel msg = chatContent[index];
-                                return SettingsOptionWidget(
-                                  imagePath: getRandomImagePath(),
-                                  text: msg.senderId,
-                                  subtext: msg.content?.toJson()['text'] ?? "",
-                                  onTap: () => {
-                                    // TODO (Mo): Create scroll to msg
-                                  },
-                                );
-                              }).toList(),
-                            ),
-                          )
-                        : chatContent.isEmpty
-                            ? NewChatScreenSticker(
-                                chosenAnimation: _chosenAnimation)
-                            : ChatMessagesList(
-                                messages: messages,
-                                scrollController: _scrollController,
-                                chatContent: chatContent,
-                                selectedMessages: selectedMessages,
-                                type: type,
-                                messageMatches: _messageMatches,
-                                replyMessage: replyMessage,
-                                chatId: chatID,
-                                pinnedMessages: pinnedMessages,
-                                updateChatMessages:
-                                    _generateChatContentWithDateLabels,
-                                onPin: _onPin,
-                                onLongPress: _onLongPress,
-                                onReply: _onReply,
-                                onEdit: _onEdit),
+                  // Chat content area (with background SVG)
+                  Positioned.fill(
+                    child: SvgPicture.asset(
+                      'assets/svg/default_pattern.svg',
+                      fit: BoxFit.cover,
+                      colorFilter: const ColorFilter.mode(
+                        Palette.trinary,
+                        BlendMode.srcIn,
+                      ),
+                    ),
                   ),
-                  if (replyMessage != null)
-                    ReplyEditFieldHeader(
-                      message: replyMessage!,
-                      isReplyOrEdit: true,
-                      onDiscard: () {
-                        setState(() {
-                          replyMessage = null;
-                          editMessage = null;
-                        });
-                      },
-                    ),
-                  if (editMessage != null)
-                    ReplyEditFieldHeader(
-                      message: editMessage!,
-                      isReplyOrEdit: false,
-                      onDiscard: () {
-                        setState(() {
-                          replyMessage = null;
-                          editMessage = null;
-                          _messageController.text = '';
-                        });
-                      },
-                    ),
-                  if (selectedMessages.isNotEmpty)
-                    Container(
-                      color: Palette.secondary,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 5, vertical: 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  replyMessage = selectedMessages[0];
-                                  selectedMessages = [];
-                                });
-                              },
-                              child: Row(
-                                children: [
-                                  selectedMessages.length == 1
-                                      ? const Icon(
-                                          Icons.reply,
-                                        )
-                                      : const SizedBox(),
-                                  const SizedBox(
-                                    width: 5,
-                                  ),
-                                  selectedMessages.length == 1
-                                      ? const Text(
-                                          'Reply',
-                                          style: TextStyle(color: Colors.white),
-                                        )
-                                      : const SizedBox(),
-                                ],
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                context.push(CreateChatScreen.route);
-                              },
-                              child: const Row(
-                                children: [
-                                  Icon(FontAwesomeIcons.share),
-                                  SizedBox(
-                                    width: 5,
-                                  ),
-                                  Text(
-                                    'Forward',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ],
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
-                    )
-                  else if (!isSearching)
-                    BottomInputBarWidget(
-                      isEditing: editMessage != null,
-                      controller: _messageController,
-                      audioRecorderService: _audioRecorderService,
-                      chatID: chatID,
-                      sendMessage: _sendMessage,
-                      unreferenceMessages: _unreferenceMessages,
-                      editMessage: _editMessage,
-                    )
-                  else
-                    Container(
-                      color: Palette.trinary,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0, vertical: 8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          IconButton(
-                            key: ChatKeys.chatSearchDatePicker,
-                            icon: const Icon(Icons.edit_calendar),
-                            onPressed: () {
-                              // Show the Cupertino Date Picker when the icon is pressed
-                              DatePicker.showDatePicker(
-                                context,
-                                pickerTheme: const DateTimePickerTheme(
-                                  backgroundColor: Palette.secondary,
-                                  itemTextStyle: TextStyle(
-                                    color: Palette.primaryText,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  confirm: Text(
-                                    'Jump to date',
-                                    style: TextStyle(
-                                      color: Palette.primary,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  cancel: null,
-                                ),
-                                minDateTime: DateTime.now()
-                                    .subtract(const Duration(days: 365 * 10)),
-                                maxDateTime: DateTime.now(),
-                                initialDateTime: DateTime.now(),
-                                dateFormat: 'dd-MMMM-yyyy',
-                                locale: DateTimePickerLocale.en_us,
-                                onConfirm: (date, time) {
-                                  _scrollToTimeStamp(date);
-                                },
-                              );
-                            },
-                          ),
-                          if (_numberOfMatches != 0)
-                            Text(
-                              _numberOfMatches == 0
-                                  ? 'No results'
-                                  : isShowAsList
-                                      ? '$_numberOfMatches result${_numberOfMatches != 1 ? 's' : ''}'
-                                      : '$_currentMatch of $_numberOfMatches',
-                              style: const TextStyle(
-                                  color: Palette.primaryText,
-                                  fontWeight: FontWeight.w500),
-                            ),
-                          Expanded(
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: GestureDetector(
-                                onTap: () {
-                                  _toggleSearchDisplay();
-                                },
-                                child: Text(
-                                  key: ChatKeys.chatSearchShowMode,
-                                  isShowAsList
-                                      ? 'Show as Chat'
-                                      : 'Show as List',
-                                  style: const TextStyle(
-                                    color: Palette.accent,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-              pinnedMessages.isNotEmpty
-                  ? Positioned(
-                      top: 0,
-                      // Adjust this to position the widget from the top of the screen
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                        color: Palette
-                            .secondary, // Example background color for the widget
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 5),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Column(
-                                  children: List.generate(pinnedMessages.length,
-                                      (index) {
-                                    return Container(
-                                      height: 40 / pinnedMessages.length,
-                                      padding: const EdgeInsets.all(1.0),
-                                      margin: const EdgeInsets.all(1.0),
-                                      decoration: BoxDecoration(
-                                        color: Colors.blueAccent,
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                      ),
+                  Column(
+                    children: [
+                      Expanded(
+                        child: isShowAsList
+                            ? Container(
+                                color: Palette.background,
+                                child: Column(
+                                  children: _messageIndices.map((index) {
+                                    MessageModel msg = chatContent[index];
+                                    return SettingsOptionWidget(
+                                      imagePath: getRandomImagePath(),
+                                      text: msg.senderId,
+                                      subtext:
+                                          msg.content?.toJson()['text'] ?? "",
+                                      onTap: () => {
+                                        // TODO (Mo): Create scroll to msg
+                                      },
                                     );
-                                  }),
+                                  }).toList(),
                                 ),
-                                const SizedBox(
-                                  width: 8,
-                                ),
-                                const Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Pinned Message',
-                                      style: TextStyle(
-                                          color: Palette.primary, fontSize: 12),
+                              )
+                            : chatContent.isEmpty
+                                ? Center(
+                                    child: Container(
+                                      width: 210,
+                                      margin: const EdgeInsets.symmetric(
+                                          horizontal: 24.0),
+                                      padding: const EdgeInsets.all(22.0),
+                                      decoration: BoxDecoration(
+                                        color: const Color.fromRGBO(
+                                            4, 86, 57, 0.30),
+                                        borderRadius:
+                                            BorderRadius.circular(16.0),
+                                        boxShadow: const [
+                                          BoxShadow(
+                                            color: Colors.black26,
+                                            blurRadius: 4.0,
+                                            offset: Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          const Text(
+                                            'No messages here yet...',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                              color: Palette.primaryText,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          const SizedBox(height: 10),
+                                          const Text(
+                                            'Send a message or tap the greeting below.',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: Palette.primaryText,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 20),
+                                          LottieViewer(
+                                            path: _chosenAnimation,
+                                            width: 100,
+                                            height: 100,
+                                            isLooping: true,
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                    Text(
-                                      // pinnedMessages[indexInPinnedMessage].content as String,
-                                      'Content placeholder',
-                                      style: TextStyle(fontSize: 12),
-                                    )
-                                  ],
+                                  )
+                                : SingleChildScrollView(
+                                    reverse: true,
+                                    controller:
+                                        _scrollController, // Use the ScrollController
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 10),
+                                      child: Column(
+                                        children: chatContent
+                                            .mapIndexed((index, item) {
+                                          if (item is DateLabelWidget) {
+                                            return item;
+                                          } else if (item is MessageModel) {
+                                            return Row(
+                                              mainAxisAlignment: item
+                                                          .senderId ==
+                                                      ref.read(userProvider)!.id
+                                                  ? selectedMessages.isNotEmpty
+                                                      ? MainAxisAlignment
+                                                          .spaceBetween
+                                                      : MainAxisAlignment.end
+                                                  : MainAxisAlignment.start,
+                                              children: [
+                                                if (selectedMessages
+                                                    .isNotEmpty) // Show check icon only if selected
+                                                  Container(
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      border: Border.all(
+                                                          color: Colors.white,
+                                                          width:
+                                                              1), // White border
+                                                    ),
+                                                    child: CircleAvatar(
+                                                      radius: 12,
+                                                      backgroundColor:
+                                                          selectedMessages
+                                                                      .contains(
+                                                                          item) ==
+                                                                  true
+                                                              ? Colors.green
+                                                              : Colors
+                                                                  .transparent,
+                                                      child: selectedMessages
+                                                                  .contains(
+                                                                      item) ==
+                                                              true
+                                                          ? const Icon(
+                                                              Icons.check,
+                                                              color:
+                                                                  Colors.white,
+                                                              size: 16)
+                                                          : const SizedBox(),
+                                                    ),
+                                                  ),
+                                                if (selectedMessages
+                                                    .contains(item))
+                                                  const SizedBox(width: 10),
+                                                MessageTileWidget(
+                                                  key: ValueKey(
+                                                      '${MessageKeys.messagePrefix}${messagesIndex++}'),
+                                                  messageModel: item,
+                                                  isSentByMe: item.senderId ==
+                                                      ref
+                                                          .read(userProvider)!
+                                                          .id,
+                                                  showInfo:
+                                                      type == ChatType.group,
+                                                  highlights:
+                                                      _messageMatches[index] ??
+                                                          const [
+                                                            MapEntry(0, 0)
+                                                          ],
+                                                  onDownloadTap:
+                                                      (String? filePath) {
+                                                    onMediaDownloaded(filePath,
+                                                        item.localId, chatID);
+                                                  },
+                                                  onReply: (message) {
+                                                    setState(() {
+                                                      replyMessage = message;
+                                                    });
+                                                  },
+                                                  onPin: (message) {
+                                                    setState(() {
+                                                      pinnedMessages
+                                                              .contains(message)
+                                                          ? pinnedMessages
+                                                              .remove(message)
+                                                          : pinnedMessages
+                                                              .add(message);
+                                                    });
+                                                  },
+                                                  onPress:
+                                                      selectedMessages.isEmpty
+                                                          ? null
+                                                          : () {},
+                                                  onLongPress: (message) {
+                                                    setState(() {
+                                                      replyMessage = null;
+                                                      selectedMessages
+                                                              .contains(message)
+                                                          ? selectedMessages
+                                                              .remove(message)
+                                                          : selectedMessages
+                                                              .add(message);
+                                                    });
+                                                  },
+                                                  onDelete: (msg, _, id) {},
+                                                ),
+                                              ],
+                                            );
+                                          } else {
+                                            return const SizedBox.shrink();
+                                          }
+                                        }).toList(),
+                                      ),
+                                    ),
+                                  ),
+                      ),
+                      if (replyMessage != null)
+                        ReplyWidget(
+                          message: replyMessage!,
+                          onDiscard: () {
+                            setState(() {
+                              replyMessage = null;
+                            });
+                          },
+                        )
+                      else
+                        const SizedBox(),
+                      if (selectedMessages.isNotEmpty)
+                        Container(
+                          color: Palette.secondary,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 5, vertical: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      replyMessage = selectedMessages[0];
+                                      selectedMessages = [];
+                                    });
+                                  },
+                                  child: Row(
+                                    children: [
+                                      selectedMessages.length == 1
+                                          ? const Icon(
+                                              Icons.reply,
+                                            )
+                                          : const SizedBox(),
+                                      const SizedBox(
+                                        width: 5,
+                                      ),
+                                      selectedMessages.length == 1
+                                          ? const Text(
+                                              'Reply',
+                                              style: TextStyle(
+                                                  color: Colors.white),
+                                            )
+                                          : const SizedBox(),
+                                    ],
+                                  ),
                                 ),
+                                GestureDetector(
+                                  onTap: () {
+                                    context.push(CreateChatScreen.route);
+                                  },
+                                  child: const Row(
+                                    children: [
+                                      Icon(FontAwesomeIcons.share),
+                                      SizedBox(
+                                        width: 5,
+                                      ),
+                                      Text(
+                                        'Forward',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ],
+                                  ),
+                                )
                               ],
                             ),
-                            GestureDetector(
-                              onTap: () {
-                                List<String> senderIds = [];
-                                for (var message in pinnedMessages) {
-                                  senderIds.add(message.senderId);
-                                }
-                                ChatModel newChat = ChatModel(
-                                    title: 'pinnedMessages',
-                                    userIds: senderIds,
-                                    type: ChatType.group,
-                                    messages: pinnedMessages);
-                                context.push(Routes.pinnedMessagesScreen,
-                                    extra: newChat);
-                              },
-                              child: const Icon(
-                                Icons.menu_open_outlined,
-                                color: Palette.accentText,
+                          ),
+                        )
+                      else if (!isSearching)
+                        BottomInputBarWidget(
+                          controller: _messageController,
+                          audioRecorderService: _audioRecorderService,
+                          chatID: chatID,
+                          sendMessage: _sendMessage,
+                          removeReply: _removeReply,
+                        )
+                      else
+                        Container(
+                          color: Palette.trinary,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0, vertical: 8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              IconButton(
+                                key: ChatKeys.chatSearchDatePicker,
+                                icon: const Icon(Icons.edit_calendar),
+                                onPressed: () {
+                                  // Show the Cupertino Date Picker when the icon is pressed
+                                  DatePicker.showDatePicker(
+                                    context,
+                                    pickerTheme: const DateTimePickerTheme(
+                                      backgroundColor: Palette.secondary,
+                                      itemTextStyle: TextStyle(
+                                        color: Palette.primaryText,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      confirm: Text(
+                                        'Jump to date',
+                                        style: TextStyle(
+                                          color: Palette.primary,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      cancel: null,
+                                    ),
+                                    minDateTime: DateTime.now().subtract(
+                                        const Duration(days: 365 * 10)),
+                                    maxDateTime: DateTime.now(),
+                                    initialDateTime: DateTime.now(),
+                                    dateFormat: 'dd-MMMM-yyyy',
+                                    locale: DateTimePickerLocale.en_us,
+                                    onConfirm: (date, time) {
+                                      _scrollToTimeStamp(date);
+                                    },
+                                  );
+                                },
                               ),
-                            )
-                          ],
+                              if (_numberOfMatches != 0)
+                                Text(
+                                  _numberOfMatches == 0
+                                      ? 'No results'
+                                      : isShowAsList
+                                          ? '$_numberOfMatches result${_numberOfMatches != 1 ? 's' : ''}'
+                                          : '$_currentMatch of $_numberOfMatches',
+                                  style: const TextStyle(
+                                      color: Palette.primaryText,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                              Expanded(
+                                child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      _toggleSearchDisplay();
+                                    },
+                                    child: Text(
+                                      key: ChatKeys.chatSearchShowMode,
+                                      isShowAsList
+                                          ? 'Show as Chat'
+                                          : 'Show as List',
+                                      style: const TextStyle(
+                                        color: Palette.accent,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
+                    ],
+                  ),
+                  pinnedMessages.isNotEmpty
+                      ? Positioned(
+                          top: 0,
+                          // Adjust this to position the widget from the top of the screen
+                          left: 0,
+                          right: 0,
+                          child: Container(
+                            color: Palette
+                                .secondary, // Example background color for the widget
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 5),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Column(
+                                      children: List.generate(
+                                          pinnedMessages.length, (index) {
+                                        return Container(
+                                          height: 40 / pinnedMessages.length,
+                                          padding: const EdgeInsets.all(1.0),
+                                          margin: const EdgeInsets.all(1.0),
+                                          decoration: BoxDecoration(
+                                            color: Colors.blueAccent,
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
+                                        );
+                                      }),
+                                    ),
+                                    const SizedBox(
+                                      width: 8,
+                                    ),
+                                    const Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Pinned Message',
+                                          style: TextStyle(
+                                              color: Palette.primary,
+                                              fontSize: 12),
+                                        ),
+                                        Text(
+                                          // pinnedMessages[indexInPinnedMessage].content as String,
+                                          'Content placeholder',
+                                          style: TextStyle(fontSize: 12),
+                                        )
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    List<String> senderIds = [];
+                                    for (var message in pinnedMessages) {
+                                      senderIds.add(message.senderId);
+                                    }
+                                    ChatModel newChat = ChatModel(
+                                        title: 'pinnedMessages',
+                                        userIds: senderIds,
+                                        type: ChatType.group,
+                                        messages: pinnedMessages);
+                                    context.push(Routes.pinnedMessagesScreen,
+                                        extra: newChat);
+                                  },
+                                  child: const Icon(
+                                    Icons.menu_open_outlined,
+                                    color: Palette.accentText,
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        )
+                      : const SizedBox(),
+                  if (isSearching && _numberOfMatches != 0) ...[
+                    Positioned(
+                      bottom: 150,
+                      right: 10,
+                      child: GestureDetector(
+                        onTap: _scrollToPrevMatch,
+                        child: Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              color: Palette.quaternary,
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            child: const Center(
+                              child: Icon(Icons.keyboard_arrow_up_sharp),
+                            )),
                       ),
-                    )
-                  : const SizedBox(),
-              if (isSearching && _numberOfMatches != 0) ...[
-                Positioned(
-                  bottom: 150,
-                  right: 10,
-                  child: GestureDetector(
-                    onTap: _scrollToPrevMatch,
-                    child: Container(
-                        width: 30,
-                        height: 30,
-                        decoration: BoxDecoration(
-                          color: Palette.quaternary,
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        child: const Center(
-                          child: Icon(Icons.keyboard_arrow_up_sharp),
-                        )),
-                  ),
-                ),
-                Positioned(
-                  bottom: 90,
-                  right: 10,
-                  child: GestureDetector(
-                    onTap: _scrollToNextMatch,
-                    child: Container(
-                        width: 30,
-                        height: 30,
-                        decoration: BoxDecoration(
-                          color: Palette.quaternary,
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        child: const Center(
-                          child: Icon(Icons.keyboard_arrow_down_sharp),
-                        )),
-                  ),
-                ),
-              ],
-              MagicRecordingButton(
-                  audioRecorderService: _audioRecorderService,
-                  sendMessage: (
-                      {required String contentType, String? filePath}) {
-                    _sendMessage(
-                        ref: ref, contentType: contentType, filePath: filePath);
-                  }),
-            ],
+                    ),
+                    Positioned(
+                      bottom: 90,
+                      right: 10,
+                      child: GestureDetector(
+                        onTap: _scrollToNextMatch,
+                        child: Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              color: Palette.quaternary,
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            child: const Center(
+                              child: Icon(Icons.keyboard_arrow_down_sharp),
+                            )),
+                      ),
+                    ),
+                  ],
+                  MagicRecordingButton(
+                      audioRecorderService: _audioRecorderService,
+                      sendMessage: (
+                          {required String contentType, String? filePath}) {
+                        _sendMessage(
+                            ref: ref,
+                            contentType: contentType,
+                            filePath: filePath);
+                      })
+                ],
               ),
             )
           ],
-        )
-    ),);
-  }
-
-  void _showMoreSettings() {
-    var items = [];
-    if (showMuteOptions) {
-      items = [
-        {'icon': Icons.arrow_back, 'text': 'Back', 'value': 'no-close'},
-        {'icon': Icons.music_off_outlined, 'text': 'Disable sound', 'value': 'disable-sound'},
-        {'icon': Icons.access_time_rounded, 'text': 'Mute for 30m', 'value': 'mute-30m'},
-        {'icon': Icons.notifications_paused_outlined, 'text': 'Mute for...', 'value': 'mute-custom'},
-        {'icon': Icons.tune_outlined, 'text': 'Customize', 'value': 'customize'},
-        {'icon': Icons.volume_off_outlined, 'text': 'Mute Forever', 'value': 'mute-forever', 'color': Palette.error},
-      ];
-    } else {
-      if (_isMuted) {
-        items = [
-          {'icon': Icons.volume_off_outlined, 'text': 'Unmute', 'value': 'unmute-chat'},
-        ];
-      } else {
-        items = [
-          {'icon': Icons.volume_up_outlined, 'text': 'Mute', 'value': 'no-close',
-            'trailing': const Icon(Icons.arrow_forward_ios_rounded,
-                color: Palette.inactiveSwitch, size: 16)
-          },
-        ];
-      }
-      items.addAll([
-        {'icon': Icons.videocam_outlined, 'text': 'Video Call', 'value': 'video-call'},
-        {'icon': Icons.search, 'text': 'Search', 'value': 'search'},
-        {'icon': Icons.wallpaper_rounded, 'text': 'Change Wallpaper', 'value': 'change-wallpaper'},
-        {'icon': Icons.cleaning_services, 'text': 'Clear History', 'value': 'clear-history'},
-        {'icon': Icons.delete_outline, 'text': 'Delete Chat', 'value': 'delete-chat'},
-      ]);
-    }
-
-    final renderBox = context.findRenderObject() as RenderBox;
-    final position = Offset(renderBox.size.width, -350);
-
-    PopupMenuWidget.showPopupMenu(
-        context: context,
-        position: position,
-        items: items,
-        onSelected: _handlePopupMenuSelection
-    );
+        ));
   }
 
   void _handlePopupMenuSelection(String value) {
-    final bool noChat = chatModel.id == null;
+    final bool noChat = chatModel?.id == null;
     switch (value) {
-      case 'no-close':
-        showMuteOptions = !showMuteOptions;
-        break;
+      // case 'no-close':
+      //   break;
       case 'search':
         if (noChat) {
           showToastMessage("There is nothing to search");
@@ -972,7 +1086,7 @@ void _sendMessage({
         }
         _enableSearching();
         break;
-      case 'mute-custom':
+      case 'mute-chat':
         showMuteOptions = false;
         if (noChat) {
           showToastMessage("Maybe say something first...");
@@ -1010,15 +1124,7 @@ void _sendMessage({
       case 'unmute-chat':
         _setChatMute(false, null);
         break;
-      case 'mute-30m':
-        if (noChat) {
-          showToastMessage("You can't mute nothing");
-          return;
-        }
-        showMuteOptions = false;
-        _setChatMute(true, DateTime.now().add(const Duration(minutes: 30)));
-        break;
-      case 'mute-forever':
+      case 'mute-chat-forever':
         if (noChat) {
           showToastMessage("Seriously? Mute what?");
           return;
@@ -1030,44 +1136,198 @@ void _sendMessage({
     }
   }
 
-  void _onPin(MessageModel message) {
-    setState(() {
-      pinnedMessages.contains(message)
-          ? pinnedMessages.remove(message)
-          : pinnedMessages.add(message);
-      ref.read(chattingControllerProvider).pinMessageClient(
-            message.id ?? '',
-            chatModel.id ?? '',
-          );
-    });
+  PopupMenuItemBuilder<String> buildPopupMenu() {
+    const double menuItemsHeight = 45.0;
+    if (!mounted) return (BuildContext context) => [];
+    return (BuildContext context) {
+      if (showMuteOptions) {
+        return [
+          PopupMenuItem<String>(
+              value: 'no-close',
+              padding: EdgeInsets.zero,
+              height: menuItemsHeight,
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    showMuteOptions = false;
+                  });
+                },
+                child: const PopupMenuItemWidget(
+                  icon: Icons.arrow_back,
+                  text: 'Back',
+                ),
+              )),
+          const PopupMenuItem<String>(
+            value: 'disable-sound',
+            padding: EdgeInsets.zero,
+            height: menuItemsHeight,
+            child: PopupMenuItemWidget(
+              icon: Icons.music_off_outlined,
+              text: 'Disable sound',
+            ),
+          ),
+          const PopupMenuItem<String>(
+            key: ChatKeys.chatSearchButton,
+            value: 'mute-chat',
+            padding: EdgeInsets.zero,
+            height: menuItemsHeight,
+            child: PopupMenuItemWidget(
+              icon: Icons.notifications_paused_outlined,
+              text: 'Mute for...',
+            ),
+          ),
+          const PopupMenuItem<String>(
+            value: 'customize-chat',
+            padding: EdgeInsets.zero,
+            height: menuItemsHeight,
+            child: PopupMenuItemWidget(
+              icon: Icons.tune_outlined,
+              text: 'Customize',
+            ),
+          ),
+          const PopupMenuItem<String>(
+            value: 'mute-chat-forever',
+            padding: EdgeInsets.zero,
+            height: menuItemsHeight,
+            child: PopupMenuItemWidget(
+              icon: Icons.volume_off_outlined,
+              text: 'Mute Forever',
+            ),
+          ),
+        ];
+      }
+      return [
+        if (_isMuted)
+          const PopupMenuItem<String>(
+              value: 'unmute-chat',
+              padding: EdgeInsets.zero,
+              height: menuItemsHeight,
+              child: PopupMenuItemWidget(
+                icon: Icons.volume_off_outlined,
+                text: 'Unmute',
+              ))
+        else
+          PopupMenuItem<String>(
+            value: 'no-close',
+            padding: EdgeInsets.zero,
+            height: menuItemsHeight,
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  showMuteOptions = true;
+                });
+              },
+              child: const PopupMenuItemWidget(
+                  icon: Icons.volume_up_rounded,
+                  text: 'Mute',
+                  trailing: Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    color: Palette.inactiveSwitch,
+                    size: 16,
+                  )),
+            ),
+          ),
+        const PopupMenuDivider(
+          height: 10,
+        ),
+        const PopupMenuItem<String>(
+          value: 'video-call',
+          padding: EdgeInsets.zero,
+          height: menuItemsHeight,
+          child: PopupMenuItemWidget(
+            icon: Icons.videocam_outlined,
+            text: 'Video Call',
+          ),
+        ),
+        const PopupMenuItem<String>(
+          key: ChatKeys.chatSearchButton,
+          value: 'search',
+          padding: EdgeInsets.zero,
+          height: menuItemsHeight,
+          child: PopupMenuItemWidget(
+            icon: Icons.search,
+            text: 'Search',
+          ),
+        ),
+        const PopupMenuItem<String>(
+          value: 'change-wallpaper',
+          padding: EdgeInsets.zero,
+          height: menuItemsHeight,
+          child: PopupMenuItemWidget(
+            icon: Icons.wallpaper_rounded,
+            text: 'Change Wallpaper',
+          ),
+        ),
+        const PopupMenuItem<String>(
+          value: 'clear-history',
+          padding: EdgeInsets.zero,
+          height: menuItemsHeight,
+          child: PopupMenuItemWidget(
+            icon: Icons.cleaning_services,
+            text: 'Clear History',
+          ),
+        ),
+        const PopupMenuItem<String>(
+          value: 'delete-chat',
+          padding: EdgeInsets.zero,
+          height: menuItemsHeight,
+          child: PopupMenuItemWidget(
+            icon: Icons.delete_outline,
+            text: 'Delete Chat',
+          ),
+        ),
+      ];
+    };
   }
 
-  void _onLongPress(MessageModel message) {
-    setState(() {
-      replyMessage = null;
-      selectedMessages.contains(message)
-          ? selectedMessages.remove(message)
-          : selectedMessages.add(message);
-    });
-  }
+  String getRandomLottieAnimation() {
+    // List of Lottie animation paths
+    List<String> lottieAnimations = [
+      'assets/tgs/curious_pigeon.tgs',
+      'assets/tgs/fruity_king.tgs',
+      'assets/tgs/graceful_elmo.tgs',
+      'assets/tgs/hello_anteater.tgs',
+      'assets/tgs/hello_astronaut.tgs',
+      'assets/tgs/hello_badger.tgs',
+      'assets/tgs/hello_bee.tgs',
+      'assets/tgs/hello_cat.tgs',
+      'assets/tgs/hello_clouds.tgs',
+      'assets/tgs/hello_duck.tgs',
+      'assets/tgs/hello_elmo.tgs',
+      'assets/tgs/hello_fish.tgs',
+      'assets/tgs/hello_flower.tgs',
+      'assets/tgs/hello_food.tgs',
+      'assets/tgs/hello_fridge.tgs',
+      'assets/tgs/hello_ghoul.tgs',
+      'assets/tgs/hello_king.tgs',
+      'assets/tgs/hello_lama.tgs',
+      'assets/tgs/hello_monkey.tgs',
+      'assets/tgs/hello_pigeon.tgs',
+      'assets/tgs/hello_possum.tgs',
+      'assets/tgs/hello_rat.tgs',
+      'assets/tgs/hello_seal.tgs',
+      'assets/tgs/hello_shawn_sheep.tgs',
+      'assets/tgs/hello_snail_rabbit.tgs',
+      'assets/tgs/hello_virus.tgs',
+      'assets/tgs/hello_water_animal.tgs',
+      'assets/tgs/hello_whales.tgs',
+      'assets/tgs/muscles_wizard.tgs',
+      'assets/tgs/plague_doctor.tgs',
+      'assets/tgs/screaming_elmo.tgs',
+      'assets/tgs/shy_elmo.tgs',
+      'assets/tgs/sick_wizard.tgs',
+      'assets/tgs/snowman.tgs',
+      'assets/tgs/spinny_jelly.tgs',
+      'assets/tgs/sus_moon.tgs',
+      'assets/tgs/toiletpaper.tgs',
+    ];
 
-  void _onReply(MessageModel message) {
-    setState(() {
-      debugPrint('reply');
-      replyMessage = message;
-      editMessage = null;
-    });
-  }
+    // Generate a random index
+    Random random = Random();
+    int randomIndex =
+        random.nextInt(lottieAnimations.length); // Gets a random index
 
-  void _onEdit(MessageModel message) {
-    setState(() {
-      debugPrint('edit');
-      editMessage = message;
-      replyMessage = null;
-      debugPrint(message.content?.getContent());
-      _messageController.text =
-          message.content?.getContent() ?? 'what about this';
-      debugPrint('${_messageController.text} look here');
-    });
+    // Return the randomly chosen Lottie animation path
+    return lottieAnimations[randomIndex];
   }
 }

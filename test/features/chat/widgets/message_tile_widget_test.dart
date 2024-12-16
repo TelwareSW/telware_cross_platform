@@ -53,7 +53,7 @@ void main() {
               onPress: () {},
               onDownloadTap: (String? filePath) {},
               onPin: (messageModel) {},
-              onDelete: (msgId, _, messageType) {}, chatId: '',
+              onDelete: (msgId, _, messageType) {},
             ),
           ),
         ),
