@@ -33,9 +33,9 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(chattingControllerProvider).init();
     });
-    ref.read(chattingControllerProvider).getUserChats().then((_) {
-      setState(() {});
-    });
+    // ref.read(chattingControllerProvider).getUserChats().then((_) {
+    //   setState(() {});
+    // });
   }
 
   void _scrollListener() {
@@ -78,7 +78,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
           onRefresh: _refreshPage,
           child: CustomScrollView(
             controller: _scrollController,
-            physics: const BouncingScrollPhysics(),
+            physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverAppBar(
                 backgroundColor: Palette.secondary,
