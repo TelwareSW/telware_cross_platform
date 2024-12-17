@@ -100,7 +100,7 @@ class AudioContent extends MessageContent {
   
   @override
   String? getMediaURL() {
-    return audioUrl;
+    return mediaUrl;
   }
 }
 
@@ -136,7 +136,7 @@ class DocumentContent extends MessageContent {
   
   @override
   String? getMediaURL() {
-    return fileUrl;
+    return mediaUrl;
   }
 }
 
@@ -179,7 +179,7 @@ class ImageContent extends MessageContent {
   
   @override
   String? getMediaURL() {
-    return imageUrl;
+    return mediaUrl;
   }
 }
 
@@ -221,7 +221,7 @@ class VideoContent extends MessageContent {
   
   @override
   String? getMediaURL() {
-    return videoUrl;
+    return mediaUrl;
   }
 }
 
@@ -257,7 +257,7 @@ class EmojiContent extends MessageContent {
   
   @override
   String? getMediaURL() {
-    return emojiUrl;
+    return mediaUrl;
   }
 }
 
@@ -292,7 +292,7 @@ class GIFContent extends MessageContent {
   
   @override
   String? getMediaURL() {
-    return gifUrl;    
+    return mediaUrl;    
   }
 }
 
@@ -327,6 +327,6 @@ class StickerContent extends MessageContent {
   
   @override
   String? getMediaURL() {
-    return stickerUrl;
+    return mediaUrl;
   }
 }

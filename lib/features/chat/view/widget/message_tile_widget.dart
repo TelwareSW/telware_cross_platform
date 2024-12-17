@@ -12,6 +12,7 @@ import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/highlight_text_widget.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/audio_message_widget.dart';
+import 'package:telware_cross_platform/features/chat/view/widget/delete_popup_menu.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/document_message_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/image_message_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/parent_message.dart';
@@ -24,6 +25,7 @@ import 'floating_menu_overlay.dart';
 
 class MessageTileWidget extends ConsumerWidget {
   final MessageModel messageModel;
+  final String chatId;
   final bool isSentByMe;
   final bool showInfo;
   final Color nameColor;
@@ -34,27 +36,26 @@ class MessageTileWidget extends ConsumerWidget {
   final Function(MessageModel) onEdit;
   final Function(MessageModel) onLongPress;
   final Function(MessageModel) onPin;
-  final Function(String, String, DeleteMessageType) onDelete;
   final Function()? onPress;
   final MessageModel? parentMessage;
 
-  const MessageTileWidget(
-      {super.key,
-      required this.messageModel,
-      required this.isSentByMe,
-      required this.chatId,
-      required this.onEdit,
-      this.showInfo = false,
-      this.nameColor = Palette.primary,
-      this.imageColor = Palette.primary,
-      this.highlights = const [],
-      required this.onDownloadTap,
-      required this.onReply,
-      required this.onLongPress,
-      required this.onPress,
-      required this.onPin,
-      this.parentMessage,
-      required this.onDelete});
+  const MessageTileWidget({
+    super.key,
+    required this.messageModel,
+    required this.chatId,
+    required this.isSentByMe,
+    this.showInfo = false,
+    this.nameColor = Palette.primary,
+    this.imageColor = Palette.primary,
+    this.highlights = const [],
+    required this.onDownloadTap,
+    required this.onReply,
+    required this.onEdit,
+    required this.onLongPress,
+    required this.onPress,
+    required this.onPin,
+    this.parentMessage,
+  });
 
   // Function to format timestamp to "hh:mm AM/PM"
   String formatTimestamp(DateTime timestamp) {
@@ -62,45 +63,43 @@ class MessageTileWidget extends ConsumerWidget {
     return formatter.format(timestamp);
   }
 
-  Widget textMessage(keyValue, ref) {
+  Widget textMessage(keyValue, ref, String text) {
     return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SenderNameWidget(
-                          keyValue,
-                          nameColor,
-                          showInfo: showInfo,
-                          isSentByMe: isSentByMe,
-                          userId: messageModel.senderId,
-                        ),
-                        if (parentMessage != null)
-                          ParentMessage(parentMessage: parentMessage),
-                        Wrap(
-                          children: [
-                            Wrap(
-                              children: [
-                                HighlightTextWidget(
-                                    key: ValueKey(
-                                        '$keyValue${MessageKeys.messageContentPostfix.value}'),
-                                    text: text,
-                                    normalStyle: const TextStyle(
-                                      color: Palette.primaryText,
-                                      fontSize: 16,
-                                    ),
-                                    highlightStyle: const TextStyle(
-                                        color: Palette.primaryText,
-                                        fontSize: 16,
-                                        backgroundColor:
-                                            Color.fromRGBO(246, 225, 2, 0.43)),
-                                    highlights: highlights),
-                                SizedBox(width: isSentByMe ? 70.0 : 55.0),
-                                const Text("")
-                              ],
-                            )
-                          ],
-                        )
-                      ],
-                    );
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SenderNameWidget(
+          keyValue,
+          nameColor,
+          showInfo: showInfo,
+          isSentByMe: isSentByMe,
+          userId: messageModel.senderId,
+        ),
+        if (parentMessage != null) ParentMessage(parentMessage: parentMessage),
+        Wrap(
+          children: [
+            Wrap(
+              children: [
+                HighlightTextWidget(
+                    key: ValueKey(
+                        '$keyValue${MessageKeys.messageContentPostfix.value}'),
+                    text: text,
+                    normalStyle: const TextStyle(
+                      color: Palette.primaryText,
+                      fontSize: 16,
+                    ),
+                    highlightStyle: const TextStyle(
+                        color: Palette.primaryText,
+                        fontSize: 16,
+                        backgroundColor: Color.fromRGBO(246, 225, 2, 0.43)),
+                    highlights: highlights),
+                SizedBox(width: isSentByMe ? 70.0 : 55.0),
+                const Text("")
+              ],
+            )
+          ],
+        )
+      ],
+    );
   }
 
   @override
@@ -135,7 +134,8 @@ class MessageTileWidget extends ConsumerWidget {
                 late OverlayEntry overlayEntry;
                 overlayEntry = OverlayEntry(
                   builder: (context) => FloatingMenuOverlay(
-                    isSentByMe: messageModel.senderId == ref.read(userProvider)!.id,
+                    isSentByMe:
+                        messageModel.senderId == ref.read(userProvider)!.id,
                     onDismiss: () {
                       overlayEntry.remove();
                     },
@@ -161,6 +161,9 @@ class MessageTileWidget extends ConsumerWidget {
                     },
                     onDelete: () {
                       overlayEntry.remove();
+                      final msgId = messageModel.id ?? messageModel.localId;
+                      showDeleteMessageAlert(
+                          context: context, msgId: msgId, chatId: chatId);
                     },
                     pinned: messageModel.isPinned,
                   ),
@@ -195,7 +198,7 @@ class MessageTileWidget extends ConsumerWidget {
           child: Stack(
             children: [
               _createMessageTile(
-                  messageModel.messageContentType, keyValue, ref),
+                  messageModel.messageContentType, keyValue, ref, text),
               // The timestamp is always in the bottom-right corner if there's space
               Positioned(
                 bottom: 5,
@@ -234,17 +237,19 @@ class MessageTileWidget extends ConsumerWidget {
                           fontSize: 11,
                           color: Palette.primaryText,
                         ),
-                        if (isSentByMe) ...[
-                          const SizedBox(width: 4),
-                          Icon(
-                              key: ValueKey(
-                                  '$keyValue${MessageKeys.messageStatusPostfix.value}'),
-                              messageState,
-                              size: 12,
-                              color: Palette.primaryText),
-                        ]
-                      ],
-                    )),
+                      ),
+                      if (isSentByMe) ...[
+                        const SizedBox(width: 4),
+                        Icon(
+                            key: ValueKey(
+                                '$keyValue${MessageKeys.messageStatusPostfix.value}'),
+                            messageState,
+                            size: 12,
+                            color: Palette.primaryText),
+                      ]
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
@@ -253,10 +258,11 @@ class MessageTileWidget extends ConsumerWidget {
     );
   }
 
-  Widget _createMessageTile(MessageContentType contentType, keyValue, ref) {
+  Widget _createMessageTile(
+      MessageContentType contentType, keyValue, ref, String text) {
     switch (contentType) {
       case MessageContentType.text || MessageContentType.link:
-        return textMessage(keyValue, ref);
+        return textMessage(keyValue, ref, text);
       case MessageContentType.image:
         return ImageMessageWidget(
           onDownloadTap: onDownloadTap,
@@ -307,4 +313,3 @@ class MessageTileWidget extends ConsumerWidget {
     }
   }
 }
-

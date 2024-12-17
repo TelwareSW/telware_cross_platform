@@ -28,6 +28,11 @@ class ChatsViewModel extends _$ChatsViewModel {
     return [];
   }
 
+  void clear() {
+    state = [];
+    _otherUsers = {};
+  }
+
   void setOtherUsers(Map<String, UserModel> otherUsers) {
     _otherUsers = otherUsers;
   }
@@ -176,7 +181,7 @@ class ChatsViewModel extends _$ChatsViewModel {
   Future<void> addReceivedMessage(Map<String, dynamic> response) async {
     var chatId = response["chatId"] as String;
     final chatIndex = getChatIndex(chatId);
-    var chat = chatIndex > 0 ? state[chatIndex] : null;
+    var chat = chatIndex >= 0 ? state[chatIndex] : null;
 
     final msgId = response['id'] as String;
 
@@ -199,8 +204,8 @@ class ChatsViewModel extends _$ChatsViewModel {
     content = createMessageContent(
       contentType: contentType,
       text: response['content'],
-      fileName: response['fileName'],
-      mediaUrl: response['mediaUrl'],
+      fileName: response['content'],
+      mediaUrl: response['media'],
     );
 
     final msg = MessageModel(
