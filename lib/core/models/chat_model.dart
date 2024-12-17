@@ -43,15 +43,18 @@ class ChatModel {
   List<MessageModel> messages;
   @HiveField(14)
   final DateTime? muteUntil; // Add this field
+  @HiveField(15)
+  final List<String>? creators;
 
   ChatModel({
     required this.title,
     required this.userIds,
+    this.admins,
+    this.creators,
     this.photo,
     required this.type,
     this.id,
     this.photoBytes,
-    this.admins,
     this.description,
     this.lastMessageTimestamp,
     this.isArchived = false,
@@ -92,6 +95,7 @@ class ChatModel {
         other.photo == photo &&
         other.id == id &&
         other.admins == admins &&
+        other.creators == creators &&
         other.description == description &&
         other.lastMessageTimestamp == lastMessageTimestamp &&
         other.isArchived == isArchived &&
@@ -115,6 +119,7 @@ class ChatModel {
     isArchived.hashCode ^
     isMuted.hashCode ^
     draft.hashCode ^
+    creators.hashCode ^
     isMentioned.hashCode ^
     messages.hashCode; // Include messages in hashCode
   }
@@ -128,6 +133,7 @@ class ChatModel {
         'photo: $photo,\n'
         'id: $id,\n'
         'admins: $admins,\n'
+        'creators: $creators,\n'
         'description: $description,\n'
         'lastMessageTimestamp: $lastMessageTimestamp,\n'
         'isArchived: $isArchived,\n'
@@ -146,6 +152,7 @@ class ChatModel {
     String? id,
     Uint8List? photoBytes,
     List<String>? admins,
+    List<String>? creators,
     String? description,
     DateTime? lastMessageTimestamp,
     bool? isArchived,
@@ -163,6 +170,7 @@ class ChatModel {
       id: id ?? this.id,
       photoBytes: photoBytes ?? this.photoBytes,
       admins: admins ?? this.admins,
+      creators: creators ?? this.creators,
       description: description ?? this.description,
       lastMessageTimestamp: lastMessageTimestamp ?? this.lastMessageTimestamp,
       isArchived: isArchived ?? this.isArchived,
@@ -182,6 +190,7 @@ class ChatModel {
       'photo': photo,
       'id': id,
       'admins': admins,
+      'creators': creators,
       'description': description,
       'lastMessageTimestamp': lastMessageTimestamp?.toIso8601String(),
       'isArchived': isArchived,

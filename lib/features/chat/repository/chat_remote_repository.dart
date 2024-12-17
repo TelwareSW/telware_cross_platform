@@ -87,7 +87,9 @@ class ChatRemoteRepository {
           mediaUrl: lastMessage['mediaUrl'],
         );
 
-        // todo(ahmed): add (isForward, isPinned, isAnnouncement, parentMsgId) 
+        final threadMessages = (lastMessage['threadMessages'] as List).map((e) => e as String).toList();
+
+        // todo(ahmed): add (parentMsgId)
         // the connumicationType attribute is extra
         lastMessageMap[message['chatId']] = MessageModel(
           id: lastMessage['id'],
@@ -99,6 +101,10 @@ class ChatRemoteRepository {
               ? DateTime.parse(lastMessage['timestamp'])
               : DateTime.now(),
           userStates: userStates,
+          isForward: lastMessage['isForward'] ?? false,
+          isPinned: lastMessage['isPinned'] ?? false,
+          isAnnouncement: lastMessage['isAnnouncement'],
+          threadMessages: threadMessages
         );
       }
 
@@ -132,7 +138,15 @@ class ChatRemoteRepository {
           if (otherUsers.isEmpty) {
             continue;
           }
-          chatTitle = otherUsers[0]?.username ?? 'Private Chat';
+
+          chatTitle =
+              '${otherUsers[0]?.screenFirstName} ${otherUsers[0]?.screenLastName}';
+          if (chatTitle.isEmpty) {
+            chatTitle = (otherUsers[0]?.username != null &&
+                    otherUsers[0]!.username.isNotEmpty)
+                ? otherUsers[0]!.username
+                : 'Private Chat';
+          }
         } else if (chat['chat']['type'] == 'group') {
           chatTitle = 'Group Chat';
         } else if (chat['chat']['type'] == 'channel') {
@@ -155,6 +169,7 @@ class ChatRemoteRepository {
           messages: messages,
           draft: chat['draft'],
           isMuted: chat['isMuted'],
+          creators: creators,
         );
 
         chats.add(chatModel);
