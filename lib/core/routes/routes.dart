@@ -14,11 +14,11 @@ import 'package:telware_cross_platform/features/auth/view/screens/social_auth_lo
 import 'package:telware_cross_platform/features/auth/view/screens/verification_screen.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/call_screen.dart';
+import 'package:telware_cross_platform/features/chat/view/screens/caption_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/chat_info_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/chat_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/create_chat_screen.dart';
-import 'package:telware_cross_platform/features/groups/view/screens/create_group_screen.dart';
-import 'package:telware_cross_platform/features/groups/view/screens/group_creation_details.dart';
+import 'package:telware_cross_platform/features/chat/view/screens/create_group_screen.dart';
 import 'package:telware_cross_platform/features/home/view/screens/home_screen.dart';
 import 'package:telware_cross_platform/features/home/view/screens/inbox_screen.dart';
 import 'package:telware_cross_platform/features/stories/view/screens/add_my_image_screen.dart';
@@ -42,7 +42,6 @@ import 'package:telware_cross_platform/features/user/view/screens/user_profile_s
 import '../../features/chat/view/screens/pinned_messages_screen.dart';
 import '../../features/stories/view/screens/crop_image_screen.dart';
 import '../../features/user/view/screens/devices_screen.dart';
-import '../models/user_model.dart';
 
 class Routes {
   static const String home = HomeScreen.route;
@@ -78,8 +77,8 @@ class Routes {
   static const String createChatScreen = CreateChatScreen.route;
   static const String chatInfoScreen = ChatInfoScreen.route;
   static const String createGroupScreen = CreateGroupScreen.route;
-  static const String groupCreationDetails = GroupCreationDetails.route;
   static const String callScreen = CallScreen.route;
+  static const String captionScreen = CaptionScreen.route;
 
   static GoRouter appRouter(WidgetRef ref) => GoRouter(
         initialLocation: Routes.splash,
@@ -204,12 +203,11 @@ class Routes {
             builder: (context, state) => const BlockedUsersScreen(),
           ),
           GoRoute(
-            path: Routes.userProfile,
-            builder: (context, state) {
-              final String? userId = state.extra as String?;
-              return UserProfileScreen(userId: userId);
-            }
-          ),
+              path: Routes.userProfile,
+              builder: (context, state) {
+                final String? userId = state.extra as String?;
+                return UserProfileScreen(userId: userId);
+              }),
           GoRoute(
             path: Routes.privacySettings,
             builder: (context, state) => const PrivacySettingsScreen(),
@@ -247,32 +245,30 @@ class Routes {
             builder: (context, state) => const ChangeEmailScreen(),
           ),
           GoRoute(
-            path: Routes.chatScreen,
-            builder: (context, state) {
-              if (state.extra is ChatModel) {
-                return ChatScreen(chatModel: state.extra as ChatModel);
-              }
-              final String chatId = state.extra as String;
-              return ChatScreen(chatId: chatId);
-            }
-          ),
+              path: Routes.chatScreen,
+              builder: (context, state) {
+                if (state.extra is ChatModel) {
+                  return ChatScreen(chatModel: state.extra as ChatModel);
+                }
+                final String chatId = state.extra as String;
+                return ChatScreen(chatId: chatId);
+              }),
           GoRoute(
               path: Routes.pinnedMessagesScreen,
               builder: (context, state) {
                 if (state.extra is ChatModel) {
-                  return PinnedMessagesScreen(chatModel: state.extra as ChatModel);
+                  return PinnedMessagesScreen(
+                      chatModel: state.extra as ChatModel);
                 }
                 final String chatId = state.extra as String;
                 return PinnedMessagesScreen(chatId: chatId);
-              }
-          ),
+              }),
           GoRoute(
               path: Routes.cropImageScreen,
               builder: (context, state) {
                 final String path = state.extra as String;
                 return CropImageScreen(path: path);
-              }
-          ),
+              }),
           GoRoute(
             path: Routes.createChatScreen,
             builder: (context, state) => const CreateChatScreen(),
@@ -289,17 +285,25 @@ class Routes {
             builder: (context, state) => const CreateGroupScreen(),
           ),
           GoRoute(
-            path: Routes.groupCreationDetails,
-            builder: (context, state) {
-              final List<UserModel> members = state.extra as List<UserModel>;
-              return GroupCreationDetails(members: members);
-            }
-           ),
-          GoRoute(
             path: Routes.callScreen,
             builder: (context, state) {
               final UserModel? userModel = state.extra as UserModel?;
               return CallScreen(callee: userModel);
+            },
+          ),
+          GoRoute(
+            path: Routes.captionScreen,
+            builder: (context, state) {
+              final String filePath =
+                  (state.extra as Map<String, dynamic>)['filePath'];
+              final void Function(
+                      {required String caption,
+                      required String filePath}) sendCaptionMedia =
+                  (state.extra as Map<String, dynamic>)['sendCaptionMedia'];
+              return CaptionScreen(
+                filePath: filePath,
+                sendCaptionMedia: sendCaptionMedia,
+              );
             },
           ),
         ],

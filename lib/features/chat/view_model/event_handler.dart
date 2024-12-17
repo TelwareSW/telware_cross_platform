@@ -36,12 +36,6 @@ class EventHandler {
     processQueue();
   }
 
-  void clear() {
-    stopProcessing();
-    _queue.clear();
-    _socket.disconnect();
-  }
-
   void addEvent(MessageEvent event) {
     debugPrint('!!! event added');
     _queue.add(event);
@@ -54,7 +48,6 @@ class EventHandler {
   }
 
   void stopProcessing() {
-    if (!_isProcessing) return;
     _stopRequested = true; // Gracefully request stopping the loop
   }
 
@@ -72,8 +65,12 @@ class EventHandler {
       final currentEvent = _queue.first;
 
       if (!_socket.isConnected) {
-        debugPrint('&%^ called the connect from handler loop');
-        _socket.onError();
+        _socket.connect(
+          serverUrl: SOCKET_URL,
+          userId: _userId,
+          onConnect: _onSocketConnect,
+          sessionId: _sessionId,
+        );
         break;
       }
 

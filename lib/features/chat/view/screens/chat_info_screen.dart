@@ -16,6 +16,7 @@ import 'package:telware_cross_platform/features/auth/view/widget/title_element.d
 import 'package:telware_cross_platform/features/chat/view/widget/member_tile_widget.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
+import 'package:telware_cross_platform/features/user/view/widget/avatar_generator.dart';
 import 'package:telware_cross_platform/features/user/view/widget/profile_header_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_toggle_switch_widget.dart';
 
@@ -34,7 +35,6 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
   late final Future<List<UserModel?>> usersInfoFuture;
   late ChatModel chat = widget.chatModel;
   late TabController _tabController;
-  bool showAutoDeleteOptions = false;
 
   Future<List<UserModel?>> getUsersInfo() async {
     final ChatModel chat = widget.chatModel;
@@ -94,39 +94,6 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
     }
   }
 
-  void _showMoreSettings() {
-    var items = [];
-    if (showAutoDeleteOptions) {
-      items.addAll([
-        {'icon': Icons.arrow_back, 'text': 'Back', 'value': 'no-close'},
-        {'icon': Icons.timer_sharp, 'text': '1 day', 'value': 'auto-1d'},
-        {'icon': Icons.access_time_rounded, 'text': '1 week', 'value': 'auto-1w'},
-        {'icon': Icons.share_arrival_time_outlined, 'text': '1 month', 'value': 'auto-1m'},
-        {'icon': Icons.tune_outlined, 'text': 'Customize', 'value': 'customize'},
-        {'icon': Icons.do_disturb_alt, 'text': 'Disable', 'value': 'disable-auto', 'color': Palette.error},
-      ]);
-    } else {
-      items.addAll([
-        {'icon': Icons.more_time, 'text': 'Auto-Delete', 'value': 'no-close',
-          'trailing': const Icon(Icons.arrow_forward_ios, color: Palette.inactiveSwitch, size: 16)},
-        {'icon': Icons.voice_chat_outlined, 'text': 'Start Video chat', 'value': 'video-call'},
-        {'icon': Icons.search, 'text': 'Search Members', 'value': 'search'},
-        {'icon': Icons.logout_outlined, 'text': 'Delete and Leave Group', 'value': 'delete-group'},
-        {'icon': Icons.add_home_outlined, 'text': 'Add to Home Screen', 'value': 'add-home'},
-      ]);
-    }
-
-    final renderBox = context.findRenderObject() as RenderBox;
-    final position = Offset(renderBox.size.width, -350);
-
-    PopupMenuWidget.showPopupMenu(
-        context: context,
-        position: position,
-        items: items,
-        onSelected: _handlePopupMenuSelection
-    );
-  }
-
   void _showNotificationSettings(BuildContext context) {
     var items = !chat.isMuted ? [
       {'icon': Icons.music_off_outlined, 'text': 'Disable sound', 'value': 'disable-sound'},
@@ -143,57 +110,52 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
     PopupMenuWidget.showPopupMenu(
         context: context,
         items: items,
-        onSelected: _handlePopupMenuSelection
+        onSelected: (value) {
+          switch (value) {
+            case 'mute-30m':
+              _setChatMute(true, DateTime.now().add(const Duration(minutes: 30)));
+              break;
+            case 'mute-custom':
+              DatePicker.showDatePicker(
+                context,
+                pickerTheme: const DateTimePickerTheme(
+                  backgroundColor: Palette.secondary,
+                  itemTextStyle: TextStyle(
+                    color: Palette.primaryText,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  confirm: Text(
+                    'Confirm',
+                    style: TextStyle(
+                      color: Palette.primary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                pickerMode: DateTimePickerMode.time,
+                minDateTime: DateTime.now(),
+                maxDateTime: DateTime.now().add(const Duration(days: 365)),
+                initialDateTime: DateTime.now(),
+                dateFormat: 'dd-MMMM-yyyy',
+                locale: DateTimePickerLocale.en_us,
+                onConfirm: (date, time) {
+                  _setChatMute(true, date);
+                },
+              );
+              break;
+            case 'mute-forever':
+              _setChatMute(true, null);
+              break;
+            case 'unmute':
+              _setChatMute(false, null);
+              break;
+            default:
+              showToastMessage('Coming soon');
+          }
+        }
     );
-  }
-
-  void _handlePopupMenuSelection(dynamic value) {
-    switch (value) {
-      case 'no-close':
-        showAutoDeleteOptions = !showAutoDeleteOptions;
-        break;
-      case 'mute-30m':
-        _setChatMute(true, DateTime.now().add(const Duration(minutes: 30)));
-        break;
-      case 'mute-custom':
-        DatePicker.showDatePicker(
-          context,
-          pickerTheme: const DateTimePickerTheme(
-            backgroundColor: Palette.secondary,
-            itemTextStyle: TextStyle(
-              color: Palette.primaryText,
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-            ),
-            confirm: Text(
-              'Confirm',
-              style: TextStyle(
-                color: Palette.primary,
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          pickerMode: DateTimePickerMode.time,
-          minDateTime: DateTime.now(),
-          maxDateTime: DateTime.now().add(const Duration(days: 365)),
-          initialDateTime: DateTime.now(),
-          dateFormat: 'dd-MMMM-yyyy',
-          locale: DateTimePickerLocale.en_us,
-          onConfirm: (date, time) {
-            _setChatMute(true, date);
-          },
-        );
-        break;
-      case 'mute-forever':
-        _setChatMute(true, null);
-        break;
-      case 'unmute':
-        _setChatMute(false, null);
-        break;
-      default:
-        showToastMessage('Coming soon');
-    }
   }
 
   void _addMembers() {
@@ -229,7 +191,9 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
               ),
               const SizedBox(width: 16),
               IconButton(
-                  onPressed: _showMoreSettings,
+                  onPressed: () {
+                    // Create popup menu and stuff
+                  },
                   icon: const Icon(Icons.more_vert)),
             ],
             flexibleSpace: LayoutBuilder(
@@ -302,12 +266,10 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
                         return Column(
                           children: [
                             for (final UserModel? user in users) ...[
-                              user == null ?
-                              const SizedBox.shrink() :
                               Container(
                                 color: Palette.secondary,
                                 child: MemberTileWidget(
-                                  imagePath: user.photo,
+                                  imagePath: user!.photo,
                                   text: '${user.screenFirstName} ${user.screenLastName}',
                                   subtext: user.status,
                                   showDivider: false,
@@ -351,13 +313,12 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
                         ],
 
                       ),
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(maxHeight: 300),
+                      Flexible(
+                        fit: FlexFit.loose,
                         child: TabBarView(
                           controller: _tabController,
                           children: List.generate(2, (index) {
                             return const Column(
-                              mainAxisSize: MainAxisSize.min,
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [

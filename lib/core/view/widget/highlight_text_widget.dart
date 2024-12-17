@@ -7,6 +7,8 @@ class HighlightTextWidget extends StatelessWidget {
       highlights; // Each entry holds start index and length of highlight
   final TextStyle normalStyle;
   final TextStyle highlightStyle;
+  final TextOverflow overFlow;
+  final int? maxLines;
 
   const HighlightTextWidget({
     super.key,
@@ -14,6 +16,8 @@ class HighlightTextWidget extends StatelessWidget {
     required this.highlights,
     this.normalStyle = const TextStyle(color: Palette.primaryText),
     this.highlightStyle = const TextStyle(color: Palette.error),
+    this.overFlow = TextOverflow.clip,
+    this.maxLines,
   });
 
   @override
@@ -47,6 +51,8 @@ class HighlightTextWidget extends StatelessWidget {
       text: TextSpan(
         children: textSpans,
       ),
+      overflow: overFlow,
+      maxLines: maxLines,
     );
   }
 }

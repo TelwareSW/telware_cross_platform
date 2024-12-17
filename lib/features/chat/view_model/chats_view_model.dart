@@ -28,11 +28,6 @@ class ChatsViewModel extends _$ChatsViewModel {
     return [];
   }
 
-  void clear() {
-    state = [];
-    _otherUsers = {};
-  }
-
   void setOtherUsers(Map<String, UserModel> otherUsers) {
     _otherUsers = otherUsers;
   }
@@ -58,7 +53,6 @@ class ChatsViewModel extends _$ChatsViewModel {
   }
 
   Future<UserModel?> getUser(String id) async {
-    // debugPrint('!!!** called');
     if (id == ref.read(userProvider)!.id) {
       // debugPrint('!!!** returning the current user');
       return ref.read(userProvider);
@@ -78,7 +72,7 @@ class ChatsViewModel extends _$ChatsViewModel {
       ref.read(chattingControllerProvider).restoreOtherUsers(_otherUsers);
     }
 
-    // debugPrint('!!!** returning a user from the other users map: $user');
+    debugPrint('!!!** returning a user from the other users map: $user');
     return user;
   }
 
@@ -182,7 +176,7 @@ class ChatsViewModel extends _$ChatsViewModel {
   Future<void> addReceivedMessage(Map<String, dynamic> response) async {
     var chatId = response["chatId"] as String;
     final chatIndex = getChatIndex(chatId);
-    var chat = chatIndex >= 0 ? state[chatIndex] : null;
+    var chat = chatIndex > 0 ? state[chatIndex] : null;
 
     final msgId = response['id'] as String;
 
@@ -282,11 +276,13 @@ class ChatsViewModel extends _$ChatsViewModel {
   int getChatIndex(String chatId) =>
       state.indexWhere((chat) => chat.id == chatId);
 
-  void updateMessageFilePath(String chatId, String msgId, String filePath) {
+  void updateMessageFilePath(
+      String chatId, String messageLocalId, String filePath) {
     final chatIndex = getChatIndex(chatId);
     final chat = state[chatIndex];
     // Find the msg with the specified ID
-    final msgIndex = chat.messages.indexWhere((msg) => msg.id == msgId);
+    final msgIndex =
+        chat.messages.indexWhere((msg) => msg.localId == messageLocalId);
 
     if (msgIndex != -1) {
       MessageModel? message = chat.messages[msgIndex];

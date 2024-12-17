@@ -18,44 +18,40 @@ class ChatModel {
   @HiveField(1)
   final List<String> userIds;
   @HiveField(2)
-  final List<String>? admins;
-  @HiveField(3)
-  final List<String>? creators;
-  @HiveField(4)
   final String? photo;
-  @HiveField(5)
+  @HiveField(3)
   final ChatType type;
-  @HiveField(6)
+  @HiveField(4)
   Uint8List? photoBytes;
-  @HiveField(7)
+  @HiveField(5)
   String? id;
-  @HiveField(8)
+  @HiveField(6)
+  final List<String>? admins;
+  @HiveField(7)
   final String? description;
-  @HiveField(9)
+  @HiveField(8)
   final DateTime? lastMessageTimestamp;
-  @HiveField(10)
+  @HiveField(9)
   final bool isArchived;
-  @HiveField(11)
+  @HiveField(10)
   final bool isMuted;
-  @HiveField(12)
+  @HiveField(11)
   final String? draft;
-  @HiveField(13)
+  @HiveField(12)
   final bool isMentioned;
-  @HiveField(14)
+  @HiveField(13)
   List<MessageModel> messages;
-  @HiveField(15)
+  @HiveField(14)
   final DateTime? muteUntil; // Add this field
-
 
   ChatModel({
     required this.title,
     required this.userIds,
-    this.admins,
-    this.creators,
     this.photo,
     required this.type,
     this.id,
     this.photoBytes,
+    this.admins,
     this.description,
     this.lastMessageTimestamp,
     this.isArchived = false,
@@ -96,7 +92,6 @@ class ChatModel {
         other.photo == photo &&
         other.id == id &&
         other.admins == admins &&
-        other.creators == creators &&
         other.description == description &&
         other.lastMessageTimestamp == lastMessageTimestamp &&
         other.isArchived == isArchived &&
@@ -120,7 +115,6 @@ class ChatModel {
     isArchived.hashCode ^
     isMuted.hashCode ^
     draft.hashCode ^
-    creators.hashCode ^
     isMentioned.hashCode ^
     messages.hashCode; // Include messages in hashCode
   }
@@ -134,7 +128,6 @@ class ChatModel {
         'photo: $photo,\n'
         'id: $id,\n'
         'admins: $admins,\n'
-        'creators: $creators,\n'
         'description: $description,\n'
         'lastMessageTimestamp: $lastMessageTimestamp,\n'
         'isArchived: $isArchived,\n'
@@ -153,7 +146,6 @@ class ChatModel {
     String? id,
     Uint8List? photoBytes,
     List<String>? admins,
-    List<String>? creators,
     String? description,
     DateTime? lastMessageTimestamp,
     bool? isArchived,
@@ -171,7 +163,6 @@ class ChatModel {
       id: id ?? this.id,
       photoBytes: photoBytes ?? this.photoBytes,
       admins: admins ?? this.admins,
-      creators: creators ?? this.creators,
       description: description ?? this.description,
       lastMessageTimestamp: lastMessageTimestamp ?? this.lastMessageTimestamp,
       isArchived: isArchived ?? this.isArchived,
@@ -191,7 +182,6 @@ class ChatModel {
       'photo': photo,
       'id': id,
       'admins': admins,
-      'creators': creators,
       'description': description,
       'lastMessageTimestamp': lastMessageTimestamp?.toIso8601String(),
       'isArchived': isArchived,
