@@ -19,7 +19,10 @@ import 'package:telware_cross_platform/features/chat/view/widget/slide_to_cancel
 
 class BottomInputBarWidget extends ConsumerStatefulWidget {
   final TextEditingController controller; // Accept controller as a parameter
+  final bool isEditing;
   final String? chatID;
+  final void Function() unreferenceMessages;
+  final void Function() editMessage;
   final void Function({
     required String contentType,
     required WidgetRef ref,
@@ -29,7 +32,6 @@ class BottomInputBarWidget extends ConsumerStatefulWidget {
     bool? getRecordingPath,
     bool isMusic,
   }) sendMessage;
-  final void Function() removeReply;
   final AudioRecorderService audioRecorderService;
 
   const BottomInputBarWidget({
@@ -37,8 +39,10 @@ class BottomInputBarWidget extends ConsumerStatefulWidget {
     this.chatID,
     required this.sendMessage,
     required this.controller,
-    required this.removeReply,
+    required this.unreferenceMessages,
+    required this.editMessage,
     required this.audioRecorderService,
+    required this.isEditing,
   });
 
   @override
@@ -254,13 +258,14 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
       String? filePath = widget.audioRecorderService.resetRecording();
       widget.sendMessage(ref: ref, contentType: 'audio', filePath: filePath);
     } else {
-      widget.sendMessage(ref: ref, contentType: 'text');
-    }
-    widget.removeReply();
+      widget.isEditing ? widget.editMessage() : widget.sendMessage(ref: ref, contentType: 'text');
+       }
+                    widget.unreferenceMessages();
   }
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('this is in the input field widget: ${widget.controller.text}');
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: widget.audioRecorderService.isRecordingCompleted ? 0 : 10,
@@ -436,7 +441,7 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                 IconButton(
                   padding: const EdgeInsets.only(left: 10),
                   iconSize: 28,
-                  icon: const Icon(Icons.send),
+                  icon: widget.isEditing ? const Icon(Icons.check_circle) : const Icon(Icons.send),
                   color: Palette.accent,
                   onPressed: _onSend,
                 ),

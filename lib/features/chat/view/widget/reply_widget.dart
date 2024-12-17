@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:telware_cross_platform/core/providers/user_provider.dart';
 
 import '../../../../core/models/message_model.dart';
 import '../../../../core/models/user_model.dart';
@@ -7,14 +8,16 @@ import '../../../../core/theme/palette.dart';
 import '../../enum/message_enums.dart';
 import '../../view_model/chats_view_model.dart';
 
-class ReplyWidget extends ConsumerWidget {
+class ReplyEditFieldHeader extends ConsumerWidget {
   final Function() onDiscard;
   final MessageModel message;
+  final bool isReplyOrEdit;
 
-  const ReplyWidget({
+  const ReplyEditFieldHeader({
     super.key,
     required this.message,
     required this.onDiscard,
+    required this.isReplyOrEdit,
   });
 
   @override
@@ -26,15 +29,17 @@ class ReplyWidget extends ConsumerWidget {
         padding: const EdgeInsets.all(10),
         child: Row(
           children: [
-            const Icon(Icons.reply, color: Palette.primary),
+            isReplyOrEdit
+                ? const Icon(Icons.reply, color: Palette.primary)
+                : const Icon(Icons.edit, color: Palette.primary),
             const SizedBox(width: 10),
-            const Icon(Icons.person),
-            const SizedBox(width: 10),
+            if (isReplyOrEdit) const Icon(Icons.person),
+            if (isReplyOrEdit) const SizedBox(width: 10),
             Expanded(
               child: FutureBuilder<UserModel?>(
-                future: ref
+                future: isReplyOrEdit ? ref
                     .read(chatsViewModelProvider.notifier)
-                    .getUser(message.senderId),
+                    .getUser(message.senderId) : Future.value(ref.read(userProvider)),
                 builder: (context, snapshot) {
                   // Handle loading, error, and data states
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -53,28 +58,31 @@ class ReplyWidget extends ConsumerWidget {
                       style: TextStyle(color: Palette.primary),
                     );
                   }
-                  final userName = snapshot.data!.username;
+                  final userName =
+                      '${snapshot.data!.screenFirstName} ${snapshot.data!.screenLastName}';
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Reply to $userName",
+                        isReplyOrEdit ? "Reply to $userName" : "Edit Message",
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
                           color: Palette.primary,
                         ),
                         overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
-                      Text(
+                      if (isReplyOrEdit) Text(
                         message.messageContentType == MessageContentType.text
-                            ? message.content?.toJson()['text'] ?? ""
+                            ? message.content?.getContent() ?? ""
                             : message.messageContentType.content.toUpperCase(),
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                           color: Palette.accentText,
                         ),
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],

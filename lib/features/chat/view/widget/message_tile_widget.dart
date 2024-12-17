@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+
 import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
+import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
+import 'package:telware_cross_platform/core/view/widget/highlight_text_widget.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/audio_message_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/document_message_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/image_message_widget.dart';
+import 'package:telware_cross_platform/features/chat/view/widget/parent_message.dart';
+import 'package:telware_cross_platform/features/chat/view/widget/sender_name_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/sticker_message_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/video_player_widget.dart';
-import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
-import 'package:telware_cross_platform/core/view/widget/highlight_text_widget.dart';
-import '../../../../core/models/user_model.dart';
+
 import '../screens/create_chat_screen.dart';
 import 'floating_menu_overlay.dart';
 
@@ -27,6 +31,7 @@ class MessageTileWidget extends ConsumerWidget {
   final List<MapEntry<int, int>> highlights;
   final void Function(String?) onDownloadTap;
   final Function(MessageModel) onReply;
+  final Function(MessageModel) onEdit;
   final Function(MessageModel) onLongPress;
   final Function(MessageModel) onPin;
   final Function(String, String, DeleteMessageType) onDelete;
@@ -37,6 +42,8 @@ class MessageTileWidget extends ConsumerWidget {
       {super.key,
       required this.messageModel,
       required this.isSentByMe,
+      required this.chatId,
+      required this.onEdit,
       this.showInfo = false,
       this.nameColor = Palette.primary,
       this.imageColor = Palette.primary,
@@ -56,147 +63,54 @@ class MessageTileWidget extends ConsumerWidget {
   }
 
   Widget textMessage(keyValue, ref) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      SenderNameWidget(
-        keyValue,
-        nameColor,
-        showInfo: showInfo,
-        isSentByMe: isSentByMe,
-        userId: messageModel.senderId,
-      ),
-      parentMessage != null
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                // First message
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: isSentByMe
-                        ? LinearGradient(
-                            colors: [
-                              Color.lerp(Colors.deepPurpleAccent, Colors.white,
-                                      0.4) ??
-                                  Colors.black,
-                              // Increase brightness by using 0.4
-                              Color.lerp(Colors.deepPurpleAccent, Colors.white,
-                                      0.2) ??
-                                  Colors.deepPurpleAccent,
-                              // Slightly brighten the bottom color
-                            ],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          )
-                        : LinearGradient(
-                            colors: [
-                              Color.lerp(
-                                      Palette.secondary, Colors.white, 0.4) ??
-                                  Colors.black,
-                              // Increase brightness by using 0.4
-                              Color.lerp(
-                                      Palette.secondary, Colors.white, 0.2) ??
-                                  Palette.secondary,
-                              // Slightly brighten the bottom color
-                            ],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
-                    borderRadius: const BorderRadius.all(
-                      Radius.circular(16),
-                    ),
-                  ),
-                  padding: const EdgeInsets.all(3),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      FutureBuilder<UserModel?>(
-                        future: ref
-                            .read(chatsViewModelProvider.notifier)
-                            .getUser(messageModel.senderId),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const CircularProgressIndicator(); // Show loading spinner
-                          } else if (snapshot.hasError) {
-                            return Text(
-                              'Error: ${snapshot.error}',
-                              style: const TextStyle(
-                                color: Colors.red,
-                              ),
-                            );
-                          } else if (snapshot.hasData) {
-                            return Text(
-                              snapshot.data!.username ?? '',
-                              style: const TextStyle(
-                                color: Palette.primaryText,
-                                fontSize: 16,
-                              ),
-                            );
-                          } else {
-                            return const Text(
-                              'No data',
-                              style: TextStyle(
-                                color: Colors.grey,
-                              ),
-                            );
-                          }
-                        },
-                      ),
-                      Text(
-                        parentMessage?.content?.toJson()['text'] ?? "",
-                        style: const TextStyle(
-                          color: Palette.primaryText,
-                          fontSize: 16,
+    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SenderNameWidget(
+                          keyValue,
+                          nameColor,
+                          showInfo: showInfo,
+                          isSentByMe: isSentByMe,
+                          userId: messageModel.senderId,
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            )
-          : const SizedBox(),
-      Wrap(
-        children: [
-          SenderNameWidget(
-            keyValue,
-            nameColor,
-            showInfo: showInfo,
-            isSentByMe: isSentByMe,
-            userId: messageModel.senderId,
-          ),
-          Wrap(
-            children: [
-              HighlightTextWidget(
-                key: ValueKey(
-                    '$keyValue${MessageKeys.messageContentPostfix.value}'),
-                text: messageModel.content?.toJson()['text'] ?? "",
-                normalStyle: const TextStyle(
-                  color: Palette.primaryText,
-                  fontSize: 16,
-                ),
-                highlightStyle: const TextStyle(
-                  color: Palette.primaryText,
-                  fontSize: 16,
-                  backgroundColor: Color.fromRGBO(
-                    246,
-                    225,
-                    2,
-                    0.43,
-                  ),
-                ),
-                highlights: highlights,
-              ),
-              SizedBox(width: isSentByMe ? 70.0 : 55.0),
-              const Text("")
-            ],
-          )
-        ],
-      )
-    ]);
+                        if (parentMessage != null)
+                          ParentMessage(parentMessage: parentMessage),
+                        Wrap(
+                          children: [
+                            Wrap(
+                              children: [
+                                HighlightTextWidget(
+                                    key: ValueKey(
+                                        '$keyValue${MessageKeys.messageContentPostfix.value}'),
+                                    text: text,
+                                    normalStyle: const TextStyle(
+                                      color: Palette.primaryText,
+                                      fontSize: 16,
+                                    ),
+                                    highlightStyle: const TextStyle(
+                                        color: Palette.primaryText,
+                                        fontSize: 16,
+                                        backgroundColor:
+                                            Color.fromRGBO(246, 225, 2, 0.43)),
+                                    highlights: highlights),
+                                SizedBox(width: isSentByMe ? 70.0 : 55.0),
+                                const Text("")
+                              ],
+                            )
+                          ],
+                        )
+                      ],
+                    );
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final keyValue = (key as ValueKey).value;
+    bool isPinned = messageModel.isPinned;
+    bool isEdited = messageModel.isEdited;
+    String text = messageModel.content?.toJson()['text'] ?? "";
+    if (text.length <= 35 && isPinned) text += '   ';
+    if (text.length <= 35 && isEdited) text += '        ';
     Alignment messageAlignment =
         isSentByMe ? Alignment.centerRight : Alignment.centerLeft;
     IconData messageState = getMessageStateIcon(messageModel);
@@ -217,9 +131,11 @@ class MessageTileWidget extends ConsumerWidget {
         },
         onTap: onPress == null
             ? () {
+                SystemChannels.textInput.invokeMethod('TextInput.hide');
                 late OverlayEntry overlayEntry;
                 overlayEntry = OverlayEntry(
                   builder: (context) => FloatingMenuOverlay(
+                    isSentByMe: messageModel.senderId == ref.read(userProvider)!.id,
                     onDismiss: () {
                       overlayEntry.remove();
                     },
@@ -241,6 +157,7 @@ class MessageTileWidget extends ConsumerWidget {
                     },
                     onEdit: () {
                       overlayEntry.remove();
+                      onEdit(messageModel);
                     },
                     onDelete: () {
                       overlayEntry.remove();
@@ -254,8 +171,10 @@ class MessageTileWidget extends ConsumerWidget {
                 onLongPress(messageModel);
               },
         child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 5),
-          padding: EdgeInsets.all(mediaMessage ? 3 : 12),
+          margin: const EdgeInsets.symmetric(vertical: 2),
+          padding: EdgeInsets.symmetric(
+              horizontal: mediaMessage ? 3 : 12,
+              vertical: mediaMessage ? 3 : 7),
           constraints: BoxConstraints(
               maxWidth: MediaQuery.of(context).size.width * 0.75),
           decoration: BoxDecoration(
@@ -282,18 +201,38 @@ class MessageTileWidget extends ConsumerWidget {
                 bottom: 5,
                 right: 5,
                 child: Container(
-                    padding: const EdgeInsets.only(top: 5),
-                    // Add some space above the timestamp
-                    child: Row(
-                      children: [
-                        Text(
-                          key: ValueKey(
-                              '$keyValue${MessageKeys.messageTimePostfix.value}'),
-                          formatTimestamp(messageModel.timestamp),
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Palette.primaryText,
-                          ),
+                  padding: const EdgeInsets.only(top: 5),
+                  // Add some space above the timestamp
+                  child: Row(
+                    children: [
+                      if (isPinned) ...[
+                        Transform.rotate(
+                          angle: 45 *
+                              (3.141592653589793 /
+                                  180), // Convert degrees to radians
+                          child: const Icon(Icons.push_pin_rounded, size: 12),
+                        ),
+                        const SizedBox(
+                          width: 2,
+                        )
+                      ],
+                      if (isEdited) ...[
+                        const Text("edited",
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Palette.primaryText,
+                            )),
+                        const SizedBox(
+                          width: 2,
+                        )
+                      ],
+                      Text(
+                        key: ValueKey(
+                            '$keyValue${MessageKeys.messageTimePostfix.value}'),
+                        formatTimestamp(messageModel.timestamp),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Palette.primaryText,
                         ),
                         if (isSentByMe) ...[
                           const SizedBox(width: 4),
@@ -369,62 +308,3 @@ class MessageTileWidget extends ConsumerWidget {
   }
 }
 
-class SenderNameWidget extends ConsumerStatefulWidget {
-  final bool showInfo, isSentByMe;
-  final String userId;
-  final dynamic keyValue;
-  final Color nameColor;
-
-  const SenderNameWidget(
-    this.keyValue,
-    this.nameColor, {
-    super.key,
-    required this.showInfo,
-    required this.isSentByMe,
-    required this.userId,
-  });
-
-  @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
-      _SenderNameWidgetState();
-}
-
-class _SenderNameWidgetState extends ConsumerState<SenderNameWidget> {
-  bool showName = false;
-  String otherUserName = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _getName();
-  }
-
-  Future<void> _getName() async {
-    if (widget.showInfo && !widget.isSentByMe) {
-      final user = (await ref
-          .read(chatsViewModelProvider.notifier)
-          .getUser(widget.userId));
-      setState(() {
-        otherUserName = '${user!.screenFirstName} ${user.screenLastName}';
-        showName = true;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    Widget senderNameWidget = showName
-        ? Text(
-            key: ValueKey(
-                '${widget.keyValue}${MessageKeys.messageSenderPostfix.value}'),
-            otherUserName,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: widget.nameColor,
-              fontSize: 12,
-            ),
-          )
-        : const SizedBox.shrink();
-    return senderNameWidget;
-  }
-}
