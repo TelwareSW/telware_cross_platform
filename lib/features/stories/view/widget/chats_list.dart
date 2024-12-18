@@ -14,8 +14,11 @@ import 'package:telware_cross_platform/features/chat/view_model/chats_view_model
 import 'package:telware_cross_platform/features/user/view/widget/empty_chats.dart';
 
 class ChatsList extends ConsumerWidget {
+  final Function(ChatModel) onChatSelected;
+
   const ChatsList({
     super.key,
+    required this.onChatSelected,
   });
 
   @override
@@ -64,6 +67,7 @@ class ChatsList extends ConsumerWidget {
       displayMessage: message,
       sentByUser: message.senderId == userID,
       senderID: message.senderId,
+      onChatSelected: onChatSelected,
     );
   }
 }

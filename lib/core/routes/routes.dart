@@ -154,7 +154,10 @@ class Routes {
           ),
           GoRoute(
             path: Routes.inboxScreen,
-            builder: (context, state) => const InboxScreen(),
+            builder: (context, state) {
+              final Function(ChatModel) onChatSelected = state.extra as Function(ChatModel);
+              return InboxScreen(onChatSelected: onChatSelected);
+            },
           ),
           GoRoute(
             path: Routes.addMyStory,
@@ -210,12 +213,11 @@ class Routes {
             builder: (context, state) => const BlockedUsersScreen(),
           ),
           GoRoute(
-            path: Routes.userProfile,
-            builder: (context, state) {
-              final String? userId = state.extra as String?;
-              return UserProfileScreen(userId: userId);
-            }
-          ),
+              path: Routes.userProfile,
+              builder: (context, state) {
+                final String? userId = state.extra as String?;
+                return UserProfileScreen(userId: userId);
+              }),
           GoRoute(
             path: Routes.privacySettings,
             builder: (context, state) => const PrivacySettingsScreen(),
@@ -253,32 +255,30 @@ class Routes {
             builder: (context, state) => const ChangeEmailScreen(),
           ),
           GoRoute(
-            path: Routes.chatScreen,
-            builder: (context, state) {
-              if (state.extra is ChatModel) {
-                return ChatScreen(chatModel: state.extra as ChatModel);
-              }
-              final String chatId = state.extra as String;
-              return ChatScreen(chatId: chatId);
-            }
-          ),
+              path: Routes.chatScreen,
+              builder: (context, state) {
+                if (state.extra is ChatModel) {
+                  return ChatScreen(chatModel: state.extra as ChatModel);
+                }
+                final String chatId = state.extra as String;
+                return ChatScreen(chatId: chatId);
+              }),
           GoRoute(
               path: Routes.pinnedMessagesScreen,
               builder: (context, state) {
                 if (state.extra is ChatModel) {
-                  return PinnedMessagesScreen(chatModel: state.extra as ChatModel);
+                  return PinnedMessagesScreen(
+                      chatModel: state.extra as ChatModel);
                 }
                 final String chatId = state.extra as String;
                 return PinnedMessagesScreen(chatId: chatId);
-              }
-          ),
+              }),
           GoRoute(
               path: Routes.cropImageScreen,
               builder: (context, state) {
                 final String path = state.extra as String;
                 return CropImageScreen(path: path);
-              }
-          ),
+              }),
           GoRoute(
             path: Routes.createChatScreen,
             builder: (context, state) => const CreateChatScreen(),
@@ -295,12 +295,11 @@ class Routes {
             builder: (context, state) => const CreateGroupScreen(),
           ),
           GoRoute(
-            path: Routes.groupCreationDetails,
-            builder: (context, state) {
-              final List<UserModel> members = state.extra as List<UserModel>;
-              return GroupCreationDetails(members: members);
-            }
-           ),
+              path: Routes.groupCreationDetails,
+              builder: (context, state) {
+                final List<UserModel> members = state.extra as List<UserModel>;
+                return GroupCreationDetails(members: members);
+              }),
           GoRoute(
             path: Routes.callScreen,
             builder: (context, state) {
@@ -326,7 +325,9 @@ class Routes {
             path: Routes.membersScreen,
             builder: (context, state) {
               final ChatModel chat = state.extra as ChatModel;
-              return MembersScreen(chatModel: chat,);
+              return MembersScreen(
+                chatModel: chat,
+              );
             },
           ),
         ],
