@@ -221,8 +221,7 @@ class ChatRemoteRepository {
         id: data['id'] ?? 'unknown_id',
       );
     } catch (e, stackTrace) {
-      debugPrint('Failed to fetch user details: ${e.toString()}');
-      debugPrint('Stack trace: $stackTrace');
+      debugPrint('Failed to fetch user details');
       return null;
     }
   }

@@ -17,7 +17,6 @@ abstract class MessageContent {
   MessageContent copyWith();
 
   String getContent();
-
   String? getMediaURL();
 }
 

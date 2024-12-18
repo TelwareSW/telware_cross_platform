@@ -18,33 +18,36 @@ class ChatModel {
   @HiveField(1)
   final List<String> userIds;
   @HiveField(2)
-  final String? photo;
-  @HiveField(3)
-  final ChatType type;
-  @HiveField(4)
-  Uint8List? photoBytes;
-  @HiveField(5)
-  String? id;
-  @HiveField(6)
   final List<String>? admins;
+  @HiveField(3)
+  final List<String>? creators;
+  @HiveField(4)
+  final String? photo;
+  @HiveField(5)
+  final ChatType type;
+  @HiveField(6)
+  Uint8List? photoBytes;
   @HiveField(7)
-  final String? description;
+  String? id;
   @HiveField(8)
-  final DateTime? lastMessageTimestamp;
+  final String? description;
   @HiveField(9)
-  final bool isArchived;
+  final DateTime? lastMessageTimestamp;
   @HiveField(10)
-  final bool isMuted;
+  final bool isArchived;
   @HiveField(11)
-  final String? draft;
+  final bool isMuted;
   @HiveField(12)
-  final bool isMentioned;
+  final String? draft;
   @HiveField(13)
-  List<MessageModel> messages;
+  final bool isMentioned;
   @HiveField(14)
+  List<MessageModel> messages;
+  @HiveField(15)
   final DateTime? muteUntil; // Add this field
   @HiveField(15)
   final List<String>? creators;
+
 
   ChatModel({
     required this.title,

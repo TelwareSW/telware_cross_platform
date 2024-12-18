@@ -6,6 +6,7 @@ import 'package:mime/mime.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:telware_cross_platform/core/constants/constant.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'dart:async';
 import 'dart:io';
@@ -414,6 +415,7 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                     SlideToCancelWidget(dragPosition: _dragPosition),
                 ] else ...[
                   IconButton(
+                    key: MessageKeys.messageAttachmentButton,
                     icon: const Icon(Icons.attach_file_rounded),
                     color: Palette.accentText,
                     onPressed: () => {
@@ -439,6 +441,7 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
               if (widget.audioRecorderService.isRecordingCompleted ||
                   (widget.controller.text.isNotEmpty || !isTextEmpty)) ...[
                 IconButton(
+                  key: MessageKeys.messageSendButton,
                   padding: const EdgeInsets.only(left: 10),
                   iconSize: 28,
                   icon: widget.isEditing ? const Icon(Icons.check_circle) : const Icon(Icons.send),

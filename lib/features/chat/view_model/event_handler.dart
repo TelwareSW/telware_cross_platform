@@ -1,13 +1,19 @@
 import 'dart:collection';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:path/path.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/mock/constants_mock.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/services/socket_service.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
+import 'package:telware_cross_platform/features/chat/providers/call_provider.dart';
+import 'package:telware_cross_platform/features/chat/services/signaling_service.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
+import 'package:go_router/go_router.dart';
 
 class EventHandler {
   final ChattingController _chattingController;
@@ -115,7 +121,8 @@ class EventHandler {
   }
 
   void _onSocketConnect() {
-    debugPrint('!!! connected succeffully');
+    final Signaling signaling = Signaling.instance;
+    debugPrint('!!! connected successfully');
     // receive a message
     _socket.on(EventType.receiveMessage.event, (response) async {
       // todo(ahmed): when the back returns this an object, remove the array
@@ -175,6 +182,50 @@ class EventHandler {
     });
 
     // todo(ahmed): add the rest of the recieved events
+    // get a call signal
+    _socket.on(EventType.receiveCallSignal.event, (response) async {
+      try {
+        debugPrint('### got a call signal $response');
+        signaling.handleSignal(response);
+      } on Exception catch (e) {
+        debugPrint('!!! Error in receiving a call:\n${e.toString()}');
+      }
+    });
+    // get a user joined call
+    _socket.on(EventType.receiveJoinedCall.event, (response) async {
+      try {
+        debugPrint('### got a user joined call: $response');
+        signaling.onReceiveJoinedCall?.call(response);
+      } on Exception catch (e) {
+        debugPrint('!!! Error in receiving a user joined call:\n${e.toString()}');
+      }
+    });
+    // get a user left call
+    _socket.on(EventType.receiveLeftCall.event, (response) async {
+      try {
+        debugPrint('### got a user left call: $response');
+        signaling.onReceiveLeftCall?.call(response);
+      } on Exception catch (e) {
+        debugPrint('!!! Error in receiving a user left call:\n${e.toString()}');
+      }
+    });
+    // get a call started
+    _socket.on(EventType.receiveCallStarted.event, (response) async {
+      try {
+        debugPrint('### got a call started: $response');
+        // If i am receiving a call, then i should navigate to the call screen
+        bool isCaller = response['snederId'] == _userId;
+        if (isCaller) {
+          signaling.onCallStarted?.call(response);
+        } else {
+          debugPrint('### i am receiving a call');
+          _chattingController.receiveCall(response);
+        }
+
+      } on Exception catch (e) {
+        debugPrint('!!! Error in receiving a call started:\n${e.toString()}');
+      }
+    });
   }
 
   // Private constructor
