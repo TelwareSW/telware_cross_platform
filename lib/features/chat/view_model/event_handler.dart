@@ -5,6 +5,7 @@ import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/core/services/socket_service.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
+import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 
@@ -149,7 +150,24 @@ class EventHandler {
     _socket.on(EventType.editMessageServer.event, (response) async {
       try {
         debugPrint('#!#! this is a response of edit:');
-        _chattingController.editMessageIdAck(chatId: response['chatId'], content: response['content'], msgId: response['id']);
+        _chattingController.editMessageIdAck(
+            chatId: response['chatId'],
+            content: response['content'],
+            msgId: response['id']);
+      } on Exception catch (e) {
+        debugPrint('!!! Error in editing a message:\n${e.toString()}');
+      }
+    });
+
+    _socket.on(EventType.deleteMessageServer.event, (response) async {
+      try {
+        debugPrint('#!#! this is a response of delete:');
+        _chattingController.deleteMsg(
+          response['id'],
+          response['chatId'],
+          DeleteMessageType.all,
+          isFromServer: true,
+        );
       } on Exception catch (e) {
         debugPrint('!!! Error in editing a message:\n${e.toString()}');
       }
