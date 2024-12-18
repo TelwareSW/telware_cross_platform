@@ -30,12 +30,12 @@ class DownloadWidgetState extends State<DownloadWidget> {
 
   Future<void> _handelTap() async {
     if (widget.url == null) {
-      debugPrint('DownloadWidgetState._handelTap: URL is null');
-      showToastMessage('File has been deleted ask the sender to resend it');
+      debugPrint('URL is null');
+      showToastMessage('Media not found');
       return;
     }
     if (USE_MOCK_DATA) {
-      debugPrint('DownloadWidgetState._handelTap: ${widget.url}');
+      debugPrint('${widget.url}');
       widget.onTap(widget.url);
       return;
     }
