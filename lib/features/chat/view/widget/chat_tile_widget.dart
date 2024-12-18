@@ -25,6 +25,7 @@ class ChatTileWidget extends ConsumerStatefulWidget {
     this.highlights = const [],
     this.titleHighlights = const [],
     this.showDivider = true,
+    required this.onChatSelected,
   });
 
   final ChatModel chatModel;
@@ -32,6 +33,8 @@ class ChatTileWidget extends ConsumerStatefulWidget {
   final String senderID;
   final bool showDivider;
   final bool sentByUser;
+  final Function(ChatModel) onChatSelected;
+
   final List<MapEntry<int, int>> highlights;
   final List<MapEntry<int, int>> titleHighlights;
 
@@ -115,7 +118,17 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
 
           return InkWell(
             onTap: () {
-              context.push(Routes.chatScreen, extra: chatModel.id ?? chatModel);
+              // Get the width of the screen
+              double width = MediaQuery.of(context).size.width;
+
+              // Check if the width is greater than 600
+              if (width > 600) {
+                // Handle wider screens (e.g., tablets or large phones in landscape mode)
+                widget.onChatSelected(chatModel);
+              } else {
+                // Handle smaller screens (e.g., phones in portrait or smaller landscape)
+                context.push(Routes.chatScreen, extra: chatModel.id ?? chatModel);
+              }
             },
             child: Container(
                 color: Palette.secondary,

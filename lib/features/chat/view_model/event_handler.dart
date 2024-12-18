@@ -2,18 +2,14 @@ import 'dart:collection';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:path/path.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/mock/constants_mock.dart';
-import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/services/socket_service.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
-import 'package:telware_cross_platform/features/chat/providers/call_provider.dart';
 import 'package:telware_cross_platform/features/chat/services/signaling_service.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
-import 'package:go_router/go_router.dart';
 
 class EventHandler {
   final ChattingController _chattingController;
@@ -158,12 +154,94 @@ class EventHandler {
     _socket.on(EventType.editMessageServer.event, (response) async {
       try {
         debugPrint('#!#! this is a response of edit:');
+
         _chattingController.editMessageIdAck(
-            chatId: response['chatId'],
-            content: response['content'],
-            msgId: response['id']);
+          chatId: response['chatId'],
+          content: response['content'],
+          msgId: response['id'],
+        );
       } on Exception catch (e) {
         debugPrint('!!! Error in editing a message:\n${e.toString()}');
+      }
+    });
+    _socket.on(EventType.receiveCreateGroup.event, (response) async {
+      try {
+        debugPrint('/|\\ got a group creation id:');
+        print(response.toString());
+        _chattingController.getUserChats();
+      } on Exception catch (e) {
+        debugPrint('!!! Error in recieving a message:\n${e.toString()}');
+      }
+    });
+
+    _socket.on(EventType.receiveCreateGroup.event, (response) async {
+      try {
+        debugPrint('/|\\ got a group creation id:');
+        print(response.toString());
+        _chattingController.getUserChats();
+      } on Exception catch (e) {
+        debugPrint('!!! Error in recieving a message:\n${e.toString()}');
+      }
+    });
+
+    _socket.on(EventType.receiveDeleteGroup.event, (response) async {
+      try {
+        debugPrint('/|\\ got a delete group id:');
+        print(response.toString());
+        _chattingController.getUserChats();
+      } on Exception catch (e) {
+        debugPrint('!!! Error in recieving a event:\n${e.toString()}');
+      }
+    });
+
+    _socket.on(EventType.receiveLeaveGroup.event, (response) async {
+      try {
+        debugPrint('/|\\ got a leave group id:');
+        print(response.toString());
+        _chattingController.getUserChats();
+      } on Exception catch (e) {
+        debugPrint('!!! Error in recieving a event:\n${e.toString()}');
+      }
+    });
+
+    _socket.on(EventType.receiveAddMember.event, (response) async {
+      try {
+        debugPrint('/|\\ got a AddMember :');
+        print(response.toString());
+        _chattingController.getUserChats();
+      } on Exception catch (e) {
+        debugPrint('!!! Error in recieving a event:\n${e.toString()}');
+      }
+    });
+
+    _socket.on(EventType.receiveAddAdmin.event, (response) async {
+      try {
+        debugPrint('/|\\ got a AddAdmin :');
+        print(response.toString());
+        _chattingController.getUserChats();
+      } on Exception catch (e) {
+        debugPrint('!!! Error in recieving a event:\n${e.toString()}');
+      }
+    });
+
+    _socket.on(EventType.receiveRemoveMember.event, (response) async {
+      try {
+        debugPrint('/|\\ got a receiveRemoveMember:');
+        print(response.toString());
+        _chattingController.getUserChats();
+      } on Exception catch (e) {
+        debugPrint('!!! Error in recieving a event:\n${e.toString()}');
+      }
+    });
+
+    _socket.on(EventType.receiveSetPermissions.event, (response) async {
+      try {
+        debugPrint('/|\\ got a receiveSetPermissions:');
+        print(response.toString());
+        _chattingController.getUserChats();
+      } on Exception catch (e) {
+        debugPrint(
+            '!!! Error in receiveSetPermissions a event:\n${e.toString()}');
       }
     });
 
@@ -197,7 +275,8 @@ class EventHandler {
         debugPrint('### got a user joined call: $response');
         signaling.onReceiveJoinedCall?.call(response);
       } on Exception catch (e) {
-        debugPrint('!!! Error in receiving a user joined call:\n${e.toString()}');
+        debugPrint(
+            '!!! Error in receiving a user joined call:\n${e.toString()}');
       }
     });
     // get a user left call
@@ -221,7 +300,6 @@ class EventHandler {
           debugPrint('### i am receiving a call');
           _chattingController.receiveCall(response);
         }
-
       } on Exception catch (e) {
         debugPrint('!!! Error in receiving a call started:\n${e.toString()}');
       }

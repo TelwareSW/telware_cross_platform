@@ -53,6 +53,7 @@ void main() {
               onPress: () {},
               onDownloadTap: (String? filePath) {},
               onPin: (messageModel) {},
+
               onEdit: (MessageModel _) {},
               chatId: '',
             ),

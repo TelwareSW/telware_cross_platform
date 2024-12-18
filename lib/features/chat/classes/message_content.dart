@@ -44,10 +44,11 @@ class TextContent extends MessageContent {
   String getContent() {
     return text;
   }
-
+  
   @override
   String? getMediaURL() {
-    return null;
+    return null;    
+
   }
 }
 

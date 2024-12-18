@@ -15,10 +15,12 @@ import 'package:telware_cross_platform/features/stories/view/widget/colapsed_sto
 import 'package:telware_cross_platform/features/stories/view/widget/expanded_stories_section.dart';
 import 'package:telware_cross_platform/features/stories/view_model/contact_view_model.dart';
 
+import '../../../../core/models/chat_model.dart';
+
 class InboxScreen extends ConsumerStatefulWidget {
   static const String route = '/inbox-screen';
-
-  const InboxScreen({super.key});
+  final Function(ChatModel) onChatSelected;
+  const InboxScreen({super.key, required this.onChatSelected});
 
   @override
   ConsumerState<InboxScreen> createState() => _InboxScreenState();
@@ -122,7 +124,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
               const SliverToBoxAdapter(
                 child: CallOverlay(),
               ),
-              const ChatsList(),
+              ChatsList(onChatSelected: widget.onChatSelected),
             ],
           ),
         ),

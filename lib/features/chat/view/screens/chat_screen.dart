@@ -1,7 +1,6 @@
 // ignore_for_file: must_be_immutable
 
 import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cupertino_datetime_picker/flutter_cupertino_datetime_picker.dart';
@@ -76,6 +75,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   bool isLoading = true;
   bool isTextEmpty = true;
   bool showMuteOptions = false;
+  bool isAllowedToSend = true;
+
 
   // ignore: prefer_final_fields
   int _currentMatch = 1;
@@ -94,6 +95,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   void initState() {
     super.initState();
     _messageController.text = widget.chatModel?.draft ?? "";
+
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.forwardedMessages != null) {
@@ -107,6 +109,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     _draftTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
       _updateDraft();
     });
+
   }
 
   @override
@@ -436,6 +439,11 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     pinnedMessages = messages.where((message) => message.isPinned).toList();
     // debugPrint('pinned Messages count after is : ${pinnedMessages.length}');
 
+    if(chatModel.messagingPermission == false){
+      setState(() {
+        isAllowedToSend = chatModel.admins!.contains(ref.read(userProvider)?.id) ;
+      });
+    }
     return GestureDetector(
       onTap: () {
         SystemChannels.textInput.invokeMethod('TextInput.hide');
@@ -457,31 +465,30 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                         });
                       } else {
                         _updateDraft();
-                        Navigator.pop(context);
+                        context.push(Routes.home);
                       }
                     },
                   ),
                   title: !isSearching
                       ? GestureDetector(
                           onTap: () {
-                            if (chatModel.type == ChatType.private) {
-                              context.push(Routes.userProfile,
-                                  extra: chatModel.userIds.firstWhere(
-                                      (element) =>
-                                          element !=
-                                          ref.read(userProvider)!.id));
-                            } else {
-                              context.push(Routes.chatInfoScreen,
-                                  extra: chatModel);
-                            }
-                          },
-                          child: ChatHeaderWidget(
-                            title: title,
-                            subtitle: subtitle,
-                            photo: photo,
-                            imageBytes: imageBytes,
-                          ),
-                        )
+                          if (chatModel.type == ChatType.private) {
+                            context.push(Routes.userProfile,
+                                extra: chatModel.userIds.firstWhere(
+                                    (element) =>
+                                        element != ref.read(userProvider)!.id));
+                          } else {
+                            context.push(Routes.chatInfoScreen,
+                                extra: chatModel);
+                          }
+                        },
+                        child: ChatHeaderWidget(
+                          title: title,
+                          subtitle: subtitle,
+                          photo: photo,
+                          imageBytes: imageBytes,
+                        ),
+                      )
                       : TextField(
                           key: ChatKeys.chatSearchInput,
                           autofocus: true,
@@ -506,12 +513,12 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                         ),
                   actions: [
                     if (!isSearching)
-                      IconButton(
-                        icon: const Icon(Icons.more_vert),
-                        onPressed: _showMoreSettings,
-                      ),
-                  ],
-                )
+                    IconButton(
+                      icon: const Icon(Icons.more_vert),
+                      onPressed: _showMoreSettings,
+                    ),
+                ],
+              )
               : AppBar(
                   backgroundColor: Palette.secondary,
                   leading: GestureDetector(
@@ -542,6 +549,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                             color: Colors.white),
                         onPressed: () {
                           context.push(CreateChatScreen.route);
+
                         },
                       ),
                       // Delete icon
@@ -555,363 +563,356 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                   ),
                 ),
           body: Column(
+          children: [
+            const CallOverlay(),
+            Expanded(
+              child:Stack(
             children: [
-              const CallOverlay(),
-              Expanded(
-                child: Stack(
-                  children: [
-                    // Chat content area (with background SVG)
-                    Positioned.fill(
-                      child: SvgPicture.asset(
-                        'assets/svg/default_pattern.svg',
-                        fit: BoxFit.cover,
-                        colorFilter: const ColorFilter.mode(
-                          Palette.trinary,
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                    ),
-                    Column(
-                      children: [
-                        Expanded(
-                          child: isShowAsList
-                              ? Container(
-                                  color: Palette.background,
-                                  child: Column(
-                                    children: _messageIndices.map((index) {
-                                      MessageModel msg = chatContent[index];
-                                      return SettingsOptionWidget(
-                                        imagePath: getRandomImagePath(),
-                                        text: msg.senderId,
+              // Chat content area (with background SVG)
+              Positioned.fill(
+                child: SvgPicture.asset(
+                  'assets/svg/default_pattern.svg',
+                  fit: BoxFit.cover,
+                  colorFilter: const ColorFilter.mode(
+                    Palette.trinary,
+                    BlendMode.srcIn,
+                  ),
+                ),
+              ),
+              Column(
+                children: [
+                  Expanded(
+                    child: isShowAsList
+                        ? Container(
+                            color: Palette.background,
+                            child: Column(
+                              children: _messageIndices.map((index) {
+                                MessageModel msg = chatContent[index];
+                                return SettingsOptionWidget(
+                                  imagePath: getRandomImagePath(),
+                                  text: msg.senderId,
                                         subtext:
                                             msg.content?.getContent() ?? "",
-                                        onTap: () => {
-                                          // TODO (Mo): Create scroll to msg
-                                        },
-                                      );
-                                    }).toList(),
-                                  ),
-                                )
-                              : chatContent.isEmpty
-                                  ? NewChatScreenSticker(
-                                      chosenAnimation: _chosenAnimation)
-                                  : ChatMessagesList(
-                                      messages: messages,
-                                      scrollController: _scrollController,
-                                      chatContent: chatContent,
-                                      selectedMessages: selectedMessages,
-                                      type: type,
-                                      messageMatches: _messageMatches,
-                                      replyMessage: replyMessage,
-                                      chatId: chatID,
-                                      pinnedMessages: pinnedMessages,
-                                      updateChatMessages:
-                                          _generateChatContentWithDateLabels,
-                                      onPin: _onPin,
-                                      onLongPress: _onLongPress,
-                                      onReply: _onReply,
-                                      onEdit: _onEdit),
-                        ),
-                        if (replyMessage != null)
-                          ReplyEditFieldHeader(
-                            message: replyMessage!,
-                            isReplyOrEdit: true,
-                            onDiscard: () {
-                              setState(() {
-                                replyMessage = null;
-                                editMessage = null;
-                              });
-                            },
-                          ),
-                        if (editMessage != null)
-                          ReplyEditFieldHeader(
-                            message: editMessage!,
-                            isReplyOrEdit: false,
-                            onDiscard: () {
-                              setState(() {
-                                replyMessage = null;
-                                editMessage = null;
-                                _messageController.text = '';
-                              });
-                            },
-                          ),
-                        if (selectedMessages.isNotEmpty)
-                          Container(
-                            color: Palette.secondary,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 5, vertical: 8),
+                                  onTap: () => {
+                                    // TODO (Mo): Create scroll to msg
+                                  },
+                                );
+                              }).toList(),
+                            ),
+                          )
+                        : chatContent.isEmpty
+                            ? NewChatScreenSticker(
+                                chosenAnimation: _chosenAnimation)
+                            : ChatMessagesList(
+                                messages: messages,
+                                scrollController: _scrollController,
+                                chatContent: chatContent,
+                                selectedMessages: selectedMessages,
+                                type: type,
+                                messageMatches: _messageMatches,
+                                replyMessage: replyMessage,
+                                chatId: chatID,
+                                pinnedMessages: pinnedMessages,
+                                updateChatMessages:
+                                    _generateChatContentWithDateLabels,
+                                onPin: _onPin,
+                                onLongPress: _onLongPress,
+                                onReply: _onReply,
+                                onEdit: _onEdit),
+                  ),
+                  if (replyMessage != null)
+                    ReplyEditFieldHeader(
+                      message: replyMessage!,
+                      isReplyOrEdit: true,
+                      onDiscard: () {
+                        setState(() {
+                          replyMessage = null;
+                          editMessage = null;
+                        });
+                      },
+                    ),
+                  if (editMessage != null)
+                    ReplyEditFieldHeader(
+                      message: editMessage!,
+                      isReplyOrEdit: false,
+                      onDiscard: () {
+                        setState(() {
+                          replyMessage = null;
+                          editMessage = null;
+                          _messageController.text = '';
+                        });
+                      },
+                    ),
+                  if (selectedMessages.isNotEmpty)
+                    Container(
+                      color: Palette.secondary,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  replyMessage = selectedMessages[0];
+                                  selectedMessages = [];
+                                });
+                              },
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        replyMessage = selectedMessages[0];
-                                        selectedMessages = [];
-                                      });
-                                    },
-                                    child: Row(
-                                      children: [
-                                        selectedMessages.length == 1
-                                            ? const Icon(
-                                                Icons.reply,
-                                              )
-                                            : const SizedBox(),
-                                        const SizedBox(
-                                          width: 5,
-                                        ),
-                                        selectedMessages.length == 1
-                                            ? const Text(
-                                                'Reply',
-                                                style: TextStyle(
-                                                    color: Colors.white),
-                                              )
-                                            : const SizedBox(),
-                                      ],
-                                    ),
+                                  selectedMessages.length == 1
+                                      ? const Icon(
+                                          Icons.reply,
+                                        )
+                                      : const SizedBox(),
+                                  const SizedBox(
+                                    width: 5,
                                   ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      context.push(CreateChatScreen.route);
-                                    },
-                                    child: const Row(
-                                      children: [
-                                        Icon(FontAwesomeIcons.share),
-                                        SizedBox(
-                                          width: 5,
-                                        ),
-                                        Text(
-                                          'Forward',
+                                  selectedMessages.length == 1
+                                      ? const Text(
+                                          'Reply',
                                           style: TextStyle(color: Colors.white),
-                                        ),
-                                      ],
-                                    ),
-                                  )
+                                        )
+                                      : const SizedBox(),
                                 ],
                               ),
                             ),
-                          )
-                        else if (!isSearching)
-                          BottomInputBarWidget(
-                            isEditing: editMessage != null,
-                            controller: _messageController,
-                            audioRecorderService: _audioRecorderService,
-                            chatID: chatID,
-                            sendMessage: _sendMessage,
-                            unreferenceMessages: _unreferenceMessages,
-                            editMessage: _editMessage,
-                          )
-                        else
-                          Container(
-                            color: Palette.trinary,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16.0, vertical: 8.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                IconButton(
-                                  key: ChatKeys.chatSearchDatePicker,
-                                  icon: const Icon(Icons.edit_calendar),
-                                  onPressed: () {
-                                    // Show the Cupertino Date Picker when the icon is pressed
-                                    DatePicker.showDatePicker(
-                                      context,
-                                      pickerTheme: const DateTimePickerTheme(
-                                        backgroundColor: Palette.secondary,
-                                        itemTextStyle: TextStyle(
-                                          color: Palette.primaryText,
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                        confirm: Text(
-                                          'Jump to date',
-                                          style: TextStyle(
-                                            color: Palette.primary,
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                        cancel: null,
-                                      ),
-                                      minDateTime: DateTime.now().subtract(
-                                          const Duration(days: 365 * 10)),
-                                      maxDateTime: DateTime.now(),
-                                      initialDateTime: DateTime.now(),
-                                      dateFormat: 'dd-MMMM-yyyy',
-                                      locale: DateTimePickerLocale.en_us,
-                                      onConfirm: (date, time) {
-                                        _scrollToTimeStamp(date);
-                                      },
-                                    );
-                                  },
-                                ),
-                                if (_numberOfMatches != 0)
-                                  Text(
-                                    _numberOfMatches == 0
-                                        ? 'No results'
-                                        : isShowAsList
-                                            ? '$_numberOfMatches result${_numberOfMatches != 1 ? 's' : ''}'
-                                            : '$_currentMatch of $_numberOfMatches',
-                                    style: const TextStyle(
-                                        color: Palette.primaryText,
-                                        fontWeight: FontWeight.w500),
+                            GestureDetector(
+                              onTap: () {
+                                context.push(CreateChatScreen.route);
+                              },
+                              child: const Row(
+                                children: [
+                                  Icon(FontAwesomeIcons.share),
+                                  SizedBox(
+                                    width: 5,
                                   ),
-                                Expanded(
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        _toggleSearchDisplay();
-                                      },
-                                      child: Text(
-                                        key: ChatKeys.chatSearchShowMode,
-                                        isShowAsList
-                                            ? 'Show as Chat'
-                                            : 'Show as List',
-                                        style: const TextStyle(
-                                          color: Palette.accent,
-                                          fontSize: 16,
-                                        ),
-                                      ),
+                                  Text(
+                                    'Forward',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                    )
+                  else if (!isSearching)
+                    BottomInputBarWidget(
+                      isEditing: editMessage != null,
+                      controller: _messageController,
+                      audioRecorderService: _audioRecorderService,
+                      chatID: chatID,
+                      sendMessage: _sendMessage,
+                      unreferenceMessages: _unreferenceMessages,
+                      editMessage: _editMessage,
+                    )
+                  else
+                    Container(
+                      color: Palette.trinary,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                            key: ChatKeys.chatSearchDatePicker,
+                            icon: const Icon(Icons.edit_calendar),
+                            onPressed: () {
+                              // Show the Cupertino Date Picker when the icon is pressed
+                              DatePicker.showDatePicker(
+                                context,
+                                pickerTheme: const DateTimePickerTheme(
+                                  backgroundColor: Palette.secondary,
+                                  itemTextStyle: TextStyle(
+                                    color: Palette.primaryText,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  confirm: Text(
+                                    'Jump to date',
+                                    style: TextStyle(
+                                      color: Palette.primary,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
+                                  cancel: null,
+                                ),
+                                minDateTime: DateTime.now()
+                                    .subtract(const Duration(days: 365 * 10)),
+                                maxDateTime: DateTime.now(),
+                                initialDateTime: DateTime.now(),
+                                dateFormat: 'dd-MMMM-yyyy',
+                                locale: DateTimePickerLocale.en_us,
+                                onConfirm: (date, time) {
+                                  _scrollToTimeStamp(date);
+                                },
+                              );
+                            },
+                          ),
+                          if (_numberOfMatches != 0)
+                            Text(
+                              _numberOfMatches == 0
+                                  ? 'No results'
+                                  : isShowAsList
+                                      ? '$_numberOfMatches result${_numberOfMatches != 1 ? 's' : ''}'
+                                      : '$_currentMatch of $_numberOfMatches',
+                              style: const TextStyle(
+                                  color: Palette.primaryText,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: GestureDetector(
+                                onTap: () {
+                                  _toggleSearchDisplay();
+                                },
+                                child: Text(
+                                  key: ChatKeys.chatSearchShowMode,
+                                  isShowAsList
+                                      ? 'Show as Chat'
+                                      : 'Show as List',
+                                  style: const TextStyle(
+                                    color: Palette.accent,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+              pinnedMessages.isNotEmpty
+                  ? Positioned(
+                      top: 0,
+                      // Adjust this to position the widget from the top of the screen
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        color: Palette
+                            .secondary, // Example background color for the widget
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 10, horizontal: 5),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Column(
+                                  children: List.generate(pinnedMessages.length,
+                                      (index) {
+                                    return Container(
+                                      height: 40 / pinnedMessages.length,
+                                      padding: const EdgeInsets.all(1.0),
+                                      margin: const EdgeInsets.all(1.0),
+                                      decoration: BoxDecoration(
+                                        color: Colors.blueAccent,
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                      ),
+                                    );
+                                  }),
+                                ),
+                                const SizedBox(
+                                  width: 8,
+                                ),
+                                const Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Pinned Message',
+                                      style: TextStyle(
+                                          color: Palette.primary, fontSize: 12),
+                                    ),
+                                    Text(
+                                      // pinnedMessages[indexInPinnedMessage].content as String,
+                                      'Content placeholder',
+                                      style: TextStyle(fontSize: 12),
+                                    )
+                                  ],
                                 ),
                               ],
                             ),
-                          ),
-                      ],
-                    ),
-                    pinnedMessages.isNotEmpty
-                        ? Positioned(
-                            top: 0,
-                            // Adjust this to position the widget from the top of the screen
-                            left: 0,
-                            right: 0,
-                            child: Container(
-                              color: Palette
-                                  .secondary, // Example background color for the widget
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 10, horizontal: 5),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Column(
-                                        children: List.generate(
-                                            pinnedMessages.length, (index) {
-                                          return Container(
-                                            height: 40 / pinnedMessages.length,
-                                            padding: const EdgeInsets.all(1.0),
-                                            margin: const EdgeInsets.all(1.0),
-                                            decoration: BoxDecoration(
-                                              color: Colors.blueAccent,
-                                              borderRadius:
-                                                  BorderRadius.circular(8.0),
-                                            ),
-                                          );
-                                        }),
-                                      ),
-                                      const SizedBox(
-                                        width: 8,
-                                      ),
-                                      const Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Pinned Message',
-                                            style: TextStyle(
-                                                color: Palette.primary,
-                                                fontSize: 12),
-                                          ),
-                                          Text(
-                                            // pinnedMessages[indexInPinnedMessage].content as String,
-                                            'Content placeholder',
-                                            style: TextStyle(fontSize: 12),
-                                          )
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      List<String> senderIds = [];
-                                      for (var message in pinnedMessages) {
-                                        senderIds.add(message.senderId);
-                                      }
-                                      ChatModel newChat = ChatModel(
-                                          title: 'pinnedMessages',
-                                          userIds: senderIds,
-                                          type: ChatType.group,
-                                          messages: pinnedMessages);
-                                      context.push(Routes.pinnedMessagesScreen,
-                                          extra: newChat);
-                                    },
-                                    child: const Icon(
-                                      Icons.menu_open_outlined,
-                                      color: Palette.accentText,
-                                    ),
-                                  )
-                                ],
+                            GestureDetector(
+                              onTap: () {
+                                List<String> senderIds = [];
+                                for (var message in pinnedMessages) {
+                                  senderIds.add(message.senderId);
+                                }
+                                ChatModel newChat = ChatModel(
+                                    title: 'pinnedMessages',
+                                    userIds: senderIds,
+                                    type: ChatType.group,
+                                    messages: pinnedMessages);
+                                context.push(Routes.pinnedMessagesScreen,
+                                    extra: newChat);
+                              },
+                              child: const Icon(
+                                Icons.menu_open_outlined,
+                                color: Palette.accentText,
                               ),
-                            ),
-                          )
-                        : const SizedBox(),
-                    if (isSearching && _numberOfMatches != 0) ...[
-                      Positioned(
-                        bottom: 150,
-                        right: 10,
-                        child: GestureDetector(
-                          onTap: _scrollToPrevMatch,
-                          child: Container(
-                              width: 30,
-                              height: 30,
-                              decoration: BoxDecoration(
-                                color: Palette.quaternary,
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                              child: const Center(
-                                child: Icon(Icons.keyboard_arrow_up_sharp),
-                              )),
+                            )
+                          ],
                         ),
                       ),
-                      Positioned(
-                        bottom: 90,
-                        right: 10,
-                        child: GestureDetector(
-                          onTap: _scrollToNextMatch,
-                          child: Container(
-                              width: 30,
-                              height: 30,
-                              decoration: BoxDecoration(
-                                color: Palette.quaternary,
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                              child: const Center(
-                                child: Icon(Icons.keyboard_arrow_down_sharp),
-                              )),
+                    )
+                  : const SizedBox(),
+              if (isSearching && _numberOfMatches != 0) ...[
+                Positioned(
+                  bottom: 150,
+                  right: 10,
+                  child: GestureDetector(
+                    onTap: _scrollToPrevMatch,
+                    child: Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          color: Palette.quaternary,
+                          borderRadius: BorderRadius.circular(50),
                         ),
-                      ),
-                    ],
-                    MagicRecordingButton(
-                        audioRecorderService: _audioRecorderService,
-                        sendMessage: (
-                            {required String contentType, String? filePath}) {
-                          _sendMessage(
-                              ref: ref,
-                              contentType: contentType,
-                              filePath: filePath);
-                        })
-                  ],
+                        child: const Center(
+                          child: Icon(Icons.keyboard_arrow_up_sharp),
+                        )),
+                  ),
                 ),
-              )
+                Positioned(
+                  bottom: 90,
+                  right: 10,
+                  child: GestureDetector(
+                    onTap: _scrollToNextMatch,
+                    child: Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          color: Palette.quaternary,
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                        child: const Center(
+                          child: Icon(Icons.keyboard_arrow_down_sharp),
+                        )),
+                  ),
+                ),
+              ],
+              MagicRecordingButton(
+                  audioRecorderService: _audioRecorderService,
+                  sendMessage: (
+                      {required String contentType, String? filePath}) {
+                    _sendMessage(
+                        ref: ref, contentType: contentType, filePath: filePath);
+                  }),
             ],
-          )),
-    );
+              ),
+            )
+          ],
+        )
+    ),);
   }
 
   void _showMoreSettings() {
@@ -998,7 +999,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
         context: context,
         position: position,
         items: items,
-        onSelected: _handlePopupMenuSelection);
+        onSelected: _handlePopupMenuSelection
+    );
   }
 
   void _handlePopupMenuSelection(String value) {

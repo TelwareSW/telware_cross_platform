@@ -50,3 +50,33 @@ Future<bool> uploadImage(File imageFile, String uploadUrl) async {
     return false;
   }
 }
+
+
+Future<bool> uploadChatImage(File imageFile, String uploadUrl, String sessionToken) async {
+  var uri = Uri.parse(uploadUrl);
+  var request = http.MultipartRequest('PATCH', uri)
+    ..headers['X-Session-Token'] = sessionToken;
+  var multipartFile = await http.MultipartFile.fromPath(
+    'file',
+    imageFile.path,
+    contentType: MediaType('image', 'jpeg'),
+  );
+  request.files.add(multipartFile);
+
+  try {
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+    print(response.body);
+    if (response.statusCode == 201) {
+      return true;
+    } else {
+      debugPrint('Failed to upload image: ${response.statusCode}, ${response.body}');
+      return false;
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      debugPrint('Error occurred: $e');
+    }
+    return false;
+  }
+}

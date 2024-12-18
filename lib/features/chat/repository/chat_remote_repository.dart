@@ -133,6 +133,7 @@ class ChatRemoteRepository {
             lastMessageMap[chatID] == null ? [] : [lastMessageMap[chatID]!];
         String chatTitle = 'Invalid Chat';
 
+        bool messagingPermission = true;
         if (chat['chat']['type'] == 'private') {
           if (otherUsers.isEmpty) {
             continue;
@@ -146,17 +147,18 @@ class ChatRemoteRepository {
                 ? otherUsers[0]!.username
                 : 'Private Chat';
           }
-        } else if (chat['chat']['type'] == 'group') {
+        }
+        else if (chat['chat']['type'] == 'group') {
           chatTitle = chat['chat']['name'] ?? 'Group Chat';
+          messagingPermission = chat['chat']['messagingPermission'];
         } else if (chat['chat']['type'] == 'channel') {
-          chatTitle = chat['chat']['name'] ?? 'Channel';
+          chatTitle = chat['chat']['name'] ?? chat['chat']['name'] ?? 'Channel';
+          messagingPermission = chat['chat']['messagingPermission'];
         } else {
           chatTitle = 'Error in chat';
         }
 
-        // Create chat model
-        // Contains the last message only
-        // todo(ahmed): store the creators list as well as the isMuted, isSeen, isDeleted and draft attributes
+        // todo(ahmed): store the creators list as well as the isSeen, isDeleted attributes
         // should it be sent in the first place if it is deleted?
         final chatModel = ChatModel(
           id: chatID,
@@ -168,6 +170,7 @@ class ChatRemoteRepository {
           draft: chat['draft'],
           isMuted: chat['isMuted'],
           creators: creators,
+          messagingPermission: messagingPermission
         );
 
         chats.add(chatModel);
@@ -220,7 +223,7 @@ class ChatRemoteRepository {
         // Assuming photoBytes are handled separately
         id: data['id'] ?? 'unknown_id',
       );
-    } catch (e, stackTrace) {
+    } catch (e) {
       debugPrint('Failed to fetch user details');
       return null;
     }

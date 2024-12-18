@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
@@ -215,7 +214,8 @@ class Signaling {
           'chatId': chatId,
           'targetId': targetId,
         },
-        chatId: chatId,
+        // todo(mo): chack if the chat Id might be null or not
+        chatId: chatId!,
       )
     );
   }

@@ -6,7 +6,6 @@ import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/core/utils.dart';
-import 'package:telware_cross_platform/features/user/view/screens/settings_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/user_profile_screen.dart';
 
 class AppDrawer extends ConsumerWidget {

@@ -112,6 +112,7 @@ class _ChatMessagesListState extends ConsumerState<ChatMessagesList> {
                     messageModel: item,
                     chatId: widget.chatId ?? '',
                     isSentByMe: item.senderId == ref.read(userProvider)!.id,
+
                     showInfo: widget.type != ChatType.private,
                     highlights:
                         widget.messageMatches[index] ?? const [MapEntry(0, 0)],
@@ -140,6 +141,7 @@ class _ChatMessagesListState extends ConsumerState<ChatMessagesList> {
   //----------------------------------------------------------------------------
   //-------------------------------Media----------------------------------------
 
+
   void onMediaDownloaded(String? filePath, String messageId, String? chatId) {
     if (filePath == null) {
       showToastMessage('File has been deleted ask the sender to resend it');
@@ -151,6 +153,7 @@ class _ChatMessagesListState extends ConsumerState<ChatMessagesList> {
       return;
     }
     debugPrint("Downloaded file path: $filePath");
+
     debugPrint("Message ID: $messageId");
     debugPrint("Chat ID: $chatId");
     ref

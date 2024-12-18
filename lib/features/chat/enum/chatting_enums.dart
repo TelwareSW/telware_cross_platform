@@ -20,6 +20,28 @@ enum EventType {
   //////////////////////////////
   receiveMessage(event: 'RECEIVE_MESSAGE'),
   receiveReply(event: 'RECEIVE_REPLY'),
+  //////////////////////////////
+  createGroup(event: 'CREATE_GROUP_CHANNEL'),
+  receiveCreateGroup(event: 'JOIN_GROUP_CHANNEL'),
+
+  leaveGroup(event: 'LEAVE_GROUP_CHANNEL_CLIENT'),
+  receiveLeaveGroup(event: 'LEAVE_GROUP_CHANNEL_SERVER'),
+
+  deleteGroup(event: 'DELETE_GROUP_CHANNEL_CLIENT'),
+  receiveDeleteGroup(event: 'DELETE_GROUP_CHANNEL_SERVER'),
+
+  addMember(event: 'ADD_MEMBERS_CLIENT'),
+  receiveAddMember(event: 'ADD_MEMBERS_SERVER'),
+
+  addAdmin(event: 'ADD_ADMINS_CLIENT'),
+  receiveAddAdmin(event: 'ADD_ADMIN_SERVER'),
+
+  removeMember(event: 'REMOVE_MEMBERS_CLIENT'),
+  receiveRemoveMember(event: 'REMOVE_MEMBERS_SERVER'),
+
+  setPermissions(event: 'SET_PERMISSION_CLIENT'),
+  receiveSetPermissions(event: 'SET_PERMISSION_SERVER'),
+  //////////////////////////////
   createCall(event: 'CREATE-CALL'),
   leaveCall(event: 'LEAVE'),
   joinCall(event: 'JOIN-CALL'),

@@ -269,7 +269,7 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
     debugPrint('this is in the input field widget: ${widget.controller.text}');
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: widget.audioRecorderService.isRecordingCompleted ? 0 : 10,
+          horizontal: widget.audioRecorderService.isRecordingCompleted ? 0 : 10,
         vertical: 0,
       ),
       color: Palette.trinary,

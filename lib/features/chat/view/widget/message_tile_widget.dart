@@ -134,6 +134,7 @@ class MessageTileWidget extends ConsumerWidget {
                 late OverlayEntry overlayEntry;
                 overlayEntry = OverlayEntry(
                   builder: (context) => FloatingMenuOverlay(
+
                     isSentByMe:
                         messageModel.senderId == ref.read(userProvider)!.id,
                     onDismiss: () {
@@ -148,7 +149,7 @@ class MessageTileWidget extends ConsumerWidget {
                     },
                     onForward: () {
                       overlayEntry.remove();
-                      List<MessageModel> messageList = [messageModel];
+                      // List<MessageModel> messageList = [messageModel];
                       context.push(CreateChatScreen.route);
                     },
                     onPin: () {
@@ -197,6 +198,7 @@ class MessageTileWidget extends ConsumerWidget {
           ),
           child: Stack(
             children: [
+
               _createMessageTile(
                   messageModel.messageContentType, keyValue, ref, text),
               // The timestamp is always in the bottom-right corner if there's space
