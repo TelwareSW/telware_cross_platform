@@ -201,8 +201,8 @@ class MessageTileWidget extends ConsumerWidget {
                   messageModel.messageContentType, keyValue, ref, text),
               // The timestamp is always in the bottom-right corner if there's space
               Positioned(
-                bottom: 5,
-                right: 5,
+                bottom: 0,
+                right: 0,
                 child: Container(
                   padding: const EdgeInsets.only(top: 5),
                   // Add some space above the timestamp

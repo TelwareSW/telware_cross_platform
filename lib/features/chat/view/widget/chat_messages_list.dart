@@ -113,7 +113,7 @@ class _ChatMessagesListState extends ConsumerState<ChatMessagesList> {
                     messageModel: item,
                     chatId: widget.chatId ?? '',
                     isSentByMe: item.senderId == ref.read(userProvider)!.id,
-                    showInfo: widget.type == ChatType.group,
+                    showInfo: widget.type != ChatType.private,
                     highlights:
                         widget.messageMatches[index] ?? const [MapEntry(0, 0)],
                     onDownloadTap: (String? filePath) {

@@ -117,9 +117,12 @@ class EventHandler {
     debugPrint('!!! connected succeffully');
     // receive a message
     _socket.on(EventType.receiveMessage.event, (response) async {
+      final message = response[0];
+      print(response);
+      print(message);
       try {
-        debugPrint('/|\\ got a message id: ${response['id']}');
-        _chattingController.receiveMsg(response);
+        debugPrint('/|\\ got a message id: ${message['id']}');
+        _chattingController.receiveMsg(message);
       } on Exception catch (e) {
         debugPrint('!!! Error in recieving a message:\n${e.toString()}');
       }
