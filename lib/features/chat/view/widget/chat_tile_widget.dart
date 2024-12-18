@@ -26,6 +26,7 @@ class ChatTileWidget extends ConsumerStatefulWidget {
     this.titleHighlights = const [],
     this.showDivider = true,
     required this.onChatSelected,
+    this.isMessageDisplayed = true,
   });
 
   final ChatModel chatModel;
@@ -34,6 +35,7 @@ class ChatTileWidget extends ConsumerStatefulWidget {
   final bool showDivider;
   final bool sentByUser;
   final Function(ChatModel) onChatSelected;
+  final bool isMessageDisplayed;
 
   final List<MapEntry<int, int>> highlights;
   final List<MapEntry<int, int>> titleHighlights;
@@ -92,6 +94,111 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
     }
   }
 
+  Widget displayedMessage(
+    String keyValue,
+    bool hasDraft,
+    bool isGroupChat,
+    String senderName,
+    int unreadCount,
+    bool isMentioned,
+    MessageContentType displayMessageContentType,
+  ) {
+    return Row(
+      children: [
+        // Displayed message content
+        Expanded(
+          child: RichText(
+            key: ValueKey(
+                "$keyValue${ChatKeys.chatTileDisplayTextPostfix.value}"),
+            text: TextSpan(
+              style: const TextStyle(
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
+              ),
+              children: [
+                TextSpan(
+                  text: hasDraft
+                      ? "Draft: "
+                      : !isGroupChat
+                          ? ""
+                          : sentByUser
+                              ? "You: "
+                              : "$senderName: ",
+                  style: TextStyle(
+                    color: hasDraft
+                        ? Palette.error
+                        : isGroupChat
+                            ? Palette.primaryText
+                            : Palette.accentText,
+                    fontWeight: hasDraft ? FontWeight.bold : null,
+                  ),
+                ),
+                WidgetSpan(
+                  child: HighlightTextWidget(
+                    text: _getDisplayText(
+                      displayMessageContentType,
+                    ),
+                    normalStyle: TextStyle(
+                      color: hasDraft ||
+                              displayMessageContentType ==
+                                  MessageContentType.text ||
+                              widget.highlights.isNotEmpty
+                          ? Palette.accentText
+                          : Palette.accent,
+                      fontStyle: FontStyle.normal,
+                    ),
+                    highlightStyle: const TextStyle(
+                      color: Palette.primary,
+                      backgroundColor: Colors.transparent,
+                    ),
+                    highlights: widget.highlights,
+                  ),
+                ),
+              ],
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        // Add spacing between message content and unread count
+
+        if (unreadCount > 0) ...[
+          if (isMentioned)
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Icon(
+                key: ValueKey(
+                    "$keyValue${ChatKeys.chatTileMentionPostfix.value}"),
+                Icons.alternate_email_rounded,
+                size: 18,
+                color: Palette.primary,
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.only(left: 4.0),
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
+              decoration: BoxDecoration(
+                color: Palette.accent,
+                borderRadius: BorderRadius.circular(12.0),
+              ),
+              child: Text(
+                key: ValueKey(
+                    "$keyValue${ChatKeys.chatTileDisplayUnreadCountPostfix.value}"),
+                unreadCount.toString(),
+                style: const TextStyle(
+                  color: Palette.primaryText,
+                  fontSize: 10,
+                ),
+              ),
+            ),
+          ),
+        ]
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<UserModel?>(
@@ -127,7 +234,8 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
                 widget.onChatSelected(chatModel);
               } else {
                 // Handle smaller screens (e.g., phones in portrait or smaller landscape)
-                context.push(Routes.chatScreen, extra: chatModel.id ?? chatModel);
+                context.push(Routes.chatScreen,
+                    extra: chatModel.id ?? chatModel);
               }
             },
             child: Container(
@@ -229,108 +337,17 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
                                 const SizedBox(
                                   height: 4,
                                 ),
-                                Row(
-                                  children: [
-                                    // Displayed message content
-                                    Expanded(
-                                      child: RichText(
-                                        key: ValueKey(
-                                            "$keyValue${ChatKeys.chatTileDisplayTextPostfix.value}"),
-                                        text: TextSpan(
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontStyle: FontStyle.italic,
-                                          ),
-                                          children: [
-                                            TextSpan(
-                                              text: hasDraft
-                                                  ? "Draft: "
-                                                  : !isGroupChat
-                                                      ? ""
-                                                      : sentByUser
-                                                          ? "You: "
-                                                          : "$senderName: ",
-                                              style: TextStyle(
-                                                color: hasDraft
-                                                    ? Palette.error
-                                                    : isGroupChat
-                                                        ? Palette.primaryText
-                                                        : Palette.accentText,
-                                                fontWeight: hasDraft
-                                                    ? FontWeight.bold
-                                                    : null,
-                                              ),
-                                            ),
-                                            WidgetSpan(
-                                              child: HighlightTextWidget(
-                                                text: _getDisplayText(
-                                                  displayMessageContentType,
-                                                ),
-                                                normalStyle: TextStyle(
-                                                  color: hasDraft ||
-                                                          displayMessageContentType ==
-                                                              MessageContentType
-                                                                  .text ||
-                                                          widget.highlights
-                                                              .isNotEmpty
-                                                      ? Palette.accentText
-                                                      : Palette.accent,
-                                                  fontStyle: FontStyle.normal,
-                                                ),
-                                                highlightStyle: const TextStyle(
-                                                  color: Palette.primary,
-                                                  backgroundColor:
-                                                      Colors.transparent,
-                                                ),
-                                                highlights: widget.highlights,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    // Add spacing between message content and unread count
-
-                                    if (unreadCount > 0) ...[
-                                      if (isMentioned)
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 8.0),
-                                          child: Icon(
-                                            key: ValueKey(
-                                                "$keyValue${ChatKeys.chatTileMentionPostfix.value}"),
-                                            Icons.alternate_email_rounded,
-                                            size: 18,
-                                            color: Palette.primary,
-                                          ),
-                                        ),
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(left: 4.0),
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 6.0, vertical: 2.0),
-                                          decoration: BoxDecoration(
-                                            color: Palette.accent,
-                                            borderRadius:
-                                                BorderRadius.circular(12.0),
-                                          ),
-                                          child: Text(
-                                            key: ValueKey(
-                                                "$keyValue${ChatKeys.chatTileDisplayUnreadCountPostfix.value}"),
-                                            unreadCount.toString(),
-                                            style: const TextStyle(
-                                              color: Palette.primaryText,
-                                              fontSize: 10,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ]
-                                  ],
-                                ),
+                                if (widget.isMessageDisplayed) ...[
+                                  displayedMessage(
+                                    keyValue,
+                                    hasDraft,
+                                    isGroupChat,
+                                    senderName,
+                                    unreadCount,
+                                    isMentioned,
+                                    displayMessageContentType,
+                                  ),
+                                ]
                               ],
                             ),
                           ),

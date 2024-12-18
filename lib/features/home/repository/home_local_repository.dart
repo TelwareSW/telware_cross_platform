@@ -34,24 +34,6 @@ class HomeLocalRepository {
     List<MessageModel> searchResultsMessages = [];
     List<List<MapEntry<int, int>>> searchResultsChatTitleMatches = [];
     List<List<MapEntry<int, int>>> searchResultsChatMessagesMatches = [];
-    Map<String, String> typeMappings = {
-      "image": "images/videos",
-      "video": "images/videos",
-      "link": "links",
-      "file": "files",
-      "audio": "voice",
-      "music": "music",
-      "text": "text",
-    };
-    Map<String, String> shiftMappings = {
-      "image": "Photo: ",
-      "video": "Video: ",
-      "link": "Link: ",
-      "file": "File: ",
-      "audio": "Voice message: ",
-      "music": "Voice message: ",
-      "text": "",
-    };
 
     for (ChatModel chat in privateChats) {
       List<MessageModel> messages = chat.messages;
@@ -63,11 +45,14 @@ class HomeLocalRepository {
             AudioContent audioContent = content as AudioContent;
             if (audioContent.isMusic == true) {
               contentType = "music";
+            } else {
+              contentType = "voice";
             }
           }
-          if (typeMappings[contentType] == filterType) {
-            List<MapEntry<int, int>> matches = _shiftHighlights(
-                shiftMappings[contentType]!, kmp(content.getContent(), query));
+
+          if (filterType.split(',').contains(contentType)) {
+            List<MapEntry<int, int>> matches =
+                shiftHighlights(contentType, kmp(content.getContent(), query));
             List<MapEntry<int, int>> chatTitleMatches = kmp(chat.title, query);
             if (matches.isNotEmpty || chatTitleMatches.isNotEmpty) {
               searchResultsChats.add(chat);
@@ -86,15 +71,4 @@ class HomeLocalRepository {
       searchResultsChatMessagesMatches: searchResultsChatMessagesMatches
     );
   }
-}
-
-List<MapEntry<int, int>> _shiftHighlights(
-    String prefix, List<MapEntry<int, int>> highlights) {
-  for (int i = 0; i < highlights.length; i++) {
-    highlights[i] = MapEntry(
-      highlights[i].key + prefix.length,
-      highlights[i].value,
-    );
-  }
-  return highlights;
 }
