@@ -286,8 +286,8 @@ class ChatsViewModel extends _$ChatsViewModel {
     final chatIndex = getChatIndex(chatId);
     final chat = state[chatIndex];
     // Find the msg with the specified ID
-    final msgIndex =
-        chat.messages.indexWhere((msg) => msg.localId == messageLocalId);
+    final msgIndex = chat.messages.indexWhere(
+        (msg) => msg.localId == messageLocalId || msg.id == messageLocalId);
 
     if (msgIndex != -1) {
       MessageModel? message = chat.messages[msgIndex];

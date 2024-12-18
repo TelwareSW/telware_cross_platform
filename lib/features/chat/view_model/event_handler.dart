@@ -121,6 +121,8 @@ class EventHandler {
       final message = response[0];
       print(response);
       print(message);
+      // todo(ahmed): Remove backend returns media
+      message['media'] = "8eee5713799015ff.jpg";
       try {
         debugPrint('/|\\ got a message id: ${message['id']}');
         _chattingController.receiveMsg(message);
