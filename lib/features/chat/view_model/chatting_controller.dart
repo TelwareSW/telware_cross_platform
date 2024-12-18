@@ -84,10 +84,6 @@ class ChattingController {
         },
       );
 
-      final otherUsersMap = <String, UserModel>{
-        for (var user in response.users) user.id!: user
-      };
-
       // update the local storage chat's info using the response but not override it
       final chats = _localRepository.getChats(userId);
       final updatedChats = response.chats.map((chat) {
@@ -107,7 +103,7 @@ class ChattingController {
       }).toList();
 
       _localRepository.setChats(updatedChats, userId);
-      _localRepository.setOtherUsers(otherUsersMap, userId);
+      _localRepository.setOtherUsers(response.users, userId);
       debugPrint('!!! ended the newLoginInit');
     }
   }
@@ -193,13 +189,9 @@ class ChattingController {
         },
       );
 
-      final otherUsersMap = <String, UserModel>{
-        for (var user in response.users) user.id!: user
-      };
-
       _localRepository.setChats(response.chats, _ref.read(userProvider)!.id!);
       _localRepository.setOtherUsers(
-          otherUsersMap, _ref.read(userProvider)!.id!);
+          response.users, _ref.read(userProvider)!.id!);
       debugPrint('!!! ended the newLoginInit');
     }
   }
@@ -362,6 +354,24 @@ class ChattingController {
   Future<UserModel?> getOtherUser(String id) async {
     UserModel? user =
         await _remoteRepository.getOtherUser(_ref.read(tokenProvider)!, id);
+
+    user ??= UserModel(
+      username: '',
+      screenFirstName: 'Not',
+      screenLastName: 'Found',
+      email: '',
+      status: '',
+      bio: '',
+      maxFileSize: 0,
+      automaticDownloadEnable: false,
+      lastSeenPrivacy: '',
+      readReceiptsEnablePrivacy: false,
+      storiesPrivacy: '',
+      picturePrivacy: '',
+      invitePermissionsPrivacy: '',
+      phone: '',
+      id: '',
+    );
     return user;
   }
 

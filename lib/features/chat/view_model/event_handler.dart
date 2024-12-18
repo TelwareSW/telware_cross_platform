@@ -72,6 +72,7 @@ class EventHandler {
       final currentEvent = _queue.first;
 
       if (!_socket.isConnected) {
+        debugPrint('&%^ called the connect from handler loop');
         _socket.onError();
         break;
       }

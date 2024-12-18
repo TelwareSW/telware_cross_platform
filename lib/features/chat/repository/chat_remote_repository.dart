@@ -18,10 +18,9 @@ class ChatRemoteRepository {
       ({
         AppError? appError,
         List<ChatModel> chats,
-        List<UserModel> users,
+        Map<String, UserModel> users,
       })> getUserChats(String sessionId, String userID) async {
     List<ChatModel> chats = [];
-    List<UserModel> users = [];
 
     try {
       final response = await _dio.get(
@@ -148,12 +147,11 @@ class ChatRemoteRepository {
                 : 'Private Chat';
           }
         } else if (chat['chat']['type'] == 'group') {
-          chatTitle = 'Group Chat';
+          chatTitle = chat['chat']['name'] ?? 'Group Chat';
         } else if (chat['chat']['type'] == 'channel') {
-          chatTitle = 'Channel';
+          chatTitle = chat['chat']['name'] ?? 'Channel';
         } else {
-          chatTitle = 'My Chat';
-          chatTitle = 'My Chat';
+          chatTitle = 'Error in chat';
         }
 
         // Create chat model
@@ -173,17 +171,16 @@ class ChatRemoteRepository {
         );
 
         chats.add(chatModel);
-        users.addAll(otherUsers.whereType<UserModel>());
       }
 
-      return (chats: chats, users: users, appError: null);
+      return (chats: chats, users: userMap, appError: null);
     } catch (e, stackTrace) {
       debugPrint('!!! error in recieving the chats');
       debugPrint(e.toString());
       debugPrint(stackTrace.toString());
       return (
         chats: <ChatModel>[],
-        users: <UserModel>[],
+        users: <String, UserModel>{},
         appError: AppError('Failed to fetch chats', code: 500),
       );
     }

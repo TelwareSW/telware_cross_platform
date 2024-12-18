@@ -584,7 +584,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                         imagePath: getRandomImagePath(),
                                         text: msg.senderId,
                                         subtext:
-                                            msg.content?.toJson()['text'] ?? "",
+                                            msg.content?.getContent() ?? "",
                                         onTap: () => {
                                           // TODO (Mo): Create scroll to msg
                                         },
