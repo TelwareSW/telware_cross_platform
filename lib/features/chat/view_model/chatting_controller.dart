@@ -260,7 +260,7 @@ class ChattingController {
 
     final msgEvent = SendMessageEvent({
       'chatId': chatID,
-      'media': content,
+      'media': content.getMediaURL(),
       'content': content.getContent(),
       'contentType': contentType.content,
       'parentMessageId': parentMessgeId,
