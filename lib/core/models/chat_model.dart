@@ -45,6 +45,8 @@ class ChatModel {
   List<MessageModel> messages;
   @HiveField(15)
   final DateTime? muteUntil; // Add this field
+  @HiveField(15)
+  final List<String>? creators;
 
 
   ChatModel({

@@ -164,8 +164,9 @@ class DeleteMessageEvent extends MessageEvent {
   }) async {
     return await _execute(
       socket,
-      EventType.deleteMessage.event,
+      EventType.deleteMessageClient.event,
       ackCallback: (response, timer, completer) {
+        debugPrint(response);
         if (!completer.isCompleted) {
           timer.cancel(); // Cancel the timer on acknowledgment
           if (response['success'].toString() == 'true') {
@@ -348,13 +349,14 @@ class PinMessageEvent extends MessageEvent {
     ChattingController? controller,
     String? msgId,
     String? chatId,
+    bool? isToPin,
   }) {
     return PinMessageEvent(
       payload ?? this.payload,
       controller: controller ?? _controller,
       msgId: msgId ?? this.msgId,
       chatId: chatId ?? this.chatId,
-      isToPin: isToPin,
+      isToPin: isToPin ?? this.isToPin,
     );
   }
 }

@@ -49,8 +49,7 @@ class SocketService {
       // 'autoConnect': false,
       "transports": ["websocket"],
       'query': {'userId': _userId},
-      'auth': {'sessionId': _sessionId},
-      'secure': true,
+      'auth': {'sessionId': _sessionId}
     });
 
     _socket.io.options?['debug'] = true; // Enable debug logs
@@ -106,6 +105,8 @@ class SocketService {
     _socket.destroy();
     isConnected = false;
     debugPrint('### Socket connection destroyed');
+    timer1?.cancel();
+    timer2?.cancel();
   }
 
   void on(String event, Function(dynamic data) callback) {

@@ -154,7 +154,9 @@ class ChatRemoteRepository {
           chatTitle = 'Error in chat';
         }
 
-        // todo(ahmed): store the creators list as well as the isSeen, isDeleted attributes
+        // Create chat model
+        // Contains the last message only
+        // todo(ahmed): store the creators list as well as the isMuted, isSeen, isDeleted and draft attributes
         // should it be sent in the first place if it is deleted?
         final chatModel = ChatModel(
           id: chatID,
@@ -166,7 +168,6 @@ class ChatRemoteRepository {
           draft: chat['draft'],
           isMuted: chat['isMuted'],
           creators: creators,
-          
         );
 
         chats.add(chatModel);
@@ -221,8 +222,6 @@ class ChatRemoteRepository {
       );
     } catch (e, stackTrace) {
       debugPrint('Failed to fetch user details');
-      // debugPrint('Failed to fetch user details: ${e.toString()}');
-      // debugPrint('Stack trace: $stackTrace');
       return null;
     }
   }

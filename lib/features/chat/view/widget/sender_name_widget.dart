@@ -47,7 +47,7 @@ class _SenderNameWidgetState extends ConsumerState<SenderNameWidget> {
 
   @override
   Widget build(BuildContext context) {
-    Widget senderNameWidget = widget.isSentByMe
+    Widget senderNameWidget = (widget.isSentByMe  || !widget.showInfo)
         ? const SizedBox.shrink()
         : Text(
             key: ValueKey(

@@ -261,7 +261,7 @@ class ChattingController {
 
     final msgEvent = SendMessageEvent({
       'chatId': chatID,
-      'media': content,
+      'media': content.getMediaURL(),
       'content': content.getContent(),
       'contentType': contentType.content,
       'parentMessageId': parentMessgeId,
@@ -273,8 +273,7 @@ class ChattingController {
     },
         controller: this,
         msgId: identifier.msgLocalId,
-        chatId: identifier.chatId
-     );
+        chatId: identifier.chatId);
 
     _eventHandler.addEvent(msgEvent);
   }
@@ -301,18 +300,23 @@ class ChattingController {
   }
 
   // delete a message
-  void deleteMsg(String msgId, String chatId, DeleteMessageType deleteType) {
-    final msgEvent = DeleteMessageEvent({
-      'messageId': msgId,
-    }, controller: this, msgId: msgId, chatId: chatId);
+  void deleteMsg(
+    String msgId,
+    String chatId,
+    DeleteMessageType deleteType, {
+    bool isFromServer = false,
+  }) {
+    if (!isFromServer) {
+      final msgEvent = DeleteMessageEvent({
+        'messageId': msgId,
+      }, controller: this, msgId: msgId, chatId: chatId);
 
-
-    // _eventHandler.addEvent(msgEvent);
+      _eventHandler.addEvent(msgEvent);
+    }
 
     _ref.read(chatsViewModelProvider.notifier).deleteMessage(msgId, chatId);
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
-
   }
 
   // edit a message
@@ -340,7 +344,6 @@ class ChattingController {
 
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
-
   }
 
   // receive a message

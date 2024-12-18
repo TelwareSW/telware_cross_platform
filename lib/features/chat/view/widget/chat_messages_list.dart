@@ -52,7 +52,6 @@ class ChatMessagesList extends ConsumerStatefulWidget {
       _ChatMessagesListState();
 }
 
-
 class _ChatMessagesListState extends ConsumerState<ChatMessagesList> {
   var messagesIndex = 0;
 
@@ -113,11 +112,12 @@ class _ChatMessagesListState extends ConsumerState<ChatMessagesList> {
                     messageModel: item,
                     chatId: widget.chatId ?? '',
                     isSentByMe: item.senderId == ref.read(userProvider)!.id,
-                    showInfo: widget.type == ChatType.group,
+                    showInfo: widget.type != ChatType.private,
                     highlights:
                         widget.messageMatches[index] ?? const [MapEntry(0, 0)],
                     onDownloadTap: (String? filePath) {
-                      onMediaDownloaded(filePath, item.localId, widget.chatId);
+                      onMediaDownloaded(
+                          filePath, item.id ?? item.localId, widget.chatId);
                     },
                     onReply: widget.onReply,
                     onEdit: widget.onEdit,
@@ -140,26 +140,22 @@ class _ChatMessagesListState extends ConsumerState<ChatMessagesList> {
   //----------------------------------------------------------------------------
   //-------------------------------Media----------------------------------------
 
-  void onMediaDownloaded(
-      String? filePath, String? messageLocalId, String? chatId) {
+  void onMediaDownloaded(String? filePath, String messageId, String? chatId) {
     if (filePath == null) {
       showToastMessage('File has been deleted ask the sender to resend it');
       return;
     }
-    if (messageLocalId == null) {
-      showToastMessage('File does not exist please upload it again');
-      return;
-    }
+
     if (chatId == null) {
       showToastMessage('Chat ID is missing');
       return;
     }
     debugPrint("Downloaded file path: $filePath");
-    debugPrint("Message local ID: $messageLocalId");
+    debugPrint("Message ID: $messageId");
     debugPrint("Chat ID: $chatId");
     ref
         .read(chattingControllerProvider)
-        .editMessageFilePath(chatId, messageLocalId, filePath);
+        .editMessageFilePath(chatId, messageId, filePath);
     List<MessageModel> messages =
         ref.watch(chatProvider(chatId))?.messages ?? [];
     widget.updateChatMessages(messages);
