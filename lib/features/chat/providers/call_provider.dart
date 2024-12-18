@@ -9,8 +9,12 @@ class CallStateNotifier extends StateNotifier<CallState> {
     isMinimized: false,
   ));
 
-  void setCallee(UserModel callee) {
-    state = state.copyWith(callee: callee);
+  void setCallee(UserModel? callee) {
+    state.setCallee(callee);
+  }
+
+  void setCaller(bool isCaller) {
+    state = state.copyWith(isCaller: isCaller);
   }
 
   void startCall() {
@@ -22,21 +26,24 @@ class CallStateNotifier extends StateNotifier<CallState> {
   }
 
   void minimizeCall() {
-    if (state.isCallActive) {
+    if (state.voiceCallId != null) {
       state = state.copyWith(isMinimized: true);
     }
   }
 
   void maximizeCall() {
-    if (state.isCallActive) {
+    if (state.voiceCallId != null) {
       state = state.copyWith(isMinimized: false);
     }
   }
 
   void endCall() {
-    state = state.copyWith(
+    state = CallState(
         callee: null,
+        voiceCallId: null,
         startTime: null,
+        isCaller: false,
+        isCallInProgress: false,
         isCallActive: false,
         isMinimized: false,
         isVideoCall: false,
@@ -55,6 +62,34 @@ class CallStateNotifier extends StateNotifier<CallState> {
 
   void toggleVideoCall() {
     state = state.copyWith(isVideoCall: !state.isVideoCall);
+  }
+
+  void removeUser(String userId) {
+    state = state.copyWith(callee: null);
+  }
+
+  void setVoiceCallId(String? voiceCallId) {
+    state.setVoiceCallId(voiceCallId);
+  }
+
+  bool isInCall() {
+    return state.voiceCallId != null || state.isCaller;
+  }
+
+  void acceptCall() {
+    state = state.copyWith(isCallInProgress: true);
+  }
+
+  void receiveCall(String voiceCallId, UserModel? caller) {
+    state = state.copyWith(
+        voiceCallId: voiceCallId,
+        callee: caller,
+        isCaller: false
+    );
+  }
+
+  void setCallInProgress(bool isCallInProgress) {
+    state = state.copyWith(isCallInProgress: isCallInProgress);
   }
 }
 

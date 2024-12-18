@@ -1,7 +1,7 @@
 // ignore_for_file: must_be_immutable
 
 import 'dart:async';
-
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cupertino_datetime_picker/flutter_cupertino_datetime_picker.dart';
@@ -15,6 +15,7 @@ import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
+import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
@@ -236,14 +237,18 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   void _sendMessage({
     required WidgetRef ref,
     required String contentType,
+    String? fileName,
+    String? caption,
     String? filePath,
     bool? getRecordingPath,
+    bool isMusic = false,
   }) async {
     MessageContentType messageContentType =
         MessageContentType.getType(contentType);
     MessageContent content;
     bool needUploadMedia = contentType != 'text';
     String? mediaUrl;
+    String messageText = _messageController.text;
     // Upload the media file before sending the message
     if (needUploadMedia) {
       if (filePath != null) {
@@ -261,11 +266,27 @@ class _ChatScreen extends ConsumerState<ChatScreen>
         return;
       }
     }
+
+    if (mediaUrl != null || (!UPLOAD_MEDIA && needUploadMedia)) {
+      messageText = caption ?? '';
+      if (isMusic == false && contentType == 'audio') {
+        UserModel me = ref.read(userProvider)!;
+        String displayName =
+            (me.screenFirstName.isEmpty) && (me.screenLastName.isEmpty)
+                ? me.username
+                : '${me.screenFirstName} ${me.screenLastName}'.trim();
+        fileName = '$displayName ➜ ${chatModel.title}';
+      }
+    }
+
     content = createMessageContent(
         contentType: messageContentType,
         filePath: filePath,
+      fileName: fileName,
         mediaUrl: mediaUrl,
-        text: _messageController.text);
+      isMusic: isMusic,
+      text: messageText,
+    );
     // TODO : Handle media attribute in the request of sending a message
 
     MessageModel newMessage = MessageModel(
@@ -571,7 +592,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                 return SettingsOptionWidget(
                                   imagePath: getRandomImagePath(),
                                   text: msg.senderId,
-                                  subtext: msg.content?.toJson()['text'] ?? "",
+                                        subtext:
+                                            msg.content?.getContent() ?? "",
                                   onTap: () => {
                                     // TODO (Mo): Create scroll to msg
                                   },
@@ -899,31 +921,75 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     if (showMuteOptions) {
       items = [
         {'icon': Icons.arrow_back, 'text': 'Back', 'value': 'no-close'},
-        {'icon': Icons.music_off_outlined, 'text': 'Disable sound', 'value': 'disable-sound'},
-        {'icon': Icons.access_time_rounded, 'text': 'Mute for 30m', 'value': 'mute-30m'},
-        {'icon': Icons.notifications_paused_outlined, 'text': 'Mute for...', 'value': 'mute-custom'},
-        {'icon': Icons.tune_outlined, 'text': 'Customize', 'value': 'customize'},
-        {'icon': Icons.volume_off_outlined, 'text': 'Mute Forever', 'value': 'mute-forever', 'color': Palette.error},
+        {
+          'icon': Icons.music_off_outlined,
+          'text': 'Disable sound',
+          'value': 'disable-sound'
+        },
+        {
+          'icon': Icons.access_time_rounded,
+          'text': 'Mute for 30m',
+          'value': 'mute-30m'
+        },
+        {
+          'icon': Icons.notifications_paused_outlined,
+          'text': 'Mute for...',
+          'value': 'mute-custom'
+        },
+        {
+          'icon': Icons.tune_outlined,
+          'text': 'Customize',
+          'value': 'customize'
+        },
+        {
+          'icon': Icons.volume_off_outlined,
+          'text': 'Mute Forever',
+          'value': 'mute-forever',
+          'color': Palette.error
+        },
       ];
     } else {
       if (_isMuted) {
         items = [
-          {'icon': Icons.volume_off_outlined, 'text': 'Unmute', 'value': 'unmute-chat'},
+          {
+            'icon': Icons.volume_off_outlined,
+            'text': 'Unmute',
+            'value': 'unmute-chat'
+          },
         ];
       } else {
         items = [
-          {'icon': Icons.volume_up_outlined, 'text': 'Mute', 'value': 'no-close',
+          {
+            'icon': Icons.volume_up_outlined,
+            'text': 'Mute',
+            'value': 'no-close',
             'trailing': const Icon(Icons.arrow_forward_ios_rounded,
                 color: Palette.inactiveSwitch, size: 16)
           },
         ];
       }
       items.addAll([
-        {'icon': Icons.videocam_outlined, 'text': 'Video Call', 'value': 'video-call'},
+        {
+          'icon': Icons.videocam_outlined,
+          'text': 'Video Call',
+          'value': 'video-call'
+        },
         {'icon': Icons.search, 'text': 'Search', 'value': 'search'},
-        {'icon': Icons.wallpaper_rounded, 'text': 'Change Wallpaper', 'value': 'change-wallpaper'},
-        {'icon': Icons.cleaning_services, 'text': 'Clear History', 'value': 'clear-history'},
-        {'icon': Icons.delete_outline, 'text': 'Delete Chat', 'value': 'delete-chat'},
+        {
+          'icon': Icons.wallpaper_rounded,
+          'text': 'Change Wallpaper',
+          'value': 'change-wallpaper'
+        },
+        {
+          'icon': Icons.cleaning_services,
+          'text': 'Clear History',
+          'value': 'clear-history'
+        },
+        {
+          'icon': Icons.delete_outline,
+          'text': 'Delete Chat',
+          'value': 'delete-chat'
+        },
       ]);
     }
 

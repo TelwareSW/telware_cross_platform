@@ -205,8 +205,8 @@ class ChatsViewModel extends _$ChatsViewModel {
     content = createMessageContent(
       contentType: contentType,
       text: response['content'],
-      fileName: response['fileName'],
-      mediaUrl: response['mediaUrl'],
+      fileName: response['content'],
+      mediaUrl: response['media'],
     );
 
     final msg = MessageModel(
@@ -282,11 +282,13 @@ class ChatsViewModel extends _$ChatsViewModel {
   int getChatIndex(String chatId) =>
       state.indexWhere((chat) => chat.id == chatId);
 
-  void updateMessageFilePath(String chatId, String msgId, String filePath) {
+  void updateMessageFilePath(
+      String chatId, String messageLocalId, String filePath) {
     final chatIndex = getChatIndex(chatId);
     final chat = state[chatIndex];
     // Find the msg with the specified ID
-    final msgIndex = chat.messages.indexWhere((msg) => msg.id == msgId);
+    final msgIndex = chat.messages.indexWhere(
+        (msg) => msg.localId == messageLocalId || msg.id == messageLocalId);
 
     if (msgIndex != -1) {
       MessageModel? message = chat.messages[msgIndex];

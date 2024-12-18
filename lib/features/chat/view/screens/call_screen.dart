@@ -5,85 +5,146 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
+import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/timer_display.dart';
+import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/providers/call_provider.dart';
 import 'package:telware_cross_platform/features/chat/services/signaling_service.dart';
+import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 
 class CallScreen extends ConsumerStatefulWidget {
   static const String route = '/call';
   final UserModel? callee;
+  final String? voiceCallId;
 
   const CallScreen({
     super.key,
     this.callee,
+    this.voiceCallId,
   });
 
   @override
-  ConsumerState<CallScreen> createState() => _CallScreen();
+  ConsumerState<CallScreen> createState() => _CallScreenState();
 }
 
-class _CallScreen extends ConsumerState<CallScreen> {
-  final Signaling _signaling = Signaling();
+class _CallScreenState extends ConsumerState<CallScreen> {
+  final Signaling _signaling = Signaling.instance;
   final RTCVideoRenderer _localRenderer = RTCVideoRenderer();
   final RTCVideoRenderer _remoteRenderer = RTCVideoRenderer();
-  String? roomId;
   UserModel? callee;
+  String? voiceCallId;
+  late bool isCaller;
+  late bool isReceivingCall;
 
   @override
   void initState() {
     super.initState();
-
+    isCaller = ref.read(callStateProvider).isCaller;
     callee = widget.callee ?? ref.read(callStateProvider).callee;
+    voiceCallId = widget.voiceCallId ?? ref.read(callStateProvider).voiceCallId;
+
+    isReceivingCall = !isCaller && voiceCallId != null;
+
     _localRenderer.initialize();
     _remoteRenderer.initialize();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (callee != null) {
-        ref.read(callStateProvider.notifier).setCallee(callee!);
-        ref.read(callStateProvider.notifier).startCall();
-        _initializeSignaling();
-      }
-    });
-  }
-
-  void _initializeSignaling() {
     _signaling.onAddRemoteStream = (stream) {
       _remoteRenderer.srcObject = stream;
       setState(() {});
     };
 
-    _signaling.onOffer = (description) async {
-      await _signaling.setRemoteDescription(description);
-      final answer = await _signaling.createAnswer();
-      _signaling.setLocalDescription(answer);
-      _signaling.sendAnswer(answer);
+    // Initialize media just one time
+    if (_localRenderer.srcObject == null) {
+      _signaling.openUserMedia(_localRenderer, _remoteRenderer);
+    }
+    _signaling.toggleVideoStream(false);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (callee != null && isCaller) {
+        ref.read(callStateProvider.notifier).setCallee(callee!);
+      }
+      _initializeSignaling();
+      if (voiceCallId == null && isCaller) {
+        debugPrint("Call: Creating voice call");
+        ChatModel chat = ref.read(chatsViewModelProvider.notifier)
+            .getChat(ref.read(userProvider)!, callee!, ChatType.private);
+        _signaling.createVoiceCall(chat.id, callee!.id);
+      }
+    });
+  }
+
+  void _initializeSignaling() {
+    debugPrint("Call: Initializing signaling");
+    _signaling.onAddRemoteStream = (stream) {
+      _remoteRenderer.srcObject = stream;
+      setState(() {});
     };
 
-    _signaling.onAnswer = (description) async {
+    _signaling.onOffer = (description, senderId) async {
+      // If receiving a call, set remote description and create an answer
+      await _signaling.registerPeerConnection(senderId);
       await _signaling.setRemoteDescription(description);
+      final answer = await _signaling.createAnswer();
+      _signaling.sendAnswer(answer, senderId);
+      startCall();
+    };
+
+    _signaling.onAnswer = (description, senderId) async {
+      await _signaling.setRemoteDescription(description);
+      startCall();
     };
 
     _signaling.onICECandidate = (candidate) {
       _signaling.addCandidate(candidate);
     };
 
-    if (ref.read(callStateProvider).callee?.id != ref.read(userProvider)!.id) {
-      _signaling.createOffer().then((offer) {
-        _signaling.setLocalDescription(offer);
-        _signaling.sendOffer(offer);
+    _signaling.onCallStarted = (response) {
+      if (voiceCallId == response['voiceCallId']) return;
+      debugPrint("Call: Call started with voiceCallId: ${response['voiceCallId']}");
+      _signaling.joinCall(response['voiceCallId']);
+      updateVoiceCallId(response['voiceCallId']);
+    };
+
+    _signaling.onReceiveJoinedCall = (response) {
+      // Create an offer to the user
+      _signaling.createOffer(response['clientId']).then((offer) {
+        _signaling.sendOffer(offer, response['clientId']);
       });
-    }
+
+      if (ref.read(callStateProvider).isCallInProgress) return;
+      ref.read(callStateProvider.notifier).setCallInProgress(true);
+    };
+
+    _signaling.onReceiveLeftCall = (response) {
+      // Terminate connection with user
+      endCall();
+      context.pop();
+    };
+  }
+
+  void startCall() {
+    ref.read(callStateProvider.notifier).startCall();
+  }
+
+  void updateVoiceCallId(String voiceCallId) {
+    ref.read(callStateProvider.notifier).setVoiceCallId(voiceCallId);
+    this.voiceCallId = voiceCallId;
+  }
+
+  void endCall() {
+    _signaling.hangUp(_localRenderer);
+    ref.read(callStateProvider.notifier).endCall();
   }
 
   @override
   void dispose() {
-    _localRenderer.dispose();
-    _remoteRenderer.dispose();
-    _signaling.dispose();
+    // _localRenderer.dispose();
+    // _remoteRenderer.dispose();
     super.dispose();
   }
 
@@ -100,29 +161,28 @@ class _CallScreen extends ConsumerState<CallScreen> {
       body: Stack(
         children: [
           // Remote video
-          if (callState.isVideoCall) ...[
-            Positioned.fill(child: RTCVideoView(_remoteRenderer)),
+          if (callState.isVideoCall)
+            Positioned.fill(child: RTCVideoView(_remoteRenderer))
+          else
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.blue.shade700, Colors.blue.shade300],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ),
+          if (callState.isVideoCall)
             Positioned(
-              bottom: 20,
+              bottom: 120,
               right: 20,
-              child: Container(
+              child: SizedBox(
                 width: 100,
                 height: 150,
-                child: RTCVideoView(_localRenderer),
+                child: RTCVideoView(_localRenderer, mirror: true),
               ),
             ),
-          ],
-
-          // Gradient background
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.blue.shade700, Colors.blue.shade300],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-          ),
 
           // UI Elements
           Column(
@@ -135,8 +195,13 @@ class _CallScreen extends ConsumerState<CallScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     IconButton(
+                      key: CallKeys.minimizeCallButton,
                       onPressed: () {
-                        callNotifier.minimizeCall();
+                        if (callState.voiceCallId == null) {
+                          endCall();
+                        } else {
+                          callNotifier.minimizeCall();
+                        }
                         context.pop();
                       },
                       icon: const Icon(Icons.zoom_in_map, color: Palette.primaryText),
@@ -182,12 +247,28 @@ class _CallScreen extends ConsumerState<CallScreen> {
 
               // Call status or timer
               if (callState.isCallActive)
-                TimerDisplay(startDateTime: callState.startTime!)
-              else
+                TimerDisplay(
+                  key: CallKeys.callStatusText,
+                  startDateTime: callState.startTime!
+                )
+              else if (callState.isCallInProgress)
                 const Text(
+                  key: CallKeys.callStatusText,
                   "Connecting...",
                   style: TextStyle(fontSize: 18, color: Palette.primaryText),
-                ),
+                )
+              else if (isCaller)
+                  const Text(
+                    key: CallKeys.callStatusText,
+                    "Requesting...",
+                    style: TextStyle(fontSize: 18, color: Palette.primaryText),
+                  )
+                else if (isReceivingCall)
+                  const Text(
+                    key: CallKeys.callStatusText,
+                    "Incoming call...",
+                    style: TextStyle(fontSize: 18, color: Palette.primaryText),
+                  ),
 
               const Spacer(),
 
@@ -197,34 +278,99 @@ class _CallScreen extends ConsumerState<CallScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _controlButton(
-                      icon: callState.isSpeakerOn
-                          ? Icons.volume_down
-                          : Icons.volume_up,
-                      isActive: callState.isSpeakerOn,
-                      onTap: callNotifier.toggleSpeaker,
-                    ),
-                    _controlButton(
-                      icon: callState.isVideoCall
-                          ? Icons.videocam_off
-                          : Icons.videocam,
-                      isActive: callState.isVideoCall,
-                      onTap: callNotifier.toggleVideoCall,
-                    ),
-                    _controlButton(
-                      icon: callState.isMuted ? Icons.mic_off : Icons.mic,
-                      isActive: callState.isMuted,
-                      onTap: callNotifier.toggleMute,
-                    ),
-                    _controlButton(
-                      icon: Icons.call_end,
-                      isActive: true,
-                      isEndCall: true,
-                      onTap: () {
-                        callNotifier.endCall();
-                        context.pop();
-                      },
-                    ),
+                    if (isReceivingCall && !callState.isCallInProgress) ...[
+                      Column(
+                        children: [
+                          InkWell(
+                            key: CallKeys.acceptCallButton,
+                            onTap: () {
+                              callNotifier.acceptCall();
+                              _signaling.joinCall(voiceCallId!);
+                            },
+                            borderRadius: BorderRadius.circular(50),
+                            splashColor: Colors.greenAccent,
+                            child: Container(
+                              width: 60,
+                              height: 60,
+                              decoration: const BoxDecoration(
+                                color: Colors.green,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.call,
+                                  color: Colors.white,
+                                  size: 30),
+                            ),
+                          ),
+                          const Text('Accept', style: TextStyle(color: Palette.primaryText)),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          InkWell(
+                            key: CallKeys.rejectCallButton,
+                            onTap: () {
+                              context.pop();
+                              endCall();
+                            },
+                            borderRadius: BorderRadius.circular(50),
+                            splashColor: Colors.redAccent,
+                            child: Container(
+                              width: 60,
+                              height: 60,
+                              decoration: const BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.call_end,
+                                  color: Colors.white,
+                                  size: 30),
+                            ),
+                          ),
+                          const Text('Decline', style: TextStyle(color: Palette.primaryText)),
+                        ],
+                      ),
+                    ]
+                    else ...[
+                      _controlButton(
+                        key: CallKeys.toggleSpeakerButton,
+                        icon: callState.isSpeakerOn
+                            ? Icons.volume_down
+                            : Icons.volume_up,
+                        isActive: callState.isSpeakerOn,
+                        onTap: callNotifier.toggleSpeaker,
+                      ),
+                      _controlButton(
+                        key: CallKeys.toggleVideoButton,
+                        icon: callState.isVideoCall
+                            ? Icons.videocam_off
+                            : Icons.videocam,
+                        isActive: callState.isVideoCall,
+                        isVideoCall: true,
+                        onTap: () {
+                          _signaling.toggleVideoStream(!callState.isVideoCall);
+                          callNotifier.toggleVideoCall();
+                        },
+                      ),
+                      _controlButton(
+                        key: CallKeys.toggleMuteButton,
+                        icon: callState.isMuted ? Icons.mic_off : Icons.mic,
+                        isActive: callState.isMuted,
+                        onTap: () {
+                          callNotifier.toggleMute();
+                          _signaling.toggleAudioStream();
+                        },
+                      ),
+                      _controlButton(
+                        key: CallKeys.endCallButton,
+                        icon: Icons.call_end,
+                        isActive: true,
+                        isEndCall: true,
+                        onTap: () {
+                          context.pop();
+                          endCall();
+                        },
+                      ),
+                    ]
                   ],
                 ),
               ),
@@ -236,12 +382,15 @@ class _CallScreen extends ConsumerState<CallScreen> {
   }
 
   Widget _controlButton({
+    Key? key,
     required IconData icon,
     required bool isActive,
     required VoidCallback onTap,
     bool isEndCall = false,
+    bool isVideoCall = false,
   }) {
     return InkWell(
+      key: key,
       onTap: onTap,
       borderRadius: BorderRadius.circular(50),
       splashColor: isEndCall ? Colors.redAccent : Colors.greenAccent,
@@ -255,7 +404,7 @@ class _CallScreen extends ConsumerState<CallScreen> {
           shape: BoxShape.circle,
         ),
         child: Icon(icon,
-            color: isEndCall || isActive ? Colors.white : Colors.blue.shade300,
+            color: isEndCall || !isActive ? Colors.white : Colors.blue.shade300,
             size: 30),
       ),
     );

@@ -105,6 +105,8 @@ class SocketService {
     _socket.destroy();
     isConnected = false;
     debugPrint('### Socket connection destroyed');
+    timer1?.cancel();
+    timer2?.cancel();
   }
 
   void on(String event, Function(dynamic data) callback) {

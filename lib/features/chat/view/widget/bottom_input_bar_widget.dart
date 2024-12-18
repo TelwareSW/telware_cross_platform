@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mime/mime.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:telware_cross_platform/core/constants/constant.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'dart:async';
 import 'dart:io';
@@ -19,13 +22,17 @@ class BottomInputBarWidget extends ConsumerStatefulWidget {
   final TextEditingController controller; // Accept controller as a parameter
   final bool isEditing;
   final String? chatID;
-  final void Function(
-      {required String contentType,
-      String? filePath,
-      required WidgetRef ref,
-      bool? getRecordingPath}) sendMessage;
   final void Function() unreferenceMessages;
   final void Function() editMessage;
+  final void Function({
+    required String contentType,
+    required WidgetRef ref,
+    String? fileName,
+    String? caption,
+    String? filePath,
+    bool? getRecordingPath,
+    bool isMusic,
+  }) sendMessage;
   final AudioRecorderService audioRecorderService;
 
   const BottomInputBarWidget({
@@ -147,14 +154,45 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
           }
         }
 
+        if (contentType == 'image' && media.length == 1) {
+          if (mounted) {
+            Map<String, dynamic> extra = {
+              'filePath': localPath,
+              'sendCaptionMedia': _sendCaptionMedia
+            };
+            context.push(Routes.captionScreen, extra: extra);
+          }
+          return;
+        }
+
         widget.sendMessage(
-            ref: ref, contentType: contentType, filePath: localPath);
+          ref: ref,
+          contentType: contentType,
+          fileName: fileName,
+          filePath: localPath,
+          isMusic: true,
+        );
 
         // Add to the mediaFiles list with the updated local path
         mediaFiles.add(localPath);
       }
     }
 
+    setState(() {});
+  }
+
+  // sends an image or video with a caption
+  void _sendCaptionMedia({
+    required String caption,
+    required String filePath,
+  }) {
+    widget.sendMessage(
+      ref: ref,
+      contentType: 'image',
+      fileName: filePath.split('/').last,
+      caption: caption,
+      filePath: filePath,
+    );
     setState(() {});
   }
 
@@ -176,14 +214,54 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
       // Call the sendMessage function with the new file path
       widget.sendMessage(
         filePath: newFilePath,
-        ref: ref,
+        fileName: fileName,
         contentType: mediaType,
+        ref: ref,
       );
-
-      debugPrint("$mediaType saved and sent: $newFilePath");
     } catch (e) {
       debugPrint("Error saving or sending sticker: $e");
     }
+  }
+
+  void _onLongPressUp() async {
+    if (widget.audioRecorderService.isRecordingLocked || isCanceled) {
+      return;
+    }
+    String? recordingPath = await widget.audioRecorderService.stopRecording();
+    widget.sendMessage(
+      ref: ref,
+      contentType: 'audio',
+      filePath: recordingPath,
+    );
+    widget.audioRecorderService.resetRecording();
+  }
+
+  void _onLongPressMoveUpdate(LongPressMoveUpdateDetails details) {
+    if (details.localPosition.dx.abs() > _cancelThreshold) {
+      isCanceled = true;
+      widget.audioRecorderService.cancelRecording();
+      setState(() {});
+      return;
+    }
+    widget.audioRecorderService
+        .lockRecordingDragPositionUpdate(details.localPosition.dy);
+    if (details.localPosition.dy.abs() > _lockThreshold) {
+      widget.audioRecorderService.lockRecording();
+      return;
+    }
+    setState(() {
+      _dragPosition = details.localPosition.dx;
+    });
+  }
+
+  void _onSend() {
+    if (widget.audioRecorderService.isRecordingCompleted) {
+      String? filePath = widget.audioRecorderService.resetRecording();
+      widget.sendMessage(ref: ref, contentType: 'audio', filePath: filePath);
+    } else {
+      widget.isEditing ? widget.editMessage() : widget.sendMessage(ref: ref, contentType: 'text');
+       }
+                    widget.unreferenceMessages();
   }
 
   @override
@@ -192,7 +270,8 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
     return Container(
       padding: EdgeInsets.symmetric(
           horizontal: widget.audioRecorderService.isRecordingCompleted ? 0 : 10,
-          vertical: 0),
+        vertical: 0,
+      ),
       color: Palette.trinary,
       child: Column(
         children: [
@@ -336,6 +415,7 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                     SlideToCancelWidget(dragPosition: _dragPosition),
                 ] else ...[
                   IconButton(
+                    key: MessageKeys.messageAttachmentButton,
                     icon: const Icon(Icons.attach_file_rounded),
                     color: Palette.accentText,
                     onPressed: () => {
@@ -347,38 +427,8 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                   GestureDetector(
                     onLongPress: () =>
                         widget.audioRecorderService.startRecording(context),
-                    onLongPressUp: () async {
-                      if (widget.audioRecorderService.isRecordingLocked ||
-                          isCanceled) {
-                        return;
-                      }
-                      String? recordingPath =
-                          await widget.audioRecorderService.stopRecording();
-                      widget.sendMessage(
-                        ref: ref,
-                        contentType: 'audio',
-                        filePath: recordingPath,
-                      );
-                      widget.audioRecorderService.resetRecording();
-                    },
-                    onLongPressMoveUpdate: (details) {
-                      if (details.localPosition.dx.abs() > _cancelThreshold) {
-                        isCanceled = true;
-                        widget.audioRecorderService.cancelRecording();
-                        setState(() {});
-                        return;
-                      }
-                      widget.audioRecorderService
-                          .lockRecordingDragPositionUpdate(
-                              details.localPosition.dy);
-                      if (details.localPosition.dy.abs() > _lockThreshold) {
-                        widget.audioRecorderService.lockRecording();
-                        return;
-                      }
-                      setState(() {
-                        _dragPosition = details.localPosition.dx;
-                      });
-                    },
+                    onLongPressUp: _onLongPressUp,
+                    onLongPressMoveUpdate: _onLongPressMoveUpdate,
                     child: const LottieViewer(
                       path: "assets/json/voice_to_video.json",
                       width: 29,
@@ -391,21 +441,12 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
               if (widget.audioRecorderService.isRecordingCompleted ||
                   (widget.controller.text.isNotEmpty || !isTextEmpty)) ...[
                 IconButton(
+                  key: MessageKeys.messageSendButton,
                   padding: const EdgeInsets.only(left: 10),
                   iconSize: 28,
                   icon: widget.isEditing ? const Icon(Icons.check_circle) : const Icon(Icons.send),
                   color: Palette.accent,
-                  onPressed: () {
-                    if (widget.audioRecorderService.isRecordingCompleted) {
-                      String? filePath =
-                          widget.audioRecorderService.resetRecording();
-                      widget.sendMessage(
-                          ref: ref, contentType: 'audio', filePath: filePath);
-                    } else {
-                      widget.isEditing ? widget.editMessage() : widget.sendMessage(ref: ref, contentType: 'text');
-                    }
-                    widget.unreferenceMessages();
-                  },
+                  onPressed: _onSend,
                 ),
               ],
             ],

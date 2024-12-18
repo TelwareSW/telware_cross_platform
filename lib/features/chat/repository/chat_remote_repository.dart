@@ -152,7 +152,7 @@ class ChatRemoteRepository {
           chatTitle = chat['chat']['name'] ?? 'Group Chat';
           messagingPermission = chat['chat']['messagingPermission'];
         } else if (chat['chat']['type'] == 'channel') {
-          chatTitle = chat['chat']['name'] ?? 'Channel';
+          chatTitle = chat['chat']['name'] ?? chat['chat']['name'] ?? 'Channel';
           messagingPermission = chat['chat']['messagingPermission'];
         } else {
           chatTitle = 'Error in chat';
@@ -225,8 +225,6 @@ class ChatRemoteRepository {
       );
     } catch (e, stackTrace) {
       debugPrint('Failed to fetch user details');
-      // debugPrint('Failed to fetch user details: ${e.toString()}');
-      // debugPrint('Stack trace: $stackTrace');
       return null;
     }
   }

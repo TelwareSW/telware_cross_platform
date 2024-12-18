@@ -17,6 +17,7 @@ import 'package:telware_cross_platform/features/chat/classes/message_content.dar
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
+import 'package:telware_cross_platform/features/chat/providers/call_provider.dart';
 import 'package:telware_cross_platform/features/chat/repository/chat_local_repository.dart';
 import 'package:telware_cross_platform/features/chat/repository/chat_remote_repository.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
@@ -258,22 +259,24 @@ class ChattingController {
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
 
-    final msgEvent = SendMessageEvent({
-      'chatId': chatID,
-      'media': content,
-      'content': content.getContent(),
-      'contentType': contentType.content,
-      'parentMessageId': parentMessgeId,
-      'senderId': _ref.read(userProvider)!.id,
-      'isFirstTime': isChatNew,
-      'chatType': chatType.type,
-      'isReplay': false,
-      'isForward': false,
-    },
-        controller: this,
-        msgId: identifier.msgLocalId,
-        chatId: identifier.chatId,
-        onEventComplete: (Map<String, dynamic> res) {});
+    final msgEvent = SendMessageEvent(
+      {
+        'chatId': chatID,
+        'media': content.getMediaURL(),
+        'content': content.getContent(),
+        'contentType': contentType.content,
+        'parentMessageId': parentMessgeId,
+        'senderId': _ref.read(userProvider)!.id,
+        'isFirstTime': isChatNew,
+        'chatType': chatType.type,
+        'isReplay': false,
+        'isForward': false,
+      },
+      controller: this,
+      msgId: identifier.msgLocalId,
+      chatId: identifier.chatId,
+      onEventComplete: (Map<String, dynamic> res) {},
+    );
 
     _eventHandler.addEvent(msgEvent);
   }
@@ -284,26 +287,26 @@ class ChattingController {
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
 
-
   void receiveGroupCreation(Map<String, dynamic> response) {
     // _ref.read(chatsViewModelProvider.notifier).get(response);
     // _localRepository.setChats(
     //     _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
 
-
   void pinMessageClient(String msgId, String chatId) {
     final isToPin =
         _ref.read(chatsViewModelProvider.notifier).pinMessage(msgId, chatId);
     _eventHandler.addEvent(
-      PinMessageEvent({
-        'chatId': chatId,
-        'messageId': msgId,
-      },
-          msgId: msgId,
-          chatId: chatId,
-          isToPin: isToPin,
-          onEventComplete: (Map<String, dynamic> res) {}),
+      PinMessageEvent(
+        {
+          'chatId': chatId,
+          'messageId': msgId,
+        },
+        msgId: msgId,
+        chatId: chatId,
+        isToPin: isToPin,
+        onEventComplete: (Map<String, dynamic> res) {},
+      ),
     );
   }
 
@@ -312,17 +315,25 @@ class ChattingController {
   }
 
   // delete a message
-  void deleteMsg(String msgId, String chatId, DeleteMessageType deleteType) {
-    final msgEvent = DeleteMessageEvent({
-      'messageId': msgId,
-    },
+  void deleteMsg(
+    String msgId,
+    String chatId,
+    DeleteMessageType deleteType, {
+    bool isFromServer = false,
+  }) {
+    if (!isFromServer) {
+      final msgEvent = DeleteMessageEvent(
+        {
+          'messageId': msgId,
+        },
         controller: this,
         msgId: msgId,
         chatId: chatId,
-        onEventComplete: (Map<String, dynamic> res) {});
+        onEventComplete: (Map<String, dynamic> res) {},
+      );
 
-
-    // _eventHandler.addEvent(msgEvent);
+      _eventHandler.addEvent(msgEvent);
+    }
 
     _ref.read(chatsViewModelProvider.notifier).deleteMessage(msgId, chatId);
     _localRepository.setChats(
@@ -597,6 +608,21 @@ class ChattingController {
     }
   }
 
+  Future<void> receiveCall(Map<String, dynamic> response) async {
+    // Check if user is in a call already
+    if (_ref.read(callStateProvider.notifier).isInCall()) {
+      // Send busy signal
+      debugPrint('!!! Call rejected: ${response['voiceCallId']}');
+      return;
+    }
+
+    UserModel? caller = await getOtherUser(response['snederId']);
+    _ref
+        .read(callStateProvider.notifier)
+        .receiveCall(response['voiceCallId'], caller);
+    debugPrint('!!! Call received: ${response['voiceCallId']}');
+  }
+
   Future<bool> createGroup({
     required String type,
     required String name,
@@ -717,8 +743,8 @@ class ChattingController {
   }) async {
     Map<String, dynamic> payload = {
       "chatId": chatId,
-      "type":type,
-      "who":who,
+      "type": type,
+      "who": who,
     };
     final msgEvent = SetPermissions(payload,
         controller: this,

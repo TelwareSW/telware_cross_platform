@@ -1,5 +1,14 @@
 # telware_cross_platform
 
+<!-- STATIC ANALYSIS BADGES -->
+
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=TelwareSW_telware_cross_platform&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=TelwareSW_telware_cross_platform)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=TelwareSW_telware_cross_platform&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=TelwareSW_telware_cross_platform)
+[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=TelwareSW_telware_cross_platform&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=TelwareSW_telware_cross_platform)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=TelwareSW_telware_cross_platform&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=TelwareSW_telware_cross_platform)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=TelwareSW_telware_cross_platform&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=TelwareSW_telware_cross_platform)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=TelwareSW_telware_cross_platform&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=TelwareSW_telware_cross_platform)
+
 A new Flutter project.
 
 ---

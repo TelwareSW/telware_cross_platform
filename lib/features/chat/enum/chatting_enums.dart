@@ -12,14 +12,15 @@ enum EventType {
   updateDraft(event: 'UPDATE_DRAFT'),
   editMessageClient(event: 'EDIT_MESSAGE_CLIENT'),
   editMessageServer(event: 'EDIT_MESSAGE_SERVER'),
-  deleteMessage(event: 'DELETE_MESSAGE'),
+  deleteMessageClient(event: 'DELETE_MESSAGE_CLIENT'),
+  deleteMessageServer(event: 'DELETE_MESSAGE_SERVER'),
   replyOnMessage(event: 'REPLY_MESSAGE'),
   forwardMessage(event: 'FORWARD_MESSAGE'),
   readChat(event: 'READ_CHAT'),
   //////////////////////////////
   receiveMessage(event: 'RECEIVE_MESSAGE'),
   receiveReply(event: 'RECEIVE_REPLY'),
-
+  //////////////////////////////
   createGroup(event: 'CREATE_GROUP_CHANNEL'),
   receiveCreateGroup(event: 'JOIN_GROUP_CHANNEL'),
 
@@ -40,7 +41,15 @@ enum EventType {
 
   setPermissions(event: 'SET_PERMISSION_CLIENT'),
   receiveSetPermissions(event: 'SET_PERMISSION_SERVER'),
-
+  //////////////////////////////
+  createCall(event: 'CREATE-CALL'),
+  leaveCall(event: 'LEAVE'),
+  joinCall(event: 'JOIN-CALL'),
+  sendCallSignal(event: 'SIGNAL-SERVER'),
+  receiveJoinedCall(event: 'CLIENT-JOINED'),
+  receiveLeftCall(event: 'CLIENT-LEFT'),
+  receiveCallSignal(event: 'SIGNAL-CLIENT'),
+  receiveCallStarted(event: 'CALL-STARTED'),
   ;
 
   final String event;

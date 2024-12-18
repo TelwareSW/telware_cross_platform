@@ -27,12 +27,12 @@ class ChatsList extends ConsumerWidget {
     ChatKeys.resetChatTilePrefixSubvalue();
 
     return SliverList(
+      key: ChatKeys.chatsListKey,
       delegate: SliverChildBuilderDelegate(
-        (BuildContext context, int index) {
+      (BuildContext context, int index) {
+          final key = ValueKey('${ChatKeys.chatTilePrefix.value}$index');
           return _delegate(
-            ValueKey(ChatKeys.chatTilePrefix.value +
-                ChatKeys.chatTilePrefixSubvalue +
-                index.toString()),
+            key,
             chatsList[index],
             ref.read(userProvider)!.id!,
           );

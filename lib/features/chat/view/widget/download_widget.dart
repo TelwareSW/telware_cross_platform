@@ -7,6 +7,7 @@ import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
 class DownloadWidget extends StatefulWidget {
   final void Function(String?) onTap;
   final String? url;
+  final String? fileName;
   final Color? color;
 
   const DownloadWidget({
@@ -14,6 +15,7 @@ class DownloadWidget extends StatefulWidget {
     required this.onTap,
     required this.url,
     this.color = Colors.transparent,
+    this.fileName,
   });
 
   @override
@@ -28,16 +30,16 @@ class DownloadWidgetState extends State<DownloadWidget> {
 
   Future<void> _handelTap() async {
     if (widget.url == null) {
-      debugPrint('DownloadWidgetState._handelTap: URL is null');
-      showToastMessage('File has been deleted ask the sender to resend it');
+      debugPrint('URL is null');
+      showToastMessage('Media not found');
       return;
     }
     if (USE_MOCK_DATA) {
-      debugPrint('DownloadWidgetState._handelTap: ${widget.url}');
+      debugPrint('${widget.url}');
       widget.onTap(widget.url);
       return;
     }
-    String? filePath = await downloadAndSaveFile(widget.url);
+    String? filePath = await downloadAndSaveFile(widget.url, widget.fileName);
     widget.onTap(filePath);
   }
 

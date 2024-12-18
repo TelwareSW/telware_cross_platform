@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cupertino_datetime_picker/flutter_cupertino_datetime_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
-import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
@@ -160,7 +160,7 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
                           });
                         },
                       ),
-                      Expanded(
+                      const Expanded(
                         child: Text(
                           "Delete the group for all members",
                           style: TextStyle(color: Palette.primaryText),
@@ -175,7 +175,7 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
                   onPressed: () {
                     Navigator.of(context).pop(); // Close the dialog
                   },
-                  child: Text(
+                  child: const Text(
                     "Cancel",
                     style: TextStyle(color: Palette.primary),
                   ),
@@ -184,7 +184,7 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
                   onPressed: () async {
                     _callSockets(isChecked);
                   },
-                  child: Text(
+                  child: const Text(
                     "Delete Group",
                     style: TextStyle(color: Colors.red),
                   ),
@@ -236,59 +236,26 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
     }
   }
 
+
   void _showMoreSettings() {
     var items = [];
     if (showAutoDeleteOptions) {
       items.addAll([
         {'icon': Icons.arrow_back, 'text': 'Back', 'value': 'no-close'},
         {'icon': Icons.timer_sharp, 'text': '1 day', 'value': 'auto-1d'},
-        {
-          'icon': Icons.access_time_rounded,
-          'text': '1 week',
-          'value': 'auto-1w'
-        },
-        {
-          'icon': Icons.share_arrival_time_outlined,
-          'text': '1 month',
-          'value': 'auto-1m'
-        },
-        {
-          'icon': Icons.tune_outlined,
-          'text': 'Customize',
-          'value': 'customize'
-        },
-        {
-          'icon': Icons.do_disturb_alt,
-          'text': 'Disable',
-          'value': 'disable-auto',
-          'color': Palette.error
-        },
+        {'icon': Icons.access_time_rounded, 'text': '1 week', 'value': 'auto-1w'},
+        {'icon': Icons.share_arrival_time_outlined, 'text': '1 month', 'value': 'auto-1m'},
+        {'icon': Icons.tune_outlined, 'text': 'Customize', 'value': 'customize'},
+        {'icon': Icons.do_disturb_alt, 'text': 'Disable', 'value': 'disable-auto', 'color': Palette.error},
       ]);
     } else {
       items.addAll([
-        {
-          'icon': Icons.more_time,
-          'text': 'Auto-Delete',
-          'value': 'no-close',
-          'trailing': const Icon(Icons.arrow_forward_ios,
-              color: Palette.inactiveSwitch, size: 16)
-        },
-        {
-          'icon': Icons.voice_chat_outlined,
-          'text': 'Start Video chat',
-          'value': 'video-call'
-        },
+        {'icon': Icons.more_time, 'text': 'Auto-Delete', 'value': 'no-close',
+          'trailing': const Icon(Icons.arrow_forward_ios, color: Palette.inactiveSwitch, size: 16)},
+        {'icon': Icons.voice_chat_outlined, 'text': 'Start Video chat', 'value': 'video-call'},
         {'icon': Icons.search, 'text': 'Search Members', 'value': 'search'},
-        {
-          'icon': Icons.logout_outlined,
-          'text': 'Delete and Leave Group',
-          'value': 'delete-group'
-        },
-        {
-          'icon': Icons.add_home_outlined,
-          'text': 'Add to Home Screen',
-          'value': 'add-home'
-        },
+        {'icon': Icons.logout_outlined, 'text': 'Delete and Leave Group', 'value': 'delete-group'},
+        {'icon': Icons.add_home_outlined, 'text': 'Add to Home Screen', 'value': 'add-home'},
       ]);
     }
 
@@ -299,60 +266,28 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
         context: context,
         position: position,
         items: items,
-        onSelected: _handlePopupMenuSelection);
+        onSelected: _handlePopupMenuSelection
+    );
   }
 
   void _showNotificationSettings(BuildContext context) {
-    var items = !chat.isMuted
-        ? [
-            {
-              'icon': Icons.music_off_outlined,
-              'text': 'Disable sound',
-              'value': 'disable-sound'
-            },
-            {
-              'icon': Icons.access_time_rounded,
-              'text': 'Mute for 30m',
-              'value': 'mute-30m'
-            },
-            {
-              'icon': Icons.notifications_paused_outlined,
-              'text': 'Mute for...',
-              'value': 'mute-custom'
-            },
-            {
-              'icon': Icons.tune_outlined,
-              'text': 'Customize',
-              'value': 'customize'
-            },
-            {
-              'icon': Icons.volume_off_outlined,
-              'text': 'Mute Forever',
-              'value': 'mute-forever',
-              'color': Palette.error
-            },
-          ]
-        : [
-            {
-              'icon': Icons.notifications_paused_outlined,
-              'text': 'Mute for...',
-              'value': 'mute-custom'
-            },
-            {
-              'icon': Icons.tune_outlined,
-              'text': 'Customize',
-              'value': 'customize'
-            },
-            {
-              'icon': Icons.volume_up_outlined,
-              'text': 'Unmute',
-              'value': 'unmute',
-              'color': Palette.valid
-            },
-          ];
+    var items = !chat.isMuted ? [
+      {'icon': Icons.music_off_outlined, 'text': 'Disable sound', 'value': 'disable-sound'},
+      {'icon': Icons.access_time_rounded, 'text': 'Mute for 30m', 'value': 'mute-30m'},
+      {'icon': Icons.notifications_paused_outlined, 'text': 'Mute for...', 'value': 'mute-custom'},
+      {'icon': Icons.tune_outlined, 'text': 'Customize', 'value': 'customize'},
+      {'icon': Icons.volume_off_outlined, 'text': 'Mute Forever', 'value': 'mute-forever', 'color': Palette.error},
+    ] : [
+      {'icon': Icons.notifications_paused_outlined, 'text': 'Mute for...', 'value': 'mute-custom'},
+      {'icon': Icons.tune_outlined, 'text': 'Customize', 'value': 'customize'},
+      {'icon': Icons.volume_up_outlined, 'text': 'Unmute', 'value': 'unmute', 'color': Palette.valid},
+    ];
 
     PopupMenuWidget.showPopupMenu(
-        context: context, items: items, onSelected: _handlePopupMenuSelection);
+        context: context,
+        items: items,
+        onSelected: _handlePopupMenuSelection
+    );
   }
 
   void _handlePopupMenuSelection(dynamic value) {
@@ -546,23 +481,23 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
                             snapshot.data as List<UserModel?>;
                         return Column(
                           children: [
-                            for (final UserModel? user in users) ...[
-                              user == null
-                                  ? const SizedBox.shrink()
-                                  : Container(
-                                      color: Palette.secondary,
-                                      child: MemberTileWidget(
-                                        imagePath: user.photo,
-                                        text:
-                                            '${user.screenFirstName} ${user.screenLastName}',
-                                        subtext: user.status,
-                                        showDivider: false,
-                                        onTap: () {
-                                          context.push(Routes.userProfile,
-                                              extra: user.id);
-                                        },
-                                      ),
-                                    ),
+
+                            for (int index = 0; index < users.length; index++) ...[
+                              users[index] == null ?
+                              const SizedBox.shrink() :
+                              Container(
+                                color: Palette.secondary,
+                                child: MemberTileWidget(
+                                  key: ValueKey('${WidgetKeys.memberTilePrefix}$index'),
+                                  imagePath: users[index]!.photo,
+                                  text: '${users[index]!.screenFirstName} ${users[index]!.screenLastName}',
+                                  subtext: users[index]!.status,
+                                  showDivider: false,
+                                  onTap: () {
+                                    context.push(Routes.userProfile, extra: users[index]!.id);
+                                  },
+                                ),
+                              ),
                             ],
                           ],
                         );

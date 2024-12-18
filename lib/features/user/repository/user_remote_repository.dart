@@ -51,7 +51,8 @@ class UserRemoteRepository {
 
       filteredUsers = await Future.wait(filteredUsers.map((user) async {
         if (user.photo != null) {
-          return user.copyWith(photo: await downloadAndSaveFile(user.photo!));
+          return user.copyWith(
+              photo: await downloadAndSaveFile(user.photo!, null));
         }
         return user;
       }).toList());

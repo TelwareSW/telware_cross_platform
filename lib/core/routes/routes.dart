@@ -14,6 +14,7 @@ import 'package:telware_cross_platform/features/auth/view/screens/social_auth_lo
 import 'package:telware_cross_platform/features/auth/view/screens/verification_screen.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/call_screen.dart';
+import 'package:telware_cross_platform/features/chat/view/screens/caption_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/chat_info_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/chat_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/create_chat_screen.dart';
@@ -45,7 +46,6 @@ import '../../features/chat/view/screens/pinned_messages_screen.dart';
 import '../../features/groups/view/screens/edit_group.dart';
 import '../../features/stories/view/screens/crop_image_screen.dart';
 import '../../features/user/view/screens/devices_screen.dart';
-import '../models/user_model.dart';
 
 class Routes {
   static const String home = HomeScreen.route;
@@ -86,6 +86,7 @@ class Routes {
   static const String editGroupScreen = EditGroup.route;
   static const String addMembersScreen = AddMembersScreen.route;
   static const String membersScreen = MembersScreen.route;
+  static const String captionScreen = CaptionScreen.route;
 
   static GoRouter appRouter(WidgetRef ref) => GoRouter(
         initialLocation: Routes.splash,
@@ -300,11 +301,27 @@ class Routes {
                 final List<UserModel> members = state.extra as List<UserModel>;
                 return GroupCreationDetails(members: members);
               }),
+
           GoRoute(
             path: Routes.callScreen,
             builder: (context, state) {
-              final UserModel? userModel = state.extra as UserModel?;
-              return CallScreen(callee: userModel);
+              final Map<String, dynamic>? extra = state.extra as Map<String, dynamic>?;
+              return CallScreen(callee: extra?['user'] as UserModel?, voiceCallId: extra?['voiceCallId'] as String?);
+            },
+          ),
+          GoRoute(
+            path: Routes.captionScreen,
+            builder: (context, state) {
+              final String filePath =
+                  (state.extra as Map<String, dynamic>)['filePath'];
+              final void Function(
+                      {required String caption,
+                      required String filePath}) sendCaptionMedia =
+                  (state.extra as Map<String, dynamic>)['sendCaptionMedia'];
+              return CaptionScreen(
+                filePath: filePath,
+                sendCaptionMedia: sendCaptionMedia,
+              );
             },
           ),
           GoRoute(

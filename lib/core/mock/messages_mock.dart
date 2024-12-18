@@ -45,14 +45,14 @@ randomizeMessageContent(MessageContentType contentType) async {
       XFile imageFile =
           await loadAssetAsXFile("assets/imgs/marwan.jpg", "marwan.jpg");
       return ImageContent(
-        imageUrl: "assets/imgs/marwan.jpg",
+        mediaUrl: "assets/imgs/marwan.jpg",
         filePath: imageFile.path,
       );
     case MessageContentType.audio:
       XFile audioFile =
           await loadAssetAsXFile("assets/audio/test8.mp3", "test8.mp3");
       return AudioContent(
-        audioUrl: "assets/audio/test8.mp3",
+        mediaUrl: "assets/audio/test8.mp3",
         duration: const Duration(minutes: 1, seconds: 20).inSeconds,
         filePath: audioFile.path,
       );
@@ -60,7 +60,7 @@ randomizeMessageContent(MessageContentType contentType) async {
       XFile videoFile =
           await loadAssetAsXFile("assets/video/demo.mp4", "demo.mp4");
       return VideoContent(
-        videoUrl: "assets/video/demo.mp4",
+        mediaUrl: "assets/video/demo.mp4",
         duration: const Duration(minutes: 1, seconds: 20).inSeconds,
         filePath: videoFile.path,
       );

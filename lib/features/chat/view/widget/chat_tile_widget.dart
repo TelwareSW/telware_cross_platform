@@ -9,6 +9,7 @@ import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
+import 'package:telware_cross_platform/core/view/widget/highlight_text_widget.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
@@ -21,6 +22,8 @@ class ChatTileWidget extends ConsumerStatefulWidget {
     required this.displayMessage,
     required this.sentByUser,
     required this.senderID,
+    this.highlights = const [],
+    this.titleHighlights = const [],
     this.showDivider = true,
     required this.onChatSelected,
   });
@@ -32,6 +35,8 @@ class ChatTileWidget extends ConsumerStatefulWidget {
   final bool sentByUser;
   final Function(ChatModel) onChatSelected;
 
+  final List<MapEntry<int, int>> highlights;
+  final List<MapEntry<int, int>> titleHighlights;
 
   @override
   ConsumerState<ChatTileWidget> createState() => _ChatTileWidget();
@@ -59,26 +64,29 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
     if (chatModel.draft?.isNotEmpty ?? false) {
       return chatModel.draft!;
     }
-
+    String content = "";
+    if (displayMessage.content?.getContent().isNotEmpty ?? false) {
+      content = ": ${displayMessage.content?.getContent()}";
+    }
     switch (displayMessageContentType) {
       case MessageContentType.text:
-        return displayMessage.content?.toJson()['text'];
+        return displayMessage.content?.getContent() ?? "";
       case MessageContentType.image:
-        return "Photo";
+        return "Photo$content";
       case MessageContentType.video:
-        return "Video";
+        return "Video$content";
       case MessageContentType.audio:
-        return "Voice message";
+        return "Voice message$content";
       case MessageContentType.file:
-        return "File";
+        return "File$content";
       case MessageContentType.sticker:
-        return "Sticker";
+        return "Sticker$content";
       case MessageContentType.emoji:
-        return "Emoji";
+        return "Emoji$content";
       case MessageContentType.gif:
-        return "GIF";
+        return "GIF$content";
       case MessageContentType.link:
-        return "Link";
+        return "Link$content";
       default:
         return "Unknown";
     }
@@ -161,17 +169,24 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Expanded(
-                                      child: Text(
+                                      child: HighlightTextWidget(
                                         key: ValueKey(
                                             "$keyValue${ChatKeys.chatNamePostfix.value}"),
-                                        chatModel.title,
-                                        style: const TextStyle(
+                                        text: chatModel.title,
+                                        overFlow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                        normalStyle: const TextStyle(
                                           color: Palette.primaryText,
                                           fontWeight: FontWeight.w500,
                                           fontSize: 16,
                                         ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                        highlightStyle: const TextStyle(
+                                          color: Palette.primary,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                          backgroundColor: Colors.transparent,
+                                        ),
+                                        highlights: widget.titleHighlights,
                                       ),
                                     ),
                                     if (isMuted)
@@ -246,17 +261,28 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
                                                     : null,
                                               ),
                                             ),
-                                            TextSpan(
-                                              text: _getDisplayText(
-                                                  displayMessageContentType),
-                                              style: TextStyle(
-                                                color: hasDraft ||
-                                                        displayMessageContentType ==
-                                                            MessageContentType
-                                                                .text
-                                                    ? Palette.accentText
-                                                    : Palette.accent,
-                                                fontStyle: FontStyle.normal,
+                                            WidgetSpan(
+                                              child: HighlightTextWidget(
+                                                text: _getDisplayText(
+                                                  displayMessageContentType,
+                                                ),
+                                                normalStyle: TextStyle(
+                                                  color: hasDraft ||
+                                                          displayMessageContentType ==
+                                                              MessageContentType
+                                                                  .text ||
+                                                          widget.highlights
+                                                              .isNotEmpty
+                                                      ? Palette.accentText
+                                                      : Palette.accent,
+                                                  fontStyle: FontStyle.normal,
+                                                ),
+                                                highlightStyle: const TextStyle(
+                                                  color: Palette.primary,
+                                                  backgroundColor:
+                                                      Colors.transparent,
+                                                ),
+                                                highlights: widget.highlights,
                                               ),
                                             ),
                                           ],

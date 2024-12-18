@@ -49,6 +49,7 @@ class ChatModel {
   final bool messagingPermission; //1->anyone   0->admins
 
 
+
   ChatModel({
     required this.title,
     required this.userIds,
