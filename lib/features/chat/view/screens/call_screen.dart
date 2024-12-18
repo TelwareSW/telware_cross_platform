@@ -35,7 +35,7 @@ class CallScreen extends ConsumerStatefulWidget {
 class _CallScreenState extends ConsumerState<CallScreen> {
   final Signaling _signaling = Signaling.instance;
   final RTCVideoRenderer _localRenderer = RTCVideoRenderer();
-  final RTCVideoRenderer _remoteRenderer = RTCVideoRenderer();
+  final Map<String, RTCVideoRenderer> _remoteRenderers = {};
   UserModel? callee;
   String? voiceCallId;
   late bool isCaller;
@@ -51,18 +51,18 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     isReceivingCall = !isCaller && voiceCallId != null;
 
     _localRenderer.initialize();
-    _remoteRenderer.initialize();
 
-    _signaling.onAddRemoteStream = (stream) {
-      _remoteRenderer.srcObject = stream;
+
+    _signaling.onAddRemoteStream = (stream, clientId) {
+      _remoteRenderers[clientId]!.srcObject = stream;
       setState(() {});
     };
 
     // Initialize media just one time
     if (_localRenderer.srcObject == null) {
-      _signaling.openUserMedia(_localRenderer, _remoteRenderer);
+      _signaling.openUserMedia(_localRenderer);
     }
-    _signaling.toggleVideoStream(false);
+    _signaling.toggleVideoStream(ref.read(callStateProvider).isVideoCall);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (callee != null && isCaller) {
@@ -80,8 +80,8 @@ class _CallScreenState extends ConsumerState<CallScreen> {
 
   void _initializeSignaling() {
     debugPrint("Call: Initializing signaling");
-    _signaling.onAddRemoteStream = (stream) {
-      _remoteRenderer.srcObject = stream;
+    _signaling.onAddRemoteStream = (stream, clientId) {
+      _remoteRenderers[clientId]!.srcObject = stream;
       setState(() {});
     };
 
@@ -89,7 +89,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
       // If receiving a call, set remote description and create an answer
       await _signaling.registerPeerConnection(senderId);
       await _signaling.setRemoteDescription(description);
-      final answer = await _signaling.createAnswer();
+      final answer = await _signaling.createAnswer(senderId);
       _signaling.sendAnswer(answer, senderId);
       startCall();
     };
@@ -111,13 +111,18 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     };
 
     _signaling.onReceiveJoinedCall = (response) {
-      // Create an offer to the user
-      _signaling.createOffer(response['clientId']).then((offer) {
-        _signaling.sendOffer(offer, response['clientId']);
-      });
+      final clientId = response['clientId'];
+      print("# Call: Received joined call from $clientId");
+      _remoteRenderers[clientId] = RTCVideoRenderer();
+      _remoteRenderers[clientId]!.initialize();
+      _signaling.updateRemoteRenderer(_remoteRenderers[clientId]!).then((_) {
+        _signaling.createOffer(clientId).then((offer) {
+          _signaling.sendOffer(offer, response['clientId']);
+        });
 
-      if (ref.read(callStateProvider).isCallInProgress) return;
-      ref.read(callStateProvider.notifier).setCallInProgress(true);
+        if (ref.read(callStateProvider).isCallInProgress) return;
+        ref.read(callStateProvider.notifier).setCallInProgress(true);
+      });
     };
 
     _signaling.onReceiveLeftCall = (response) {
@@ -162,7 +167,16 @@ class _CallScreenState extends ConsumerState<CallScreen> {
         children: [
           // Remote video
           if (callState.isVideoCall)
-            Positioned.fill(child: RTCVideoView(_remoteRenderer))
+            // Display all remote renderers as cubes beside each other
+            Row(
+              children: _remoteRenderers.values
+                  .map((renderer) => SizedBox(
+                width: 100,
+                height: 150,
+                child: RTCVideoView(renderer),
+              ))
+                  .toList(),
+            )
           else
             Container(
               decoration: BoxDecoration(
