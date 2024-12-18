@@ -4,10 +4,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
-import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
-import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
 
@@ -51,77 +49,77 @@ class HomeRemoteRepository {
       globalSearchResults: globalSearchResults,
       appError: null
     );
-    try {
-      final sessionId = await _getSessionId();
-      final response = await _dio.get(
-        '/search-request',
-        data: {
-          'query': query,
-          'searchSpace': searchSpace,
-          'filter': {
-            'type': filterType,
-          },
-          'isGlobalSearch': isGlobalSearch
-        },
-        options: Options(headers: {'X-Session-Token': sessionId}),
-      );
+    // try {
+    //   final sessionId = await _getSessionId();
+    //   final response = await _dio.get(
+    //     '/search-request',
+    //     data: {
+    //       'query': query,
+    //       'searchSpace': searchSpace,
+    //       'filter': {
+    //         'type': filterType,
+    //       },
+    //       'isGlobalSearch': isGlobalSearch
+    //     },
+    //     options: Options(headers: {'X-Session-Token': sessionId}),
+    //   );
 
-      final results = response.data['data']['SearchResults'];
-      final globalResults = response.data['data']['GlobalSearchResults'];
-      for (final result in results) {
-        final chatID = result['id'];
-        final chatTitle = result['title'];
-        final chatType = result['type'];
-        final content = result['searchMessage']['messagePreview'];
-        final searchTermIndex = result['searchMessage']['searchTermIndex'];
+    //   final results = response.data['data']['SearchResults'];
+    //   final globalResults = response.data['data']['GlobalSearchResults'];
+    //   for (final result in results) {
+    //     final chatID = result['id'];
+    //     final chatTitle = result['title'];
+    //     final chatType = result['type'];
+    //     final content = result['searchMessage']['messagePreview'];
+    //     final searchTermIndex = result['searchMessage']['searchTermIndex'];
 
-        // TODO: we need from the backend to give us
-        // 1 - senderID
-        // 2 - messageType
-        // 3 - messageContentType
-        // 4 - timestamp
-        // 5 - userStates
-        // 6 - title
-        // 7 - id
-        final MessageModel messageModel = MessageModel(
-          content: createMessageContent(
-              contentType: MessageContentType.text, text: content),
-          senderId: 'unknown',
-          messageType: MessageType.normal,
-          messageContentType: MessageContentType.text,
-          timestamp: DateTime.now(),
-          userStates: {},
-        );
+    //     // TODO: we need from the backend to give us
+    //     // 1 - senderID
+    //     // 2 - messageType
+    //     // 3 - messageContentType
+    //     // 4 - timestamp
+    //     // 5 - userStates
+    //     // 6 - title
+    //     // 7 - id
+    //     final MessageModel messageModel = MessageModel(
+    //       content: createMessageContent(
+    //           contentType: MessageContentType.text, text: content),
+    //       senderId: 'unknown',
+    //       messageType: MessageType.normal,
+    //       messageContentType: MessageContentType.text,
+    //       timestamp: DateTime.now(),
+    //       userStates: {},
+    //     );
 
-        // TODO: we need from the backend to give us
-        // 1 - photo url for the chat
-        final chatModel = ChatModel(
-          id: chatID,
-          title: chatTitle,
-          userIds: [],
-          type: ChatType.getType(chatType),
-          messages: [messageModel],
-          photo: null,
-        );
+    //     // TODO: we need from the backend to give us
+    //     // 1 - photo url for the chat
+    //     final chatModel = ChatModel(
+    //       id: chatID,
+    //       title: chatTitle,
+    //       userIds: [],
+    //       type: ChatType.getType(chatType),
+    //       messages: [messageModel],
+    //       photo: null,
+    //     );
 
-        searchResults.add(chatModel);
-      }
+    //     searchResults.add(chatModel);
+    //   }
 
-      return (
-        searchResults: searchResults,
-        globalSearchResults: globalSearchResults,
-        appError: null
-      );
-    } catch (e, stackTrace) {
-      debugPrint('!!! error in fetching the search results');
-      debugPrint(e.toString());
-      debugPrint(stackTrace.toString());
-      return (
-        searchResults: <ChatModel>[],
-        globalSearchResults: <ChatModel>[],
-        appError: AppError('Failed to fetch search results', code: 500),
-      );
-    }
+    //   return (
+    //     searchResults: searchResults,
+    //     globalSearchResults: globalSearchResults,
+    //     appError: null
+    //   );
+    // } catch (e, stackTrace) {
+    //   debugPrint('!!! error in fetching the search results');
+    //   debugPrint(e.toString());
+    //   debugPrint(stackTrace.toString());
+    //   return (
+    //     searchResults: <ChatModel>[],
+    //     globalSearchResults: <ChatModel>[],
+    //     appError: AppError('Failed to fetch search results', code: 500),
+    //   );
+    // }
   }
 
   Future<List<MessageContent>?> getMediaSuggestion(

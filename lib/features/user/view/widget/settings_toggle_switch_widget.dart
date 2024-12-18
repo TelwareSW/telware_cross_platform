@@ -3,8 +3,6 @@ import 'package:flutter_switch/flutter_switch.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
-import 'package:telware_cross_platform/core/view/widget/popup_menu_widget.dart';
-import 'package:telware_cross_platform/core/view/widget/popup_menu_item_widget.dart';
 
 class SettingsToggleSwitchWidget extends StatelessWidget {
   final String text;

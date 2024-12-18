@@ -16,8 +16,6 @@ import 'package:telware_cross_platform/features/auth/repository/auth_remote_repo
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
-import 'package:telware_cross_platform/features/user/repository/user_remote_repository.dart';
-import 'package:telware_cross_platform/features/user/view_model/user_view_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 part 'auth_view_model.g.dart';

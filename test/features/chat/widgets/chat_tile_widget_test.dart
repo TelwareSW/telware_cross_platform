@@ -62,6 +62,7 @@ void main() {
                 displayMessage: message,
                 sentByUser: false,
                 senderID: message.senderId,
+                onChatSelected: (_) {},
               ),
             ),
           ),
@@ -147,6 +148,7 @@ void main() {
                   displayMessage: message,
                   sentByUser: false,
                   senderID: message.senderId,
+                  onChatSelected: (_) {},
                 );
               }).toList(),
             )),
@@ -214,6 +216,7 @@ void main() {
                 displayMessage: message,
                 sentByUser: false,
                 senderID: message.senderId,
+                onChatSelected: (_) {},
               ),
             ),
           ),
@@ -262,6 +265,7 @@ void main() {
                     displayMessage: message,
                     sentByUser: true,
                     senderID: message.senderId,
+                    onChatSelected: (_) {},
                   ),
                   ChatTileWidget(
                     key: ValueKey("${ChatKeys.chatTilePrefix.value}1"),
@@ -275,6 +279,7 @@ void main() {
                     displayMessage: message,
                     sentByUser: false,
                     senderID: message.senderId,
+                    onChatSelected: (_) {},
                   )
                 ],
               ),

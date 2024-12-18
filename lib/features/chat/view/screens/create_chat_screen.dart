@@ -347,6 +347,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
           displayMessage: message,
           sentByUser: message.senderId == ref.read(userProvider)!.id,
           senderID: message.senderId,
+          onChatSelected: (_){},
         ),
       );
       index++;
@@ -385,6 +386,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
           senderID: message.senderId,
           highlights: chatMessagesMatches,
           titleHighlights: chatTitleMatches,
+          onChatSelected: (_){},
         ),
       );
       index++;

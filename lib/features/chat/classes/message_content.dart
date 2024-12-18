@@ -103,11 +103,6 @@ class AudioContent extends MessageContent {
   String? getMediaURL() {
     return mediaUrl;
   }
-  
-  @override
-  String? getMediaURL() {
-    return audioUrl;
-  }
 }
 
 // For Document Messages (PDFs, Docs)
@@ -143,11 +138,6 @@ class DocumentContent extends MessageContent {
   @override
   String? getMediaURL() {
     return mediaUrl;
-  }
-  
-  @override
-  String? getMediaURL() {
-    return fileUrl;
   }
 }
 
@@ -192,11 +182,6 @@ class ImageContent extends MessageContent {
   String? getMediaURL() {
     return mediaUrl;
   }
-  
-  @override
-  String? getMediaURL() {
-    return imageUrl;
-  }
 }
 
 // For Video Messages
@@ -239,11 +224,6 @@ class VideoContent extends MessageContent {
   String? getMediaURL() {
     return mediaUrl;
   }
-  
-  @override
-  String? getMediaURL() {
-    return videoUrl;
-  }
 }
 
 // for emoji, gifs and stickers
@@ -280,11 +260,6 @@ class EmojiContent extends MessageContent {
   String? getMediaURL() {
     return mediaUrl;
   }
-  
-  @override
-  String? getMediaURL() {
-    return emojiUrl;
-  }
 }
 
 @HiveType(typeId: 21)
@@ -320,11 +295,6 @@ class GIFContent extends MessageContent {
   String? getMediaURL() {
     return mediaUrl;
   }
-  
-  @override
-  String? getMediaURL() {
-    return gifUrl;    
-  }
 }
 
 @HiveType(typeId: 22)
@@ -359,10 +329,5 @@ class StickerContent extends MessageContent {
   @override
   String? getMediaURL() {
     return mediaUrl;
-  }
-  
-  @override
-  String? getMediaURL() {
-    return stickerUrl;
   }
 }

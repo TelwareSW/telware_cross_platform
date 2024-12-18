@@ -17,7 +17,6 @@ import 'package:telware_cross_platform/features/chat/models/message_event_models
 import 'package:telware_cross_platform/features/chat/providers/call_provider.dart';
 import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
 import 'package:telware_cross_platform/features/stories/models/story_model.dart';
-import 'package:firebase_core/firebase_core.dart';
 
 import 'features/chat/models/call_state.dart';
 

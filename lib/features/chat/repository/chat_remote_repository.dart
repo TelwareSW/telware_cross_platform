@@ -223,7 +223,7 @@ class ChatRemoteRepository {
         // Assuming photoBytes are handled separately
         id: data['id'] ?? 'unknown_id',
       );
-    } catch (e, stackTrace) {
+    } catch (e) {
       debugPrint('Failed to fetch user details');
       return null;
     }

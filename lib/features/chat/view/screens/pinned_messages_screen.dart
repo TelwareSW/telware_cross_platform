@@ -50,7 +50,6 @@ class _PinnedMessagesScreen extends ConsumerState<PinnedMessagesScreen>
   bool isShowAsList = false;
 
   // ignore: prefer_final_fields
-  int _currentMatch = 1;
 
   // ignore: unused_field
   final int _currentMatchIndex = 0;

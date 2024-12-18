@@ -2,18 +2,14 @@ import 'dart:collection';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:path/path.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/mock/constants_mock.dart';
-import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/services/socket_service.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
-import 'package:telware_cross_platform/features/chat/providers/call_provider.dart';
 import 'package:telware_cross_platform/features/chat/services/signaling_service.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
-import 'package:go_router/go_router.dart';
 
 class EventHandler {
   final ChattingController _chattingController;
