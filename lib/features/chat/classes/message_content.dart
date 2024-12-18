@@ -17,6 +17,7 @@ abstract class MessageContent {
   MessageContent copyWith();
 
   String getContent();
+
   String? getMediaURL();
 }
 
@@ -44,10 +45,10 @@ class TextContent extends MessageContent {
   String getContent() {
     return text;
   }
-  
+
   @override
   String? getMediaURL() {
-    return null;    
+    return null;
   }
 }
 
@@ -97,7 +98,7 @@ class AudioContent extends MessageContent {
   String getContent() {
     return fileName ?? '';
   }
-  
+
   @override
   String? getMediaURL() {
     return mediaUrl;
@@ -133,7 +134,7 @@ class DocumentContent extends MessageContent {
   String getContent() {
     return fileName ?? '';
   }
-  
+
   @override
   String? getMediaURL() {
     return mediaUrl;
@@ -176,7 +177,7 @@ class ImageContent extends MessageContent {
   String getContent() {
     return caption ?? '';
   }
-  
+
   @override
   String? getMediaURL() {
     return mediaUrl;
@@ -218,7 +219,7 @@ class VideoContent extends MessageContent {
   String getContent() {
     return fileName ?? '';
   }
-  
+
   @override
   String? getMediaURL() {
     return mediaUrl;
@@ -254,7 +255,7 @@ class EmojiContent extends MessageContent {
   String getContent() {
     return fileName ?? '';
   }
-  
+
   @override
   String? getMediaURL() {
     return mediaUrl;
@@ -289,10 +290,10 @@ class GIFContent extends MessageContent {
   String getContent() {
     return fileName ?? '';
   }
-  
+
   @override
   String? getMediaURL() {
-    return mediaUrl;    
+    return mediaUrl;
   }
 }
 
@@ -324,7 +325,7 @@ class StickerContent extends MessageContent {
   String getContent() {
     return fileName ?? '';
   }
-  
+
   @override
   String? getMediaURL() {
     return mediaUrl;

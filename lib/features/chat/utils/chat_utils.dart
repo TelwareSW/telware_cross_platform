@@ -30,8 +30,7 @@ Future<String?> downloadAndSaveFile(
 
       // Determine the local path to save the file
       final Directory directory = await getTemporaryDirectory();
-      final String fileName =
-          originalFileName ?? url.split('/').last; // Extract file name from URL
+      final String fileName = url.split('/').last; // Extract file name from URL
       final String filePath = '${directory.path}/$fileName';
 
       // Save the file locally
