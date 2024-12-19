@@ -13,6 +13,7 @@ import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
+import 'package:telware_cross_platform/features/auth/view/widget/confirmation_dialog.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
 import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
@@ -54,6 +55,17 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
   late TabController _tabController;
   final ScrollController scrollController = ScrollController();
   final TextEditingController searchController = TextEditingController();
+  late int tabsLength;
+  late List<Tab> tabs = [
+    if (tabsLength == 7) const Tab(text: 'Users'),
+    const Tab(text: 'Chats'),
+    const Tab(text: 'Channels'),
+    const Tab(text: 'Media'),
+    const Tab(text: 'Files'),
+    const Tab(text: 'Music'),
+    const Tab(text: 'Voice'),
+  ];
+  late bool isAdmin;
 
   Future<List<UserModel>> _usersFuture = Future.value(<UserModel>[]);
   bool _isUserContentSet = false;
@@ -61,7 +73,19 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(vsync: this, length: 7);
+    // isAdmin = ref.read(userProvider)!.isAdmin;
+    isAdmin = true;
+    tabsLength = isAdmin ? 7 : 6;
+    tabs = [
+      if (tabsLength == 7) const Tab(text: 'Users'),
+      const Tab(text: 'Chats'),
+      const Tab(text: 'Channels'),
+      const Tab(text: 'Media'),
+      const Tab(text: 'Files'),
+      const Tab(text: 'Music'),
+      const Tab(text: 'Voice'),
+    ];
+    _tabController = TabController(vsync: this, length: tabsLength);
     fullUserChats = <Map<String, dynamic>>[
       {"options": <Map<String, dynamic>>[]}
     ];
@@ -197,15 +221,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
           physics: const BouncingScrollPhysics(),
           labelPadding:
               const EdgeInsets.only(left: 18.0, right: 18.0, top: 2.0),
-          tabs: const [
-            Tab(text: 'Users'),
-            Tab(text: 'Chats'),
-            Tab(text: 'Channels'),
-            Tab(text: 'Media'),
-            Tab(text: 'Files'),
-            Tab(text: 'Music'),
-            Tab(text: 'Voice'),
-          ],
+          tabs: tabs,
         ),
       ),
       body: Column(
@@ -242,27 +258,28 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
                   }
                   return TabBarView(
                     controller: _tabController,
-                    children: List.generate(7, (index) {
-                      if (index == 0 && userChats[0]["options"].isEmpty) {
-                        return const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            LottieViewer(
-                              path: 'assets/tgs/EasterDuck.tgs',
-                              width: 100,
-                              height: 100,
-                            ),
-                            TitleElement(
-                              name: 'No results',
-                              color: Palette.primaryText,
-                              fontSize: Sizes.primaryText - 2,
-                              fontWeight: FontWeight.bold,
-                              padding: EdgeInsets.only(bottom: 0, top: 10),
-                            ),
-                          ],
-                        );
-                      } else if (index == 0) {
+                    children: List.generate(tabsLength, (index) {
+                      if (index == 0 && isAdmin) {
+                        if (userChats[0]["options"].isEmpty) {
+                          return const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              LottieViewer(
+                                path: 'assets/tgs/EasterDuck.tgs',
+                                width: 100,
+                                height: 100,
+                              ),
+                              TitleElement(
+                                name: 'No results',
+                                color: Palette.primaryText,
+                                fontSize: Sizes.primaryText - 2,
+                                fontWeight: FontWeight.bold,
+                                padding: EdgeInsets.only(bottom: 0, top: 10),
+                              ),
+                            ],
+                          );
+                        }
                         return SingleChildScrollView(
                           child: UserChats(chatSections: userChats),
                         );
@@ -434,8 +451,17 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
   }
 
   List<Map<String, dynamic>> _generateUsersList(
-      List<UserModel> users, bool isRemote) {
+    List<UserModel> users,
+    bool isRemote,
+  ) {
     UserModel myUser = ref.read(userProvider)!;
+    final onTap = (isAdmin && !isRemote)
+        ? (UserModel user) => changeUserAccountStatusDialog(
+              user.email,
+              user.accountStatus,
+              userId: user.id,
+            )
+        : (UserModel user) => _createNewChat(user);
     final usersBlocks = <Map<String, dynamic>>[
       {"options": <Map<String, dynamic>>[]}
     ];
@@ -443,7 +469,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
       if (user.id == myUser.id) continue;
       var option = <String, dynamic>{
         "avatar": true,
-        "text": '${user.screenFirstName} ${user.screenLastName}',
+        "text": user.username,
         "imagePath": null,
         "subtext": "last seen Nov 23 at 6:40 PM",
         "trailingFontSize": 13.0,
@@ -455,7 +481,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
         "fontWeight": FontWeight.w500,
         "imageWidth": 55.0,
         "imageHeight": 55.0,
-        "onTap": () => _createNewChat(user),
+        "onTap": () => onTap(user),
       };
       if (isRemote) {
         usersBlocks[0]["options"].add(option);
@@ -471,9 +497,13 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
   }
 
   void filterView(String query) {
-    int currentTabIndex = _tabController.index; // Get the current tab index
+    int currentTabIndex =
+        _tabController.index + (isAdmin ? 0 : 1); // Get the current tab index
     List<String> allSearchSpace = ['channels', 'groups', 'chats'];
     switch (currentTabIndex) {
+      case 0:
+        filterUserChats(query);
+        break;
       case 1:
         _getSearchResults(query, allSearchSpace, 'text', true);
         break;
@@ -537,5 +567,85 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
     } catch (e) {
       return null; // Return null if image loading fails
     }
+  }
+
+  void changeUserAccountStatusDialog(String user, String? accountStatus,
+      {String? userId}) {
+    if (accountStatus == null || accountStatus.isEmpty) {
+      showToastMessage('User account status is not available');
+      return;
+    }
+
+    showConfirmationDialog(
+      context: context,
+      title: 'Suspend user',
+      titleFontWeight: FontWeight.normal,
+      titleColor: Palette.primaryText,
+      titleFontSize: 18.0,
+      subtitle: 'Banning $user cannot be reversed!!',
+      subtitleFontWeight: FontWeight.bold,
+      subtitleFontSize: 16.0,
+      contentGap: 20.0,
+      actionsAlignment: MainAxisAlignment.spaceBetween,
+      confirmText: 'Ban',
+      confirmColor: const Color.fromRGBO(238, 104, 111, 1),
+      confirmPadding: const EdgeInsets.only(left: 40.0),
+      cancelText: accountStatus == 'deactivated' ? 'Activate' : 'Deactivate',
+      cancelColor: const Color.fromRGBO(100, 181, 239, 1),
+      onConfirm: () {
+        if (accountStatus == 'banned') {
+          showToastMessage('User is already banned');
+          return;
+        }
+        changeUserAccountStatusConfirmationDialog('BAN', user, userId: userId);
+      },
+      onCancel: () {
+        if (accountStatus == 'banned') {
+          showToastMessage(
+              'User is banned and cannot be activated or deactivated');
+          return;
+        }
+        changeUserAccountStatusConfirmationDialog(
+            accountStatus == 'deactivated' ? 'ACTIVATE' : 'DEACTIVATE', user,
+            userId: userId);
+      },
+    );
+  }
+
+  void changeUserAccountStatusConfirmationDialog(String action, String user,
+      {String? userId}) {
+    showConfirmationDialog(
+      context: context,
+      title: 'Suspend user',
+      titleFontWeight: FontWeight.normal,
+      titleColor: Palette.primaryText,
+      titleFontSize: 18.0,
+      subtitle: 'Are you sure you want to $action $user?',
+      subtitleFontWeight: FontWeight.bold,
+      subtitleFontSize: 16.0,
+      contentGap: 20.0,
+      actionsAlignment: MainAxisAlignment.spaceBetween,
+      confirmText: action,
+      confirmColor: const Color.fromRGBO(238, 104, 111, 1),
+      confirmPadding: const EdgeInsets.only(left: 40.0),
+      cancelText: 'Cancel',
+      cancelColor: const Color.fromRGBO(100, 181, 239, 1),
+      onConfirm: () {
+        // TODO(marwan) ban  the user
+        // if (userId != null) {
+        //   ref.read(userViewModelProvider.notifier).blockUser(userId: userId);
+        // }
+
+        // Close the confirmation dialog
+        context.pop();
+        // Close the initial dialog
+        context.pop();
+      },
+      onCancel: () {
+        // TODO(marwan) activate or deactivate the user
+        context.pop();
+        context.pop();
+      },
+    );
   }
 }

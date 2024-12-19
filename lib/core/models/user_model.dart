@@ -47,6 +47,10 @@ class UserModel {
   String? id;
   @HiveField(17)
   List<UserModel>? blockedUsers;
+  @HiveField(18)
+  final bool isAdmin;
+  @HiveField(19)
+  final String? accountStatus;
 
   UserModel({
     required this.username,
@@ -67,6 +71,8 @@ class UserModel {
     required this.id,
     this.photoBytes,
     this.blockedUsers,
+    this.isAdmin = false,
+    this.accountStatus,
   });
 
   _setPhotoBytes() async {
@@ -102,6 +108,7 @@ class UserModel {
           email == other.email &&
           photo == other.photo &&
           status == other.status &&
+          accountStatus == other.accountStatus &&
           bio == other.bio &&
           maxFileSize == other.maxFileSize &&
           automaticDownloadEnable == other.automaticDownloadEnable &&
@@ -113,7 +120,8 @@ class UserModel {
           phone == other.phone &&
           photoBytes == other.photoBytes &&
           id == other.id &&
-          blockedUsers == other.blockedUsers);
+          blockedUsers == other.blockedUsers &&
+          isAdmin == other.isAdmin);
 
   @override
   int get hashCode =>
@@ -123,6 +131,7 @@ class UserModel {
       email.hashCode ^
       photo.hashCode ^
       status.hashCode ^
+      accountStatus.hashCode ^
       bio.hashCode ^
       maxFileSize.hashCode ^
       automaticDownloadEnable.hashCode ^
@@ -132,11 +141,12 @@ class UserModel {
       picturePrivacy.hashCode ^
       invitePermissionsPrivacy.hashCode ^
       phone.hashCode ^
-      id.hashCode;
+      id.hashCode ^
+      isAdmin.hashCode;
 
   @override
   String toString() {
-    return 'UserModel{ username: $username, screenFirstName: $screenFirstName, screenLastName: $screenLastName, email: $email, photo: $photo, status: $status, bio: $bio, maxFileSize: $maxFileSize, automaticDownloadEnable: $automaticDownloadEnable, lastSeenPrivacy: $lastSeenPrivacy, readReceiptsEnablePrivacy: $readReceiptsEnablePrivacy, storiesPrivacy: $storiesPrivacy, picturePrivacy: $picturePrivacy, invitePermissionsPrivacy: $invitePermissionsPrivacy, phone: $phone, photoBytes: $photoBytes, id: $id, blockedUsers: $blockedUsers,}';
+    return 'UserModel{ username: $username, accountStatus: $accountStatus , isAdmin: $isAdmin , screenFirstName: $screenFirstName, screenLastName: $screenLastName, email: $email, photo: $photo, status: $status, bio: $bio, maxFileSize: $maxFileSize, automaticDownloadEnable: $automaticDownloadEnable, lastSeenPrivacy: $lastSeenPrivacy, readReceiptsEnablePrivacy: $readReceiptsEnablePrivacy, storiesPrivacy: $storiesPrivacy, picturePrivacy: $picturePrivacy, invitePermissionsPrivacy: $invitePermissionsPrivacy, phone: $phone, photoBytes: $photoBytes, id: $id, blockedUsers: $blockedUsers,}';
   }
 
   UserModel copyWith({
@@ -146,6 +156,7 @@ class UserModel {
     String? email,
     String? photo,
     String? status,
+    String? accountStatus,
     String? bio,
     int? maxFileSize,
     bool? automaticDownloadEnable,
@@ -158,6 +169,7 @@ class UserModel {
     String? id,
     Uint8List? photoBytes,
     List<UserModel>? blockedUsers,
+    bool? isAdmin,
   }) {
     return UserModel(
       username: username ?? this.username,
@@ -166,6 +178,7 @@ class UserModel {
       email: email ?? this.email,
       photo: photo ?? this.photo,
       status: status ?? this.status,
+      accountStatus: accountStatus ?? this.accountStatus,
       bio: bio ?? this.bio,
       maxFileSize: maxFileSize ?? this.maxFileSize,
       automaticDownloadEnable:
@@ -181,6 +194,7 @@ class UserModel {
       id: id ?? this.id,
       photoBytes: photoBytes ?? this.photoBytes,
       blockedUsers: blockedUsers ?? this.blockedUsers,
+      isAdmin: isAdmin ?? this.isAdmin,
     );
   }
 
@@ -192,6 +206,7 @@ class UserModel {
       'email': email,
       'photo': photo,
       'status': status,
+      'accountStatus': accountStatus,
       'bio': bio,
       'maxFileSize': maxFileSize,
       'automaticDownloadEnable': automaticDownloadEnable,
@@ -203,6 +218,7 @@ class UserModel {
       'phone': phone,
       'id': id,
       'blockedUsers': blockedUsers,
+      'isAdmin': isAdmin,
     };
   }
 
@@ -222,6 +238,7 @@ class UserModel {
           ? map['photo'] as String
           : null,
       status: map['status'] as String? ?? '',
+      accountStatus: map['accountStatus'] as String? ?? '',
       bio: map['bio'] as String? ?? '',
       maxFileSize: map['maxFileSize'] ?? 0,
       automaticDownloadEnable: map['automaticDownloadEnable'] ?? false,
@@ -232,6 +249,7 @@ class UserModel {
       invitePermissionsPrivacy: map['invitePermissionsPrivacy'] ?? '',
       phone: (map['phoneNumber'] as String?) ?? '',
       id: map['id'] as String,
+      isAdmin: map['isAdmin'] ?? false,
     );
     await user._setPhotoBytes();
     return user;

@@ -90,7 +90,7 @@ class HomeRemoteRepository {
             (result['threadMessages'] as List).map((e) => e as String).toList();
         final MessageModel messageModel = MessageModel(
           content: messageContent,
-          senderId: result['senderId']['id'],
+          senderId: result['senderId'],
           messageType: MessageType.normal,
           messageContentType: contentType,
           timestamp: result['timestamp'] == null
