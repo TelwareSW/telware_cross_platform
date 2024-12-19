@@ -23,11 +23,11 @@ class HomeViewModel extends _$HomeViewModel {
     bool isGlobalSearch,
   ) async {
     final repository = ref.read(homeRemoteRepositoryProvider);
-
+    bool isSearchLocally = searchSpace.contains('chats');
     try {
       final result = await repository.searchRequest(
         query,
-        searchSpace,
+        searchSpace..remove('chats'),
         filterType,
         isGlobalSearch,
       );
@@ -35,7 +35,8 @@ class HomeViewModel extends _$HomeViewModel {
       List<MessageModel> localSearchResultsMessages = [];
       List<List<MapEntry<int, int>>> localSearchResultsChatTitleMatches = [];
       List<List<MapEntry<int, int>>> localSearchResultsChatMessagesMatches = [];
-      if (searchSpace.contains('chats')) {
+
+      if (isSearchLocally) {
         final localResult =
             // ignore: avoid_manual_providers_as_generated_provider_dependency
             ref.read(homeLocalRepositoryProvider).searchLocally(
@@ -61,7 +62,9 @@ class HomeViewModel extends _$HomeViewModel {
           localSearchResultsChatMessagesMatches:
               localSearchResultsChatMessagesMatches,
           searchResults: result.searchResults,
-          globalSearchResults: result.globalSearchResults,
+          groupsGlobalSearchResults: result.groupsGlobalSearchResults,
+          usersGlobalSearchResults: result.usersGlobalSearchResults,
+          channelsGlobalSearchResults: result.channelsGlobalSearchResults,
         );
       }
     } catch (e) {

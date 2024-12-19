@@ -99,6 +99,7 @@ String formatPhoneNumber(String phoneNumber) {
 
 // Helper function to generate random pastel-like colors
 final Map<String, Color> _colorCache = {};
+
 Color getRandomColor([String? key]) {
   // Check color cache for a color with the same key
   if (_colorCache.containsKey(key)) {
@@ -234,8 +235,6 @@ Future<XFile> loadAssetAsXFile(String assetPath, String filename) async {
 }
 
 List<MapEntry<int, int>> kmp(String text, String pattern) {
-  debugPrint(text);
-  debugPrint(pattern);
   final int n = text.length;
   final int m = pattern.length;
   if (m == 0) return const [];
@@ -254,12 +253,10 @@ List<MapEntry<int, int>> kmp(String text, String pattern) {
       j = lps[j - 1];
     }
     if (j == m) {
-      debugPrint("YES ${MapEntry(i - m, m)}");
       matches.add(MapEntry(i - m, m));
       j = lps[j - 1];
     }
   }
-  debugPrint(matches.toString());
   return matches;
 }
 
@@ -347,8 +344,31 @@ String getRandomLottieAnimation() {
   // Generate a random index
   Random random = Random();
   int randomIndex =
-  random.nextInt(lottieAnimations.length); // Gets a random index
+      random.nextInt(lottieAnimations.length); // Gets a random index
 
   // Return the randomly chosen Lottie animation path
   return lottieAnimations[randomIndex];
+}
+
+List<MapEntry<int, int>> shiftHighlights(
+  String contentType,
+  List<MapEntry<int, int>> highlights,
+) {
+  Map<String, String> shiftMappings = {
+    "image": "Photo: ",
+    "video": "Video: ",
+    "link": "Link: ",
+    "file": "File: ",
+    "voice": "Voice message: ",
+    "music": "Voice message: ",
+    "text": "",
+  };
+  String prefix = shiftMappings[contentType]!;
+  for (int i = 0; i < highlights.length; i++) {
+    highlights[i] = MapEntry(
+      highlights[i].key + prefix.length,
+      highlights[i].value,
+    );
+  }
+  return highlights;
 }

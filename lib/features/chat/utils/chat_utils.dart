@@ -148,8 +148,6 @@ MessageModel updateContent<T>(MessageModel message, T content,
     bool Function(String?) fileExists, String? newFilePath) {
   final filePath = (content as dynamic).filePath;
   if (!fileExists(filePath)) {
-    debugPrint('!!! ${T.toString()} content: $filePath');
-    debugPrint("!!! file does not exist");
     return message.copyWith(content: content.copyWith(filePath: newFilePath));
   }
   return message;
