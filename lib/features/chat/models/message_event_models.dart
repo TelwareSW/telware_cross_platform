@@ -211,7 +211,6 @@ class DeleteMessageEvent extends MessageEvent {
       socket,
       EventType.deleteMessageClient.event,
       ackCallback: (response, timer, completer) {
-        debugPrint(response);
         if (!completer.isCompleted) {
           timer.cancel(); // Cancel the timer on acknowledgment
           if (response['success'].toString() == 'true') {

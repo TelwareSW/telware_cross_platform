@@ -250,11 +250,6 @@ class ChattingController {
               parentMessageId: parentMessgeId,
             );
 
-    debugPrint(
-        '^^^ new message identifier: ${identifier.chatId} ${identifier.msgLocalId}');
-
-    debugPrint(
-        '^^^ new message identifier: ${identifier.chatId} ${identifier.msgLocalId}');
 
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
@@ -320,15 +315,32 @@ class ChattingController {
     String chatId,
     DeleteMessageType deleteType, {
     bool isFromServer = false,
+    bool isUsingMsgLocalId = false,
   }) {
-    if (!isFromServer) {
+    late bool isMsgSend;
+    isUsingMsgLocalId
+        ? isMsgSend = !_eventHandler.preventEventSending(msgId)
+        : isMsgSend = true;
+
+    debugPrint('))) event is sent about to send');
+    if (!isFromServer && isMsgSend) {
+      debugPrint('))) event is sent');
+
+      late String msgGlobalId;
+      isUsingMsgLocalId && isMsgSend
+          ? msgGlobalId = _ref
+              .read(chatsViewModelProvider.notifier)
+              .getMsgGlobalId(msgId, chatId)!
+          : msgGlobalId = msgId;
+
       final msgEvent = DeleteMessageEvent(
         {
           'messageId': msgId,
+          'chatId': chatId
         },
         controller: this,
         msgId: msgId,
-        chatId: chatId,
+        chatId: msgGlobalId,
         onEventComplete: (Map<String, dynamic> res) {},
       );
 

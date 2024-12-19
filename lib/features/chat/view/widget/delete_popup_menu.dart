@@ -7,11 +7,12 @@ import 'package:telware_cross_platform/features/chat/view_model/chatting_control
 class DeletePopUpMenu extends ConsumerWidget {
   final String chatId;
   final String messageId;
-  const DeletePopUpMenu({
-    super.key,
-    required this.chatId,
-    required this.messageId,
-  });
+  final bool isUsingMsgLocalId;
+  const DeletePopUpMenu(
+      {super.key,
+      required this.chatId,
+      required this.messageId,
+      this.isUsingMsgLocalId = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -28,10 +29,8 @@ class DeletePopUpMenu extends ConsumerWidget {
         TextButton(
           onPressed: () {
             ref.read(chattingControllerProvider).deleteMsg(
-                  messageId,
-                  chatId,
-                  DeleteMessageType.all,
-                );
+                messageId, chatId, DeleteMessageType.all,
+                isUsingMsgLocalId: isUsingMsgLocalId);
             Navigator.pop(context);
           },
           child: const Text(
@@ -44,11 +43,11 @@ class DeletePopUpMenu extends ConsumerWidget {
   }
 }
 
-Future<void> showDeleteMessageAlert({
-  required BuildContext context,
-  required String msgId,
-  required String chatId,
-}) {
+Future<void> showDeleteMessageAlert(
+    {required BuildContext context,
+    required String msgId,
+    required String chatId,
+    bool isUsingMsgLocalId = false}) {
   /// the msgId could be the id or the local id, whichever is available
   return showDialog<void>(
     context: context,
@@ -56,6 +55,7 @@ Future<void> showDeleteMessageAlert({
       return DeletePopUpMenu(
         chatId: chatId,
         messageId: msgId,
+        isUsingMsgLocalId: isUsingMsgLocalId,
       );
     },
   );
