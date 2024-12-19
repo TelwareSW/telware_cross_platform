@@ -256,7 +256,9 @@ class ChatsViewModel extends _$ChatsViewModel {
     final chatIndex = getChatIndex(chatId);
     final chat = state[chatIndex];
 
-    final msgIndex = chat.messages.indexWhere((msg) => msg.id == msgId);
+    final msgIndex = chat.messages.indexWhere(
+      (msg) => msg.id == msgId || msg.localId == msgId,
+    );
 
     if (msgIndex != -1) {
       chat.messages.removeAt(msgIndex);
@@ -266,6 +268,17 @@ class ChatsViewModel extends _$ChatsViewModel {
         ...state.sublist(chatIndex + 1),
       ];
     }
+  }
+
+  String? getMsgGlobalId(String msgLocalId, String chatId) {
+    final chatIndex = getChatIndex(chatId);
+    final chat = state[chatIndex];
+
+    final msgIndex = chat.messages.indexWhere(
+      (msg) => msg.id == msgLocalId || msg.localId == msgLocalId,
+    );
+
+    return msgIndex > -1 ? chat.messages[msgIndex].id : null;
   }
 
   ChatModel? getChatById(String chatId) {

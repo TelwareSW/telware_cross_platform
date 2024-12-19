@@ -116,6 +116,16 @@ class EventHandler {
     if (_stopRequested) _stopRequested = false;
   }
 
+  bool preventEventSending(String msgLocalId) {
+    for (var event in _queue) {
+      if (event.msgId == msgLocalId) {
+        _queue.remove(event);
+        return true; // Exit the loop once the item is found and removed
+      }
+    }
+    return false;
+  }
+
   void _onSocketConnect() {
     final Signaling signaling = Signaling.instance;
     debugPrint('!!! connected successfully');
