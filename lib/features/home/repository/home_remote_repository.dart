@@ -62,7 +62,9 @@ class HomeRemoteRepository {
         data: {
           'query': query,
           'searchSpace': searchSpace.join(','),
-          'filter': filterType,
+          'filter': filterType == 'music' || filterType == 'voice'
+              ? 'audio'
+              : filterType,
           'isGlobalSearch': isGlobalSearch
         },
         options: Options(headers: {'X-Session-Token': sessionId}),
