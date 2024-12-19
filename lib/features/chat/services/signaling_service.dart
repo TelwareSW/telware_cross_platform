@@ -1,15 +1,20 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
 import 'package:telware_cross_platform/features/chat/view_model/event_handler.dart';
 
-typedef StreamStateCallback = void Function(MediaStream stream);
+typedef StreamStateCallback = void Function(MediaStream stream, String senderId);
 typedef DescriptionCallback = void Function(RTCSessionDescription description, String senderId);
 typedef CandidateCallback = void Function(RTCIceCandidate candidate);
 typedef ResponseCallback = void Function(dynamic response);
 
+final TURN_SERVER_USERNAME = dotenv.env['TURN_SERVER_USERNAME'] ?? '';
+final TURN_SERVER_PASSWORD = dotenv.env['TURN_SERVER_CREDENTIAL'] ?? '';
+
 class Signaling {
   final EventHandler _eventHandler = EventHandler.instance;
+
   Map<String, dynamic> configuration = {
     'iceServers': [
       {
@@ -17,13 +22,33 @@ class Signaling {
           'stun:stun1.l.google.com:19302',
           'stun:stun2.l.google.com:19302'
         ]
-      }
+      },
+      {
+        'urls': "turn:global.relay.metered.ca:80",
+        'username': TURN_SERVER_USERNAME,
+        'credential': TURN_SERVER_PASSWORD,
+      },
+      {
+        'urls': "turn:global.relay.metered.ca:80?transport=tcp",
+        'username': TURN_SERVER_USERNAME,
+        'credential': TURN_SERVER_PASSWORD,
+      },
+      {
+        'urls': "turn:global.relay.metered.ca:443",
+        'username': TURN_SERVER_USERNAME,
+        'credential': TURN_SERVER_PASSWORD,
+      },
+      {
+        'urls': "turns:global.relay.metered.ca:443?transport=tcp",
+        'username': TURN_SERVER_USERNAME,
+        'credential': TURN_SERVER_PASSWORD,
+      },
     ]
   };
 
   RTCPeerConnection? peerConnection;
   MediaStream? localStream;
-  MediaStream? remoteStream;
+  Map<String, MediaStream> remoteStreams = {};
   StreamStateCallback? onAddRemoteStream;
   DescriptionCallback? onOffer;
   DescriptionCallback? onAnswer;
@@ -67,7 +92,7 @@ class Signaling {
     return offer;
   }
 
-  Future<RTCSessionDescription> createAnswer() async {
+  Future<RTCSessionDescription> createAnswer(String callerId) async {
     localStream?.getTracks().forEach((track) {
       peerConnection!.addTrack(track, localStream!);
     });
@@ -75,7 +100,7 @@ class Signaling {
     peerConnection!.onTrack = (RTCTrackEvent event) async {
       debugPrint('Remote stream added');
       event.streams[0].getTracks().forEach((track) {
-        remoteStream!.addTrack(track);
+        remoteStreams[callerId]!.addTrack(track);
       });
     };
 
@@ -108,8 +133,10 @@ class Signaling {
   Future<void> hangUp(RTCVideoRenderer localRenderer) async {
     closeUserMedia(localRenderer);
 
-    remoteStream?.getTracks().forEach((track) {
-      track.stop();
+    remoteStreams.forEach((key, value) {
+      value.getTracks().forEach((track) {
+        track.stop();
+      });
     });
 
     if (peerConnection != null) peerConnection!.close();
@@ -123,7 +150,7 @@ class Signaling {
     );
 
     localStream!.dispose();
-    remoteStream?.dispose();
+    remoteStreams.clear();
   }
 
   void registerPeerConnectionListeners(String calleeId) {
@@ -162,9 +189,9 @@ class Signaling {
     peerConnection!.onTrack = (RTCTrackEvent event) async {
       if (event.streams.isNotEmpty) {
         for (var track in event.streams[0].getTracks()) {
-          remoteStream?.addTrack(track);
+          remoteStreams[calleeId]?.addTrack(track);
         }
-        onAddRemoteStream?.call(event.streams[0]);
+        onAddRemoteStream?.call(event.streams[0], calleeId);
       }
     };
 
@@ -174,8 +201,8 @@ class Signaling {
 
     peerConnection!.onAddStream = (MediaStream stream) {
       debugPrint('Remote stream added');
-      onAddRemoteStream?.call(stream);
-      remoteStream = stream;
+      onAddRemoteStream?.call(stream, calleeId);
+      remoteStreams[calleeId] = stream;
     };
   }
 
@@ -238,7 +265,7 @@ class Signaling {
     );
   }
 
-  Future<void> openUserMedia(RTCVideoRenderer localRenderer, RTCVideoRenderer remoteRenderer) async {
+  Future<void> openUserMedia(RTCVideoRenderer localRenderer) async {
     var stream = await navigator.mediaDevices.getUserMedia({
       'audio': true,
       'video': true,
@@ -246,7 +273,9 @@ class Signaling {
 
     localRenderer.srcObject = stream;
     localStream = stream;
+  }
 
+  Future<void> updateRemoteRenderer(RTCVideoRenderer remoteRenderer) async {
     remoteRenderer.srcObject = await createLocalMediaStream('remoteStream');
   }
 
