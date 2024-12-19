@@ -45,6 +45,10 @@ class ChatModel {
   List<MessageModel> messages;
   @HiveField(15)
   final DateTime? muteUntil; // Add this field
+  @HiveField(16)
+  final bool messagingPermission; //1->anyone   0->admins
+
+
 
 
   ChatModel({
@@ -64,6 +68,7 @@ class ChatModel {
     this.draft,
     required this.messages,
     this.muteUntil, // Initialize this field
+    this.messagingPermission = true,
   });
 
   Future<void> _setPhotoBytes() async {
@@ -104,7 +109,8 @@ class ChatModel {
         other.muteUntil == muteUntil &&
         other.draft == draft &&
         other.isMentioned == isMentioned &&
-        other.messages == messages;
+        other.messages == messages&&
+        other.messagingPermission == messagingPermission;
   }
 
   @override
@@ -122,7 +128,8 @@ class ChatModel {
     draft.hashCode ^
     creators.hashCode ^
     isMentioned.hashCode ^
-    messages.hashCode; // Include messages in hashCode
+    messages.hashCode^ // Include messages in hashCode
+    messagingPermission.hashCode;
   }
 
   @override
@@ -142,6 +149,7 @@ class ChatModel {
         'draft: $draft,\n'
         'isMentioned: $isMentioned,\n'
         'messages: $messages,\n' // Add messages to the string representation
+        'messagingPermission: $messagingPermission,\n'
         ')');
   }
 
@@ -162,6 +170,7 @@ class ChatModel {
     String? draft,
     bool? isMentioned,
     List<MessageModel>? messages,
+    bool? messagingPermission,
   }) {
     return ChatModel(
       title: title ?? this.title,
@@ -180,6 +189,7 @@ class ChatModel {
       draft: draft ?? this.draft,
       isMentioned: isMentioned ?? this.isMentioned,
       messages: messages ?? this.messages,
+      messagingPermission: messagingPermission ?? this.messagingPermission,
     );
   }
 
@@ -199,6 +209,7 @@ class ChatModel {
       'muteUntil': muteUntil?.toIso8601String(), // Add this field
       'draft': draft,
       'isMentioned': isMentioned,
+      'messagingPermission': messagingPermission,
       'messages': messages.map((message) => message.toMap()).toList(),
     };
   }

@@ -16,8 +16,6 @@ import 'package:telware_cross_platform/features/auth/repository/auth_remote_repo
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
-import 'package:telware_cross_platform/features/user/repository/user_remote_repository.dart';
-import 'package:telware_cross_platform/features/user/view_model/user_view_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 part 'auth_view_model.g.dart';
@@ -53,6 +51,10 @@ class AuthViewModel extends _$AuthViewModel {
 
     response.match((appError) {
       state = AuthState.fail(appError.error);
+      if (appError.code == 401) {
+        _handleLogOutState();
+        return;
+      }
       // getting user data from local as remote failed
       final user = ref.read(authLocalRepositoryProvider).getMe();
       ref.read(userProvider.notifier).update((_) => user);
@@ -294,7 +296,7 @@ class AuthViewModel extends _$AuthViewModel {
     debugPrint('===============================');
     debugPrint('log out operation ended');
     debugPrint('Error: ${appError?.error}');
-    await _handleLogOutState(appError);
+    await _handleLogOutState();
   }
 
   Future<void> logOutAllOthers() async {
@@ -313,25 +315,21 @@ class AuthViewModel extends _$AuthViewModel {
     state = AuthState.loading;
     final token = ref.read(tokenProvider);
 
-    final appError = await ref
+    await ref
         .read(authRemoteRepositoryProvider)
         .logOut(token: token!, route: 'auth/logout-all');
 
-    await _handleLogOutState(appError);
+    await _handleLogOutState();
   }
 
-  Future<void> _handleLogOutState(AppError? appError) async {
-    if (appError == null) {
-      // successful log out operation
-      await ref.read(authLocalRepositoryProvider).deleteToken();
-      ref.read(tokenProvider.notifier).update((_) => null);
+  Future<void> _handleLogOutState() async {
+    // successful log out operation
+    await ref.read(authLocalRepositoryProvider).deleteToken();
+    ref.read(tokenProvider.notifier).update((_) => null);
 
-      await ref.read(authLocalRepositoryProvider).deleteUser();
-      ref.read(userProvider.notifier).update((_) => null);
-      state = AuthState.unauthenticated;
-    } else {
-      state = AuthState.fail(appError.error);
-    }
+    await ref.read(authLocalRepositoryProvider).deleteUser();
+    ref.read(userProvider.notifier).update((_) => null);
+    state = AuthState.unauthenticated;
   }
 
   Future<void> getMe() async {
@@ -347,7 +345,11 @@ class AuthViewModel extends _$AuthViewModel {
     // try getting updated user data
     final response = await ref.read(authRemoteRepositoryProvider).getMe(token!);
 
-    response.match((appError) {}, (user) async {
+    response.match((appError) {
+      if (appError.code == 401) {
+        _handleLogOutState();
+      }
+    }, (user) async {
       debugPrint('** getMe is called\nuser supposed to have img');
       debugPrint(user.toString());
       ref.read(authLocalRepositoryProvider).setUser(user);

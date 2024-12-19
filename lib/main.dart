@@ -14,9 +14,11 @@ import 'package:telware_cross_platform/features/chat/classes/message_content.dar
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
+import 'package:telware_cross_platform/features/chat/providers/call_provider.dart';
 import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
 import 'package:telware_cross_platform/features/stories/models/story_model.dart';
-import 'package:firebase_core/firebase_core.dart';
+
+import 'features/chat/models/call_state.dart';
 
 Future<void> main() async {
   await init();
@@ -82,6 +84,19 @@ class _TelWareState extends ConsumerState<TelWare> {
 
   @override
   Widget build(BuildContext context) {
+    // Listen to callStateProvider
+    ref.listen<CallState>(callStateProvider, (previous, next) {
+      debugPrint('*** CallState: $next');
+      // Check for the conditions: voiceCallId is not null and isCaller is false
+      if (previous?.voiceCallId == null && next.voiceCallId != null && !next.isCaller) {
+        debugPrint('*** The call is not from the caller');
+        // Get the sender from his id
+        router.push(Routes.callScreen, extra: {"voiceCallId": next.voiceCallId, "user": next.callee}).then((_) {
+          debugPrint('*** Navigation to call screen completed');
+        });
+      }
+    });
+
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'TelWare',

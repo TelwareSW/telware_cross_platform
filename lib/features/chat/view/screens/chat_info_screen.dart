@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cupertino_datetime_picker/flutter_cupertino_datetime_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
+import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
@@ -16,6 +18,8 @@ import 'package:telware_cross_platform/features/auth/view/widget/title_element.d
 import 'package:telware_cross_platform/features/chat/view/widget/member_tile_widget.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
+import 'package:telware_cross_platform/features/groups/view/screens/add_members_screen.dart';
+import 'package:telware_cross_platform/features/groups/view/screens/edit_group.dart';
 import 'package:telware_cross_platform/features/user/view/widget/profile_header_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_toggle_switch_widget.dart';
 
@@ -40,7 +44,8 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
     final ChatModel chat = widget.chatModel;
     final List<UserModel?> users = [];
     for (final String userId in chat.userIds) {
-      final UserModel? user = await ref.read(chatsViewModelProvider.notifier).getUser(userId);
+      final UserModel? user =
+          await ref.read(chatsViewModelProvider.notifier).getUser(userId);
       users.add(user);
     }
     return users;
@@ -61,19 +66,17 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
 
   void _toggleMute(bool isMuted) {
     if (!isMuted) {
-      ref.read(chattingControllerProvider).muteChat(chat, null)
-          .then((_) => {
-        setState(() {
-          chat = chat.copyWith(isMuted: true, muteUntil: null);
-        })
-      });
+      ref.read(chattingControllerProvider).muteChat(chat, null).then((_) => {
+            setState(() {
+              chat = chat.copyWith(isMuted: true, muteUntil: null);
+            })
+          });
     } else {
-      ref.read(chattingControllerProvider).unmuteChat(chat)
-          .then((_) => {
-        setState(() {
-          chat = chat.copyWith(isMuted: false, muteUntil: null);
-        })
-      });
+      ref.read(chattingControllerProvider).unmuteChat(chat).then((_) => {
+            setState(() {
+              chat = chat.copyWith(isMuted: false, muteUntil: null);
+            })
+          });
     }
   }
 
@@ -85,14 +88,154 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
         });
       });
     } else {
-      ref.read(chattingControllerProvider).muteChat(chat, muteUntil)
-          .then((_) {
+      ref.read(chattingControllerProvider).muteChat(chat, muteUntil).then((_) {
         setState(() {
           chat = chat.copyWith(isMuted: true, muteUntil: muteUntil);
         });
       });
     }
   }
+
+  void _confirmDelete(BuildContext context) {
+    bool isChecked = false;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              insetPadding: EdgeInsets.symmetric(horizontal: 10),
+              backgroundColor: Palette.secondary,
+              title: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundImage: widget.chatModel.photoBytes != null
+                        ? MemoryImage(widget.chatModel.photoBytes!)
+                        : null,
+                    backgroundColor: widget.chatModel.photoBytes == null
+                        ? getRandomColor(chat.title)
+                        : null,
+                    child: widget.chatModel.photoBytes == null
+                        ? Text(
+                            getInitials(chat.title),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w500,
+                              color: Palette.primaryText,
+                            ),
+                          )
+                        : null,
+                  ),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'Delete group',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Palette.primaryText,
+                    ),
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "Are you sure you want to delete and leave this group?",
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Checkbox(
+                        value: isChecked,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            isChecked = value ?? false;
+                          });
+                        },
+                      ),
+                      const Expanded(
+                        child: Text(
+                          "Delete the group for all members",
+                          style: TextStyle(color: Palette.primaryText),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                  },
+                  child: const Text(
+                    "Cancel",
+                    style: TextStyle(color: Palette.primary),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    _callSockets(isChecked);
+                  },
+                  child: const Text(
+                    "Delete Group",
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _callSockets(bool isChecked) async {
+    if (isChecked) {
+      await ref.read(chattingControllerProvider).deleteGroup(
+            chatId: chat.id ?? '',
+            onEventComplete: (res) async {
+              if (res['success'] == true) {
+                debugPrint('Group deleted successfully');
+              } else {
+                debugPrint('Failed to delete group try again later');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Failed to delete group try again later'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+          );
+    } else {
+      await ref.read(chattingControllerProvider).leaveGroup(
+            chatId: chat.id ?? '',
+            onEventComplete: (res) async {
+              if (res['success'] == true) {
+                debugPrint('Group deleted successfully');
+              } else {
+                debugPrint('Failed to leave group try again later');
+                // Show a SnackBar if group creation failed
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Failed to leave group try again later'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+          );
+    }
+  }
+
 
   void _showMoreSettings() {
     var items = [];
@@ -191,14 +334,23 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
       case 'unmute':
         _setChatMute(false, null);
         break;
+      case 'delete-group':
+        _confirmDelete(context);
+        break;
       default:
         showToastMessage('Coming soon');
     }
   }
 
   void _addMembers() {
-    // TODO: Implement this
-    context.go('/add-members', extra: {'chatId': chat.id});
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddMembersScreen(
+          chatId: chat.id??'',
+        ),
+      ),
+    );
   }
 
   @override
@@ -221,12 +373,40 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
               IconButton(
                   icon: const Icon(Icons.edit),
                   onPressed: () {
+                    if(chat.admins!.contains(ref.read(userProvider)?.id)) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                EditGroup(
+                                  chatModel: widget.chatModel,
+                                )),
+                      );
+                    }
+                    else{
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Access Denied'),
+                            content: const Text('You do not have the necessary permissions to edit this group.'),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
                     // context.push(
-                    //   '/edit-chat',
-                    //   extra: {'chatId': chat.id},
+                    //   Routes.editGroupScreen,
+                    //   extra: widget.chatModel,
                     // );
-                  }
-              ),
+                  }),
               const SizedBox(width: 16),
               IconButton(
                   onPressed: _showMoreSettings,
@@ -253,18 +433,17 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
           ),
           SliverToBoxAdapter(
               child: Container(
-                color: Palette.secondary,
-                child: SettingsToggleSwitchWidget(
-                  text: 'Notifications',
-                  subtext: 'Custom',   // TODO: Update this to be dynamic
-                  isChecked: !chat.isMuted,
-                  onToggle: _toggleMute,
-                  onTap: _showNotificationSettings,
-                  oneFunction: false,
-                  showDivider: false,
-                ),
-              )
-          ),
+            color: Palette.secondary,
+            child: SettingsToggleSwitchWidget(
+              text: 'Notifications',
+              subtext: 'Custom', // TODO: Update this to be dynamic
+              isChecked: !chat.isMuted,
+              onToggle: _toggleMute,
+              onTap: _showNotificationSettings,
+              oneFunction: false,
+              showDivider: false,
+            ),
+          )),
           SliverToBoxAdapter(
             child: Container(
               color: Palette.background,
@@ -276,43 +455,46 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
               color: Palette.secondary,
               child: Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 22, top: 8),
-                    child: ListTile(
-                      leading: const Icon(
-                        Icons.person_add_outlined,
-                        color: Palette.primary,
-                      ),
-                      title: const Text(
-                          'Add Members',
-                          style: TextStyle(
-                            color: Palette.primary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w400,
-                          )
-                      ),
-                      onTap: _addMembers,
-                    ),
-                  ),
+                  chat.admins!.contains(ref.read(userProvider)?.id)
+                      ? Padding(
+                          padding: const EdgeInsets.only(left: 22, top: 8),
+                          child: ListTile(
+                            leading: const Icon(
+                              Icons.person_add_outlined,
+                              color: Palette.primary,
+                            ),
+                            title: const Text('Add Members',
+                                style: TextStyle(
+                                  color: Palette.primary,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w400,
+                                )),
+                            onTap: _addMembers,
+                          ),
+                        )
+                      : SizedBox(),
                   FutureBuilder(
                     future: usersInfoFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.done) {
-                        final List<UserModel?> users = snapshot.data as List<UserModel?>;
+                        final List<UserModel?> users =
+                            snapshot.data as List<UserModel?>;
                         return Column(
                           children: [
-                            for (final UserModel? user in users) ...[
-                              user == null ?
+
+                            for (int index = 0; index < users.length; index++) ...[
+                              users[index] == null ?
                               const SizedBox.shrink() :
                               Container(
                                 color: Palette.secondary,
                                 child: MemberTileWidget(
-                                  imagePath: user.photo,
-                                  text: '${user.screenFirstName} ${user.screenLastName}',
-                                  subtext: user.status,
+                                  key: ValueKey('${WidgetKeys.memberTilePrefix}$index'),
+                                  imagePath: users[index]!.photo,
+                                  text: '${users[index]!.screenFirstName} ${users[index]!.screenLastName}',
+                                  subtext: users[index]!.status,
                                   showDivider: false,
                                   onTap: () {
-                                    context.push(Routes.userProfile, extra: user.id);
+                                    context.push(Routes.userProfile, extra: users[index]!.id);
                                   },
                                 ),
                               ),
@@ -340,49 +522,44 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
           ),
           SliverToBoxAdapter(
               child: Container(
-                color: Palette.secondary,
-                child: Column(
-                    children: [
-                      TabBarWidget(
-                        controller: _tabController,
-                        tabs: const [
-                          Tab(text: 'Media'),
-                          Tab(text: 'Voice'),
-                        ],
-
-                      ),
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(maxHeight: 300),
-                        child: TabBarView(
-                          controller: _tabController,
-                          children: List.generate(2, (index) {
-                            return const Column(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                LottieViewer(
-                                  path: 'assets/tgs/EasterDuck.tgs',
-                                  width: 100,
-                                  height: 100,
-                                ),
-                                TitleElement(
-                                  name: 'To be implemented',
-                                  color: Palette.primaryText,
-                                  fontSize: Sizes.primaryText - 2,
-                                  fontWeight: FontWeight.bold,
-                                  padding: EdgeInsets.only(bottom: 0, top: 10),
-                                ),
-                              ],
-                            );
-                          }
-                          ),
+            color: Palette.secondary,
+            child: Column(children: [
+              TabBarWidget(
+                controller: _tabController,
+                tabs: const [
+                  Tab(text: 'Media'),
+                  Tab(text: 'Voice'),
+                ],
+              ),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 300),
+                child: TabBarView(
+                  controller: _tabController,
+                  children: List.generate(2, (index) {
+                    return const Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        LottieViewer(
+                          path: 'assets/tgs/EasterDuck.tgs',
+                          width: 100,
+                          height: 100,
                         ),
-                      )
-                    ]
+                        TitleElement(
+                          name: 'To be implemented',
+                          color: Palette.primaryText,
+                          fontSize: Sizes.primaryText - 2,
+                          fontWeight: FontWeight.bold,
+                          padding: EdgeInsets.only(bottom: 0, top: 10),
+                        ),
+                      ],
+                    );
+                  }),
                 ),
               )
-          ),
+            ]),
+          )),
         ],
       ),
     );

@@ -7,6 +7,7 @@ import 'package:telware_cross_platform/features/chat/view/widget/download_widget
 
 class StickerMessageWidget extends StatelessWidget {
   final String? filePath;
+  final String stickerName;
   final String? url;
   final void Function(String?) onDownloadTap;
 
@@ -15,6 +16,7 @@ class StickerMessageWidget extends StatelessWidget {
     this.filePath,
     required this.onDownloadTap,
     this.url,
+    required this.stickerName,
   });
 
   @override
@@ -29,6 +31,7 @@ class StickerMessageWidget extends StatelessWidget {
                 child: DownloadWidget(
                   onTap: onDownloadTap,
                   url: url,
+                  fileName: stickerName,
                   color: Colors.white,
                 ),
               ),

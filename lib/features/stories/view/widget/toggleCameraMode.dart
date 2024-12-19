@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'choice_mode_in_camera_container.dart';
 
+// ignore: must_be_immutable
 class ToggleCameraMode extends StatefulWidget {
   String selectedMode;
   final BoxConstraints constraints; // Added constraints parameter

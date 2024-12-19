@@ -11,27 +11,27 @@ import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 
 import 'package:telware_cross_platform/features/chat/view/widget/chat_tile_widget.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
-import 'package:telware_cross_platform/features/user/view/widget/empty_chats.dart';
 
 class ChatsList extends ConsumerWidget {
+  final Function(ChatModel) onChatSelected;
+
   const ChatsList({
     super.key,
+    required this.onChatSelected,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final chatsList = ref.watch(chatsViewModelProvider);
-    // debugPrint('chat list ${chatsList.toString()}');
-    debugPrint('Building chats_list...');
     ChatKeys.resetChatTilePrefixSubvalue();
 
     return SliverList(
+      key: ChatKeys.chatsListKey,
       delegate: SliverChildBuilderDelegate(
-        (BuildContext context, int index) {
+      (BuildContext context, int index) {
+          final key = ValueKey('${ChatKeys.chatTilePrefix.value}$index');
           return _delegate(
-            ValueKey(ChatKeys.chatTilePrefix.value +
-                ChatKeys.chatTilePrefixSubvalue +
-                index.toString()),
+            key,
             chatsList[index],
             ref.read(userProvider)!.id!,
           );
@@ -66,6 +66,7 @@ class ChatsList extends ConsumerWidget {
       displayMessage: message,
       sentByUser: message.senderId == userID,
       senderID: message.senderId,
+      onChatSelected: onChatSelected,
     );
   }
 }

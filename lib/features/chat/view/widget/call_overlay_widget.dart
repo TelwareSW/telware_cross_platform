@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
@@ -20,15 +21,16 @@ class CallOverlay extends StatelessWidget {
         final callNotifier = ref.read(callStateProvider.notifier);
         final UserModel? callee = callState.callee;
         final String displayName = '${callee?.screenFirstName} ${callee?.screenLastName}';
-        debugPrint("CallOverlay: isCallActive: ${callState.isCallActive}, isMinimized: ${callState.isMinimized}");
-        if (!callState.isCallActive || !callState.isMinimized) {
+        debugPrint("CallOverlay: voiceCallId: ${callState.voiceCallId}, isMinimized: ${callState.isMinimized}");
+        if (callState.voiceCallId == null || !callState.isMinimized) {
           return const SizedBox.shrink(); // Do not show overlay if not minimized
         }
 
         return GestureDetector(
+          key: CallKeys.callOverlayBar,
           onTap: () {
             callNotifier.maximizeCall();
-            context.push(Routes.callScreen);
+            context.push(Routes.callScreen, extra: {'user': callee, 'voiceCallId': callState.voiceCallId});
           },
           child: Container(
             decoration: const BoxDecoration(
@@ -72,7 +74,7 @@ class CallOverlay extends StatelessWidget {
                       ),
                       textAlign: TextAlign.center
                   ),
-                  trailing: Icon(Icons.mic, color: Palette.primaryText),
+                  trailing: const Icon(Icons.mic, color: Palette.primaryText),
                 ),
               ),
             ),

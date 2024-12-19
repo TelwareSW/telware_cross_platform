@@ -19,21 +19,25 @@ class SettingsSection extends StatelessWidget {
   final List<Map<String, dynamic>> settingsOptions;
   final String trailing;
   final List<Widget>? actions;
+  final Color trailingColor;
 
-  const SettingsSection(
-      {super.key,
-      this.containerKey,
-      this.padding,
-      this.trailingFontSize,
-      this.trailingLineHeight,
-      this.titleFontSize,
-      this.title = "",
-      required this.settingsOptions,
-      this.trailing = "",
-      this.actions});
+  const SettingsSection({
+    super.key,
+    this.containerKey,
+    this.padding,
+    this.trailingFontSize,
+    this.trailingLineHeight,
+    this.titleFontSize,
+    this.title = "",
+    required this.settingsOptions,
+    this.trailing = "",
+    this.actions,
+    this.trailingColor = Colors.transparent,
+  });
 
-  void _navigateTo(BuildContext context, String route) {
-    context.push(route);
+  void _navigateTo(BuildContext context, String route, Object? extra) {
+    print('fdsfdsfdsfdsfdsffffffffffffffffffffffff');
+    context.push(route, extra: extra);
   }
 
   @override
@@ -70,11 +74,12 @@ class SettingsSection extends StatelessWidget {
                               ? ValueKey("${option["key"]}")
                               : null;
                           final String route = option["routes"] ?? "";
+                          final Object? extra = option["extra"] ?? "";
                           final bool lockedRoute = route == 'locked';
                           final onTap = lockedRoute
                               ? () => showToastMessage("Coming Soon...")
                               : route != ""
-                                  ? () => _navigateTo(context, route)
+                                  ? () => _navigateTo(context, route, extra)
                                   : option["onTap"];
                           return SettingsOptionWidget(
                             key: key,
@@ -114,18 +119,21 @@ class SettingsSection extends StatelessWidget {
               ],
             )),
         if (trailing != "")
-          SettingsSectionTrailingWidget(
-            key: sectionKey != null
-                ? ValueKey(sectionKey.value + WidgetKeys.trailingSuffix.value)
-                : null,
-            padding: padding,
-            actions: [
-              Text(trailing,
-                  style: TextStyle(
-                      height: trailingLineHeight,
-                      fontSize: trailingFontSize ?? Dimensions.fontSizeSmall,
-                      color: Palette.accentText)),
-            ],
+          Container(
+            color: trailingColor,
+            child: SettingsSectionTrailingWidget(
+              key: sectionKey != null
+                  ? ValueKey(sectionKey.value + WidgetKeys.trailingSuffix.value)
+                  : null,
+              padding: padding,
+              actions: [
+                Text(trailing,
+                    style: TextStyle(
+                        height: trailingLineHeight,
+                        fontSize: trailingFontSize ?? Dimensions.fontSizeSmall,
+                        color: Palette.accentText)),
+              ],
+            ),
           ),
       ],
     );

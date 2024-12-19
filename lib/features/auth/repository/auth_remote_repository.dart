@@ -6,7 +6,6 @@ import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
 import 'package:flutter/foundation.dart';
 import 'package:telware_cross_platform/features/auth/models/auth_response_model.dart';
-import 'package:telware_cross_platform/features/user/view_model/user_view_model.dart';
 
 part 'auth_remote_repository.g.dart';
 
@@ -241,7 +240,7 @@ class AuthRemoteRepository {
     int? code;
     if (dioException.response != null) {
       code = dioException.response!.statusCode;
-      debugPrint(code.toString());
+      debugPrint('^&^ get me error with status: $code');
       message =
           dioException.response!.data?['message'] ?? 'Unexpected server Error';
       debugPrint(message);

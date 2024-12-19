@@ -83,9 +83,9 @@ class _CreateGroupScreen extends ConsumerState<CreateGroupScreen>
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'New Group',
-              style: TextStyle(
+              style: const TextStyle(
                 color: Palette.primaryText,
                 fontSize: Sizes.primaryText,
                 fontWeight: FontWeight.w500,

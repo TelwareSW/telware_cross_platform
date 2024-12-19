@@ -17,6 +17,7 @@ import 'package:telware_cross_platform/features/chat/classes/message_content.dar
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/models/message_event_models.dart';
+import 'package:telware_cross_platform/features/chat/providers/call_provider.dart';
 import 'package:telware_cross_platform/features/chat/repository/chat_local_repository.dart';
 import 'package:telware_cross_platform/features/chat/repository/chat_remote_repository.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
@@ -128,7 +129,13 @@ class ChattingController {
     // get the events and give it to the handler from local
     final events = _localRepository.getEventQueue(_ref.read(userProvider)!.id!);
     final newEvents = events.map((e) => e.copyWith(controller: this));
-    _eventHandler.init(Queue<MessageEvent>.from(newEvents.toList()));
+    _eventHandler.init(
+      Queue<MessageEvent>.from(
+        newEvents.toList(),
+      ),
+      userId: _ref.read(userProvider)!.id!,
+      sessionId: _ref.read(tokenProvider)!,
+    );
   }
 
   Future<void> newLoginInit() async {
@@ -234,32 +241,37 @@ class ChattingController {
       }
     }
 
-    final identifier = _ref
-        .read(chatsViewModelProvider.notifier)
-        .addSentMessage(content, chatID!, msgType, contentType);
+    final identifier =
+        _ref.read(chatsViewModelProvider.notifier).addSentMessage(
+              content: content,
+              chatId: chatID!,
+              msgType: msgType,
+              msgContentType: contentType,
+              parentMessageId: parentMessgeId,
+            );
 
-    debugPrint(
-        '^^^ new message identifier: ${identifier.chatId} ${identifier.msgLocalId}');
 
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
 
-    final msgEvent = SendMessageEvent({
-      'chatId': chatID,
-      'media': null,
-      'content': content.getContent(),
-      'contentType': contentType.content,
-      'parentMessageId': null,
-      'senderId': _ref.read(userProvider)!.id,
-      'isFirstTime': isChatNew,
-      'chatType': chatType.type,
-      'isReplay': false,
-      'isForward': false,
-    },
-        controller: this,
-        msgId: identifier.msgLocalId,
-        chatId: identifier.chatId
-     );
+    final msgEvent = SendMessageEvent(
+      {
+        'chatId': chatID,
+        'media': content.getMediaURL(),
+        'content': content.getContent(),
+        'contentType': contentType.content,
+        'parentMessageId': parentMessgeId,
+        'senderId': _ref.read(userProvider)!.id,
+        'isFirstTime': isChatNew,
+        'chatType': chatType.type,
+        'isReplay': false,
+        'isForward': false,
+      },
+      controller: this,
+      msgId: identifier.msgLocalId,
+      chatId: identifier.chatId,
+      onEventComplete: (Map<String, dynamic> res) {},
+    );
 
     _eventHandler.addEvent(msgEvent);
   }
@@ -270,36 +282,102 @@ class ChattingController {
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
 
-  // delete a message
-  void deleteMsg(String msgID, String chatID, DeleteMessageType deleteType) {
-    // final msgEvent = DeleteMessageEvent({
-    //   'messageId': msgID,
-    // }, controller: this);
-
-    // _eventHandler.addEvent(msgEvent);
-
-    // _ref.read(chatsViewModelProvider.notifier).deleteMessage(msgID, chatID);
+  void receiveGroupCreation(Map<String, dynamic> response) {
+    // _ref.read(chatsViewModelProvider.notifier).get(response);
     // _localRepository.setChats(
     //     _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
 
+  void pinMessageClient(String msgId, String chatId) {
+    final isToPin =
+        _ref.read(chatsViewModelProvider.notifier).pinMessage(msgId, chatId);
+    _eventHandler.addEvent(
+      PinMessageEvent(
+        {
+          'chatId': chatId,
+          'messageId': msgId,
+        },
+        msgId: msgId,
+        chatId: chatId,
+        isToPin: isToPin,
+        onEventComplete: (Map<String, dynamic> res) {},
+      ),
+    );
+  }
+
+  void pinMessageServer(String msgId, String chatId) {
+    _ref.read(chatsViewModelProvider.notifier).pinMessage(msgId, chatId);
+  }
+
+  // delete a message
+  void deleteMsg(
+    String msgId,
+    String chatId,
+    DeleteMessageType deleteType, {
+    bool isFromServer = false,
+    bool isUsingMsgLocalId = false,
+  }) {
+    late bool isMsgSend;
+    isUsingMsgLocalId
+        ? isMsgSend = !_eventHandler.preventEventSending(msgId)
+        : isMsgSend = true;
+
+    debugPrint('))) event is sent about to send');
+    if (!isFromServer && isMsgSend) {
+      debugPrint('))) event is sent');
+
+      late String msgGlobalId;
+      isUsingMsgLocalId && isMsgSend
+          ? msgGlobalId = _ref
+              .read(chatsViewModelProvider.notifier)
+              .getMsgGlobalId(msgId, chatId)!
+          : msgGlobalId = msgId;
+
+      final msgEvent = DeleteMessageEvent(
+        {
+          'messageId': msgId,
+          'chatId': chatId
+        },
+        controller: this,
+        msgId: msgId,
+        chatId: msgGlobalId,
+        onEventComplete: (Map<String, dynamic> res) {},
+      );
+
+      _eventHandler.addEvent(msgEvent);
+    }
+
+    _ref.read(chatsViewModelProvider.notifier).deleteMessage(msgId, chatId);
+    _localRepository.setChats(
+        _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
+  }
+
   // edit a message
 
-  void editMsg(String msgID, String chatID, MessageContent content) {
-    // final msgEvent = EditMessageEvent({
-    //   'chatId': chatID,
-    //   'senderId': _ref.read(userProvider)!.id,
-    //   'messageId': msgID,
-    //   'content': content
-    // }, controller: this);
+  void editMsg(String msgId, String chatId, String content) {
+    final msgEvent = EditMessageEvent(
+      {
+        'chatId': chatId,
+        'senderId': _ref.read(userProvider)!.id,
+        'messageId': msgId,
+        'content': content
+      },
+      controller: this,
+      msgId: msgId,
+      chatId: chatId,
+      onEventComplete: (Map<String, dynamic> res) {},
+    );
 
-    // _eventHandler.addEvent(msgEvent);
+    _eventHandler.addEvent(msgEvent);
 
-    // _ref
-    //     .read(chatsViewModelProvider.notifier)
-    //     .editMessage(msgID, chatID, content);
-    // _localRepository.setChats(
-    //     _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
+    _ref.read(chatsViewModelProvider.notifier).editMessage(
+          msgId: msgId,
+          chatId: chatId,
+          content: content,
+        );
+
+    _localRepository.setChats(
+        _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
 
   // receive a message
@@ -451,6 +529,21 @@ class ChattingController {
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
   }
 
+  void editMessageIdAck({
+    required String msgId,
+    required String content,
+    required String chatId,
+  }) {
+    _ref.read(chatsViewModelProvider.notifier).editMessage(
+          msgId: msgId,
+          content: content,
+          chatId: chatId,
+        );
+
+    _localRepository.setChats(
+        _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
+  }
+
   void setEventsQueue(Queue<MessageEvent> queue) {
     _localRepository.setEventQueue(queue, _ref.read(userProvider)!.id!);
   }
@@ -525,5 +618,153 @@ class ChattingController {
     } catch (e) {
       return null;
     }
+  }
+
+  Future<void> receiveCall(Map<String, dynamic> response) async {
+    // Check if user is in a call already
+    if (_ref.read(callStateProvider.notifier).isInCall()) {
+      // Send busy signal
+      debugPrint('!!! Call rejected: ${response['voiceCallId']}');
+      return;
+    }
+
+    UserModel? caller = await getOtherUser(response['snederId']);
+    _ref
+        .read(callStateProvider.notifier)
+        .receiveCall(response['voiceCallId'], caller);
+    debugPrint('!!! Call received: ${response['voiceCallId']}');
+  }
+
+  Future<bool> createGroup({
+    required String type,
+    required String name,
+    required List<String> members,
+    required Function(Map<String, dynamic> res) onEventComplete,
+  }) async {
+    Map<String, dynamic> payload = {
+      "type": type,
+      "name": name,
+      "members": members,
+    };
+    final msgEvent = CreateGroupEvent(payload,
+        controller: this,
+        msgId: '',
+        chatId: '',
+        onEventComplete: onEventComplete);
+    _eventHandler.addEvent(msgEvent);
+    getUserChats();
+    return true;
+  }
+
+  Future<bool> deleteGroup({
+    required String chatId,
+    required Function(Map<String, dynamic> res) onEventComplete,
+  }) async {
+    Map<String, dynamic> payload = {
+      "chatId": chatId,
+    };
+    final msgEvent = DeleteGroupEvent(payload,
+        controller: this,
+        msgId: '',
+        chatId: '',
+        onEventComplete: onEventComplete);
+    _eventHandler.addEvent(msgEvent);
+    getUserChats();
+    return true;
+  }
+
+  Future<bool> leaveGroup({
+    required String chatId,
+    required Function(Map<String, dynamic> res) onEventComplete,
+  }) async {
+    Map<String, dynamic> payload = {
+      "chatId": chatId,
+    };
+    final msgEvent = LeaveGroupEvent(payload,
+        controller: this,
+        msgId: '',
+        chatId: '',
+        onEventComplete: onEventComplete);
+    _eventHandler.addEvent(msgEvent);
+    getUserChats();
+    return true;
+  }
+
+  Future<bool> addMembers({
+    required String chatId,
+    required List<String> members,
+    required Function(Map<String, dynamic> res) onEventComplete,
+  }) async {
+    Map<String, dynamic> payload = {
+      "chatId": chatId,
+      "users": members,
+    };
+    final msgEvent = AddMembersEvent(payload,
+        controller: this,
+        msgId: '',
+        chatId: '',
+        onEventComplete: onEventComplete);
+    _eventHandler.addEvent(msgEvent);
+    getUserChats();
+    return true;
+  }
+
+  Future<bool> addAdmin({
+    required String chatId,
+    required List<String> members,
+    required Function(Map<String, dynamic> res) onEventComplete,
+  }) async {
+    Map<String, dynamic> payload = {
+      "chatId": chatId,
+      "members": members,
+    };
+    final msgEvent = AddAdminEvent(payload,
+        controller: this,
+        msgId: '',
+        chatId: '',
+        onEventComplete: onEventComplete);
+    _eventHandler.addEvent(msgEvent);
+    getUserChats();
+    return true;
+  }
+
+  Future<bool> removeMember({
+    required String chatId,
+    required List<String> members,
+    required Function(Map<String, dynamic> res) onEventComplete,
+  }) async {
+    Map<String, dynamic> payload = {
+      "chatId": chatId,
+      "members": members,
+    };
+    final msgEvent = RemoveMemberEvent(payload,
+        controller: this,
+        msgId: '',
+        chatId: '',
+        onEventComplete: onEventComplete);
+    _eventHandler.addEvent(msgEvent);
+    getUserChats();
+    return true;
+  }
+
+  Future<bool> setPermissions({
+    required String chatId,
+    required Function(Map<String, dynamic> res) onEventComplete,
+    required String type,
+    required String who,
+  }) async {
+    Map<String, dynamic> payload = {
+      "chatId": chatId,
+      "type": type,
+      "who": who,
+    };
+    final msgEvent = SetPermissions(payload,
+        controller: this,
+        msgId: '',
+        chatId: '',
+        onEventComplete: onEventComplete);
+    getUserChats();
+    _eventHandler.addEvent(msgEvent);
+    return true;
   }
 }
