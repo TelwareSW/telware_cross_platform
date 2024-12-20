@@ -345,7 +345,10 @@ class ChattingController {
           : msgGlobalId = msgId;
 
       final msgEvent = DeleteMessageEvent(
-        {'messageId': msgId, 'chatId': chatId},
+        {
+          'messageId': msgId,
+          'chatId': chatId
+        },
         controller: this,
         msgId: msgId,
         chatId: msgGlobalId,

@@ -86,6 +86,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   List<int> _messageIndices = [];
 
   late Timer _draftTimer;
+
   // String _previousDraft = "";
 
   late ChatType type;
@@ -468,7 +469,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                         });
                       } else {
                         _updateDraft();
-                        context.push(Routes.home);
+                        context.pop();
                       }
                     },
                   ),
@@ -713,6 +714,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                             sendMessage: _sendMessage,
                             unreferenceMessages: _unreferenceMessages,
                             editMessage: _editMessage,
+                            notAllowedToSend: !isAllowedToSend ||
+                                ref.read(userProvider)!.isAdmin,
                           )
                         else
                           Container(
@@ -801,8 +804,9 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                             left: 0,
                             right: 0,
                             child: Container(
-                              color: Palette
-                                  .secondary, // Example background color for the widget
+
+                              color: Palette.secondary,
+                              // Example background color for the widget
                               padding: const EdgeInsets.symmetric(
                                   vertical: 10, horizontal: 5),
                               child: Row(
@@ -927,81 +931,93 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
   void _showMoreSettings() {
     var items = [];
-    if (showMuteOptions) {
+    bool isAdmin = ref.read(userProvider)!.isAdmin;
+    //TODO(marwan): check for filter status to update the icon status.
+    if (isAdmin) {
       items = [
-        {'icon': Icons.arrow_back, 'text': 'Back', 'value': 'no-close'},
+        {'icon': Icons.search, 'text': 'Search', 'value': 'search'},
         {
-          'icon': Icons.music_off_outlined,
-          'text': 'Disable sound',
-          'value': 'disable-sound'
-        },
-        {
-          'icon': Icons.access_time_rounded,
-          'text': 'Mute for 30m',
-          'value': 'mute-30m'
-        },
-        {
-          'icon': Icons.notifications_paused_outlined,
-          'text': 'Mute for...',
-          'value': 'mute-custom'
-        },
-        {
-          'icon': Icons.tune_outlined,
-          'text': 'Customize',
-          'value': 'customize'
-        },
-        {
-          'icon': Icons.volume_off_outlined,
-          'text': 'Mute Forever',
-          'value': 'mute-forever',
-          'color': Palette.error
+          'icon': Icons.filter_alt,
+          'text': 'Filter Content',
+          'value': 'filter-content'
         },
       ];
     } else {
-      if (_isMuted) {
+      if (showMuteOptions) {
         items = [
+          {'icon': Icons.arrow_back, 'text': 'Back', 'value': 'no-close'},
+          {
+            'icon': Icons.music_off_outlined,
+            'text': 'Disable sound',
+            'value': 'disable-sound'
+          },
+          {
+            'icon': Icons.access_time_rounded,
+            'text': 'Mute for 30m',
+            'value': 'mute-30m'
+          },
+          {
+            'icon': Icons.notifications_paused_outlined,
+            'text': 'Mute for...',
+            'value': 'mute-custom'
+          },
+          {
+            'icon': Icons.tune_outlined,
+            'text': 'Customize',
+            'value': 'customize'
+          },
           {
             'icon': Icons.volume_off_outlined,
-            'text': 'Unmute',
-            'value': 'unmute-chat'
+            'text': 'Mute Forever',
+            'value': 'mute-forever',
+            'color': Palette.error
           },
         ];
       } else {
-        items = [
+        if (_isMuted) {
+          items = [
+            {
+              'icon': Icons.volume_off_outlined,
+              'text': 'Unmute',
+              'value': 'unmute-chat'
+            },
+          ];
+        } else {
+          items = [
+            {
+              'icon': Icons.volume_up_outlined,
+              'text': 'Mute',
+              'value': 'no-close',
+              'trailing': const Icon(Icons.arrow_forward_ios_rounded,
+                  color: Palette.inactiveSwitch, size: 16)
+            },
+          ];
+        }
+        items.addAll([
           {
-            'icon': Icons.volume_up_outlined,
-            'text': 'Mute',
-            'value': 'no-close',
-            'trailing': const Icon(Icons.arrow_forward_ios_rounded,
-                color: Palette.inactiveSwitch, size: 16)
+            'icon': Icons.videocam_outlined,
+            'text': 'Video Call',
+            'value': 'video-call'
           },
-        ];
+          {'icon': Icons.search, 'text': 'Search', 'value': 'search'},
+          {
+            'icon': Icons.wallpaper_rounded,
+            'text': 'Change Wallpaper',
+            'value': 'change-wallpaper'
+          },
+          {
+            'icon': Icons.cleaning_services,
+            'text': 'Clear History',
+            'value': 'clear-history'
+          },
+          {
+            'icon': Icons.delete_outline,
+            'text': 'Delete Chat',
+            'value': 'delete-chat'
+          },
+        ]);
       }
-      items.addAll([
-        {
-          'icon': Icons.videocam_outlined,
-          'text': 'Video Call',
-          'value': 'video-call'
-        },
-        {'icon': Icons.search, 'text': 'Search', 'value': 'search'},
-        {
-          'icon': Icons.wallpaper_rounded,
-          'text': 'Change Wallpaper',
-          'value': 'change-wallpaper'
-        },
-        {
-          'icon': Icons.cleaning_services,
-          'text': 'Clear History',
-          'value': 'clear-history'
-        },
-        {
-          'icon': Icons.delete_outline,
-          'text': 'Delete Chat',
-          'value': 'delete-chat'
-        },
-      ]);
     }
-
     final renderBox = context.findRenderObject() as RenderBox;
     final position = Offset(renderBox.size.width, -350);
 
@@ -1078,6 +1094,10 @@ class _ChatScreen extends ConsumerState<ChatScreen>
         }
         showMuteOptions = false;
         _setChatMute(true, null);
+      case 'filter-content':
+        // TODO(marwan): send request to backend to filter content for this group
+        showToastMessage('Filter content');
+        break;
       default:
         showToastMessage("No Bueno");
     }

@@ -71,7 +71,9 @@ enum MessageContentType {
   @HiveField(7)
   file(content: 'file'),
   @HiveField(8)
-  link(content: 'link');
+  link(content: 'link'),
+  @HiveField(9)
+  call(content: 'call');
 
   static MessageContentType getType(String type) {
     switch (type) {
@@ -91,6 +93,8 @@ enum MessageContentType {
         return MessageContentType.file;
       case 'link':
         return MessageContentType.link;
+      case 'call':
+        return MessageContentType.call;
       default:
         return MessageContentType.text;
     }
