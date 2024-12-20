@@ -465,7 +465,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                         });
                       } else {
                         _updateDraft();
-                        context.push(Routes.home);
+                        context.pop();
                       }
                     },
                   ),
