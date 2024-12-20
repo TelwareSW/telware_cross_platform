@@ -6,14 +6,14 @@ import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/features/chat/view_model/event_handler.dart';
 
 class SocketService {
-  late Socket _socket;
+  late Socket? _socket;
   late String _serverUrl;
   late String _userId;
   late String _sessionId;
   late Function() _onConnect;
   late EventHandler _eventHandler;
   bool isConnected = false, _isReconnecting = false;
-  Timer? timer1, timer2;
+  Timer? timer1, timer2, periodicConnectionChecker;
 
   final Duration _retryDelay =
       Duration(seconds: SOCKET_RECONNECT_DELAY_SECONDS);
@@ -30,10 +30,7 @@ class SocketService {
     _onConnect = onConnect ?? _onConnect;
     _eventHandler = eventHandler ?? _eventHandler;
 
-    isConnected = false;
-    _isReconnecting = false;
-    timer1?.cancel();
-    timer2?.cancel();
+    periodicConnectionChecker = Timer.periodic(_retryDelay, (_) => onError());
 
     _connect();
   }
@@ -52,11 +49,11 @@ class SocketService {
       'auth': {'sessionId': _sessionId}
     });
 
-    _socket.io.options?['debug'] = true; // Enable debug logs
+    _socket?.io.options?['debug'] = true; // Enable debug logs
 
-    _socket.connect();
+    _socket?.connect();
 
-    _socket.onConnect((_) {
+    _socket?.onConnect((_) {
       debugPrint('### Connected to server');
       isConnected = true;
       _isReconnecting = false;
@@ -64,34 +61,32 @@ class SocketService {
       _onConnect();
     });
 
-    _socket.onConnectError((error) {
+    _socket?.onConnectError((error) {
       debugPrint('### Connection error: $error');
       isConnected = false;
       onError();
     });
 
-    _socket.onError((error) {
+    _socket?.onError((error) {
       debugPrint('### Socket error: $error');
       isConnected = false;
       onError();
     });
 
-    _socket.onDisconnect((_) {
-      debugPrint('Disconnected from server');
+    _socket?.onDisconnect((_) {
+      debugPrint('### Disconnected from server');
       isConnected = false;
-      _isReconnecting = false;
     });
   }
 
   void onError() {
     if (isConnected) return;
-    disconnect();
     _eventHandler.stopProcessing();
 
     if (_isReconnecting) return;
+    disconnect();
     _isReconnecting = true;
     timer1 = Timer(_retryDelay, () {
-      _isReconnecting = false;
       _connect();
       timer2 = Timer(_retryDelay, () {
         _isReconnecting = false;
@@ -100,26 +95,39 @@ class SocketService {
     });
   }
 
-  void disconnect() {
-    _socket.disconnect();
-    _socket.destroy();
-    isConnected = false;
-    debugPrint('### Socket connection destroyed');
+  void clear() {
+    disconnect();
     timer1?.cancel();
     timer2?.cancel();
+    periodicConnectionChecker?.cancel();
+    isConnected = false;
+    _isReconnecting = false;
+  }
+
+  void disconnect() {
+    if (_socket != null) {
+      _socket?.disconnect();
+      _socket?.destroy();
+      _socket?.dispose();
+      _socket?.io.disconnect();
+      _socket?.io.close();
+      _socket?.io.cleanup();
+      _socket = null;
+      debugPrint('### Socket connection destroyed');
+    }
   }
 
   void on(String event, Function(dynamic data) callback) {
-    _socket.on(event, callback);
+    _socket?.on(event, callback);
   }
 
   void emit(String event, dynamic data) {
-    _socket.emit(event, data);
+    _socket?.emit(event, data);
   }
 
   void emitWithAck(String event, dynamic data,
       {required Function(dynamic data) ackCallback}) {
-    _socket.emitWithAck(event, data, ack: ackCallback);
+    _socket?.emitWithAck(event, data, ack: ackCallback);
   }
 
   // Private constructor

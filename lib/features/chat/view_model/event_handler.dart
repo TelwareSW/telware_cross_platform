@@ -42,7 +42,7 @@ class EventHandler {
   void clear() {
     stopProcessing();
     _queue.clear();
-    _socket.disconnect();
+    _socket.clear();
   }
 
   void addEvent(MessageEvent event) {
