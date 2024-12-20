@@ -205,7 +205,7 @@ class ChatRemoteRepository {
       messageContentType: contentType,
       messageType: MessageType.getType(lastMessage['type'] ?? 'unknown'),
       content: content,
-      timestamp: lastMessage['timestamp'] == null
+      timestamp: lastMessage['timestamp'] != null
           ? DateTime.parse(lastMessage['timestamp'])
           : DateTime.now(),
       userStates: userStates,

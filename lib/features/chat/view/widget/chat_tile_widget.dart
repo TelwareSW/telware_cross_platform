@@ -62,6 +62,7 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
     senderID = widget.senderID;
     sentByUser = widget.sentByUser;
     showDivider = widget.showDivider;
+    setState(() {});
   }
 
   String _getDisplayText(MessageContentType displayMessageContentType) {
@@ -205,24 +206,28 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final keyValue = (widget.key as ValueKey).value;
+    const avatarWidth = 28.0;
+
     return FutureBuilder<UserModel?>(
       future:
           ref.watch(chatsViewModelProvider.notifier).getUser(widget.senderID),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Skeletonizer(child: _tileBody(
-              '',
-              28.0,
-              chatModel.photoBytes,
-              false,
-              false,
-              false,
-              "Skeletonizer",
-              3,
-              false,
-              displayMessage.messageContentType,
-              isSkeleton: true
-            ),); // Or any placeholder widget
+          return Skeletonizer(
+            child: _tileBody(
+                "$keyValue-skeleton",
+                avatarWidth,
+                chatModel.photoBytes,
+                false,
+                false,
+                false,
+                "Skeletonizer",
+                3,
+                false,
+                displayMessage.messageContentType,
+                isSkeleton: true),
+          ); // Or any placeholder widget
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         } else if (snapshot.hasData) {
@@ -230,7 +235,6 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
           final senderName = sender.screenFirstName.isEmpty
               ? sender.username
               : sender.screenFirstName;
-          final keyValue = (widget.key as ValueKey).value;
           final imageBytes = chatModel.photoBytes;
           final hasDraft = chatModel.draft?.isNotEmpty ?? false;
           final isGroupChat = chatModel.type == ChatType.group;
@@ -238,7 +242,6 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
           final isMuted = chatModel.isMuted;
           final isMentioned = chatModel.isMentioned;
           final displayMessageContentType = displayMessage.messageContentType;
-          const avatarWidth = 28.0;
 
           return InkWell(
             onTap: () {
@@ -276,18 +279,17 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
   }
 
   Container _tileBody(
-    keyValue,
-    double avatarWidth,
-    Uint8List? imageBytes,
-    bool isMuted,
-    bool hasDraft,
-    bool isGroupChat,
-    String senderName,
-    int unreadCount,
-    bool isMentioned,
-    MessageContentType displayMessageContentType,
-    {bool isSkeleton = false}
-  ) {
+      keyValue,
+      double avatarWidth,
+      Uint8List? imageBytes,
+      bool isMuted,
+      bool hasDraft,
+      bool isGroupChat,
+      String senderName,
+      int unreadCount,
+      bool isMentioned,
+      MessageContentType displayMessageContentType,
+      {bool isSkeleton = false}) {
     return Container(
       color: Palette.secondary,
       child: Column(
@@ -306,7 +308,7 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
                   child: imageBytes == null
                       ? AvatarGenerator(
                           name: isSkeleton ? '' : chatModel.title,
-                          backgroundColor: isSkeleton ? Colors.black12 : getRandomColor(),
+                          backgroundColor: getRandomColor(),
                           size: 100,
                         )
                       : null,
