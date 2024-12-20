@@ -35,6 +35,8 @@ class _AddMembersScreen extends ConsumerState<AddMembersScreen>
   final List<UserModel> fullUserChats = [];
   late List<UserModel> userChats;
   final TextEditingController searchController = TextEditingController();
+  List<UserModel> usersGlobalSearchResults = [];
+
 
   late Future<List<UserModel>> _usersFuture;
   bool _isUserContentSet = false;
@@ -65,9 +67,6 @@ class _AddMembersScreen extends ConsumerState<AddMembersScreen>
     setState(() {});
   }
 
-  void _createNewGroup() {
-    // TODO: Implement group creation
-  }
 
   @override
   Widget build(BuildContext context) {

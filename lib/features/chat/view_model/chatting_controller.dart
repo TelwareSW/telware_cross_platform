@@ -250,7 +250,6 @@ class ChattingController {
               parentMessageId: parentMessgeId,
             );
 
-
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
 
@@ -334,10 +333,7 @@ class ChattingController {
           : msgGlobalId = msgId;
 
       final msgEvent = DeleteMessageEvent(
-        {
-          'messageId': msgId,
-          'chatId': chatId
-        },
+        {'messageId': msgId, 'chatId': chatId},
         controller: this,
         msgId: msgId,
         chatId: msgGlobalId,
@@ -386,6 +382,33 @@ class ChattingController {
     final sessionID = _ref.read(tokenProvider);
     final response = await _remoteRepository.getChat(sessionID!, chatID);
     return response.chat!;
+  }
+
+  Future<void> addNewGroupToChats(Map<String, dynamic> res) async {
+    List<String> memberIds =
+        List<String>.from(res['members'].map((member) => member['user']));
+    List<String> admins = List<String>.from(res['members']
+        .where((member) => member['Role'] == 'admin')
+        .map((member) => member['user']));
+    ChatModel chat = ChatModel(
+      title: res['name'],
+      userIds: memberIds,
+      type: ChatType.getType(res['type']),
+      messages: [],
+      id: res['id'],
+      admins: admins,
+    );
+    _ref.read(chatsViewModelProvider.notifier).addChat(chat);
+  }
+
+  Future<void> updateExistingGroup(Map<String, dynamic> res) async {
+    print(res);
+    _ref.read(chatsViewModelProvider.notifier).updateGroup(
+          chatId: res['id'],
+          messagingPermission: res['messagingPermission'],
+          members: res['members'],
+          admins: res['admins'],
+        );
   }
 
   Future<UserModel?> getOtherUser(String id) async {

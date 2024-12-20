@@ -357,4 +357,33 @@ class ChatsViewModel extends _$ChatsViewModel {
       ),
     );
   }
+
+  void updateGroup({
+    required String chatId,
+    bool? messagingPermission,
+    List<String>? members,
+    List<String>? admins,
+  }) {
+    final chatIndex = getChatIndex(chatId);
+    ChatModel? chat = chatIndex >= 0 ? state[chatIndex] : null;
+
+    if (chat != null) {
+      if(messagingPermission != null){
+        chat.messagingPermission = messagingPermission;
+      }
+
+      if(members != null){
+        chat.userIds = members;
+      }
+
+      if(admins != null){
+        chat.admins = admins;
+      }
+      state = [
+        ...state.sublist(0, chatIndex),
+        chat.copyWith(),
+        ...state.sublist(chatIndex + 1),
+      ];
+    }
+  }
 }

@@ -35,6 +35,8 @@ import 'package:telware_cross_platform/features/chat/view/widget/new_chat_screen
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
+import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart' as utils;
+
 
 import '../../../../core/routes/routes.dart';
 import '../widget/reply_widget.dart';
@@ -102,7 +104,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
         _sendForwardedMessages();
       }
     });
-    _chosenAnimation = getRandomLottieAnimation();
+    _chosenAnimation = utils.getRandomLottieAnimation();
     // Initialize the AudioRecorderService
     _audioRecorderService = AudioRecorderService(updateUI: setState);
 
