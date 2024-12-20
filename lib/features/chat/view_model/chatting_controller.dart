@@ -253,7 +253,6 @@ class ChattingController {
               parentMessageId: parentMessgeId,
             );
 
-
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
 
@@ -346,10 +345,7 @@ class ChattingController {
           : msgGlobalId = msgId;
 
       final msgEvent = DeleteMessageEvent(
-        {
-          'messageId': msgId,
-          'chatId': chatId
-        },
+        {'messageId': msgId, 'chatId': chatId},
         controller: this,
         msgId: msgId,
         chatId: msgGlobalId,
@@ -794,5 +790,30 @@ class ChattingController {
     getUserChats();
     _eventHandler.addEvent(msgEvent);
     return true;
+  }
+
+  Future<void> filterGroup({
+    required String chatId,
+    required String filter,
+  }) async {
+    final sessionID = _ref.read(tokenProvider);
+    final response = await _remoteRepository.filterGroup(sessionID!, chatId);
+    if (response.appError != null) {
+      debugPrint('Error: Could not filter the group');
+    } else {
+      debugPrint('!!! group filtered');
+    }
+  }
+
+  Future<void> unFilterGroup({
+    required String chatId,
+  }) async {
+    final sessionID = _ref.read(tokenProvider);
+    final response = await _remoteRepository.unFilterGroup(sessionID!, chatId);
+    if (response.appError != null) {
+      debugPrint('Error: Could not unfilter the group');
+    } else {
+      debugPrint('!!! group unfiltered');
+    }
   }
 }

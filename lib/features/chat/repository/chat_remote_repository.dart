@@ -423,5 +423,39 @@ class ChatRemoteRepository {
     }
   }
 
+  Future<({AppError? appError})> filterGroup(
+      String sessionID, String chatID) async {
+    try {
+      final response = await _dio.patch(
+        '/groups/filter/:$chatID',
+        options: Options(headers: {'X-Session-Token': sessionID}),
+      );
+
+      debugPrint("message: ${response.data['message']}");
+
+      return (appError: null);
+    } catch (e) {
+      debugPrint('!!! Failed to filter $chatID, ${e.toString()}');
+      return (appError: AppError('Failed to filter', code: 500));
+    }
+  }
+
+  Future<({AppError? appError})> unFilterGroup(
+      String sessionID, String chatID) async {
+    try {
+      final response = await _dio.patch(
+        '/groups/unfilter/:$chatID',
+        options: Options(headers: {'X-Session-Token': sessionID}),
+      );
+
+      debugPrint("message: ${response.data['message']}");
+
+      return (appError: null);
+    } catch (e) {
+      debugPrint('!!! Failed to unFilter $chatID, ${e.toString()}');
+      return (appError: AppError('Failed to unFilter', code: 500));
+    }
+  }
+
 // TODO Implement Fetch Messages
 }

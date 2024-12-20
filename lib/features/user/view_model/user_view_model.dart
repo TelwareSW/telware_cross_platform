@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_manual_providers_as_generated_provider_dependency
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/core/mock/user_mock.dart';
@@ -467,6 +468,58 @@ class UserViewModel extends _$UserViewModel {
         ref.read(authLocalRepositoryProvider).setUser(user);
         state = UserState.success('unblock user done successfully');
         return;
+      },
+    );
+  }
+
+  Future<void> banUser({
+    required String userId,
+  }) async {
+    final sessionID = ref.read(tokenProvider);
+    final response = await ref
+        .read(userRemoteRepositoryProvider)
+        .banUser(sessionID: sessionID!, userID: userId);
+    response.fold(
+      (appError) {
+        state = UserState.fail(appError.error);
+      },
+      (_) {
+        debugPrint('!!! user banned');
+      },
+    );
+  }
+
+  Future<void> activateUser({
+    required String userId,
+  }) async {
+    final sessionID = ref.read(tokenProvider);
+    final response = await ref
+        .read(userRemoteRepositoryProvider)
+        .activateUser(sessionID: sessionID!, userID: userId);
+
+    response.fold(
+      (appError) {
+        state = UserState.fail(appError.error);
+      },
+      (_) {
+        debugPrint('!!! user activated');
+      },
+    );
+  }
+
+  Future<void> deactivateUser({
+    required String userId,
+  }) async {
+    final sessionID = ref.read(tokenProvider);
+    final response = await ref
+        .read(userRemoteRepositoryProvider)
+        .deactivateUser(sessionID: sessionID!, userID: userId);
+    response.fold(
+      (appError) {
+        state = UserState.fail(appError.error);
+      },
+      (_) {
+        debugPrint('!!! user deactivated');
       },
     );
   }
