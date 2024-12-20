@@ -147,7 +147,6 @@ class _CreateGroupScreen extends ConsumerState<CreateGroupScreen>
       ),
       floatingActionButton: AuthFloatingActionButton(
         onSubmit: () {
-          print('fdsafas');
           print(_selectedUsers);
           Navigator.push(
             context,

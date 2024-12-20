@@ -15,6 +15,8 @@ import '../../../../core/theme/sizes.dart';
 import '../../../../core/view/widget/lottie_viewer.dart';
 import '../../../auth/view/widget/auth_floating_action_button.dart';
 import '../../../chat/view/widget/member_tile_widget.dart';
+import '../../../home/models/home_state.dart';
+import '../../../home/view_model/home_view_model.dart';
 import '../../../stories/utils/utils_functions.dart';
 import '../../../user/view_model/user_view_model.dart';
 
@@ -37,19 +39,11 @@ class _AddMembersScreen extends ConsumerState<AddMembersScreen>
   final TextEditingController searchController = TextEditingController();
   List<UserModel> usersGlobalSearchResults = [];
 
-
-  late Future<List<UserModel>> _usersFuture;
-  bool _isUserContentSet = false;
   final List<UserModel> _selectedUsers = <UserModel>[];
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        _usersFuture = ref.read(userViewModelProvider.notifier).fetchUsers();
-      });
-    });
   }
 
   @override
@@ -67,9 +61,15 @@ class _AddMembersScreen extends ConsumerState<AddMembersScreen>
     setState(() {});
   }
 
-
   @override
   Widget build(BuildContext context) {
+    ref.listen<HomeState>(
+      homeViewModelProvider,
+      (_, state) {
+        usersGlobalSearchResults = state.usersGlobalSearchResults;
+        setState(() {});
+      },
+    );
     return Scaffold(
       backgroundColor: Palette.background,
       appBar: AppBar(
@@ -100,7 +100,9 @@ class _AddMembersScreen extends ConsumerState<AddMembersScreen>
             padding: const EdgeInsets.symmetric(horizontal: 10.0),
             child: TextField(
               controller: searchController,
-              onChanged: _filterView,
+              onSubmitted: (value) {
+                _filterView(value);
+              },
               decoration: const InputDecoration(
                 hintText: 'Search for people',
                 hintStyle: TextStyle(color: Palette.accentText),
@@ -112,49 +114,19 @@ class _AddMembersScreen extends ConsumerState<AddMembersScreen>
             ),
           ),
           Expanded(
-            child: FutureBuilder<List<UserModel>>(
-              future: _usersFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                } else if (snapshot.hasError) {
-                  return Center(
-                    child: Text(
-                      'Error loading users: ${snapshot.error}',
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  );
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(
-                    child: LottieViewer(
-                      path: 'assets/tgs/EasterDuck.tgs',
-                      width: 100,
-                      height: 100,
-                    ),
-                  );
-                } else {
-                  if (!_isUserContentSet) {
-                    userChats = _generateUsersList(snapshot.data!);
-                    _isUserContentSet = true;
-                  }
-                  return ListView.builder(
-                    shrinkWrap:
-                        true, // To allow proper layout within parent widgets
-                    itemCount: userChats.length,
-                    itemBuilder: (context, index) {
-                      UserModel user = userChats[index];
-                      return MemberTileWidget(
-                        text: '${user.screenFirstName} ${user.screenLastName}',
-                        subtext: user.status,
-                        imagePath: user.photo,
-                        onTap: () => _toggleSelectUser(user),
-                        showSelected: _selectedUsers.contains(user),
-                      );
-                    },
-                  );
-                }
+            child: ListView.builder(
+              shrinkWrap: true,
+              // To allow proper layout within parent widgets
+              itemCount: usersGlobalSearchResults.length,
+              itemBuilder: (context, index) {
+                UserModel user = usersGlobalSearchResults[index];
+                return MemberTileWidget(
+                  text: '${user.screenFirstName} ${user.screenLastName}',
+                  subtext: user.status,
+                  imagePath: user.photo,
+                  onTap: () => _toggleSelectUser(user),
+                  showSelected: _selectedUsers.contains(user),
+                );
               },
             ),
           ),
@@ -191,25 +163,18 @@ class _AddMembersScreen extends ConsumerState<AddMembersScreen>
     );
   }
 
-  List<UserModel> _generateUsersList(List<UserModel> users) {
-    UserModel myUser = ref.read(userProvider)!;
-    return users.where((user) => user.id != myUser.id).toList();
+
+
+  void _getSearchResults(String query, List<String> searchSpace,
+      String filterType, bool isGlobalSearch) async {
+    ref
+        .read(homeViewModelProvider.notifier)
+        .fetchSearchResults(query, searchSpace, filterType, isGlobalSearch);
   }
 
   void _filterView(String query) {
-    List<UserModel> filteredChats = [];
-    if (query.isEmpty) {
-      filteredChats = List.from(fullUserChats);
-    } else {
-      filteredChats = fullUserChats.where((user) {
-        String text =
-            '${user.screenFirstName} ${user.screenLastName}'.toLowerCase();
-        return text.contains(query.toLowerCase());
-      }).toList();
-    }
-    setState(() {
-      userChats = filteredChats;
-    });
+    List<String> allSearchSpace = ['channels', 'groups', 'chats'];
+    _getSearchResults(query, allSearchSpace, 'text', true);
   }
 
   String randomPrivacy() {
@@ -225,4 +190,6 @@ class _AddMembersScreen extends ConsumerState<AddMembersScreen>
       return null; // Return null if image loading fails
     }
   }
+
+
 }

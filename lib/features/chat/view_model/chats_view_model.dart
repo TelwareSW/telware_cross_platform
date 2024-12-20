@@ -373,11 +373,11 @@ class ChatsViewModel extends _$ChatsViewModel {
       }
 
       if(members != null){
-        chat.userIds = members;
+        chat.userIds = [...chat.userIds, ...members];
       }
 
       if(admins != null){
-        chat.admins = admins;
+        chat.admins = [...?chat.admins, ...admins];
       }
       state = [
         ...state.sublist(0, chatIndex),

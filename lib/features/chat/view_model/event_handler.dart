@@ -207,7 +207,10 @@ class EventHandler {
       try {
         debugPrint('/|\\ got a AddMember :');
         print(response.toString());
-        _chattingController.updateExistingGroup(response);
+        _chattingController.updateExistingGroup({
+          'id':response['chatId'],
+          'members':response['userId']
+        });
       } on Exception catch (e) {
         debugPrint('!!! Error in recieving a event:\n${e.toString()}');
       }
@@ -217,7 +220,10 @@ class EventHandler {
       try {
         debugPrint('/|\\ got a AddAdmin :');
         print(response.toString());
-        _chattingController.updateExistingGroup(response);
+        _chattingController.updateExistingGroup({
+          'id':response['chatId'],
+          'admins':response['userId']
+        });
       } on Exception catch (e) {
         debugPrint('!!! Error in recieving a event:\n${e.toString()}');
       }
