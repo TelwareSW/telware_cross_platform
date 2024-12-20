@@ -187,5 +187,6 @@ class Keys {
 
   // General
   static const popupMenuButton = ValueKey('popup_menu_button');
+  static const popupMenuItemPrefix = ValueKey('popup_menu_item_');
   Keys._();
 }

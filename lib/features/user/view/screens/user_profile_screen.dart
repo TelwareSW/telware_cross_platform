@@ -8,6 +8,7 @@ import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
+import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/tab_bar_widget.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
@@ -100,6 +101,11 @@ class _UserProfileScreen extends ConsumerState<UserProfileScreen>
                       key: CallKeys.startCallButton,
                       icon: const Icon(Icons.call),
                       onPressed: () {
+                        // if user is in call, show dialog instead
+                        if (ref.read(callStateProvider).voiceCallId != null) {
+                          showToastMessage("You are already in a call");
+                          return;
+                        }
                         ref.read(callStateProvider.notifier).setCaller(true);
                         debugPrint("Sending user: $_user");
                         context.push(Routes.callScreen, extra: {"user": _user, "voiceCallId": null});

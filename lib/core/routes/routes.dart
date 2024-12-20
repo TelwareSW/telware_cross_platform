@@ -306,7 +306,11 @@ class Routes {
             path: Routes.callScreen,
             builder: (context, state) {
               final Map<String, dynamic>? extra = state.extra as Map<String, dynamic>?;
-              return CallScreen(callee: extra?['user'] as UserModel?, voiceCallId: extra?['voiceCallId'] as String?);
+              return CallScreen(
+                chatId: extra?['chatId'] as String?,
+                callee: extra?['user'] as UserModel?,
+                voiceCallId: extra?['voiceCallId'] as String?
+              );
             },
           ),
           GoRoute(
