@@ -178,8 +178,9 @@ String formatTime(int seconds,
 String formatTimestamp(DateTime timestamp) {
   // Current date to check for today's or yesterday's date
   final now = DateTime.now();
-  final diff = now.difference(timestamp).inDays;
-
+  final today = DateTime(now.year, now.month, now.day);
+  final timestampDate = DateTime(timestamp.year, timestamp.month, timestamp.day);
+  final diff = today.difference(timestampDate).inDays;
   // If the message is today
   if (diff == 0) {
     return DateFormat('hh:mm a').format(timestamp); // 12:53 AM
