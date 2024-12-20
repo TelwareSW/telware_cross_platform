@@ -21,6 +21,7 @@ import 'package:telware_cross_platform/features/chat/view/widget/slide_to_cancel
 class BottomInputBarWidget extends ConsumerStatefulWidget {
   final TextEditingController controller; // Accept controller as a parameter
   final bool isEditing;
+  final bool notAllowedToSend;
   final String? chatID;
   final void Function() unreferenceMessages;
   final void Function() editMessage;
@@ -44,6 +45,7 @@ class BottomInputBarWidget extends ConsumerStatefulWidget {
     required this.editMessage,
     required this.audioRecorderService,
     required this.isEditing,
+    required this.notAllowedToSend,
   });
 
   @override
@@ -197,6 +199,7 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
   }
 
   void sendGifsStickers(String mediaPath, String mediaType) async {
+    if (widget.notAllowedToSend) return;
     try {
       // Get the app's documents directory
       final directory = await getTemporaryDirectory();
@@ -224,6 +227,8 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
   }
 
   void _onLongPressUp() async {
+    if (widget.notAllowedToSend) return;
+
     if (widget.audioRecorderService.isRecordingLocked || isCanceled) {
       return;
     }
@@ -237,6 +242,8 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
   }
 
   void _onLongPressMoveUpdate(LongPressMoveUpdateDetails details) {
+    if (widget.notAllowedToSend) return;
+
     if (details.localPosition.dx.abs() > _cancelThreshold) {
       isCanceled = true;
       widget.audioRecorderService.cancelRecording();
@@ -255,13 +262,17 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
   }
 
   void _onSend() {
+    if (widget.notAllowedToSend) return;
+
     if (widget.audioRecorderService.isRecordingCompleted) {
       String? filePath = widget.audioRecorderService.resetRecording();
       widget.sendMessage(ref: ref, contentType: 'audio', filePath: filePath);
     } else {
-      widget.isEditing ? widget.editMessage() : widget.sendMessage(ref: ref, contentType: 'text');
-       }
-                    widget.unreferenceMessages();
+      widget.isEditing
+          ? widget.editMessage()
+          : widget.sendMessage(ref: ref, contentType: 'text');
+    }
+    widget.unreferenceMessages();
   }
 
   @override
@@ -269,7 +280,7 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
     debugPrint('this is in the input field widget: ${widget.controller.text}');
     return Container(
       padding: EdgeInsets.symmetric(
-          horizontal: widget.audioRecorderService.isRecordingCompleted ? 0 : 10,
+        horizontal: widget.audioRecorderService.isRecordingCompleted ? 0 : 10,
         vertical: 0,
       ),
       color: Palette.trinary,
@@ -300,6 +311,7 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                                   height: 30,
                                   isIcon: true,
                                   onTap: () {
+                                    if (widget.notAllowedToSend) return;
                                     _emojiShowing = !_emojiShowing;
                                     if (_emojiShowing) {
                                       FocusScope.of(context).unfocus();
@@ -309,18 +321,17 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                                     }
                                     setState(() {});
                                   },
-                                  onCompleted: () {
-                                    // isCanceled = false;
-                                    // setState(() {});
-                                  },
                                 ),
                           Expanded(
                             child: TextField(
                               focusNode: _textFieldFocusNode,
                               controller: widget.controller,
-                              decoration: const InputDecoration(
-                                hintText: 'Message',
-                                hintStyle: TextStyle(
+                              enabled: widget.notAllowedToSend == false,
+                              decoration: InputDecoration(
+                                hintText: widget.notAllowedToSend
+                                    ? 'Text not Allowed'
+                                    : 'Message',
+                                hintStyle: const TextStyle(
                                   fontSize: 18,
                                   color: Palette.accentText,
                                   fontWeight: FontWeight.w400,
@@ -328,9 +339,16 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                                 border: InputBorder.none,
                                 focusedBorder: InputBorder.none,
                                 enabledBorder: InputBorder.none,
+                                prefixIcon: widget.notAllowedToSend
+                                    ? const Icon(
+                                        Icons.lock,
+                                        color: Palette.accentText,
+                                      )
+                                    : null,
                               ),
                               cursorColor: Palette.accent,
                               onTap: () {
+                                if (widget.notAllowedToSend) return;
                                 setState(() {
                                   _emojiShowing = false;
                                 });
@@ -418,15 +436,18 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                     key: MessageKeys.messageAttachmentButton,
                     icon: const Icon(Icons.attach_file_rounded),
                     color: Palette.accentText,
-                    onPressed: () => {
-                      _loadMediaFiles(),
+                    onPressed: () {
+                      if (widget.notAllowedToSend) return;
+                      _loadMediaFiles();
                     },
                   ),
                 ],
                 if (!widget.audioRecorderService.isRecordingCompleted) ...[
                   GestureDetector(
-                    onLongPress: () =>
-                        widget.audioRecorderService.startRecording(context),
+                    onLongPress: () {
+                      if (widget.notAllowedToSend) return;
+                      widget.audioRecorderService.startRecording(context);
+                    },
                     onLongPressUp: _onLongPressUp,
                     onLongPressMoveUpdate: _onLongPressMoveUpdate,
                     child: const LottieViewer(
@@ -444,7 +465,9 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                   key: MessageKeys.messageSendButton,
                   padding: const EdgeInsets.only(left: 10),
                   iconSize: 28,
-                  icon: widget.isEditing ? const Icon(Icons.check_circle) : const Icon(Icons.send),
+                  icon: widget.isEditing
+                      ? const Icon(Icons.check_circle)
+                      : const Icon(Icons.send),
                   color: Palette.accent,
                   onPressed: _onSend,
                 ),

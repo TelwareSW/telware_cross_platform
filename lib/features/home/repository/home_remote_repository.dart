@@ -62,7 +62,9 @@ class HomeRemoteRepository {
         data: {
           'query': query,
           'searchSpace': searchSpace.join(','),
-          'filter': filterType,
+          'filter': filterType == 'music' || filterType == 'voice'
+              ? 'audio'
+              : filterType,
           'isGlobalSearch': isGlobalSearch
         },
         options: Options(headers: {'X-Session-Token': sessionId}),
@@ -88,7 +90,7 @@ class HomeRemoteRepository {
             (result['threadMessages'] as List).map((e) => e as String).toList();
         final MessageModel messageModel = MessageModel(
           content: messageContent,
-          senderId: result['senderId']['id'],
+          senderId: result['senderId'],
           messageType: MessageType.normal,
           messageContentType: contentType,
           timestamp: result['timestamp'] == null

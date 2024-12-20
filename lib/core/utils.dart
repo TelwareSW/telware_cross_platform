@@ -361,6 +361,7 @@ List<MapEntry<int, int>> shiftHighlights(
     "file": "File: ",
     "voice": "Voice message: ",
     "music": "Voice message: ",
+    "audio": "Voice message: ",
     "text": "",
   };
   String prefix = shiftMappings[contentType]!;
