@@ -306,7 +306,7 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
                   child: imageBytes == null
                       ? AvatarGenerator(
                           name: isSkeleton ? '' : chatModel.title,
-                          backgroundColor: isSkeleton ? Colors.black12 : getRandomColor(),
+                          backgroundColor: getRandomColor(),
                           size: 100,
                         )
                       : null,
