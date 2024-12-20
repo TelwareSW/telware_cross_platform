@@ -73,8 +73,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
   @override
   void initState() {
     super.initState();
-    // isAdmin = ref.read(userProvider)!.isAdmin;
-    isAdmin = true;
+    isAdmin = ref.read(userProvider)!.isAdmin;
     tabsLength = isAdmin ? 7 : 6;
     tabs = [
       if (tabsLength == 7) const Tab(text: 'Users'),
@@ -246,7 +245,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return const Center(
                     child: LottieViewer(
-                      path: 'assets/tgs/EasterDuck.tgs',
+                      path: 'assets/json/utyan_empty.json',
                       width: 100,
                       height: 100,
                     ),
@@ -266,7 +265,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               LottieViewer(
-                                path: 'assets/tgs/EasterDuck.tgs',
+                                path: 'assets/json/utyan_empty.json',
                                 width: 100,
                                 height: 100,
                               ),
@@ -296,7 +295,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 LottieViewer(
-                                  path: 'assets/tgs/EasterDuck.tgs',
+                                  path: 'assets/json/utyan_empty.json',
                                   width: 100,
                                   height: 100,
                                 ),
