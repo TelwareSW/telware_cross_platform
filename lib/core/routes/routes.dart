@@ -32,6 +32,7 @@ import 'package:telware_cross_platform/features/user/view/screens/blocked_users.
 import 'package:telware_cross_platform/features/user/view/screens/change_email_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/change_number_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/change_username_screen.dart';
+import 'package:telware_cross_platform/features/user/view/screens/data_and_storage_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/invites_permissions_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/last_seen_privacy_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/phone_privacy_screen.dart';
@@ -41,6 +42,7 @@ import 'package:telware_cross_platform/features/user/view/screens/profile_photo_
 import 'package:telware_cross_platform/features/user/view/screens/self_destruct_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/settings_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/user_profile_screen.dart';
+import 'package:telware_cross_platform/features/user/view/screens/wifi_media_screen.dart';
 
 import '../../features/chat/view/screens/pinned_messages_screen.dart';
 import '../../features/groups/view/screens/edit_group.dart';
@@ -87,6 +89,8 @@ class Routes {
   static const String addMembersScreen = AddMembersScreen.route;
   static const String membersScreen = MembersScreen.route;
   static const String captionScreen = CaptionScreen.route;
+  static const String dataAndStorageScreen = DataAndStorageScreen.route;
+  static const String wifiMediaScreen = WifiMediaScreen.route;
 
   static GoRouter appRouter(WidgetRef ref) => GoRouter(
         initialLocation: Routes.splash,
@@ -347,6 +351,14 @@ class Routes {
               );
             },
           ),
+          GoRoute(
+            path: Routes.dataAndStorageScreen,
+            builder: (context, state) => const DataAndStorageScreen(),
+          ),
+          GoRoute(
+            path: Routes.wifiMediaScreen,
+            builder: (context, state) => const WifiMediaScreen(),
+          )
         ],
       );
 

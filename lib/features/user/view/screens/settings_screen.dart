@@ -52,7 +52,7 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
         {
           "icon": Icons.pie_chart_outline,
           "text": 'Data and Storage',
-          "routes": 'locked'
+          "routes": Routes.dataAndStorageScreen
         },
         {
           "icon": Icons.battery_saver_outlined,
