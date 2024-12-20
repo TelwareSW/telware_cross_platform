@@ -312,6 +312,15 @@ class EventHandler {
         debugPrint('!!! Error in receiving a call started:\n${e.toString()}');
       }
     });
+    // get a call ended
+    _socket.on(EventType.receiveCallEnded.event, (response) async {
+      try {
+        debugPrint('### got a call ended: $response');
+        signaling.onReceiveEndCall?.call(response);
+      } on Exception catch (e) {
+        debugPrint('!!! Error in receiving a call ended:\n${e.toString()}');
+      }
+    });
   }
 
   // Private constructor

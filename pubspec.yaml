@@ -88,6 +88,7 @@ dependencies:
   flutter_webrtc: ^0.12.3
   cloud_firestore: ^5.5.1
   encrypt: ^5.0.3
+  skeletonizer: ^1.4.2
 
 
 dev_dependencies:

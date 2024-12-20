@@ -1,6 +1,9 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/view/widget/popup_menu_item_widget.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
+import 'package:telware_cross_platform/features/chat/view/screens/pinned_messages_screen.dart';
 
 class PopupMenuWidget extends StatelessWidget {
   final List<PopupMenuEntry> items;
@@ -26,10 +29,11 @@ class PopupMenuWidget extends StatelessWidget {
       color: Palette.secondary,
       position: RelativeRect.fromLTRB(position.dx, position.dy - renderBox.size.height, position.dx + 100, position.dy),
       items: <PopupMenuEntry<dynamic>>[
-        ...items.map((item) {
+        ...items.mapIndexed((index, item) {
           return PopupMenuItem<dynamic>(
             value: item['value'],
             child: PopupMenuItemWidget(
+              key: ValueKey(Keys.popupMenuItemPrefix.value + index.toString()),
               icon: item['icon'],
               text: item['text'],
               trailing: item['trailing'],

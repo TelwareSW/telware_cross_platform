@@ -253,6 +253,7 @@ class ChattingController {
               parentMessageId: parentMessgeId,
             );
 
+
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
 
@@ -345,7 +346,10 @@ class ChattingController {
           : msgGlobalId = msgId;
 
       final msgEvent = DeleteMessageEvent(
-        {'messageId': msgId, 'chatId': chatId},
+        {
+          'messageId': msgId,
+          'chatId': chatId
+        },
         controller: this,
         msgId: msgId,
         chatId: msgGlobalId,

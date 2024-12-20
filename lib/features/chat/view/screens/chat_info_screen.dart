@@ -15,6 +15,7 @@ import 'package:telware_cross_platform/core/view/widget/tab_bar_widget.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/core/view/widget/popup_menu_widget.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
+import 'package:telware_cross_platform/features/chat/providers/call_provider.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/member_tile_widget.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
@@ -337,8 +338,22 @@ class _ChatInfoScreen extends ConsumerState<ChatInfoScreen>
       case 'delete-group':
         _confirmDelete(context);
         break;
+      case 'video-call':
+        _createGroupCall();
+        break;
       default:
         showToastMessage('Coming soon');
+    }
+  }
+
+  void _createGroupCall() {
+    if (ref.read(callStateProvider).voiceCallId == null) {
+      ref.read(callStateProvider.notifier).setCaller(true);
+      context.push(Routes.callScreen, extra: {
+        'chatId': chat.id,
+      });
+    } else {
+      showToastMessage('You are already in a call');
     }
   }
 
