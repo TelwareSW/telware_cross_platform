@@ -304,8 +304,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
           chatType: ChatType.private,
           chatModel: chatModel,
           parentMessgeId: replyMessage?.id,
-          encryptionKey: widget.chatModel?.encryptionKey,
-          initializationVector: widget.chatModel?.initializationVector,
+          encryptionKey: chatModel.encryptionKey,
+          initializationVector: chatModel.initializationVector,
         );
   }
 

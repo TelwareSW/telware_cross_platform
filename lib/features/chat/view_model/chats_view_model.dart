@@ -204,7 +204,7 @@ class ChatsViewModel extends _$ChatsViewModel {
 
     final encryptionService = EncryptionService.instance;
 
-    final text = encryptionService.encrypt(
+    final text = encryptionService.decrypt(
       chatType: chat.type,
       msg: response['content'],
       encryptionKey: chat.encryptionKey,

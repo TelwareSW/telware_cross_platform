@@ -25,6 +25,11 @@ class EncryptionService {
     if (chatType != ChatType.private ||
         encryptionKey == null ||
         initializationVector == null) {
+          print('((((((((((');
+          print(chatType.type);
+          print(encryptionKey);
+          print(initializationVector);
+          print('))))))))))');
       return msg;
     }
 
