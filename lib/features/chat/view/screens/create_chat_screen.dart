@@ -242,7 +242,8 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
                       style: const TextStyle(color: Colors.red),
                     ),
                   );
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                } else if ((!snapshot.hasData || snapshot.data!.isEmpty) &&
+                    isAdmin) {
                   return const Center(
                     child: LottieViewer(
                       path: 'assets/json/utyan_empty.json',
@@ -252,7 +253,9 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
                   );
                 } else {
                   if (!_isUserContentSet) {
-                    userChats = _generateUsersList(snapshot.data!, false);
+                    userChats = isAdmin
+                        ? _generateUsersList(snapshot.data!, false)
+                        : [];
                     _isUserContentSet = true;
                   }
                   return TabBarView(
