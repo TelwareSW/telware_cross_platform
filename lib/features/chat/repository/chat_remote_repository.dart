@@ -7,6 +7,7 @@ import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
+import 'package:telware_cross_platform/features/chat/services/encryption_service.dart';
 import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
 
 class ChatRemoteRepository {
@@ -34,7 +35,7 @@ class ChatRemoteRepository {
           response.data['data']['lastMessages'] as List? ?? [];
 
       Map<String, UserModel> userMap = {};
-      Map<String, MessageModel> lastMessageMap = {};
+      Map<String, Map> lastMessageMap = {};
       for (var member in memberData) {
         userMap[member['id']] = UserModel(
           id: member['id'],
@@ -66,45 +67,7 @@ class ChatRemoteRepository {
           continue;
         }
 
-        Map<String, MessageState> userStates = {};
-        MessageContentType contentType =
-            MessageContentType.getType(lastMessage['contentType'] ?? 'text');
-        MessageContent? content;
-
-        final Map<String, String> userStatesMap =
-            lastMessage['userStates'] ?? {};
-
-        for (var entry in userStatesMap.entries) {
-          userStates[entry.key] = MessageState.getType(entry.value);
-        }
-
-        // TODO: needs to be modified to match the response fields
-        content = createMessageContent(
-          contentType: contentType,
-          text: lastMessage['content'],
-          fileName: lastMessage['fileName'],
-          mediaUrl: lastMessage['mediaUrl'],
-        );
-
-        final threadMessages = (lastMessage['threadMessages'] as List).map((e) => e as String).toList();
-
-        // todo(ahmed): add (parentMsgId)
-        // the connumicationType attribute is extra
-        lastMessageMap[message['chatId']] = MessageModel(
-          id: lastMessage['id'],
-          senderId: lastMessage['senderId'],
-          messageContentType: contentType,
-          messageType: MessageType.getType(lastMessage['type'] ?? 'unknown'),
-          content: content,
-          timestamp: lastMessage['timestamp'] == null
-              ? DateTime.parse(lastMessage['timestamp'])
-              : DateTime.now(),
-          userStates: userStates,
-          isForward: lastMessage['isForward'] ?? false,
-          isPinned: lastMessage['isPinned'] ?? false,
-          isAnnouncement: lastMessage['isAnnouncement'],
-          threadMessages: threadMessages
-        );
+        lastMessageMap[message['chatId']] = lastMessage;
       }
 
       // Iterate through chats and map users
@@ -129,8 +92,16 @@ class ChatRemoteRepository {
         // Create list of user IDs excluding current user
         final otherUserIDs = members.where((id) => id != userID).toList();
         final otherUsers = otherUserIDs.map((id) => userMap[id]).toList();
-        final List<MessageModel> messages =
-            lastMessageMap[chatID] == null ? [] : [lastMessageMap[chatID]!];
+        final List<MessageModel> messages = lastMessageMap[chatID] == null
+            ? []
+            : [
+                _creataLastMsg(
+                  lastMessage: lastMessageMap[chatID]!,
+                  encryptionKey: chat['chat']['encryptionKey'],
+                  initializationVector: chat['chat']['initializationVector'],
+                  chatType: ChatType.getType(chat['chat']['type']),
+                )
+              ];
         String chatTitle = 'Invalid Chat';
 
         bool messagingPermission = true;
@@ -147,8 +118,7 @@ class ChatRemoteRepository {
                 ? otherUsers[0]!.username
                 : 'Private Chat';
           }
-        }
-        else if (chat['chat']['type'] == 'group') {
+        } else if (chat['chat']['type'] == 'group') {
           chatTitle = chat['chat']['name'] ?? 'Group Chat';
           messagingPermission = chat['chat']['messagingPermission'];
         } else if (chat['chat']['type'] == 'channel') {
@@ -161,17 +131,18 @@ class ChatRemoteRepository {
         // todo(ahmed): store the creators list as well as the isSeen, isDeleted attributes
         // should it be sent in the first place if it is deleted?
         final chatModel = ChatModel(
-          id: chatID,
-          title: chatTitle,
-          userIds: members,
-          admins: admins,
-          type: ChatType.getType(chat['chat']['type']),
-          messages: messages,
-          draft: chat['draft'],
-          isMuted: chat['isMuted'],
-          creators: creators,
-          messagingPermission: messagingPermission
-        );
+            id: chatID,
+            title: chatTitle,
+            userIds: members,
+            admins: admins,
+            type: ChatType.getType(chat['chat']['type']),
+            messages: messages,
+            draft: chat['draft'],
+            isMuted: chat['isMuted'],
+            creators: creators,
+            messagingPermission: messagingPermission,
+            encryptionKey: chat['chat']['encryptionKey'],
+            initializationVector: chat['chat']['initializationVector']);
 
         chats.add(chatModel);
       }
@@ -187,6 +158,63 @@ class ChatRemoteRepository {
         appError: AppError('Failed to fetch chats', code: 500),
       );
     }
+  }
+
+  MessageModel _creataLastMsg({
+    required Map<dynamic, dynamic> lastMessage,
+    required String? encryptionKey,
+    required String? initializationVector,
+    required ChatType chatType,
+  }) {
+    Map<String, MessageState> userStates = {};
+    MessageContentType contentType =
+        MessageContentType.getType(lastMessage['contentType'] ?? 'text');
+    MessageContent? content;
+
+    final Map<String, String> userStatesMap = lastMessage['userStates'] ?? {};
+
+    for (var entry in userStatesMap.entries) {
+      userStates[entry.key] = MessageState.getType(entry.value);
+    }
+
+    final encryptionService = EncryptionService.instance;
+
+    final text = encryptionService.decrypt(
+      chatType: chatType,
+      msg: lastMessage['content'],
+      encryptionKey: encryptionKey,
+      initializationVector: initializationVector,
+    );
+
+    // TODO: needs to be modified to match the response fields
+    content = createMessageContent(
+      contentType: contentType,
+      text: text,
+      fileName: lastMessage['fileName'],
+      mediaUrl: lastMessage['mediaUrl'],
+    );
+
+    final threadMessages = (lastMessage['threadMessages'] as List)
+        .map((e) => e as String)
+        .toList();
+
+    // the connumicationType attribute is extra
+    return MessageModel(
+      id: lastMessage['id'],
+      senderId: lastMessage['senderId'],
+      messageContentType: contentType,
+      messageType: MessageType.getType(lastMessage['type'] ?? 'unknown'),
+      content: content,
+      timestamp: lastMessage['timestamp'] == null
+          ? DateTime.parse(lastMessage['timestamp'])
+          : DateTime.now(),
+      userStates: userStates,
+      isForward: lastMessage['isForward'] ?? false,
+      isPinned: lastMessage['isPinned'] ?? false,
+      isAnnouncement: lastMessage['isAnnouncement'],
+      threadMessages: threadMessages,
+      parentMessage: lastMessage['parentMessageId'],
+    );
   }
 
 // Fetch user details

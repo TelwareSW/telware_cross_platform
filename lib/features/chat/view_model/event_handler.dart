@@ -133,8 +133,6 @@ class EventHandler {
     _socket.on(EventType.receiveMessage.event, (response) async {
       // todo(ahmed): when the back returns this an object, remove the array
       final message = response[0];
-      // todo(ahmed): Remove backend returns media
-      message['media'] = "8eee5713799015ff.jpg";
       try {
         debugPrint('/|\\ got a message id: ${message['id']}');
         _chattingController.receiveMsg(message);

@@ -22,6 +22,7 @@ import 'package:telware_cross_platform/features/chat/repository/chat_local_repos
 import 'package:telware_cross_platform/features/chat/repository/chat_remote_repository.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/features/chat/services/chat_mocking_service.dart';
+import 'package:telware_cross_platform/features/chat/services/encryption_service.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 import 'package:telware_cross_platform/features/chat/view_model/event_handler.dart';
 
@@ -217,6 +218,8 @@ class ChattingController {
     required ChatType chatType,
     ChatModel? chatModel,
     String? parentMessgeId,
+    required String? encryptionKey,
+    required String? initializationVector,
   }) async {
     String? chatID = chatModel?.id;
     bool isChatNew = chatID == null;
@@ -250,15 +253,23 @@ class ChattingController {
               parentMessageId: parentMessgeId,
             );
 
-
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
+
+    final encryptionService = EncryptionService.instance;
+
+    final text = encryptionService.encrypt(
+      chatType: chatType,
+      msg: content.getContent(),
+      encryptionKey: encryptionKey,
+      initializationVector: initializationVector,
+    );
 
     final msgEvent = SendMessageEvent(
       {
         'chatId': chatID,
         'media': content.getMediaURL(),
-        'content': content.getContent(),
+        'content': text,
         'contentType': contentType.content,
         'parentMessageId': parentMessgeId,
         'senderId': _ref.read(userProvider)!.id,
@@ -334,10 +345,7 @@ class ChattingController {
           : msgGlobalId = msgId;
 
       final msgEvent = DeleteMessageEvent(
-        {
-          'messageId': msgId,
-          'chatId': chatId
-        },
+        {'messageId': msgId, 'chatId': chatId},
         controller: this,
         msgId: msgId,
         chatId: msgGlobalId,
@@ -354,13 +362,29 @@ class ChattingController {
 
   // edit a message
 
-  void editMsg(String msgId, String chatId, String content) {
+  void editMsg(
+    String msgId,
+    String chatId,
+    String content, {
+    required ChatType chatType,
+    required String? encryptionKey,
+    required String? initializationVector,
+  }) {
+    final encryptionService = EncryptionService.instance;
+
+    final text = encryptionService.encrypt(
+      chatType: chatType,
+      msg: content,
+      encryptionKey: encryptionKey,
+      initializationVector: initializationVector,
+    );
+
     final msgEvent = EditMessageEvent(
       {
         'chatId': chatId,
         'senderId': _ref.read(userProvider)!.id,
         'messageId': msgId,
-        'content': content
+        'content': text
       },
       controller: this,
       msgId: msgId,
