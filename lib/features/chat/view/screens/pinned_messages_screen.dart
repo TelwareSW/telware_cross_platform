@@ -165,6 +165,8 @@ class _PinnedMessagesScreen extends ConsumerState<PinnedMessagesScreen>
             contentType: MessageContentType.text,
             chatType: ChatType.private,
             chatModel: widget.chatModel,
+            encryptionKey: widget.chatModel?.encryptionKey,
+            initializationVector: widget.chatModel?.initializationVector
           );
       _messageController.clear();
       List<MessageModel> messages =
