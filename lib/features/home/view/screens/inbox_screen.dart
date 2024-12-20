@@ -9,10 +9,9 @@ import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/create_chat_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/call_overlay_widget.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
+import 'package:telware_cross_platform/features/home/view/widget/colapsed_expaned_stories.dart';
 import 'package:telware_cross_platform/features/home/view/widget/drawer.dart';
 import 'package:telware_cross_platform/features/stories/view/widget/chats_list.dart';
-import 'package:telware_cross_platform/features/stories/view/widget/colapsed_story_section.dart';
-import 'package:telware_cross_platform/features/stories/view/widget/expanded_stories_section.dart';
 import 'package:telware_cross_platform/features/stories/view_model/contact_view_model.dart';
 
 import '../../../../core/models/chat_model.dart';
@@ -42,13 +41,14 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
     // });
   }
 
-  void _scrollListener() {
+  bool _scrollListener() {
     const double appBarHeight = 35.0;
     if (_scrollController.offset > appBarHeight && !isAppBarCollapsed) {
-      setState(() => isAppBarCollapsed = true);
+      return isAppBarCollapsed = true;
     } else if (_scrollController.offset <= appBarHeight && isAppBarCollapsed) {
-      setState(() => isAppBarCollapsed = false);
+      return isAppBarCollapsed = false;
     }
+    return isAppBarCollapsed;
   }
 
   @override
@@ -94,19 +94,13 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
                 floating: false,
                 snap: false,
                 pinned: true,
-                title: isAppBarCollapsed
-                    ? const ColapsedStorySection()
-                    : const Text(
-                        'TelWare',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Palette.primaryText,
-                            fontSize: Sizes.primaryText),
-                      ),
-                flexibleSpace: FlexibleSpaceBar(
-                  background: !isAppBarCollapsed
-                      ? const ExpandedStoriesSection()
-                      : Container(),
+                title: ColapsedStories(
+                  resolver: _scrollListener,
+                  scrollController: _scrollController,
+                ),
+                flexibleSpace: ExpandedStories(
+                  resolver: _scrollListener,
+                  scrollController: _scrollController,
                 ),
                 actions: [
                   Padding(
@@ -129,6 +123,6 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
           ),
         ),
       );
-    });
+    },);
   }
 }

@@ -12,7 +12,7 @@ class ExpandedStoriesSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.read(usersViewModelProvider.notifier).fetchContacts();
     final isLoading = ref.watch(usersViewModelProvider.select((state) => state.isLoading));
-    // debugPrint('Building ExpandedStoriesSection...');
+    debugPrint('Building ExpandedStoriesSection...');
 
     return LayoutBuilder(
       builder: (context, constraints) {
