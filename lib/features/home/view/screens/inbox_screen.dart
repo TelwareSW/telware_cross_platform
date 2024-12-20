@@ -64,7 +64,6 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('#@#@#@#@#@# rebuilding inbox ');
     return LayoutBuilder(builder: (context, constraints) {
       return Scaffold(
         drawer: const AppDrawer(),

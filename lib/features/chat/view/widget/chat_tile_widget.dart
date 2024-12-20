@@ -1,7 +1,9 @@
 import 'dart:math';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
@@ -208,7 +210,19 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
           ref.watch(chatsViewModelProvider.notifier).getUser(widget.senderID),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator(); // Or any placeholder widget
+          return Skeletonizer(child: _tileBody(
+              '',
+              28.0,
+              chatModel.photoBytes,
+              false,
+              false,
+              false,
+              "Skeletonizer",
+              3,
+              false,
+              displayMessage.messageContentType,
+              isSkeleton: true
+            ),); // Or any placeholder widget
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         } else if (snapshot.hasData) {
@@ -241,138 +255,157 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
                     extra: chatModel.id ?? chatModel);
               }
             },
-            child: Container(
-              color: Palette.secondary,
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            right: 12.0, left: 12.0, top: 8.0, bottom: 8.0),
-                        child: CircleAvatar(
-                          key: ValueKey(
-                              "$keyValue${ChatKeys.chatAvatarPostfix.value}"),
-                          radius: avatarWidth,
-                          backgroundImage: imageBytes != null
-                              ? MemoryImage(imageBytes)
-                              : null,
-                          backgroundColor:
-                              imageBytes == null ? Palette.primary : null,
-                          child: imageBytes == null
-                              ? AvatarGenerator(
-                                  name: chatModel.title,
-                                  backgroundColor: getRandomColor(),
-                                  size: 100,
-                                )
-                              : null,
-                        ),
-                      ),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                  right: 14.0, bottom: 8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Expanded(
-                                        child: HighlightTextWidget(
-                                          key: ValueKey(
-                                              "$keyValue${ChatKeys.chatNamePostfix.value}"),
-                                          text: chatModel.title,
-                                          overFlow: TextOverflow.ellipsis,
-                                          maxLines: 1,
-                                          normalStyle: const TextStyle(
-                                            color: Palette.primaryText,
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 16,
-                                          ),
-                                          highlightStyle: const TextStyle(
-                                            color: Palette.primary,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w500,
-                                            backgroundColor: Colors.transparent,
-                                          ),
-                                          highlights: widget.titleHighlights,
-                                        ),
-                                      ),
-                                      if (isMuted)
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(right: 2.0),
-                                          child: Icon(
-                                            key: ValueKey(
-                                                "$keyValue${ChatKeys.chatTileMutePostfix.value}"),
-                                            Icons.volume_off,
-                                            size: 18,
-                                            color: Palette.inactiveSwitch,
-                                          ),
-                                        ),
-                                      if (sentByUser)
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(right: 2.0),
-                                          child: Icon(
-                                            key: ValueKey(
-                                                "$keyValue${ChatKeys.chatTileMessageStatusPostfix.value}"),
-                                            getMessageStateIcon(displayMessage),
-                                            size: 16,
-                                            color: Palette.accent,
-                                          ),
-                                        ),
-                                      Text(
-                                        key: ValueKey(
-                                            "$keyValue${ChatKeys.chatTileDisplayTimePostfix.value}"),
-                                        formatTimestamp(
-                                            displayMessage.timestamp),
-                                        style: const TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: 12,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(
-                                    height: 4,
-                                  ),
-                                  if (widget.isMessageDisplayed) ...[
-                                    displayedMessage(
-                                      keyValue,
-                                      hasDraft,
-                                      isGroupChat,
-                                      senderName,
-                                      unreadCount,
-                                      isMentioned,
-                                      displayMessageContentType,
-                                    ),
-                                  ]
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (showDivider) const Divider(),
-                ],
-              ),
+            child: _tileBody(
+              keyValue,
+              avatarWidth,
+              imageBytes,
+              isMuted,
+              hasDraft,
+              isGroupChat,
+              senderName,
+              unreadCount,
+              isMentioned,
+              displayMessageContentType,
             ),
           );
         } else {
           return const Text('No user data available'); // Handle no data state
         }
       },
+    );
+  }
+
+  Container _tileBody(
+    keyValue,
+    double avatarWidth,
+    Uint8List? imageBytes,
+    bool isMuted,
+    bool hasDraft,
+    bool isGroupChat,
+    String senderName,
+    int unreadCount,
+    bool isMentioned,
+    MessageContentType displayMessageContentType,
+    {bool isSkeleton = false}
+  ) {
+    return Container(
+      color: Palette.secondary,
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(
+                    right: 12.0, left: 12.0, top: 8.0, bottom: 8.0),
+                child: CircleAvatar(
+                  key: ValueKey("$keyValue${ChatKeys.chatAvatarPostfix.value}"),
+                  radius: avatarWidth,
+                  backgroundImage:
+                      imageBytes != null ? MemoryImage(imageBytes) : null,
+                  backgroundColor: imageBytes == null ? Palette.primary : null,
+                  child: imageBytes == null
+                      ? AvatarGenerator(
+                          name: isSkeleton ? '' : chatModel.title,
+                          backgroundColor: isSkeleton ? Colors.black12 : getRandomColor(),
+                          size: 100,
+                        )
+                      : null,
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 14.0, bottom: 8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: HighlightTextWidget(
+                                  key: ValueKey(
+                                      "$keyValue${ChatKeys.chatNamePostfix.value}"),
+                                  text: chatModel.title,
+                                  overFlow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  normalStyle: const TextStyle(
+                                    color: Palette.primaryText,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 16,
+                                  ),
+                                  highlightStyle: const TextStyle(
+                                    color: Palette.primary,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    backgroundColor: Colors.transparent,
+                                  ),
+                                  highlights: widget.titleHighlights,
+                                ),
+                              ),
+                              if (isMuted)
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 2.0),
+                                  child: Icon(
+                                    key: ValueKey(
+                                        "$keyValue${ChatKeys.chatTileMutePostfix.value}"),
+                                    Icons.volume_off,
+                                    size: 18,
+                                    color: Palette.inactiveSwitch,
+                                  ),
+                                ),
+                              if (sentByUser)
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 2.0),
+                                  child: Icon(
+                                    key: ValueKey(
+                                        "$keyValue${ChatKeys.chatTileMessageStatusPostfix.value}"),
+                                    getMessageStateIcon(displayMessage),
+                                    size: 16,
+                                    color: Palette.accent,
+                                  ),
+                                ),
+                              Text(
+                                key: ValueKey(
+                                    "$keyValue${ChatKeys.chatTileDisplayTimePostfix.value}"),
+                                formatTimestamp(displayMessage.timestamp),
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 12,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 4,
+                          ),
+                          if (widget.isMessageDisplayed) ...[
+                            displayedMessage(
+                              keyValue,
+                              hasDraft,
+                              isGroupChat,
+                              senderName,
+                              unreadCount,
+                              isMentioned,
+                              displayMessageContentType,
+                            ),
+                          ]
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (showDivider) const Divider(),
+        ],
+      ),
     );
   }
 
