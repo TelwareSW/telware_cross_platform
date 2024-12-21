@@ -215,12 +215,17 @@ class UserRemoteRepository {
 
   Future<Either<AppError, bool>> checkUsernameUniqueness({
     required String username,
+    required String sessionId,
   }) async {
     try {
       final response =
-          await _dio.get('/users/username/check', queryParameters: {
+      await _dio.get('/users/username/check', queryParameters: {
         'username': username,
-      });
+      },
+        options: Options(
+          headers: {'X-Session-Token': sessionId},
+        ),
+      );
 
       if (response.statusCode! >= 400) {
         return const Right(false);

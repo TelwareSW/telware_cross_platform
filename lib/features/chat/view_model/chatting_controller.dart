@@ -605,44 +605,30 @@ class ChattingController {
     }
 
     // create send draft event
-    // final msgEvent = UpdateDraftEvent({
-    //   'chatId': chatID,
-    //   'content': draft,
-    //   'senderId': _ref.read(userProvider)!.id,
-    // }, controller: this);
-    // _eventHandler.addEvent(msgEvent);
-    // final chats = _localRepository.getChats(userId);
-    // final chat = chats.firstWhere((element) => element.id == chatID);
-    // final updatedChat = chat.copyWith(draft: draft);
-    // final updatedChats =
-    //     chats.map((e) => e.id == chatID ? updatedChat : e).toList();
-    // _localRepository.setChats(updatedChats, userId);
-    // _ref.read(chatsViewModelProvider.notifier).setChats(updatedChats);
-    // debugPrint('!!! draft updated remotely and locally: ${updatedChat.draft}');
+    final msgEvent = UpdateDraftEvent({
+      'chatId': chatID,
+      'content': draft,
+    }, controller: this, msgId: '', chatId: chatID);
+    _eventHandler.addEvent(msgEvent);
+    final chats = _localRepository.getChats(userId);
+    final chat = chats.firstWhere((element) => element.id == chatID);
+    final updatedChat = chat.copyWith(draft: draft);
+    final updatedChats =
+        chats.map((e) => e.id == chatID ? updatedChat : e).toList();
+    _localRepository.setChats(updatedChats, userId);
+    _ref.read(chatsViewModelProvider.notifier).setChats(updatedChats);
+    debugPrint('!!! draft updated remotely and locally: ${updatedChat.draft}');
   }
 
-  Future<String?> getDraft(String chatID) async {
-    debugPrint('!!! getDraft called');
-    try {
-      final String userId = _ref.read(userProvider)!.id!;
-      if (USE_MOCK_DATA) {
-        final chats = _localRepository.getChats(userId);
-        final chat = chats.firstWhere((element) => element.id == chatID);
-        return chat.draft;
-      }
-      final sessionID = _ref.read(tokenProvider);
-      final draft = await _remoteRepository.getDraft(
-          sessionID!, _ref.read(tokenProvider)!, chatID);
-      debugPrint('!!! draft: $draft');
-      if (draft.draft == null) {
-        final chats = _localRepository.getChats(userId);
-        final chat = chats.firstWhere((element) => element.id == chatID);
-        return chat.draft;
-      }
-      return draft.draft;
-    } catch (e) {
-      return null;
-    }
+  void receiveUpdatedDraft(String chatID, String draft) {
+    final String userId = _ref.read(userProvider)!.id!;
+    final chats = _localRepository.getChats(userId);
+    final chat = chats.firstWhere((element) => element.id == chatID);
+    final updatedChat = chat.copyWith(draft: draft);
+    final updatedChats =
+    chats.map((e) => e.id == chatID ? updatedChat : e).toList();
+    _localRepository.setChats(updatedChats, userId);
+    _ref.read(chatsViewModelProvider.notifier).setChats(updatedChats);
   }
 
   Future<void> receiveCall(Map<String, dynamic> response) async {

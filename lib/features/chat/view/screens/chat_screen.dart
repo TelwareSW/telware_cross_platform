@@ -75,6 +75,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   bool isTextEmpty = true;
   bool showMuteOptions = false;
   bool isAllowedToSend = true;
+  String _previousDraft = "";
 
   // ignore: prefer_final_fields
   int _currentMatch = 1;
@@ -123,27 +124,15 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
   void _updateDraft() async {
     // TODO : server return 500 status code every time try to fix it ASAP
-    // if (!mounted) return;
-    // final currentDraft = _messageController.text;
-    // if (currentDraft != _previousDraft) {
-    //   ref
-    //       .read(chattingControllerProvider)
-    //       .updateDraft(chatModel!, currentDraft);
-    //   _previousDraft = currentDraft;
-    // } else if (chatModel?.id != null) {
-    //   // ref
-    //   //     .read(chattingControllerProvider)
-    //   //     .getDraft(chatModel!.id!)
-    //   //     .then((draft) {
-    //   //   if (draft != null && draft != _previousDraft) {
-    //   //     setState(() {
-    //   //       _messageController.text = draft;
-    //   //       _previousDraft = draft;
-    //   //     });
-    //   //   }
-    //   // });
-    // }
-    // return;
+    if (!mounted) return;
+    final currentDraft = _messageController.text;
+    if (currentDraft != _previousDraft) {
+      ref
+          .read(chattingControllerProvider)
+          .updateDraft(chatModel, currentDraft);
+      _previousDraft = currentDraft;
+    }
+    return;
   }
 
   void _updateChatMessages(List<MessageModel> messages) async {
@@ -418,7 +407,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     final ChatModel? chat =
         (index == -1) ? null : chats[index]; // Chat not found
     chatModel = widget.chatModel ?? chat!;
-    _updateDraft();
     final type = chatModel.type;
     final String title = chatModel.title;
     final membersNumber = chatModel.userIds.length;

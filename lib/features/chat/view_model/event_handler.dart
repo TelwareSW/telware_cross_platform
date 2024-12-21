@@ -322,6 +322,16 @@ class EventHandler {
         debugPrint('!!! Error in receiving a call ended:\n${e.toString()}');
       }
     });
+
+    // get updated draft
+    _socket.on(EventType.receiveUpdatedDraft.event, (response) async {
+      try {
+        debugPrint('### got a draft: $response');
+        _chattingController.receiveUpdatedDraft(response['chatId'], response['draft']);
+      } on Exception catch (e) {
+        debugPrint('!!! Error in receiving a draft:\n${e.toString()}');
+      }
+    });
   }
 
   // Private constructor
