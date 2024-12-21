@@ -36,7 +36,6 @@ class SettingsSection extends StatelessWidget {
   });
 
   void _navigateTo(BuildContext context, String route, Object? extra) {
-    print('fdsfdsfdsfdsfdsffffffffffffffffffffffff');
     context.push(route, extra: extra);
   }
 
