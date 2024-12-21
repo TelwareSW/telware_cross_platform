@@ -297,6 +297,8 @@ class ChatRemoteRepository {
       isAnnouncement: lastMessage['isAnnouncement'],
       threadMessages: threadMessages,
       parentMessage: lastMessage['parentMessageId'],
+      isAppropriate: lastMessage['isAppropriate'],
+      isEdited: lastMessage['isEdited'],
     );
   }
 
