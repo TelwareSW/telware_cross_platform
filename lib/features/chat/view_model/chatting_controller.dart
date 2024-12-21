@@ -22,6 +22,7 @@ import 'package:telware_cross_platform/features/chat/repository/chat_local_repos
 import 'package:telware_cross_platform/features/chat/repository/chat_remote_repository.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/features/chat/services/chat_mocking_service.dart';
+import 'package:telware_cross_platform/features/chat/services/encryption_service.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 import 'package:telware_cross_platform/features/chat/view_model/event_handler.dart';
 
@@ -70,7 +71,9 @@ class ChattingController {
   Future<void> getUserChats() async {
     // todo: make use of the return of this
     final response = await _remoteRepository.getUserChats(
-        _ref.read(tokenProvider)!, _ref.read(userProvider)!.id!);
+        _ref.read(tokenProvider)!,
+        _ref.read(userProvider)!.id!,
+        _ref.read(userProvider)!.isAdmin);
     final String userId = _ref.read(userProvider)!.id!;
     if (response.appError != null) {
       // todo(ahmed): for the notifier provider, return a state of fail
@@ -175,7 +178,9 @@ class ChattingController {
     }
 
     final response = await _remoteRepository.getUserChats(
-        _ref.read(tokenProvider)!, _ref.read(userProvider)!.id!);
+        _ref.read(tokenProvider)!,
+        _ref.read(userProvider)!.id!,
+        _ref.read(userProvider)!.isAdmin);
 
     if (response.appError != null) {
       // todo(ahmed): for the notifier provider, return a state of fail
@@ -218,6 +223,9 @@ class ChattingController {
     ChatModel? chatModel,
     String? parentMessgeId,
     bool isReply = false,
+    required String? encryptionKey,
+    required String? initializationVector,
+
   }) async {
     String? chatID = chatModel?.id;
     bool isChatNew = chatID == null;
@@ -250,32 +258,42 @@ class ChattingController {
               msgContentType: contentType,
               parentMessageId: parentMessgeId,
               isReply: isReply,
+              isForward: msgType == MessageType.forward,
             );
 
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
 
+    final encryptionService = EncryptionService.instance;
+
+    final text = encryptionService.encrypt(
+      chatType: chatType,
+      msg: content.getContent(),
+      encryptionKey: encryptionKey,
+      initializationVector: initializationVector,
+    );
+
     final msgEvent = SendMessageEvent(
       {
         'chatId': chatID,
         'media': content.getMediaURL(),
-        'content': content.getContent(),
+        'content': text,
         'contentType': contentType.content,
         'parentMessageId': parentMessgeId,
         'senderId': _ref.read(userProvider)!.id,
         'isFirstTime': isChatNew,
         'chatType': chatType.type,
+
         'isReply': isReply,
-        'isForward': false,
+        'isForward': msgType == MessageType.forward,
         "isAnnouncement":false,
+
       },
       controller: this,
       msgId: identifier.msgLocalId,
       chatId: identifier.chatId,
       onEventComplete: (Map<String, dynamic> res) {},
     );
-    print('@@@@@@@@@@@@@@@@@@@@@@@@@@');
-    print(msgEvent.payload);
 
     _eventHandler.addEvent(msgEvent);
   }
@@ -355,13 +373,29 @@ class ChattingController {
 
   // edit a message
 
-  void editMsg(String msgId, String chatId, String content) {
+  void editMsg(
+    String msgId,
+    String chatId,
+    String content, {
+    required ChatType chatType,
+    required String? encryptionKey,
+    required String? initializationVector,
+  }) {
+    final encryptionService = EncryptionService.instance;
+
+    final text = encryptionService.encrypt(
+      chatType: chatType,
+      msg: content,
+      encryptionKey: encryptionKey,
+      initializationVector: initializationVector,
+    );
+
     final msgEvent = EditMessageEvent(
       {
         'chatId': chatId,
         'senderId': _ref.read(userProvider)!.id,
         'messageId': msgId,
-        'content': content
+        'content': text
       },
       controller: this,
       msgId: msgId,
@@ -608,44 +642,30 @@ class ChattingController {
     }
 
     // create send draft event
-    // final msgEvent = UpdateDraftEvent({
-    //   'chatId': chatID,
-    //   'content': draft,
-    //   'senderId': _ref.read(userProvider)!.id,
-    // }, controller: this);
-    // _eventHandler.addEvent(msgEvent);
-    // final chats = _localRepository.getChats(userId);
-    // final chat = chats.firstWhere((element) => element.id == chatID);
-    // final updatedChat = chat.copyWith(draft: draft);
-    // final updatedChats =
-    //     chats.map((e) => e.id == chatID ? updatedChat : e).toList();
-    // _localRepository.setChats(updatedChats, userId);
-    // _ref.read(chatsViewModelProvider.notifier).setChats(updatedChats);
-    // debugPrint('!!! draft updated remotely and locally: ${updatedChat.draft}');
+    final msgEvent = UpdateDraftEvent({
+      'chatId': chatID,
+      'content': draft,
+    }, controller: this, msgId: '', chatId: chatID);
+    _eventHandler.addEvent(msgEvent);
+    final chats = _localRepository.getChats(userId);
+    final chat = chats.firstWhere((element) => element.id == chatID);
+    final updatedChat = chat.copyWith(draft: draft);
+    final updatedChats =
+        chats.map((e) => e.id == chatID ? updatedChat : e).toList();
+    _localRepository.setChats(updatedChats, userId);
+    _ref.read(chatsViewModelProvider.notifier).setChats(updatedChats);
+    debugPrint('!!! draft updated remotely and locally: ${updatedChat.draft}');
   }
 
-  Future<String?> getDraft(String chatID) async {
-    debugPrint('!!! getDraft called');
-    try {
-      final String userId = _ref.read(userProvider)!.id!;
-      if (USE_MOCK_DATA) {
-        final chats = _localRepository.getChats(userId);
-        final chat = chats.firstWhere((element) => element.id == chatID);
-        return chat.draft;
-      }
-      final sessionID = _ref.read(tokenProvider);
-      final draft = await _remoteRepository.getDraft(
-          sessionID!, _ref.read(tokenProvider)!, chatID);
-      debugPrint('!!! draft: $draft');
-      if (draft.draft == null) {
-        final chats = _localRepository.getChats(userId);
-        final chat = chats.firstWhere((element) => element.id == chatID);
-        return chat.draft;
-      }
-      return draft.draft;
-    } catch (e) {
-      return null;
-    }
+  void receiveUpdatedDraft(String chatID, String draft) {
+    final String userId = _ref.read(userProvider)!.id!;
+    final chats = _localRepository.getChats(userId);
+    final chat = chats.firstWhere((element) => element.id == chatID);
+    final updatedChat = chat.copyWith(draft: draft);
+    final updatedChats =
+    chats.map((e) => e.id == chatID ? updatedChat : e).toList();
+    _localRepository.setChats(updatedChats, userId);
+    _ref.read(chatsViewModelProvider.notifier).setChats(updatedChats);
   }
 
   Future<void> receiveCall(Map<String, dynamic> response) async {
@@ -794,5 +814,37 @@ class ChattingController {
     getUserChats();
     _eventHandler.addEvent(msgEvent);
     return true;
+  }
+
+  Future<void> filterGroup({
+    required String chatId,
+  }) async {
+    final sessionID = _ref.read(tokenProvider);
+    final response = await _remoteRepository.filterGroup(sessionID!, chatId);
+    if (response.appError != null) {
+      debugPrint('Error: Could not filter the group');
+    } else {
+      await getUserChats();
+      _ref
+          .read(chatsViewModelProvider.notifier)
+          .setChats(_localRepository.getChats(_ref.read(userProvider)!.id!));
+      debugPrint('!!! group filtered');
+    }
+  }
+
+  Future<void> unFilterGroup({
+    required String chatId,
+  }) async {
+    final sessionID = _ref.read(tokenProvider);
+    final response = await _remoteRepository.unFilterGroup(sessionID!, chatId);
+    if (response.appError != null) {
+      debugPrint('Error: Could not un filter the group');
+    } else {
+      await getUserChats();
+      _ref
+          .read(chatsViewModelProvider.notifier)
+          .setChats(_localRepository.getChats(_ref.read(userProvider)!.id!));
+      debugPrint('!!! group unfiltered');
+    }
   }
 }

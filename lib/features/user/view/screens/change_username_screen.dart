@@ -50,28 +50,28 @@ class _ChangeUsernameScreen extends ConsumerState<ChangeUsernameScreen> with Sin
 
     bool hasChanged = newUsername != _user.username;
 
-    setState(() {
-      _showSaveButton = hasChanged;
-      _validationMessageColor = Palette.error;
-      _isValid = false;
 
-      if (newUsername.isEmpty) {
-        _validationMessage = "";
-        _isValid = true;
-      } else if (RegExp(r'^[0-9]').hasMatch(newUsername[0])) {
-        _validationMessage = "Username can't start with a number.";
-      } else if (newUsername.length < 5) {
-        _validationMessage = "Username must have at least 5 characters.";
-      } else if (!_isUsernameValid(newUsername)) {
-        _validationMessage = "Username is invalid.";
-      } else {
-        _validationMessage = "Checking username...";
-        _validationMessageColor = Palette.accentText;
+    _showSaveButton = hasChanged;
+    _validationMessageColor = Palette.error;
+    _isValid = false;
 
-        // Check if the username is unique (remote call).
-        _checkUsernameUniqueness(newUsername);
-      }
-    });
+    if (newUsername.isEmpty) {
+      _validationMessage = "";
+      _isValid = true;
+    } else if (RegExp(r'^[0-9]').hasMatch(newUsername[0])) {
+      _validationMessage = "Username can't start with a number.";
+    } else if (newUsername.length < 5) {
+      _validationMessage = "Username must have at least 5 characters.";
+    } else if (!_isUsernameValid(newUsername)) {
+      _validationMessage = "Username is invalid.";
+    } else {
+      _validationMessage = "Checking username...";
+      _validationMessageColor = Palette.accentText;
+
+      // Check if the username is unique (remote call).
+      _checkUsernameUniqueness(newUsername);
+    }
+    setState(() {});
   }
 
   /// Validates if the username follows allowed patterns.
@@ -84,16 +84,15 @@ class _ChangeUsernameScreen extends ConsumerState<ChangeUsernameScreen> with Sin
   Future<void> _checkUsernameUniqueness(String username) async {
     bool isUnique = await ref.read(userViewModelProvider.notifier).checkUsernameUniqueness(username);
 
-    setState(() {
-      if (isUnique) {
-        _validationMessage = "Username is available.";
-        _validationMessageColor = Colors.green.shade500;
-        _isValid = true;
-      } else {
-        _validationMessage = "This username is already taken.";
-        _validationMessageColor = Colors.red.shade700;
-      }
-    });
+    if (isUnique) {
+      _validationMessage = "Username is available.";
+      _validationMessageColor = Colors.green.shade500;
+      _isValid = true;
+    } else {
+      _validationMessage = "This username is already taken.";
+      _validationMessageColor = Colors.red.shade700;
+    }
+    setState(() {});
   }
 
   /// Updates the username both locally and remotely.

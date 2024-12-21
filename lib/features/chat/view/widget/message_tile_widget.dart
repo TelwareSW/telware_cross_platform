@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/highlight_text_widget.dart';
@@ -21,9 +23,11 @@ import 'package:telware_cross_platform/features/chat/view/widget/sender_name_wid
 import 'package:telware_cross_platform/features/chat/view/widget/sticker_message_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/video_player_widget.dart';
 
+
 import '../../../../core/models/chat_model.dart';
 import '../screens/create_chat_screen.dart';
 import 'announcement_message_extention.dart';
+
 import 'floating_menu_overlay.dart';
 
 class MessageTileWidget extends ConsumerWidget {
@@ -71,7 +75,7 @@ class MessageTileWidget extends ConsumerWidget {
     return formatter.format(timestamp);
   }
 
-  Widget textMessage(keyValue, ref, String text) {
+  Widget textMessage(keyValue, ref, String text, bool isAppropriate) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -88,18 +92,21 @@ class MessageTileWidget extends ConsumerWidget {
             Wrap(
               children: [
                 HighlightTextWidget(
-                    key: ValueKey(
-                        '$keyValue${MessageKeys.messageContentPostfix.value}'),
-                    text: text,
-                    normalStyle: const TextStyle(
+                  key: ValueKey(
+                      '$keyValue${MessageKeys.messageContentPostfix.value}'),
+                  text: isAppropriate
+                      ? text
+                      : 'This message has been blocked by the admin',
+                  normalStyle: const TextStyle(
+                    color: Palette.primaryText,
+                    fontSize: 16,
+                  ),
+                  highlightStyle: const TextStyle(
                       color: Palette.primaryText,
                       fontSize: 16,
-                    ),
-                    highlightStyle: const TextStyle(
-                        color: Palette.primaryText,
-                        fontSize: 16,
-                        backgroundColor: Color.fromRGBO(246, 225, 2, 0.43)),
-                    highlights: highlights),
+                      backgroundColor: Color.fromRGBO(246, 225, 2, 0.43)),
+                  highlights: highlights,
+                ),
                 SizedBox(width: isSentByMe ? 70.0 : 55.0),
                 const Text("")
               ],
@@ -122,6 +129,7 @@ class MessageTileWidget extends ConsumerWidget {
     final keyValue = (key as ValueKey).value;
     bool isPinned = messageModel.isPinned;
     bool isEdited = messageModel.isEdited;
+    bool isForwarded = messageModel.isForward;
     String text = messageModel.content?.toJson()['text'] ?? "";
     if (text.length <= 35 && isPinned) text += '   ';
     if (text.length <= 35 && isEdited) text += '        ';
@@ -130,7 +138,7 @@ class MessageTileWidget extends ConsumerWidget {
     IconData messageState = getMessageStateIcon(messageModel);
     bool noBackGround =
         messageModel.messageContentType == MessageContentType.sticker ||
-            messageModel.messageContentType == MessageContentType.gif ||
+            messageModel.messageContentType == MessageContentType.GIF ||
             messageModel.messageContentType == MessageContentType.emoji;
     bool mediaMessage =
         messageModel.messageContentType == MessageContentType.audio ||
@@ -163,8 +171,8 @@ class MessageTileWidget extends ConsumerWidget {
                     },
                     onForward: () {
                       overlayEntry.remove();
-                      // List<MessageModel> messageList = [messageModel];
-                      context.push(CreateChatScreen.route);
+                      List<MessageModel> messageList = [messageModel];
+                      context.push(Routes.createChatScreen, extra: messageList);
                     },
                     onPin: () {
                       overlayEntry.remove();
@@ -216,8 +224,37 @@ class MessageTileWidget extends ConsumerWidget {
           ),
           child: Stack(
             children: [
-              _createMessageTile(
-                  messageModel.messageContentType, keyValue, ref, text),
+              if (isForwarded)
+                const Positioned(
+                  top: 0,
+                  left: 0,
+                  child: Row(
+                    children: [
+                      Icon(
+                        FontAwesomeIcons.share,
+                        size: 13,
+                      ),
+                      Text(
+                        '  Forwarded',
+                        style: TextStyle(
+                          fontStyle: FontStyle.italic,
+                          color: Palette.icons,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              Padding(
+                padding: EdgeInsets.only(top: isForwarded ? 25 : 0),
+                child: _createMessageTile(
+                  messageModel.messageContentType,
+                  keyValue,
+                  ref,
+                  text,
+                  messageModel.isAppropriate,
+                ),
+              ),
               // The timestamp is always in the bottom-right corner if there's space
               Positioned(
                 bottom: 0,
@@ -277,8 +314,8 @@ class MessageTileWidget extends ConsumerWidget {
     );
   }
 
-  Widget _createMessageTile(
-      MessageContentType contentType, keyValue, ref, String text) {
+  Widget _createMessageTile(MessageContentType contentType, keyValue, ref,
+      String text, bool isAppropriate) {
     switch (contentType) {
       case MessageContentType.text || MessageContentType.link:
         return textMessage(
@@ -324,7 +361,7 @@ class MessageTileWidget extends ConsumerWidget {
           url: messageModel.content?.toJson()["stickerUrl"],
           stickerName: messageModel.content?.toJson()["stickerName"] ?? '',
         );
-      case MessageContentType.gif:
+      case MessageContentType.GIF:
         return ImageMessageWidget(
           onDownloadTap: onDownloadTap,
           filePath: messageModel.content?.toJson()["filePath"],

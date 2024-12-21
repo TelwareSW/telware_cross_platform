@@ -146,15 +146,12 @@ class SendMessageEvent extends MessageEvent {
       ackCallback: (res, timer, completer) {
         try {
           final response = res as Map<String, dynamic>;
-          debugPrint('### I got a response ${response['success'].toString()}');
           print(response);
           if (!completer.isCompleted) {
             timer.cancel(); // Cancel the timer on acknowledgment
             if (response['success'].toString() == 'true') {
               final res = response['res'] as Map<String, dynamic>;
-              debugPrint('--- got the res');
               final messageId = res['messageId'] as String;
-              debugPrint('--- got the id $messageId');
 
               _controller!.updateMessageId(
                 msgId: messageId,

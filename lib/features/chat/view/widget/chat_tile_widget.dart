@@ -8,13 +8,16 @@ import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
+import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/highlight_text_widget.dart';
+import 'package:telware_cross_platform/features/auth/view/widget/confirmation_dialog.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
+import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 import 'package:telware_cross_platform/features/user/view/widget/avatar_generator.dart';
 
 class ChatTileWidget extends ConsumerStatefulWidget {
@@ -29,6 +32,7 @@ class ChatTileWidget extends ConsumerStatefulWidget {
     this.showDivider = true,
     required this.onChatSelected,
     this.isMessageDisplayed = true,
+    this.isForwarding = false,
   });
 
   final ChatModel chatModel;
@@ -38,6 +42,7 @@ class ChatTileWidget extends ConsumerStatefulWidget {
   final bool sentByUser;
   final Function(ChatModel) onChatSelected;
   final bool isMessageDisplayed;
+  final bool isForwarding;
 
   final List<MapEntry<int, int>> highlights;
   final List<MapEntry<int, int>> titleHighlights;
@@ -87,7 +92,7 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
         return "Sticker$content";
       case MessageContentType.emoji:
         return "Emoji$content";
-      case MessageContentType.gif:
+      case MessageContentType.GIF:
         return "GIF$content";
       case MessageContentType.link:
         return "Link$content";
@@ -121,14 +126,14 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
                 TextSpan(
                   text: hasDraft
                       ? "Draft: "
-                      : !isGroupChat
+                      : !isGroupChat || ref.read(userProvider)?.isAdmin == true
                           ? ""
                           : sentByUser
                               ? "You: "
                               : "$senderName: ",
                   style: TextStyle(
                     color: hasDraft
-                        ? Palette.error
+                        ? Palette.banned
                         : isGroupChat
                             ? Palette.primaryText
                             : Palette.accentText,
@@ -210,19 +215,20 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
           ref.watch(chatsViewModelProvider.notifier).getUser(widget.senderID),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Skeletonizer(child: _tileBody(
-              '',
-              28.0,
-              chatModel.photoBytes,
-              false,
-              false,
-              false,
-              "Skeletonizer",
-              3,
-              false,
-              displayMessage.messageContentType,
-              isSkeleton: true
-            ),); // Or any placeholder widget
+          return Skeletonizer(
+            child: _tileBody(
+                '',
+                28.0,
+                chatModel.photoBytes,
+                false,
+                false,
+                false,
+                "Skeletonizer",
+                3,
+                false,
+                displayMessage.messageContentType,
+                isSkeleton: true),
+          ); // Or any placeholder widget
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         } else if (snapshot.hasData) {
@@ -240,34 +246,56 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
           final displayMessageContentType = displayMessage.messageContentType;
           const avatarWidth = 28.0;
 
-          return InkWell(
-            onTap: () {
-              // Get the width of the screen
-              double width = MediaQuery.of(context).size.width;
+          return widget.isForwarding
+              ? _tileBody(
+                  keyValue,
+                  avatarWidth,
+                  imageBytes,
+                  isMuted,
+                  hasDraft,
+                  isGroupChat,
+                  senderName,
+                  unreadCount,
+                  isMentioned,
+                  displayMessageContentType,
+                )
+              : InkWell(
+                  onTap: () {
+                    // Get the width of the screen
+                    double width = MediaQuery.of(context).size.width;
 
-              // Check if the width is greater than 600
-              if (width > 600) {
-                // Handle wider screens (e.g., tablets or large phones in landscape mode)
-                widget.onChatSelected(chatModel);
-              } else {
-                // Handle smaller screens (e.g., phones in portrait or smaller landscape)
-                context.push(Routes.chatScreen,
-                    extra: chatModel.id ?? chatModel);
-              }
-            },
-            child: _tileBody(
-              keyValue,
-              avatarWidth,
-              imageBytes,
-              isMuted,
-              hasDraft,
-              isGroupChat,
-              senderName,
-              unreadCount,
-              isMentioned,
-              displayMessageContentType,
-            ),
-          );
+                    // Check if the width is greater than 600
+                    if (width > 600) {
+                      // Handle wider screens (e.g., tablets or large phones in landscape mode)
+                      widget.onChatSelected(chatModel);
+                    } else {
+                      // Handle smaller screens (e.g., phones in portrait or smaller landscape)
+
+                      if (ref.read(userProvider)?.isAdmin == true) {
+                        filterConfirmationDialog(
+                          chatModel.isFiltered ? 'UnFilter' : 'Filter',
+                          chatModel.title,
+                          chatId: chatModel.id,
+                        );
+                      } else {
+                        context.push(Routes.chatScreen,
+                            extra: chatModel.id ?? chatModel);
+                      }
+                    }
+                  },
+                  child: _tileBody(
+                    keyValue,
+                    avatarWidth,
+                    imageBytes,
+                    isMuted,
+                    hasDraft,
+                    isGroupChat,
+                    senderName,
+                    unreadCount,
+                    isMentioned,
+                    displayMessageContentType,
+                  ),
+                );
         } else {
           return const Text('No user data available'); // Handle no data state
         }
@@ -276,18 +304,17 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
   }
 
   Container _tileBody(
-    keyValue,
-    double avatarWidth,
-    Uint8List? imageBytes,
-    bool isMuted,
-    bool hasDraft,
-    bool isGroupChat,
-    String senderName,
-    int unreadCount,
-    bool isMentioned,
-    MessageContentType displayMessageContentType,
-    {bool isSkeleton = false}
-  ) {
+      keyValue,
+      double avatarWidth,
+      Uint8List? imageBytes,
+      bool isMuted,
+      bool hasDraft,
+      bool isGroupChat,
+      String senderName,
+      int unreadCount,
+      bool isMentioned,
+      MessageContentType displayMessageContentType,
+      {bool isSkeleton = false}) {
     return Container(
       color: Palette.secondary,
       child: Column(
@@ -306,7 +333,7 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
                   child: imageBytes == null
                       ? AvatarGenerator(
                           name: isSkeleton ? '' : chatModel.title,
-                          backgroundColor: isSkeleton ? Colors.black12 : getRandomColor(),
+                          backgroundColor: getRandomColor(),
                           size: 100,
                         )
                       : null,
@@ -412,5 +439,45 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
   int _getUnreadMessageCount() {
     final random = Random();
     return random.nextInt(3); // Generate random number between 0 and 10
+  }
+
+  void filterConfirmationDialog(String action, String chatName,
+      {String? chatId}) {
+    showConfirmationDialog(
+      context: context,
+      title: 'Filter chat',
+      titleFontWeight: FontWeight.normal,
+      titleColor: Palette.primaryText,
+      titleFontSize: 18.0,
+      subtitle: 'Are you sure you want to $action $chatName?',
+      subtitleFontWeight: FontWeight.bold,
+      subtitleFontSize: 16.0,
+      contentGap: 20.0,
+      actionsAlignment: MainAxisAlignment.spaceBetween,
+      confirmText: action,
+      confirmColor: const Color.fromRGBO(238, 104, 111, 1),
+      confirmPadding: const EdgeInsets.only(left: 40.0),
+      cancelText: 'Cancel',
+      cancelColor: const Color.fromRGBO(100, 181, 239, 1),
+      onConfirm: () async {
+        if (chatId != null) {
+          if (action == 'Filter') {
+            await ref
+                .read(chattingControllerProvider)
+                .filterGroup(chatId: chatId);
+          } else {
+            await ref
+                .read(chattingControllerProvider)
+                .unFilterGroup(chatId: chatId);
+          }
+        }
+        if (mounted) {
+          context.pop();
+        }
+      },
+      onCancel: () {
+        context.pop();
+      },
+    );
   }
 }

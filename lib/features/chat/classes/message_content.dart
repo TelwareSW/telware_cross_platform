@@ -17,6 +17,7 @@ abstract class MessageContent {
   MessageContent copyWith();
 
   String getContent();
+
   String? getMediaURL();
 }
 
@@ -44,11 +45,10 @@ class TextContent extends MessageContent {
   String getContent() {
     return text;
   }
-  
+
   @override
   String? getMediaURL() {
-    return null;    
-
+    return null;
   }
 }
 
@@ -175,7 +175,7 @@ class ImageContent extends MessageContent {
 
   @override
   String getContent() {
-    return caption ?? '';
+    return caption?.isNotEmpty == true ? (caption ?? '') : (fileName ?? '');
   }
 
   @override

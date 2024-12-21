@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
+import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 
 import 'package:telware_cross_platform/core/view/screen/splash_screen.dart';
@@ -35,6 +36,7 @@ import 'package:telware_cross_platform/features/user/view/screens/blocked_users.
 import 'package:telware_cross_platform/features/user/view/screens/change_email_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/change_number_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/change_username_screen.dart';
+import 'package:telware_cross_platform/features/user/view/screens/data_and_storage_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/invites_permissions_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/last_seen_privacy_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/phone_privacy_screen.dart';
@@ -44,6 +46,7 @@ import 'package:telware_cross_platform/features/user/view/screens/profile_photo_
 import 'package:telware_cross_platform/features/user/view/screens/self_destruct_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/settings_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/user_profile_screen.dart';
+import 'package:telware_cross_platform/features/user/view/screens/wifi_media_screen.dart';
 
 import '../../features/chat/view/screens/pinned_messages_screen.dart';
 import '../../features/groups/view/screens/create_channel_screen.dart';
@@ -95,6 +98,8 @@ class Routes {
   static const String addMembersScreen = AddMembersScreen.route;
   static const String membersScreen = MembersScreen.route;
   static const String captionScreen = CaptionScreen.route;
+  static const String dataAndStorageScreen = DataAndStorageScreen.route;
+  static const String wifiMediaScreen = WifiMediaScreen.route;
 
   static GoRouter appRouter(WidgetRef ref) => GoRouter(
         initialLocation: Routes.splash,
@@ -267,8 +272,15 @@ class Routes {
           GoRoute(
               path: Routes.chatScreen,
               builder: (context, state) {
-                if (state.extra is ChatModel) {
-                  return ChatScreen(chatModel: state.extra as ChatModel);
+                print(state.extra.runtimeType);
+                if (state.extra is List) {
+                  final chat = (state.extra as List)[0] as ChatModel;
+                  final forwardedMessages = (state.extra as List)[1] as List<MessageModel>;
+                  return ChatScreen(
+                    chatModel: chat,
+                    forwardedMessages:
+                        forwardedMessages,
+                  );
                 }
                 final String chatId = state.extra as String;
                 return ChatScreen(chatId: chatId);
@@ -291,7 +303,12 @@ class Routes {
               }),
           GoRoute(
             path: Routes.createChatScreen,
-            builder: (context, state) => const CreateChatScreen(),
+            builder: (context, state) {
+              final forwardedMessages = state.extra as List<MessageModel>?;
+              return CreateChatScreen(
+                forwardedMessages: forwardedMessages,
+              );
+            },
           ),
           GoRoute(
             path: Routes.chatInfoScreen,
@@ -316,6 +333,7 @@ class Routes {
               final Map<String, dynamic>? extra =
                   state.extra as Map<String, dynamic>?;
               return CallScreen(
+                  chatId: extra?['chatId'] as String?,
                   callee: extra?['user'] as UserModel?,
                   voiceCallId: extra?['voiceCallId'] as String?);
             },
@@ -359,6 +377,7 @@ class Routes {
             },
           ),
           GoRoute(
+
             path: Routes.createChannel,
             builder: (context, state) => CreateChannelScreen(),
           ),
@@ -400,6 +419,16 @@ class Routes {
               );
             },
           ),
+
+          GoRoute(
+            path: Routes.dataAndStorageScreen,
+            builder: (context, state) => const DataAndStorageScreen(),
+          ),
+          GoRoute(
+            path: Routes.wifiMediaScreen,
+            builder: (context, state) => const WifiMediaScreen(),
+          )
+
         ],
       );
 

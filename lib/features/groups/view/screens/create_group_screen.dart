@@ -68,7 +68,9 @@ class _CreateGroupScreen extends ConsumerState<CreateGroupScreen>
   Widget build(BuildContext context) {
     ref.listen<HomeState>(
       homeViewModelProvider,
+
           (_, state) {
+
         usersGlobalSearchResults = state.usersGlobalSearchResults;
         setState(() {});
       },

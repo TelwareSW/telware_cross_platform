@@ -215,12 +215,17 @@ class UserRemoteRepository {
 
   Future<Either<AppError, bool>> checkUsernameUniqueness({
     required String username,
+    required String sessionId,
   }) async {
     try {
       final response =
-          await _dio.get('/users/username/check', queryParameters: {
+      await _dio.get('/users/username/check', queryParameters: {
         'username': username,
-      });
+      },
+        options: Options(
+          headers: {'X-Session-Token': sessionId},
+        ),
+      );
 
       if (response.statusCode! >= 400) {
         return const Right(false);
@@ -367,6 +372,72 @@ class UserRemoteRepository {
       debugPrint('block user error:\n${error.toString()}');
       return Left(
           AppError("Couldn't block user now. Please, try again later."));
+    }
+  }
+
+  Future<Either<AppError, void>> banUser({
+    required String sessionID,
+    required String userID,
+  }) async {
+    try {
+      final response = await _dio.patch(
+        '/users/ban/$userID',
+        options: Options(headers: {'X-Session-Token': sessionID}),
+      );
+
+      debugPrint("message: ${response.data['message']}");
+
+      return const Right(null);
+    } on DioException catch (dioException) {
+      return Left(handleDioException(dioException));
+    } catch (error) {
+      debugPrint('!!! Failed to ban $userID, ${error.toString()}');
+      return Left(AppError("Failed to ban user. Please, try again later."));
+    }
+  }
+
+  Future<Either<AppError, void>> activateUser({
+    required String sessionID,
+    required String userID,
+  }) async {
+    debugPrint('Activating user $userID');
+    try {
+      final response = await _dio.patch(
+        '/users/activate/$userID',
+        options: Options(headers: {'X-Session-Token': sessionID}),
+      );
+
+      debugPrint("message: ${response.data['message']}");
+
+      return const Right(null);
+    } on DioException catch (dioException) {
+      return Left(handleDioException(dioException));
+    } catch (error) {
+      debugPrint('!!! Failed to activate $userID, ${error.toString()}');
+      return Left(
+          AppError("Failed to activate user. Please, try again later."));
+    }
+  }
+
+  Future<Either<AppError, void>> deactivateUser({
+    required String sessionID,
+    required String userID,
+  }) async {
+    try {
+      final response = await _dio.patch(
+        '/users/deactivate/$userID',
+        options: Options(headers: {'X-Session-Token': sessionID}),
+      );
+
+      debugPrint("message: ${response.data['message']}");
+
+      return const Right(null);
+    } on DioException catch (dioException) {
+      return Left(handleDioException(dioException));
+    } catch (error) {
+      debugPrint('!!! Failed to deactivate $userID, ${error.toString()}');
+      return Left(
+          AppError("Failed to deactivate user. Please, try again later."));
     }
   }
 

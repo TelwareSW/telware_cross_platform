@@ -19,11 +19,13 @@ import 'package:telware_cross_platform/features/chat/view_model/chats_view_model
 
 class CallScreen extends ConsumerStatefulWidget {
   static const String route = '/call';
+  final String? chatId;
   final UserModel? callee;
   final String? voiceCallId;
 
   const CallScreen({
     super.key,
+    this.chatId,
     this.callee,
     this.voiceCallId,
   });
@@ -47,6 +49,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     isCaller = ref.read(callStateProvider).isCaller;
     callee = widget.callee ?? ref.read(callStateProvider).callee;
     voiceCallId = widget.voiceCallId ?? ref.read(callStateProvider).voiceCallId;
+    String? chatId = widget.chatId;
 
     isReceivingCall = !isCaller && voiceCallId != null;
 
@@ -71,9 +74,12 @@ class _CallScreenState extends ConsumerState<CallScreen> {
       _initializeSignaling();
       if (voiceCallId == null && isCaller) {
         debugPrint("Call: Creating voice call");
-        ChatModel chat = ref.read(chatsViewModelProvider.notifier)
-            .getChat(ref.read(userProvider)!, callee!, ChatType.private);
-        _signaling.createVoiceCall(chat.id, callee!.id);
+        if (chatId == null) {
+          ChatModel chat = ref.read(chatsViewModelProvider.notifier)
+              .getChat(ref.read(userProvider)!, callee!, ChatType.private);
+          chatId = chat.id;
+        }
+        _signaling.createVoiceCall(chatId, callee?.id);
       }
     });
   }
@@ -88,19 +94,19 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     _signaling.onOffer = (description, senderId) async {
       // If receiving a call, set remote description and create an answer
       await _signaling.registerPeerConnection(senderId);
-      await _signaling.setRemoteDescription(description);
+      await _signaling.setRemoteDescription(description, senderId);
       final answer = await _signaling.createAnswer(senderId);
       _signaling.sendAnswer(answer, senderId);
       startCall();
     };
 
     _signaling.onAnswer = (description, senderId) async {
-      await _signaling.setRemoteDescription(description);
+      await _signaling.setRemoteDescription(description, senderId);
       startCall();
     };
 
-    _signaling.onICECandidate = (candidate) {
-      _signaling.addCandidate(candidate);
+    _signaling.onICECandidate = (candidate, senderId) {
+      _signaling.addCandidate(candidate, senderId);
     };
 
     _signaling.onCallStarted = (response) {
@@ -126,6 +132,12 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     };
 
     _signaling.onReceiveLeftCall = (response) {
+      // Terminate connection with the specific user
+      final clientId = response['clientId'];
+      _signaling.removeRemoteClient(clientId);
+    };
+
+    _signaling.onReceiveEndCall = (response) {
       // Terminate connection with user
       endCall();
       context.pop();

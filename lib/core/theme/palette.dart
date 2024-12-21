@@ -17,4 +17,7 @@ class Palette {
   static const Color black = Color.fromRGBO(0, 0, 0, 1);
   static const Color drawerHeader = Color.fromRGBO(34, 45, 58, 1);
   static const Color valid = Color.fromRGBO(76, 175, 80, 1.0);
+  static const Color banned = Color.fromRGBO(238, 104, 111, 1);
+  static const Color deactivated = Color.fromRGBO(255, 152, 0, 1);
+  static const Color active = Color.fromRGBO(76, 175, 80, 1.0);
 }

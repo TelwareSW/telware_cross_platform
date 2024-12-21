@@ -10,6 +10,7 @@ import 'package:telware_cross_platform/features/chat/classes/message_content.dar
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
+import 'package:telware_cross_platform/features/chat/services/encryption_service.dart';
 import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 
@@ -93,6 +94,7 @@ class ChatsViewModel extends _$ChatsViewModel {
   ({
     String msgLocalId,
     String chatId,
+
   }) addSentMessage({
     required MessageContent content,
     required String chatId,
@@ -111,6 +113,7 @@ class ChatsViewModel extends _$ChatsViewModel {
         senderId + DateTime.now().millisecondsSinceEpoch.toString();
 
     final MessageModel msg = MessageModel(
+
         senderId: senderId,
         timestamp: DateTime.now(),
         content: content,
@@ -203,11 +206,21 @@ class ChatsViewModel extends _$ChatsViewModel {
     MessageContentType contentType =
         MessageContentType.getType(response['contentType'] ?? 'text');
 
+    final encryptionService = EncryptionService.instance;
+
+    final text = encryptionService.decrypt(
+      chatType: chat.type,
+      msg: response['content'],
+      encryptionKey: chat.encryptionKey,
+      initializationVector: chat.initializationVector,
+    );
+
     // todo: needs to be modified to match the response fields
+    // todo(marwan): add file name instead of content
     content = createMessageContent(
       contentType: contentType,
-      text: response['content'],
-      fileName: response['content'],
+      text: text,
+      fileName: text,
       mediaUrl: response['media'],
     );
 

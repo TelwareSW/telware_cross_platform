@@ -40,6 +40,8 @@ class MessageModel {
   List<String> threadMessages;
   @HiveField(14)
   final bool isEdited;
+  @HiveField(15)
+  final bool isAppropriate;
 
 //<editor-fold desc="Data Methods">
   MessageModel({
@@ -57,6 +59,7 @@ class MessageModel {
     this.isEdited = false,
     this.isForward = false,
     this.isAnnouncement = false,
+    this.isAppropriate = true,
     List<String>? threadMessages,
   }) : threadMessages = threadMessages ?? [];
 
@@ -85,6 +88,7 @@ class MessageModel {
         other.localId == localId &&
         other.isForward == isForward &&
         other.isEdited == isEdited &&
+        other.isAppropriate == isAppropriate &&
         other.userStates == userStates;
   }
 
@@ -103,6 +107,7 @@ class MessageModel {
         threadMessages.hashCode ^
         isForward.hashCode ^
         localId.hashCode ^
+        isAppropriate.hashCode ^
         userStates.hashCode;
   }
 
@@ -122,8 +127,9 @@ class MessageModel {
         'isForward: $isForward\n'
         'isPinned: $isPinned\n'
         'isEdited: $isEdited\n'
-        'threadMessages: $threadMessages'
-        'parentMessage: $parentMessage'
+        'threadMessages: $threadMessages\n'
+        'isAppropriate: $isAppropriate\n'
+        'parentMessage: $parentMessage\n'
         ')');
   }
 
@@ -143,6 +149,7 @@ class MessageModel {
     bool? isPinned,
     bool? isAnnouncement,
     bool? isEdited,
+    bool? isAppropriate,
     String? parentMessage,
     List<String>? threadMessages,
   }) {
@@ -161,6 +168,7 @@ class MessageModel {
       isAnnouncement: isAnnouncement ?? this.isAnnouncement,
       threadMessages: threadMessages ?? this.threadMessages,
       parentMessage: parentMessage ?? this.parentMessage,
+      isAppropriate: isAppropriate ?? this.isAppropriate,
       isEdited: isEdited ?? this.isEdited,
     );
   }
@@ -183,6 +191,7 @@ class MessageModel {
       'isPinned': isPinned,
       'isEdited': isEdited,
       'isAnnouncement': isAnnouncement,
+      'isAppropriate': isAppropriate,
       'threadMessages': threadMessages,
       'parentMessage': parentMessage,
     };
@@ -215,6 +224,7 @@ class MessageModel {
         isPinned: map['isPinned'] ?? false,
         isAnnouncement: map['isAnnouncement'] ?? false,
         isEdited: map['isEdited'] ?? false,
+        isAppropriate: map['isAppropriate'] ?? true,
         parentMessage: map['parentMessageId'] ?? '');
   }
 
