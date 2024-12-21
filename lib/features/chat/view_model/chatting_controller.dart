@@ -121,10 +121,7 @@ class ChattingController {
     // get the users list from local
     final otherUsers =
         _localRepository.getOtherUsers(_ref.read(userProvider)!.id!);
-    // * the next three lines are for dubuging
-    // String ids = '';
-    // otherUsers.forEach((key, _) => ids += '$key\n');
-    // debugPrint('!!! OtherUsers Map ID\'s: $ids');
+    
     _ref.read(chatsViewModelProvider.notifier).setOtherUsers(otherUsers);
 
     // get the events and give it to the handler from local
