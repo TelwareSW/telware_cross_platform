@@ -370,6 +370,72 @@ class UserRemoteRepository {
     }
   }
 
+  Future<Either<AppError, void>> banUser({
+    required String sessionID,
+    required String userID,
+  }) async {
+    try {
+      final response = await _dio.patch(
+        '/users/ban/$userID',
+        options: Options(headers: {'X-Session-Token': sessionID}),
+      );
+
+      debugPrint("message: ${response.data['message']}");
+
+      return const Right(null);
+    } on DioException catch (dioException) {
+      return Left(handleDioException(dioException));
+    } catch (error) {
+      debugPrint('!!! Failed to ban $userID, ${error.toString()}');
+      return Left(AppError("Failed to ban user. Please, try again later."));
+    }
+  }
+
+  Future<Either<AppError, void>> activateUser({
+    required String sessionID,
+    required String userID,
+  }) async {
+    debugPrint('Activating user $userID');
+    try {
+      final response = await _dio.patch(
+        '/users/activate/$userID',
+        options: Options(headers: {'X-Session-Token': sessionID}),
+      );
+
+      debugPrint("message: ${response.data['message']}");
+
+      return const Right(null);
+    } on DioException catch (dioException) {
+      return Left(handleDioException(dioException));
+    } catch (error) {
+      debugPrint('!!! Failed to activate $userID, ${error.toString()}');
+      return Left(
+          AppError("Failed to activate user. Please, try again later."));
+    }
+  }
+
+  Future<Either<AppError, void>> deactivateUser({
+    required String sessionID,
+    required String userID,
+  }) async {
+    try {
+      final response = await _dio.patch(
+        '/users/deactivate/$userID',
+        options: Options(headers: {'X-Session-Token': sessionID}),
+      );
+
+      debugPrint("message: ${response.data['message']}");
+
+      return const Right(null);
+    } on DioException catch (dioException) {
+      return Left(handleDioException(dioException));
+    } catch (error) {
+      debugPrint('!!! Failed to deactivate $userID, ${error.toString()}');
+      return Left(
+          AppError("Failed to deactivate user. Please, try again later."));
+    }
+  }
+
   AppError handleDioException(DioException dioException) {
     String? message;
     if (dioException.response != null) {

@@ -87,7 +87,7 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
         return "Sticker$content";
       case MessageContentType.emoji:
         return "Emoji$content";
-      case MessageContentType.gif:
+      case MessageContentType.GIF:
         return "GIF$content";
       case MessageContentType.link:
         return "Link$content";
@@ -210,19 +210,20 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
           ref.watch(chatsViewModelProvider.notifier).getUser(widget.senderID),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Skeletonizer(child: _tileBody(
-              '',
-              28.0,
-              chatModel.photoBytes,
-              false,
-              false,
-              false,
-              "Skeletonizer",
-              3,
-              false,
-              displayMessage.messageContentType,
-              isSkeleton: true
-            ),); // Or any placeholder widget
+          return Skeletonizer(
+            child: _tileBody(
+                '',
+                28.0,
+                chatModel.photoBytes,
+                false,
+                false,
+                false,
+                "Skeletonizer",
+                3,
+                false,
+                displayMessage.messageContentType,
+                isSkeleton: true),
+          ); // Or any placeholder widget
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         } else if (snapshot.hasData) {
@@ -276,18 +277,17 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
   }
 
   Container _tileBody(
-    keyValue,
-    double avatarWidth,
-    Uint8List? imageBytes,
-    bool isMuted,
-    bool hasDraft,
-    bool isGroupChat,
-    String senderName,
-    int unreadCount,
-    bool isMentioned,
-    MessageContentType displayMessageContentType,
-    {bool isSkeleton = false}
-  ) {
+      keyValue,
+      double avatarWidth,
+      Uint8List? imageBytes,
+      bool isMuted,
+      bool hasDraft,
+      bool isGroupChat,
+      String senderName,
+      int unreadCount,
+      bool isMentioned,
+      MessageContentType displayMessageContentType,
+      {bool isSkeleton = false}) {
     return Container(
       color: Palette.secondary,
       child: Column(
@@ -306,7 +306,7 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
                   child: imageBytes == null
                       ? AvatarGenerator(
                           name: isSkeleton ? '' : chatModel.title,
-                          backgroundColor: isSkeleton ? Colors.black12 : getRandomColor(),
+                          backgroundColor: getRandomColor(),
                           size: 100,
                         )
                       : null,

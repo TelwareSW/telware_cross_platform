@@ -61,7 +61,7 @@ enum MessageContentType {
   @HiveField(2)
   emoji(content: 'emoji'),
   @HiveField(3)
-  gif(content: 'gif'),
+  GIF(content: 'GIF'),
   @HiveField(4)
   sticker(content: 'sticker'),
   @HiveField(5)
@@ -71,7 +71,9 @@ enum MessageContentType {
   @HiveField(7)
   file(content: 'file'),
   @HiveField(8)
-  link(content: 'link');
+  link(content: 'link'),
+  @HiveField(9)
+  call(content: 'call');
 
   static MessageContentType getType(String type) {
     switch (type) {
@@ -79,8 +81,8 @@ enum MessageContentType {
         return MessageContentType.image;
       case 'emoji':
         return MessageContentType.emoji;
-      case 'gif':
-        return MessageContentType.gif;
+      case 'GIF':
+        return MessageContentType.GIF;
       case 'sticker':
         return MessageContentType.sticker;
       case 'audio':
@@ -91,6 +93,8 @@ enum MessageContentType {
         return MessageContentType.file;
       case 'link':
         return MessageContentType.link;
+      case 'call':
+        return MessageContentType.call;
       default:
         return MessageContentType.text;
     }

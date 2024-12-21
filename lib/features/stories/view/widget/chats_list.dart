@@ -30,9 +30,12 @@ class ChatsList extends ConsumerWidget {
       key: ChatKeys.chatsListKey,
       delegate: SliverChildBuilderDelegate(
       (BuildContext context, int index) {
-          final key = ValueKey('${ChatKeys.chatTilePrefix.value}$index');
+          final listKey = ValueKey('${ChatKeys.chatTilePrefix.value + ChatKeys.chatTilePrefixSubvalue}$index');
+          final tileKey = ValueKey('${ChatKeys.chatTilePrefix.value}$index');
+
           return _delegate(
-            key,
+            listKey,
+            tileKey,
             chatsList[index],
             ref.read(userProvider)!.id!,
           );
@@ -42,7 +45,7 @@ class ChatsList extends ConsumerWidget {
     );
   }
 
-  Widget _delegate(ValueKey key, ChatModel chat, String userID) {
+  Widget _delegate(ValueKey listKey, ValueKey tileKey, ChatModel chat, String userID) {
     final Random random = Random();
     DateTime currentDate = DateTime.now().subtract(const Duration(days: 7));
     final MessageModel fakeMessage = MessageModel(
@@ -57,17 +60,17 @@ class ChatsList extends ConsumerWidget {
       userStates: {},
     );
     final message = chat.messages.isNotEmpty ? chat.messages.last : fakeMessage;
-    // debugPrint('*** ${chat.title}');
-    // debugPrint('*** ${chat.messages.length}');
-    // debugPrint(chat.messages.lastOrNull?.content?.getContent());
-    // debugPrint(chat.messages.firstOrNull?.content?.getContent());
-    return ChatTileWidget(
-      key: key,
-      chatModel: chat,
-      displayMessage: message,
-      sentByUser: message.senderId == userID,
-      senderID: message.senderId,
-      onChatSelected: onChatSelected,
+    
+    return Container(
+      key: listKey,
+      child: ChatTileWidget(
+        key: tileKey,
+        chatModel: chat,
+        displayMessage: message,
+        sentByUser: message.senderId == userID,
+        senderID: message.senderId,
+        onChatSelected: onChatSelected,
+      ),
     );
   }
 }

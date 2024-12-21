@@ -218,12 +218,13 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   void _sendForwardedMessages() {
     for (MessageModel message in widget.forwardedMessages!) {
       ref.read(chattingControllerProvider).sendMsg(
-            content: message.content!,
-            msgType: MessageType.forward,
-            contentType: message.messageContentType,
-            chatType: ChatType.private,
-            chatModel: widget.chatModel,
-          );
+          content: message.content!,
+          msgType: MessageType.forward,
+          contentType: message.messageContentType,
+          chatType: ChatType.private,
+          chatModel: widget.chatModel,
+          encryptionKey: widget.chatModel?.encryptionKey,
+          initializationVector: widget.chatModel?.initializationVector);
       _messageController.clear();
       List<MessageModel> messages =
           ref.watch(chatProvider(widget.chatId))?.messages ?? [];
@@ -298,22 +299,25 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     );
     _messageController.clear();
     ref.read(chattingControllerProvider).sendMsg(
-        content: newMessage.content!,
-        msgType: newMessage.messageType,
-        contentType: newMessage.messageContentType,
-        chatType: ChatType.private,
-        chatModel: chatModel,
-        parentMessgeId: replyMessage?.id);
+          content: newMessage.content!,
+          msgType: newMessage.messageType,
+          contentType: newMessage.messageContentType,
+          chatType: ChatType.private,
+          chatModel: chatModel,
+          parentMessgeId: replyMessage?.id,
+          encryptionKey: chatModel.encryptionKey,
+          initializationVector: chatModel.initializationVector,
+        );
   }
 
   void _editMessage() {
     if (editMessage == null || _messageController.text.isEmpty) return;
     // todo(ahmed): handle extreem cases like editing a message that is not yet sent
     ref.read(chattingControllerProvider).editMsg(
-          (editMessage?.id)!,
-          (chatModel.id)!,
-          _messageController.text,
-        );
+        (editMessage?.id)!, (chatModel.id)!, _messageController.text,
+        chatType: ChatType.private,
+        encryptionKey: widget.chatModel?.encryptionKey,
+        initializationVector: widget.chatModel?.initializationVector);
     _messageController.text = '';
   }
 

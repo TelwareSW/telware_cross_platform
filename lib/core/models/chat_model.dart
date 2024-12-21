@@ -47,6 +47,10 @@ class ChatModel {
   final DateTime? muteUntil; // Add this field
   @HiveField(16)
   final bool messagingPermission; //1->anyone   0->admins
+  @HiveField(17)
+  final String? encryptionKey;
+  @HiveField(18)
+  final String? initializationVector;
 
 
 
@@ -68,6 +72,8 @@ class ChatModel {
     required this.messages,
     this.muteUntil, // Initialize this field
     this.messagingPermission = true,
+    this.encryptionKey,
+    this.initializationVector,
   });
 
   Future<void> _setPhotoBytes() async {
@@ -109,7 +115,10 @@ class ChatModel {
         other.draft == draft &&
         other.isMentioned == isMentioned &&
         other.messages == messages&&
-        other.messagingPermission == messagingPermission;
+        other.messagingPermission == messagingPermission &&
+        other.encryptionKey == encryptionKey && 
+        other.initializationVector == initializationVector
+        ;
   }
 
   @override
@@ -128,7 +137,10 @@ class ChatModel {
     creators.hashCode ^
     isMentioned.hashCode ^
     messages.hashCode^ // Include messages in hashCode
-    messagingPermission.hashCode;
+    messagingPermission.hashCode ^
+    encryptionKey.hashCode ^
+    initializationVector.hashCode
+    ;
   }
 
   @override
@@ -149,6 +161,8 @@ class ChatModel {
         'isMentioned: $isMentioned,\n'
         'messages: $messages,\n' // Add messages to the string representation
         'messagingPermission: $messagingPermission,\n'
+        'encryptionKey: $encryptionKey,\n'
+        'initializationVecot: $initializationVector,\n'
         ')');
   }
 
@@ -170,6 +184,8 @@ class ChatModel {
     bool? isMentioned,
     List<MessageModel>? messages,
     bool? messagingPermission,
+    String? encryptionKey,
+    String? initializationVector
   }) {
     return ChatModel(
       title: title ?? this.title,
@@ -189,6 +205,8 @@ class ChatModel {
       isMentioned: isMentioned ?? this.isMentioned,
       messages: messages ?? this.messages,
       messagingPermission: messagingPermission ?? this.messagingPermission,
+      encryptionKey: encryptionKey ?? this.encryptionKey,
+      initializationVector: initializationVector ?? this.initializationVector
     );
   }
 
@@ -210,6 +228,8 @@ class ChatModel {
       'isMentioned': isMentioned,
       'messagingPermission': messagingPermission,
       'messages': messages.map((message) => message.toMap()).toList(),
+      'encryptionKey': encryptionKey,
+      'initializationVector': initializationVector
     };
   }
 

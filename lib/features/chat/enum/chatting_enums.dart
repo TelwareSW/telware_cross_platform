@@ -50,6 +50,7 @@ enum EventType {
   receiveLeftCall(event: 'CLIENT-LEFT'),
   receiveCallSignal(event: 'SIGNAL-CLIENT'),
   receiveCallStarted(event: 'CALL-STARTED'),
+  receiveCallEnded(event: 'CALL-ENDED'),
   ;
 
   final String event;

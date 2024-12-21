@@ -131,10 +131,9 @@ class EventHandler {
     debugPrint('!!! connected successfully');
     // receive a message
     _socket.on(EventType.receiveMessage.event, (response) async {
+      print('### got a message: $response');
       // todo(ahmed): when the back returns this an object, remove the array
       final message = response[0];
-      // todo(ahmed): Remove backend returns media
-      message['media'] = "8eee5713799015ff.jpg";
       try {
         debugPrint('/|\\ got a message id: ${message['id']}');
         _chattingController.receiveMsg(message);
@@ -312,6 +311,15 @@ class EventHandler {
         }
       } on Exception catch (e) {
         debugPrint('!!! Error in receiving a call started:\n${e.toString()}');
+      }
+    });
+    // get a call ended
+    _socket.on(EventType.receiveCallEnded.event, (response) async {
+      try {
+        debugPrint('### got a call ended: $response');
+        signaling.onReceiveEndCall?.call(response);
+      } on Exception catch (e) {
+        debugPrint('!!! Error in receiving a call ended:\n${e.toString()}');
       }
     });
   }

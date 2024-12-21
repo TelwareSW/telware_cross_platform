@@ -242,7 +242,8 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
                       style: const TextStyle(color: Colors.red),
                     ),
                   );
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                } else if ((!snapshot.hasData || snapshot.data!.isEmpty) &&
+                    isAdmin) {
                   return const Center(
                     child: LottieViewer(
                       path: 'assets/json/utyan_empty.json',
@@ -252,7 +253,9 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
                   );
                 } else {
                   if (!_isUserContentSet) {
-                    userChats = _generateUsersList(snapshot.data!, false);
+                    userChats = isAdmin
+                        ? _generateUsersList(snapshot.data!, false)
+                        : [];
                     _isUserContentSet = true;
                   }
                   return TabBarView(
@@ -424,12 +427,13 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
   ) {
     List<Widget> chatTiles = [];
     int index = startIndex;
+    int i = 0;
     for (final message in localSearchResultsMessages) {
-      final ChatModel chat = localSearchResultsChats[index];
+      final ChatModel chat = localSearchResultsChats[i];
       final List<MapEntry<int, int>> chatTitleMatches =
-          localSearchResultsChatTitleMatches[index];
+          localSearchResultsChatTitleMatches[i];
       final List<MapEntry<int, int>> chatMessagesMatches =
-          localSearchResultsChatMessagesMatches[index];
+          localSearchResultsChatMessagesMatches[i];
       chatTiles.add(
         ChatTileWidget(
           key: ValueKey(ChatKeys.chatTilePrefix.value +
@@ -445,6 +449,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
         ),
       );
       index++;
+      i++;
     }
     return chatTiles;
   }
@@ -466,11 +471,22 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
     ];
     for (UserModel user in users) {
       if (user.id == myUser.id) continue;
+
+      Color subtextColor = Palette.accentText;
+
+      if (user.accountStatus == 'banned') {
+        subtextColor = Palette.banned;
+      } else if (user.accountStatus == 'deactivated') {
+        subtextColor = Palette.deactivated;
+      } else if (user.accountStatus == 'active') {
+        subtextColor = Palette.active;
+      }
       var option = <String, dynamic>{
         "avatar": true,
         "text": user.username,
         "imagePath": null,
-        "subtext": "last seen Nov 23 at 6:40 PM",
+        "subtext": user.accountStatus,
+        'subtextColor': subtextColor,
         "trailingFontSize": 13.0,
         "trailingPadding": const EdgeInsets.only(bottom: 20.0),
         "trailingColor": Palette.accentText,
@@ -629,19 +645,38 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
       confirmPadding: const EdgeInsets.only(left: 40.0),
       cancelText: 'Cancel',
       cancelColor: const Color.fromRGBO(100, 181, 239, 1),
-      onConfirm: () {
-        // TODO(marwan) ban  the user
-        // if (userId != null) {
-        //   ref.read(userViewModelProvider.notifier).blockUser(userId: userId);
-        // }
-
-        // Close the confirmation dialog
-        context.pop();
-        // Close the initial dialog
-        context.pop();
+      onConfirm: () async {
+        if (userId != null) {
+          if (action == 'BAN') {
+            await ref
+                .read(userViewModelProvider.notifier)
+                .banUser(userId: userId);
+          } else if (action == 'ACTIVATE') {
+            await ref
+                .read(userViewModelProvider.notifier)
+                .activateUser(userId: userId);
+          } else if (action == 'DEACTIVATE') {
+            await ref
+                .read(userViewModelProvider.notifier)
+                .deactivateUser(userId: userId);
+          }
+          ref.read(userViewModelProvider.notifier).fetchUsers().then((users) {
+            fullUserChats = <Map<String, dynamic>>[
+              {"options": <Map<String, dynamic>>[]}
+            ];
+            setState(() {
+              userChats = _generateUsersList(users, false);
+            });
+          });
+        }
+        if (mounted) {
+          // Close the confirmation dialog
+          context.pop();
+          // Close the initial dialog
+          context.pop();
+        }
       },
       onCancel: () {
-        // TODO(marwan) activate or deactivate the user
         context.pop();
         context.pop();
       },

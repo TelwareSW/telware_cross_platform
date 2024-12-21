@@ -6,7 +6,7 @@ import 'package:telware_cross_platform/features/chat/view_model/event_handler.da
 
 typedef StreamStateCallback = void Function(MediaStream stream, String senderId);
 typedef DescriptionCallback = void Function(RTCSessionDescription description, String senderId);
-typedef CandidateCallback = void Function(RTCIceCandidate candidate);
+typedef CandidateCallback = void Function(RTCIceCandidate candidate, String senderId);
 typedef ResponseCallback = void Function(dynamic response);
 
 final TURN_SERVER_USERNAME = dotenv.env['TURN_SERVER_USERNAME'] ?? '';
@@ -46,7 +46,7 @@ class Signaling {
     ]
   };
 
-  RTCPeerConnection? peerConnection;
+  Map<String, RTCPeerConnection> peerConnections = {};
   MediaStream? localStream;
   Map<String, MediaStream> remoteStreams = {};
   StreamStateCallback? onAddRemoteStream;
@@ -56,6 +56,7 @@ class Signaling {
   ResponseCallback? onCallStarted;
   ResponseCallback? onReceiveJoinedCall;
   ResponseCallback? onReceiveLeftCall;
+  ResponseCallback? onReceiveEndCall;
 
   String? roomId;
 
@@ -75,59 +76,59 @@ class Signaling {
         data['data']['sdpMid'],
         data['data']['sdpMLineIndex'],
       );
-      onICECandidate?.call(candidate);
+      onICECandidate?.call(candidate, data['senderId']);
     }
   }
 
-  Future<RTCSessionDescription> createOffer(calleeId) async {
-    await registerPeerConnection(calleeId);
+  Future<RTCSessionDescription> createOffer(clientId) async {
+    await registerPeerConnection(clientId);
 
     localStream?.getTracks().forEach((track) {
-      peerConnection!.addTrack(track, localStream!);
+      peerConnections[clientId]!.addTrack(track, localStream!);
     });
 
-    var offer = await peerConnection!.createOffer();
-    await setLocalDescription(offer);
+    var offer = await peerConnections[clientId]!.createOffer();
+    await setLocalDescription(offer, clientId);
 
     return offer;
   }
 
-  Future<RTCSessionDescription> createAnswer(String callerId) async {
+  Future<RTCSessionDescription> createAnswer(String clientId) async {
     localStream?.getTracks().forEach((track) {
-      peerConnection!.addTrack(track, localStream!);
+      peerConnections[clientId]!.addTrack(track, localStream!);
     });
 
-    peerConnection!.onTrack = (RTCTrackEvent event) async {
+    peerConnections[clientId]!.onTrack = (RTCTrackEvent event) async {
       debugPrint('Remote stream added');
       event.streams[0].getTracks().forEach((track) {
-        remoteStreams[callerId]!.addTrack(track);
+        remoteStreams[clientId]!.addTrack(track);
       });
     };
 
-    var answer = await peerConnection!.createAnswer();
-    await setLocalDescription(answer);
+    var answer = await peerConnections[clientId]!.createAnswer();
+    await setLocalDescription(answer, clientId);
 
     return answer;
   }
 
-  Future<void> addCandidate(RTCIceCandidate candidate) async {
-    await peerConnection!.addCandidate(candidate);
+  Future<void> addCandidate(RTCIceCandidate candidate, String clientId) async {
+    await peerConnections[clientId]!.addCandidate(candidate);
   }
 
-  Future<void> registerPeerConnection(String callerId) async {
-    peerConnection ??= await createPeerConnection(configuration);
-    registerPeerConnectionListeners(callerId);
+  Future<void> registerPeerConnection(String clientId) async {
+    peerConnections[clientId] ??= await createPeerConnection(configuration);
+    registerPeerConnectionListeners(clientId);
   }
 
-  Future<void> setRemoteDescription(RTCSessionDescription description) async {
+  Future<void> setRemoteDescription(RTCSessionDescription description, String clientId) async {
     debugPrint('Setting remote description to: ${description.sdp}');
     debugPrint('Remote SDP: ${description.sdp}');
-    await peerConnection!.setRemoteDescription(description);
+    await peerConnections[clientId]!.setRemoteDescription(description);
   }
 
-  Future<void> setLocalDescription(RTCSessionDescription description) async {
+  Future<void> setLocalDescription(RTCSessionDescription description, String clientId) async {
     debugPrint('Local SDP: ${description.sdp}');
-    await peerConnection!.setLocalDescription(description);
+    await peerConnections[clientId]!.setLocalDescription(description);
   }
 
   Future<void> hangUp(RTCVideoRenderer localRenderer) async {
@@ -138,9 +139,13 @@ class Signaling {
         track.stop();
       });
     });
+    remoteStreams.clear();
 
-    if (peerConnection != null) peerConnection!.close();
-    peerConnection = null;
+    peerConnections.forEach((key, value) {
+      value.close();
+    });
+    peerConnections.clear();
+
     _eventHandler.addEvent(
       LeaveCallEvent(
         {
@@ -150,11 +155,20 @@ class Signaling {
     );
 
     localStream!.dispose();
-    remoteStreams.clear();
   }
 
-  void registerPeerConnectionListeners(String calleeId) {
-    peerConnection!.onIceCandidate = (RTCIceCandidate? candidate) {
+  Future<void> removeRemoteClient(String clientId) async {
+    peerConnections[clientId]?.close();
+    peerConnections.remove(clientId);
+
+    remoteStreams[clientId]?.getTracks().forEach((track) {
+      track.stop();
+    });
+    remoteStreams.remove(clientId);
+  }
+
+  void registerPeerConnectionListeners(String clientId) {
+    peerConnections[clientId]!.onIceCandidate = (RTCIceCandidate? candidate) {
       if (candidate != null) {
         debugPrint('Generated ICE Candidate');
         _eventHandler.addEvent(
@@ -166,7 +180,7 @@ class Signaling {
                 'sdpMid': candidate.sdpMid,
                 'sdpMLineIndex': candidate.sdpMLineIndex,
               },
-              'targetId': calleeId,
+              'targetId': clientId,
               'voiceCallId': roomId,
             },
           )
@@ -174,35 +188,35 @@ class Signaling {
       }
     };
 
-    peerConnection!.onConnectionState = (RTCPeerConnectionState state) {
+    peerConnections[clientId]!.onConnectionState = (RTCPeerConnectionState state) {
       debugPrint('Connection state changed: $state');
     };
 
-    peerConnection!.onSignalingState = (RTCSignalingState state) {
+    peerConnections[clientId]!.onSignalingState = (RTCSignalingState state) {
       debugPrint('Signaling state changed: $state');
     };
 
-    peerConnection!.onIceConnectionState = (RTCIceConnectionState state) {
+    peerConnections[clientId]!.onIceConnectionState = (RTCIceConnectionState state) {
       debugPrint('ICE connection state changed: $state');
     };
 
-    peerConnection!.onTrack = (RTCTrackEvent event) async {
+    peerConnections[clientId]!.onTrack = (RTCTrackEvent event) async {
       if (event.streams.isNotEmpty) {
         for (var track in event.streams[0].getTracks()) {
-          remoteStreams[calleeId]?.addTrack(track);
+          remoteStreams[clientId]?.addTrack(track);
         }
-        onAddRemoteStream?.call(event.streams[0], calleeId);
+        onAddRemoteStream?.call(event.streams[0], clientId);
       }
     };
 
-    peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
+    peerConnections[clientId]!.onIceGatheringState = (RTCIceGatheringState state) {
       debugPrint('ICE gathering state changed: $state');
     };
 
-    peerConnection!.onAddStream = (MediaStream stream) {
+    peerConnections[clientId]!.onAddStream = (MediaStream stream) {
       debugPrint('Remote stream added');
-      onAddRemoteStream?.call(stream, calleeId);
-      remoteStreams[calleeId] = stream;
+      onAddRemoteStream?.call(stream, clientId);
+      remoteStreams[clientId] = stream;
     };
   }
 
