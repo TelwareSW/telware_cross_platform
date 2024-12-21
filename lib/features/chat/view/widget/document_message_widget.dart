@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/download_widget.dart';
@@ -77,6 +78,7 @@ class DocumentMessageWidgetState extends State<DocumentMessageWidget> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      key: GlobalKeyCategoryManager.addKey('openDocumentMessageButton'),
       onTap: _handleDocumentTap,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,

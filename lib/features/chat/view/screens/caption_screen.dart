@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:io';
 
 import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 
 class CaptionScreen extends ConsumerStatefulWidget {
   static const String route = '/caption-screen';
@@ -111,6 +112,8 @@ class _CaptionScreenState extends ConsumerState<CaptionScreen> {
                       color: Colors.blue,
                     ),
                     child: IconButton(
+                      key: GlobalKeyCategoryManager.addKey(
+                          'sendMediaWithCaption'),
                       onPressed: _sendCaption,
                       color: Colors.white,
                       icon: const Icon(Icons.send),
@@ -136,12 +139,10 @@ class _CaptionScreenState extends ConsumerState<CaptionScreen> {
 
   void _sendCaption() {
     String caption = _captionController.text.trim();
-    if (caption.isNotEmpty) {
-      widget.sendCaptionMedia(
-        caption: caption,
-        filePath: widget.filePath,
-      );
-    }
+    widget.sendCaptionMedia(
+      caption: caption,
+      filePath: widget.filePath,
+    );
     context.pop();
   }
 }

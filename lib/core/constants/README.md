@@ -33,3 +33,26 @@ you to categorize keys, retrieve them by category, and access their debug labels
     - **Tile to Block or Cancel Action**: `Category: blockUserTile`
     - **Cancel Action Key**: `Category: blockUserCancel`
     - **Block Action Key**: `Category: blockUserConfirm`
+
+4. **Audio and Media Controls**
+    - **Audio Waveform**: `Category: audioWaveform`
+    - **Audio Message Toggle**: `Category: audioMessageToggle`
+    - **Emoji Picker Toggle**: `Category: emojiPickerToggle`
+    - **Delete Recording**: `Category: deleteRecording`
+    - **Cancel Recording**: `Category: cancelRecording`
+    - **Send Media with Caption**: `Category: sendMediaWithCaption`
+    - **Deactivate Button**: `Category: deactivateButton`
+    - **Ban Button**: `Category: banButton`
+    - **Cancel Action Button**: `Category: cancel${action}Button`
+    - **Confirm Action Button**: `Category: confirm${action}Button`
+    - **Open Document Message Button**: `Category: openDocumentMessageButton`
+    - **Download Media Button**: `Category: downloadMediaButton`
+    - **Emoji Picker**: `Category: emojiPicker`
+    - **GIF Picker**: `Category: gifPicker`
+    - **Sticker Picker**: `Category: stickerPicker`
+    - **Emoji Picker Tab Bar**: `Category: emojiPickerTabBar`
+    - **Toggle Audio Recording**: `Category: toggleAudioRecording`
+    - **Send Audio Message While Recording**: `Category: sendAudioMessageWhileRecording`
+    - **Toggle Video Message Button**: `Category: toggleVideoMessageButton`
+
+```

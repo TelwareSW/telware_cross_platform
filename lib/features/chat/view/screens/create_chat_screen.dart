@@ -619,6 +619,8 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
       confirmColor: const Color.fromRGBO(238, 104, 111, 1),
       confirmPadding: const EdgeInsets.only(left: 40.0),
       cancelText: accountStatus == 'deactivated' ? 'Activate' : 'Deactivate',
+      onCancelButtonKey: GlobalKeyCategoryManager.addKey('deactivateButton'),
+      onConfirmButtonKey: GlobalKeyCategoryManager.addKey('banButton'),
       cancelColor: const Color.fromRGBO(100, 181, 239, 1),
       onConfirm: () {
         if (accountStatus == 'banned') {
@@ -657,6 +659,10 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
       confirmColor: const Color.fromRGBO(238, 104, 111, 1),
       confirmPadding: const EdgeInsets.only(left: 40.0),
       cancelText: 'Cancel',
+      onCancelButtonKey:
+          GlobalKeyCategoryManager.addKey('cancel${action}Button'),
+      onConfirmButtonKey:
+          GlobalKeyCategoryManager.addKey('confirm${action}Button'),
       cancelColor: const Color.fromRGBO(100, 181, 239, 1),
       onConfirm: () async {
         if (userId != null) {
