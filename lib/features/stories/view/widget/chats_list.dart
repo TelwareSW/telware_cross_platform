@@ -29,8 +29,9 @@ class ChatsList extends ConsumerWidget {
     return SliverList(
       key: ChatKeys.chatsListKey,
       delegate: SliverChildBuilderDelegate(
-      (BuildContext context, int index) {
-          final listKey = ValueKey('${ChatKeys.chatTilePrefix.value + ChatKeys.chatTilePrefixSubvalue}$index');
+        (BuildContext context, int index) {
+          final listKey = ValueKey(
+              '${ChatKeys.chatTilePrefix.value + ChatKeys.chatTilePrefixSubvalue}$index');
           final tileKey = ValueKey('${ChatKeys.chatTilePrefix.value}$index');
 
           return _delegate(
@@ -45,14 +46,17 @@ class ChatsList extends ConsumerWidget {
     );
   }
 
-  Widget _delegate(ValueKey listKey, ValueKey tileKey, ChatModel chat, String userID) {
+  Widget _delegate(
+      ValueKey listKey, ValueKey tileKey, ChatModel chat, String userID) {
     final Random random = Random();
     DateTime currentDate = DateTime.now().subtract(const Duration(days: 7));
     final MessageModel fakeMessage = MessageModel(
       senderId: userID,
       messageType: MessageType.normal,
       messageContentType: MessageContentType.text,
-      content: TextContent("Hello! This is a fake message."),
+      content: TextContent(chat.createdAt != null
+          ? '${chat.type.type[0].toUpperCase()}${chat.type.type.substring(1)} created on ${chat.createdAt!.year}-${chat.createdAt!.month}-${chat.createdAt!.day}'
+          : 'No messages yet'),
       timestamp: currentDate.add(Duration(
         hours: random.nextInt(24),
         minutes: random.nextInt(60),
@@ -60,7 +64,7 @@ class ChatsList extends ConsumerWidget {
       userStates: {},
     );
     final message = chat.messages.isNotEmpty ? chat.messages.last : fakeMessage;
-    
+
     return Container(
       key: listKey,
       child: ChatTileWidget(

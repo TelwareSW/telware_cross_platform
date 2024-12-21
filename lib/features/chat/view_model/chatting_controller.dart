@@ -71,7 +71,9 @@ class ChattingController {
   Future<void> getUserChats() async {
     // todo: make use of the return of this
     final response = await _remoteRepository.getUserChats(
-        _ref.read(tokenProvider)!, _ref.read(userProvider)!.id!);
+        _ref.read(tokenProvider)!,
+        _ref.read(userProvider)!.id!,
+        _ref.read(userProvider)!.isAdmin);
     final String userId = _ref.read(userProvider)!.id!;
     if (response.appError != null) {
       // todo(ahmed): for the notifier provider, return a state of fail
@@ -176,7 +178,9 @@ class ChattingController {
     }
 
     final response = await _remoteRepository.getUserChats(
-        _ref.read(tokenProvider)!, _ref.read(userProvider)!.id!);
+        _ref.read(tokenProvider)!,
+        _ref.read(userProvider)!.id!,
+        _ref.read(userProvider)!.isAdmin);
 
     if (response.appError != null) {
       // todo(ahmed): for the notifier provider, return a state of fail
@@ -795,13 +799,16 @@ class ChattingController {
 
   Future<void> filterGroup({
     required String chatId,
-    required String filter,
   }) async {
     final sessionID = _ref.read(tokenProvider);
     final response = await _remoteRepository.filterGroup(sessionID!, chatId);
     if (response.appError != null) {
       debugPrint('Error: Could not filter the group');
     } else {
+      await getUserChats();
+      _ref
+          .read(chatsViewModelProvider.notifier)
+          .setChats(_localRepository.getChats(_ref.read(userProvider)!.id!));
       debugPrint('!!! group filtered');
     }
   }
@@ -812,8 +819,12 @@ class ChattingController {
     final sessionID = _ref.read(tokenProvider);
     final response = await _remoteRepository.unFilterGroup(sessionID!, chatId);
     if (response.appError != null) {
-      debugPrint('Error: Could not unfilter the group');
+      debugPrint('Error: Could not un filter the group');
     } else {
+      await getUserChats();
+      _ref
+          .read(chatsViewModelProvider.notifier)
+          .setChats(_localRepository.getChats(_ref.read(userProvider)!.id!));
       debugPrint('!!! group unfiltered');
     }
   }
