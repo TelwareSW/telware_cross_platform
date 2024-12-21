@@ -96,7 +96,7 @@ class EmojiPickerWidget extends StatelessWidget {
                         final gifPath = gifs[index];
                         return GestureDetector(
                           onTap: () {
-                            onSelectedMedia(gifPath, 'gif');
+                            onSelectedMedia(gifPath, 'GIF');
                           },
                           child: Image.asset(
                             gifPath,
