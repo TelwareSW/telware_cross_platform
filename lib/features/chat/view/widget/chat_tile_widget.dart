@@ -133,7 +133,7 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
                               : "$senderName: ",
                   style: TextStyle(
                     color: hasDraft
-                        ? Palette.error
+                        ? Palette.banned
                         : isGroupChat
                             ? Palette.primaryText
                             : Palette.accentText,

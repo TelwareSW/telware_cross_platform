@@ -66,6 +66,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   List<MessageModel> pinnedMessages = [];
   int indexInPinnedMessage = 0;
 
+  late Timer _draftTimer;
+
   late ChatModel chatModel;
   bool isSearching = false;
   bool isShowAsList = false;
@@ -75,6 +77,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   bool isTextEmpty = true;
   bool showMuteOptions = false;
   bool isAllowedToSend = true;
+  String _previousDraft = "";
 
   // ignore: prefer_final_fields
   int _currentMatch = 1;
@@ -84,16 +87,18 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   Map<int, List<MapEntry<int, int>>> _messageMatches = {};
   List<int> _messageIndices = [];
 
-  late Timer _draftTimer;
-
-  // String _previousDraft = "";
+  late DateTime _lastTypeTimer;
 
   late ChatType type;
 
   @override
   void initState() {
     super.initState();
+    _lastTypeTimer = DateTime.now();
     _messageController.text = widget.chatModel?.draft ?? "";
+    _messageController.addListener(() {
+      _lastTypeTimer = DateTime.now();
+    });
 
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -104,9 +109,11 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     _chosenAnimation = getRandomLottieAnimation();
     // Initialize the AudioRecorderService
     _audioRecorderService = AudioRecorderService(updateUI: setState);
-
-    _draftTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      _updateDraft();
+    _draftTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
+      if (_previousDraft != _messageController.text) {
+        _updateDraft();
+        _previousDraft = _messageController.text;
+      }
     });
   }
 
@@ -115,7 +122,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     _messageController.dispose();
     _scrollController.dispose();
     _audioRecorderService.dispose();
-    _draftTimer.cancel();
     SystemChannels.textInput.invokeMethod('TextInput.hide');
     WidgetsBinding.instance.removeObserver(this); // Remove the observer
     super.dispose();
@@ -123,27 +129,12 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
   void _updateDraft() async {
     // TODO : server return 500 status code every time try to fix it ASAP
-    // if (!mounted) return;
-    // final currentDraft = _messageController.text;
-    // if (currentDraft != _previousDraft) {
-    //   ref
-    //       .read(chattingControllerProvider)
-    //       .updateDraft(chatModel!, currentDraft);
-    //   _previousDraft = currentDraft;
-    // } else if (chatModel?.id != null) {
-    //   // ref
-    //   //     .read(chattingControllerProvider)
-    //   //     .getDraft(chatModel!.id!)
-    //   //     .then((draft) {
-    //   //   if (draft != null && draft != _previousDraft) {
-    //   //     setState(() {
-    //   //       _messageController.text = draft;
-    //   //       _previousDraft = draft;
-    //   //     });
-    //   //   }
-    //   // });
-    // }
-    // return;
+    if (!mounted) return;
+    final currentDraft = _messageController.text;
+    ref
+        .read(chattingControllerProvider)
+        .updateDraft(chatModel, currentDraft);
+    return;
   }
 
   void _updateChatMessages(List<MessageModel> messages) async {
@@ -294,6 +285,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       parentMessage: replyMessage?.id,
     );
     _messageController.clear();
+    _updateDraft();
     ref.read(chattingControllerProvider).sendMsg(
           content: newMessage.content!,
           msgType: newMessage.messageType,
@@ -308,7 +300,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
   void _editMessage() {
     if (editMessage == null || _messageController.text.isEmpty) return;
-    // todo(ahmed): handle extreem cases like editing a message that is not yet sent
+    // todo(ahmed): handle extreme cases like editing a message that is not yet sent
     ref.read(chattingControllerProvider).editMsg(
         (editMessage?.id)!, (chatModel.id)!, _messageController.text,
         chatType: ChatType.private,
@@ -418,7 +410,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     final ChatModel? chat =
         (index == -1) ? null : chats[index]; // Chat not found
     chatModel = widget.chatModel ?? chat!;
-    _updateDraft();
     final type = chatModel.type;
     final String title = chatModel.title;
     final membersNumber = chatModel.userIds.length;
@@ -431,7 +422,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
         : "$membersNumber Member${membersNumber > 1 ? "s" : ""}";
 
     _isMuted = chatModel.isMuted;
-    if (chatModel.draft != null && chatModel.draft!.isNotEmpty) {
+    if (chatModel.draft != null && chatModel.draft!.isNotEmpty &&
+        _lastTypeTimer.isBefore(DateTime.now().subtract(const Duration(seconds: 1)))) {
       _messageController.text = chatModel.draft ?? '';
     }
     chatContent = _generateChatContentWithDateLabels(messages);

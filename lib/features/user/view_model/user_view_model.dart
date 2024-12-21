@@ -264,15 +264,12 @@ class UserViewModel extends _$UserViewModel {
     if (USE_MOCK_DATA) {
       // Simulate a mock check for username uniqueness
       final isUnique = username != "mock.user";
-      state = isUnique
-          ? UserState.success('Username is unique')
-          : UserState.fail('Username is already taken');
-      return true;
+      return isUnique;
     }
 
     final response = await ref
         .read(userRemoteRepositoryProvider)
-        .checkUsernameUniqueness(username: username);
+        .checkUsernameUniqueness(username: username, sessionId: ref.read(tokenProvider)!);
 
     return response.fold(
       (appError) {
@@ -280,10 +277,7 @@ class UserViewModel extends _$UserViewModel {
         return false;
       },
       (isUnique) {
-        state = isUnique
-            ? UserState.success('Username is unique')
-            : UserState.fail('Username is already taken');
-        return true;
+        return isUnique;
       },
     );
   }
