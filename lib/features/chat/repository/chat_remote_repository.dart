@@ -101,6 +101,9 @@ class ChatRemoteRepository {
                   encryptionKey: chat['chat']['encryptionKey'],
                   initializationVector: chat['chat']['initializationVector'],
                   chatType: ChatType.getType(chat['chat']['type']),
+                  isFiltered: chat['chat']['type'] != 'private'
+                      ? chat['chat']['isFilterd']
+                      : false,
                 )
               ];
         String chatTitle = 'Invalid Chat';
@@ -248,6 +251,7 @@ class ChatRemoteRepository {
     required String? encryptionKey,
     required String? initializationVector,
     required ChatType chatType,
+    required bool isFiltered,
   }) {
     Map<String, MessageState> userStates = {};
     MessageContentType contentType =
@@ -262,12 +266,16 @@ class ChatRemoteRepository {
 
     final encryptionService = EncryptionService.instance;
 
-    final text = encryptionService.decrypt(
+    String text = encryptionService.decrypt(
       chatType: chatType,
       msg: lastMessage['content'],
       encryptionKey: encryptionKey,
       initializationVector: initializationVector,
     );
+
+    if (isFiltered && lastMessage['isAppropriate'] == false) {
+      text = 'This message has been filtered';
+    }
 
     // TODO: needs to be modified to match the response fields
     content = createMessageContent(

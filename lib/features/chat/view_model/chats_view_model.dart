@@ -206,7 +206,7 @@ class ChatsViewModel extends _$ChatsViewModel {
 
     final encryptionService = EncryptionService.instance;
 
-    final text = encryptionService.decrypt(
+    String text = encryptionService.decrypt(
       chatType: chat.type,
       msg: response['content'],
       encryptionKey: chat.encryptionKey,
@@ -215,6 +215,11 @@ class ChatsViewModel extends _$ChatsViewModel {
 
     // todo: needs to be modified to match the response fields
     // todo(marwan): add file name instead of content
+
+    if (chat.isFiltered && response['isAppropriate'] == false) {
+      text = 'This message has been filtered';
+    }
+
     content = createMessageContent(
       contentType: contentType,
       text: text,
@@ -235,6 +240,7 @@ class ChatsViewModel extends _$ChatsViewModel {
       parentMessage: response['parentMessageId'],
       isPinned: response['isPinned'],
       isForward: response['isForward'],
+      isAppropriate: response['isAppropriate'],
     );
 
     chat.messages.add(msg);
