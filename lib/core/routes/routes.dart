@@ -18,6 +18,7 @@ import 'package:telware_cross_platform/features/chat/view/screens/caption_screen
 import 'package:telware_cross_platform/features/chat/view/screens/chat_info_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/chat_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/create_chat_screen.dart';
+import 'package:telware_cross_platform/features/chat/view/screens/thread_screen.dart';
 import 'package:telware_cross_platform/features/groups/view/screens/channel_setting_screen.dart';
 import 'package:telware_cross_platform/features/groups/view/screens/members_screen.dart';
 import 'package:telware_cross_platform/features/groups/view/screens/add_members_screen.dart';
@@ -87,6 +88,7 @@ class Routes {
   static const String createGroupScreen = CreateGroupScreen.route;
   static const String groupCreationDetails = GroupCreationDetails.route;
   static const String channelSettingsScreen = ChannelSettingScreen.route;
+  static const String threadScreen = ThreadScreen.route;
   static const String selectChannelMembers = SelectChannelMembers.route;
   static const String callScreen = CallScreen.route;
   static const String editGroupScreen = EditGroup.route;
@@ -367,7 +369,8 @@ class Routes {
                   state.extra as Map<String, dynamic>;
               return ChannelSettingScreen(
                 channelName: channelInfo['channelName']!,
-                channelDescription: channelInfo['channelDescription']!, channelImage: channelInfo['channelImage'],
+                channelDescription: channelInfo['channelDescription']!,
+                channelImage: channelInfo['channelImage'],
               );
             },
           ),
@@ -381,6 +384,19 @@ class Routes {
                 privacy: channelInfo['privacy']!,
                 channelDiscription: channelInfo['channelDiscription']!,
                 // channelImage: null,
+              );
+            },
+          ),
+          GoRoute(
+            path: Routes.threadScreen,
+            builder: (context, state) {
+              final Map<String, dynamic> thread =
+                  state.extra as Map<String, dynamic>;
+              return ThreadScreen(
+                announcement: thread['announcement'],
+                thread: thread['thread'],
+                chatId: thread['chatId'],
+                chatModel: thread['chatModel'],
               );
             },
           ),

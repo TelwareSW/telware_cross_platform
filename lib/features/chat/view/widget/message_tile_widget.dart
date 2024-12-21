@@ -20,7 +20,9 @@ import 'package:telware_cross_platform/features/chat/view/widget/sender_name_wid
 import 'package:telware_cross_platform/features/chat/view/widget/sticker_message_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/video_player_widget.dart';
 
+import '../../../../core/models/chat_model.dart';
 import '../screens/create_chat_screen.dart';
+import 'announcement_message_extention.dart';
 import 'floating_menu_overlay.dart';
 
 class MessageTileWidget extends ConsumerWidget {
@@ -38,24 +40,29 @@ class MessageTileWidget extends ConsumerWidget {
   final Function(MessageModel) onPin;
   final Function()? onPress;
   final MessageModel? parentMessage;
+  final List<MessageModel>? thread;
+  final ChatModel? chat;
+  final bool showExtention;
 
-  const MessageTileWidget({
-    super.key,
-    required this.messageModel,
-    required this.chatId,
-    required this.isSentByMe,
-    this.showInfo = false,
-    this.nameColor = Palette.primary,
-    this.imageColor = Palette.primary,
-    this.highlights = const [],
-    required this.onDownloadTap,
-    required this.onReply,
-    required this.onEdit,
-    required this.onLongPress,
-    required this.onPress,
-    required this.onPin,
-    this.parentMessage,
-  });
+  const MessageTileWidget(
+      {super.key,
+      required this.messageModel,
+      required this.chatId,
+      required this.isSentByMe,
+      this.showInfo = false,
+      this.nameColor = Palette.primary,
+      this.imageColor = Palette.primary,
+      this.highlights = const [],
+      required this.onDownloadTap,
+      required this.onReply,
+      required this.onEdit,
+      required this.onLongPress,
+      required this.onPress,
+      required this.onPin,
+      this.parentMessage,
+      this.thread,
+      this.chat,
+      this.showExtention=true});
 
   // Function to format timestamp to "hh:mm AM/PM"
   String formatTimestamp(DateTime timestamp) {
@@ -97,7 +104,14 @@ class MessageTileWidget extends ConsumerWidget {
               ],
             )
           ],
-        )
+        ),
+        showExtention?AnnouncementExtenstion(
+          isSentByMe: isSentByMe,
+          message: messageModel,
+          thread: thread,
+          chatId: chatId,
+          chatModel: chat,
+        ):SizedBox(),
       ],
     );
   }
@@ -266,7 +280,11 @@ class MessageTileWidget extends ConsumerWidget {
       MessageContentType contentType, keyValue, ref, String text) {
     switch (contentType) {
       case MessageContentType.text || MessageContentType.link:
-        return textMessage(keyValue, ref, text);
+        return textMessage(
+          keyValue,
+          ref,
+          text,
+        );
       case MessageContentType.image:
         return ImageMessageWidget(
           onDownloadTap: onDownloadTap,

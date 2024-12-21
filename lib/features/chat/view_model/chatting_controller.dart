@@ -217,6 +217,7 @@ class ChattingController {
     required ChatType chatType,
     ChatModel? chatModel,
     String? parentMessgeId,
+    bool isAnnouncment = false,
   }) async {
     String? chatID = chatModel?.id;
     bool isChatNew = chatID == null;
@@ -248,6 +249,7 @@ class ChattingController {
               msgType: msgType,
               msgContentType: contentType,
               parentMessageId: parentMessgeId,
+              isAnnouncment: isAnnouncment,
             );
 
     _localRepository.setChats(
@@ -265,6 +267,7 @@ class ChattingController {
         'chatType': chatType.type,
         'isReplay': false,
         'isForward': false,
+        'isAnnouncement': isAnnouncment,
       },
       controller: this,
       msgId: identifier.msgLocalId,

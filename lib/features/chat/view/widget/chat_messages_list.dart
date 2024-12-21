@@ -30,6 +30,7 @@ class ChatMessagesList extends ConsumerStatefulWidget {
     required this.onLongPress,
     required this.onReply,
     required this.onEdit,
+    this.showExtention=true,
   });
 
   final ScrollController scrollController;
@@ -46,6 +47,7 @@ class ChatMessagesList extends ConsumerStatefulWidget {
   final Function(MessageModel message) onLongPress;
   final Function(MessageModel message) onReply;
   final Function(MessageModel message) onEdit;
+  final bool showExtention;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
@@ -74,6 +76,9 @@ class _ChatMessagesListState extends ConsumerState<ChatMessagesList> {
                 parentIndex = widget.messages
                     .indexWhere((msg) => msg.id == item.parentMessage);
               }
+              List<MessageModel> thread = widget.messages
+                  .where((msg) => msg.parentMessage == item.id)
+                  .toList();
               if (parentIndex >= 0) {
                 parentMessage = widget.messages[parentIndex];
               }
@@ -112,7 +117,6 @@ class _ChatMessagesListState extends ConsumerState<ChatMessagesList> {
                     messageModel: item,
                     chatId: widget.chatId ?? '',
                     isSentByMe: item.senderId == ref.read(userProvider)!.id,
-
                     showInfo: widget.type != ChatType.private,
                     highlights:
                         widget.messageMatches[index] ?? const [MapEntry(0, 0)],
@@ -126,6 +130,8 @@ class _ChatMessagesListState extends ConsumerState<ChatMessagesList> {
                     onPress: widget.selectedMessages.isEmpty ? null : () {},
                     onLongPress: widget.onLongPress,
                     parentMessage: parentMessage,
+                    thread: thread,
+                    showExtention: widget.showExtention,
                   ),
                 ],
               );

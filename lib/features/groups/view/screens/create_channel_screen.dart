@@ -118,8 +118,8 @@ class _CreateChannelScreenState extends State<CreateChannelScreen> {
             onPressed: () {
               if (channelName.trim().isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text(
+                  const SnackBar(
+                    content: Text(
                       'Channel name cannot be empty!',
                       style: TextStyle(color: Colors.white),
                     ),
