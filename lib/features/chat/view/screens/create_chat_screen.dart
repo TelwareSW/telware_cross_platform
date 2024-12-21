@@ -427,12 +427,13 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
   ) {
     List<Widget> chatTiles = [];
     int index = startIndex;
+    int i = 0;
     for (final message in localSearchResultsMessages) {
-      final ChatModel chat = localSearchResultsChats[index];
+      final ChatModel chat = localSearchResultsChats[i];
       final List<MapEntry<int, int>> chatTitleMatches =
-          localSearchResultsChatTitleMatches[index];
+          localSearchResultsChatTitleMatches[i];
       final List<MapEntry<int, int>> chatMessagesMatches =
-          localSearchResultsChatMessagesMatches[index];
+          localSearchResultsChatMessagesMatches[i];
       chatTiles.add(
         ChatTileWidget(
           key: ValueKey(ChatKeys.chatTilePrefix.value +
@@ -448,6 +449,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
         ),
       );
       index++;
+      i++;
     }
     return chatTiles;
   }
