@@ -430,7 +430,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     final chatID = chatModel.id;
     final String subtitle = chatModel.type == ChatType.private
         ? "last seen a long time ago"
-        : "$membersNumber Member${membersNumber > 1 ? "s" : ""}";
+        : chatModel.type == ChatType.group ?"$membersNumber Member${membersNumber > 1 ? "s" : ""}"
+        : "$membersNumber subscribers${membersNumber > 1 ? "s" : ""}";
 
     _isMuted = chatModel.isMuted;
     if (chatModel.draft != null && chatModel.draft!.isNotEmpty) {

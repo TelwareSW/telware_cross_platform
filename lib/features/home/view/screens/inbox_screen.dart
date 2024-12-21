@@ -70,14 +70,14 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
         floatingActionButton: kIsWeb
             ? const SizedBox()
             : FloatingActionButton(
-                onPressed: () {
-                  context.push(Routes.addMyStory);
-                },
-                shape: const CircleBorder(),
-                backgroundColor: Palette.accent,
-                child:
-                    const Icon(Icons.camera_alt_rounded, size: Sizes.iconSize),
-              ),
+          onPressed: () {
+            context.push(Routes.addMyStory);
+          },
+          shape: const CircleBorder(),
+          backgroundColor: Palette.accent,
+          child:
+          const Icon(Icons.camera_alt_rounded, size: Sizes.iconSize),
+        ),
         body: RefreshIndicator(
           onRefresh: _refreshPage,
           child: CustomScrollView(

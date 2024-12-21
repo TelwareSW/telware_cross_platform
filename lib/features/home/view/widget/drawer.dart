@@ -97,6 +97,7 @@ class AppDrawer extends ConsumerWidget {
             verticalPadding: 5, route: UserProfileScreen.route),
         const Divider(thickness: 0.3, color: Palette.black, height: 0),
         _drawerItem(context, Icons.people_alt_outlined, 'New Group', route: Routes.createGroupScreen),
+        _drawerItem(context, Icons.campaign, 'New Channel', route: Routes.createChannel),
         _drawerItem(context, Icons.person_outline_rounded, 'Contacts'),
         _drawerItem(context, Icons.call_outlined, 'Calls'),
         _drawerItem(context, Icons.bookmark_outline_rounded, 'Saved Messages'),
