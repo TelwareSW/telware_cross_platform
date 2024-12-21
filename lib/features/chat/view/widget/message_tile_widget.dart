@@ -115,7 +115,7 @@ class MessageTileWidget extends ConsumerWidget {
     IconData messageState = getMessageStateIcon(messageModel);
     bool noBackGround =
         messageModel.messageContentType == MessageContentType.sticker ||
-            messageModel.messageContentType == MessageContentType.gif ||
+            messageModel.messageContentType == MessageContentType.GIF ||
             messageModel.messageContentType == MessageContentType.emoji;
     bool mediaMessage =
         messageModel.messageContentType == MessageContentType.audio ||
@@ -305,7 +305,7 @@ class MessageTileWidget extends ConsumerWidget {
           url: messageModel.content?.toJson()["stickerUrl"],
           stickerName: messageModel.content?.toJson()["stickerName"] ?? '',
         );
-      case MessageContentType.gif:
+      case MessageContentType.GIF:
         return ImageMessageWidget(
           onDownloadTap: onDownloadTap,
           filePath: messageModel.content?.toJson()["filePath"],

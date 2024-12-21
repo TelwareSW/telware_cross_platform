@@ -131,6 +131,7 @@ class EventHandler {
     debugPrint('!!! connected successfully');
     // receive a message
     _socket.on(EventType.receiveMessage.event, (response) async {
+      print('### got a message: $response');
       // todo(ahmed): when the back returns this an object, remove the array
       final message = response[0];
       try {

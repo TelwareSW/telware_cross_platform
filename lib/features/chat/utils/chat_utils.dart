@@ -130,7 +130,7 @@ MessageModel updateMessageIfFileMissing(
       return updateContent<StickerContent>(
           message, content as StickerContent, fileExists, filePath);
 
-    case MessageContentType.gif:
+    case MessageContentType.GIF:
       return updateContent<GIFContent>(
           message, content as GIFContent, fileExists, filePath);
 
@@ -203,7 +203,7 @@ MessageContent createMessageContent({
         fileName: fileName,
         mediaUrl: mediaUrl,
       );
-    case MessageContentType.gif:
+    case MessageContentType.GIF:
       return GIFContent(
         filePath: filePath,
         fileName: fileName,
