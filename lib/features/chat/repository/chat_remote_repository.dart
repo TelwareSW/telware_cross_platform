@@ -146,6 +146,9 @@ class ChatRemoteRepository {
             creators: creators,
             messagingPermission: messagingPermission,
             encryptionKey: chat['chat']['encryptionKey'],
+            isFiltered: chat['chat']['type'] != 'private'
+                ? chat['chat']['isFilterd']
+                : false,
             initializationVector: chat['chat']['initializationVector']);
 
         chats.add(chatModel);
