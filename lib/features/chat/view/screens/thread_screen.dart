@@ -64,7 +64,6 @@ class ThreadScreen extends ConsumerStatefulWidget {
 class _ThreadScreen extends ConsumerState<ThreadScreen>
     with WidgetsBindingObserver {
   late AudioRecorderService _audioRecorderService;
-
   List<dynamic> chatContent = [];
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -241,7 +240,8 @@ class _ThreadScreen extends ConsumerState<ThreadScreen>
       text: messageText,
     );
     // TODO : Handle media attribute in the request of sending a message
-
+    print('##############3');
+    print(widget.announcement);
     MessageModel newMessage = MessageModel(
       senderId: ref.read(userProvider)!.id!,
       messageContentType: messageContentType,
@@ -256,9 +256,11 @@ class _ThreadScreen extends ConsumerState<ThreadScreen>
         content: newMessage.content!,
         msgType: newMessage.messageType,
         contentType: newMessage.messageContentType,
-        chatType: ChatType.private,
+        chatType: ChatType.channel,
         chatModel: chatModel,
-        parentMessgeId: widget.announcement.id);
+        parentMessgeId: widget.announcement.id,
+        isReply: true,
+    );
   }
 
   void _editMessage() {
@@ -368,6 +370,8 @@ class _ThreadScreen extends ConsumerState<ThreadScreen>
   @override
   Widget build(BuildContext context) {
     debugPrint('&*&**&**& rebuild thread screen');
+    print('####################');
+    print(widget.thread);
     final chats = ref.watch(chatsViewModelProvider);
     final index = chats.indexWhere((chat) => chat.id == widget.chatId);
     final ChatModel? chat =
@@ -390,7 +394,7 @@ class _ThreadScreen extends ConsumerState<ThreadScreen>
     if (chatModel.draft != null && chatModel.draft!.isNotEmpty) {
       _messageController.text = chatModel.draft ?? '';
     }
-    chatContent = _generateChatContentWithDateLabels(messages);
+    chatContent = _generateChatContentWithDateLabels(widget.thread);
     pinnedMessages = [widget.announcement];
 
     if (chatModel.messagingPermission == false) {
@@ -545,7 +549,7 @@ class _ThreadScreen extends ConsumerState<ThreadScreen>
                                   ? NewChatScreenSticker(
                                       chosenAnimation: _chosenAnimation)
                                   : ChatMessagesList(
-                                      messages: messages,
+                                      messages: widget.thread,
                                       scrollController: _scrollController,
                                       chatContent: chatContent,
                                       selectedMessages: selectedMessages,
@@ -561,6 +565,7 @@ class _ThreadScreen extends ConsumerState<ThreadScreen>
                                       onEdit: _onEdit,
                                       onPin: (MessageModel message) {},
                                     showExtention: false,
+                            chat: chat,
                                     ),
                         ),
                         if (replyMessage != null)
@@ -653,8 +658,7 @@ class _ThreadScreen extends ConsumerState<ThreadScreen>
                             sendMessage: _sendMessage,
                             unreferenceMessages: _unreferenceMessages,
                             editMessage: _editMessage,
-                            notAllowedToSend: !isAllowedToSend ||
-                                ref.read(userProvider)!.isAdmin,
+                            notAllowedToSend: false,
                           )
                         else
                           Container(

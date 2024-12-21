@@ -296,8 +296,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       messageType: MessageType.normal,
       userStates: {},
       parentMessage: replyMessage?.id,
-      isAnnouncement:
-          chatModel.type == ChatType.channel && replyMessage == null,
     );
     _messageController.clear();
     ref.read(chattingControllerProvider).sendMsg(
@@ -307,8 +305,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
           chatType: ChatType.private,
           chatModel: chatModel,
           parentMessgeId: replyMessage?.id,
-          isAnnouncment:
-              chatModel.type == ChatType.channel && replyMessage == null,
         );
   }
 
@@ -626,7 +622,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                       onPin: _onPin,
                                       onLongPress: _onLongPress,
                                       onReply: _onReply,
-                                      onEdit: _onEdit),
+                                      onEdit: _onEdit,
+                          chat: chat,),
                         ),
                         if (replyMessage != null)
                           ReplyEditFieldHeader(
@@ -719,7 +716,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                             unreferenceMessages: _unreferenceMessages,
                             editMessage: _editMessage,
                             notAllowedToSend: !isAllowedToSend ||
-                                ref.read(userProvider)!.isAdmin,
+                                (ref.read(userProvider)?.isAdmin == true) ||
+                                (chat?.type == ChatType.channel && chat!.admins!.contains(ref.read(userProvider)?.id)==false),
                           )
                         else
                           Container(

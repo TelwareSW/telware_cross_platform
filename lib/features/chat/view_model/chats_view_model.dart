@@ -99,7 +99,7 @@ class ChatsViewModel extends _$ChatsViewModel {
     required MessageType msgType,
     required MessageContentType msgContentType,
     required String? parentMessageId,
-    bool isAnnouncment = false,
+    bool isReply = false,
   }) {
     final chatIndex = getChatIndex(chatId);
     final chat = state[chatIndex];
@@ -120,7 +120,7 @@ class ChatsViewModel extends _$ChatsViewModel {
         id: USE_MOCK_DATA ? getUniqueMessageId() : null,
         localId: msgLocalId,
         parentMessage: parentMessageId,
-        isAnnouncement: isAnnouncment);
+        );
 
     chat.messages.add(msg);
 

@@ -217,7 +217,7 @@ class ChattingController {
     required ChatType chatType,
     ChatModel? chatModel,
     String? parentMessgeId,
-    bool isAnnouncment = false,
+    bool isReply = false,
   }) async {
     String? chatID = chatModel?.id;
     bool isChatNew = chatID == null;
@@ -249,7 +249,7 @@ class ChattingController {
               msgType: msgType,
               msgContentType: contentType,
               parentMessageId: parentMessgeId,
-              isAnnouncment: isAnnouncment,
+              isReply: isReply,
             );
 
     _localRepository.setChats(
@@ -265,15 +265,17 @@ class ChattingController {
         'senderId': _ref.read(userProvider)!.id,
         'isFirstTime': isChatNew,
         'chatType': chatType.type,
-        'isReplay': false,
+        'isReply': isReply,
         'isForward': false,
-        'isAnnouncement': isAnnouncment,
+        "isAnnouncement":false,
       },
       controller: this,
       msgId: identifier.msgLocalId,
       chatId: identifier.chatId,
       onEventComplete: (Map<String, dynamic> res) {},
     );
+    print('@@@@@@@@@@@@@@@@@@@@@@@@@@');
+    print(msgEvent.payload);
 
     _eventHandler.addEvent(msgEvent);
   }

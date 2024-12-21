@@ -10,6 +10,7 @@ import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/highlight_text_widget.dart';
+import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/audio_message_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/delete_popup_menu.dart';
@@ -105,7 +106,7 @@ class MessageTileWidget extends ConsumerWidget {
             )
           ],
         ),
-        showExtention?AnnouncementExtenstion(
+        (messageModel.parentMessage==null && chat?.type == ChatType.channel)?AnnouncementExtenstion(
           isSentByMe: isSentByMe,
           message: messageModel,
           thread: thread,
