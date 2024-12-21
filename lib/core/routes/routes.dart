@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
+import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 
 import 'package:telware_cross_platform/core/view/screen/splash_screen.dart';
@@ -160,7 +161,8 @@ class Routes {
           GoRoute(
             path: Routes.inboxScreen,
             builder: (context, state) {
-              final Function(ChatModel) onChatSelected = state.extra as Function(ChatModel);
+              final Function(ChatModel) onChatSelected =
+                  state.extra as Function(ChatModel);
               return InboxScreen(onChatSelected: onChatSelected);
             },
           ),
@@ -262,8 +264,15 @@ class Routes {
           GoRoute(
               path: Routes.chatScreen,
               builder: (context, state) {
-                if (state.extra is ChatModel) {
-                  return ChatScreen(chatModel: state.extra as ChatModel);
+                print(state.extra.runtimeType);
+                if (state.extra is List) {
+                  final chat = (state.extra as List)[0] as ChatModel;
+                  final forwardedMessages = (state.extra as List)[1] as List<MessageModel>;
+                  return ChatScreen(
+                    chatModel: chat,
+                    forwardedMessages:
+                        forwardedMessages,
+                  );
                 }
                 final String chatId = state.extra as String;
                 return ChatScreen(chatId: chatId);
@@ -286,7 +295,12 @@ class Routes {
               }),
           GoRoute(
             path: Routes.createChatScreen,
-            builder: (context, state) => const CreateChatScreen(),
+            builder: (context, state) {
+              final forwardedMessages = state.extra as List<MessageModel>?;
+              return CreateChatScreen(
+                forwardedMessages: forwardedMessages,
+              );
+            },
           ),
           GoRoute(
             path: Routes.chatInfoScreen,
@@ -305,16 +319,15 @@ class Routes {
                 final List<UserModel> members = state.extra as List<UserModel>;
                 return GroupCreationDetails(members: members);
               }),
-
           GoRoute(
             path: Routes.callScreen,
             builder: (context, state) {
-              final Map<String, dynamic>? extra = state.extra as Map<String, dynamic>?;
+              final Map<String, dynamic>? extra =
+                  state.extra as Map<String, dynamic>?;
               return CallScreen(
-                chatId: extra?['chatId'] as String?,
-                callee: extra?['user'] as UserModel?,
-                voiceCallId: extra?['voiceCallId'] as String?
-              );
+                  chatId: extra?['chatId'] as String?,
+                  callee: extra?['user'] as UserModel?,
+                  voiceCallId: extra?['voiceCallId'] as String?);
             },
           ),
           GoRoute(

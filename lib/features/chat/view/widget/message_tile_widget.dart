@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/highlight_text_widget.dart';
@@ -20,7 +21,6 @@ import 'package:telware_cross_platform/features/chat/view/widget/sender_name_wid
 import 'package:telware_cross_platform/features/chat/view/widget/sticker_message_widget.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/video_player_widget.dart';
 
-import '../screens/create_chat_screen.dart';
 import 'floating_menu_overlay.dart';
 
 class MessageTileWidget extends ConsumerWidget {
@@ -148,8 +148,8 @@ class MessageTileWidget extends ConsumerWidget {
                     },
                     onForward: () {
                       overlayEntry.remove();
-                      // List<MessageModel> messageList = [messageModel];
-                      context.push(CreateChatScreen.route);
+                      List<MessageModel> messageList = [messageModel];
+                      context.push(Routes.createChatScreen, extra: messageList);
                     },
                     onPin: () {
                       overlayEntry.remove();

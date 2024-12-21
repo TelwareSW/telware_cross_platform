@@ -22,7 +22,6 @@ import 'package:telware_cross_platform/core/view/widget/popup_menu_widget.dart';
 import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
-import 'package:telware_cross_platform/features/chat/providers/chat_provider.dart';
 import 'package:telware_cross_platform/features/chat/services/audio_recording_service.dart';
 import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/bottom_input_bar_widget.dart';
@@ -218,17 +217,14 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   void _sendForwardedMessages() {
     for (MessageModel message in widget.forwardedMessages!) {
       ref.read(chattingControllerProvider).sendMsg(
-          content: message.content!,
-          msgType: MessageType.forward,
-          contentType: message.messageContentType,
-          chatType: ChatType.private,
-          chatModel: widget.chatModel,
-          encryptionKey: widget.chatModel?.encryptionKey,
-          initializationVector: widget.chatModel?.initializationVector);
-      _messageController.clear();
-      List<MessageModel> messages =
-          ref.watch(chatProvider(widget.chatId))?.messages ?? [];
-      _updateChatMessages(messages);
+            content: message.content!,
+            msgType: MessageType.forward,
+            contentType: message.messageContentType,
+            chatType: ChatType.private,
+            chatModel: widget.chatModel,
+            encryptionKey: widget.chatModel?.encryptionKey,
+            initializationVector: widget.chatModel?.initializationVector,
+          );
     }
   }
 
@@ -686,7 +682,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                   ),
                                   GestureDetector(
                                     onTap: () {
-                                      context.push(CreateChatScreen.route);
+                                      context.push(Routes.createChatScreen, extra: selectedMessages);
                                     },
                                     child: const Row(
                                       children: [
