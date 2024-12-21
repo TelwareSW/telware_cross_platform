@@ -20,8 +20,12 @@ class ChatRemoteRepository {
         AppError? appError,
         List<ChatModel> chats,
         Map<String, UserModel> users,
-      })> getUserChats(String sessionId, String userID) async {
+      })> getUserChats(String sessionId, String userID, bool isAdmin) async {
     List<ChatModel> chats = [];
+
+    if (isAdmin) {
+      return _getAllGroups(sessionId, userID);
+    }
 
     try {
       final response = await _dio.get(
@@ -57,10 +61,7 @@ class ChatRemoteRepository {
           email: '',
         );
       }
-      // TODO: should contain is what is the type of the message content
-      // I will assume that the response will contain the status of the message for each user of the chat containing this message.
-      // They should also return the url of the sticker, gif, emoji
-      // They should also send the type of message eg. normal ,forward, etc .
+
       for (var message in lastMessageData) {
         final lastMessage = message['lastMessage'];
         if (lastMessage is! Map || message['lastMessage'] == null) {
@@ -122,7 +123,7 @@ class ChatRemoteRepository {
           chatTitle = chat['chat']['name'] ?? 'Group Chat';
           messagingPermission = chat['chat']['messagingPermission'];
         } else if (chat['chat']['type'] == 'channel') {
-          chatTitle = chat['chat']['name'] ?? chat['chat']['name'] ?? 'Channel';
+          chatTitle = chat['chat']['name'] ?? 'Channel';
           messagingPermission = chat['chat']['messagingPermission'];
         } else {
           chatTitle = 'Error in chat';
@@ -156,6 +157,88 @@ class ChatRemoteRepository {
         chats: <ChatModel>[],
         users: <String, UserModel>{},
         appError: AppError('Failed to fetch chats', code: 500),
+      );
+    }
+  }
+
+  Future<
+      ({
+        AppError? appError,
+        List<ChatModel> chats,
+        Map<String, UserModel> users,
+      })> _getAllGroups(String sessionId, String userID) async {
+    List<ChatModel> chats = [];
+
+    try {
+      final response = await _dio.get(
+        '/users/all-groups',
+        options: Options(headers: {'X-Session-Token': sessionId}),
+      );
+
+      final groupsData =
+          response.data['data']['groupsAndChannels'] as List? ?? [];
+
+      // Iterate through chats and map users
+      for (var group in groupsData) {
+        // todo(ahmed) make this list only for the normal members
+        final members = (group['members'] as List)
+            .map((member) => member['user'] as String)
+            .toList();
+
+        final admins = (group['members'] as List)
+            .where((member) => member['Role'] == 'admin')
+            .map((member) => member['user'] as String)
+            .toList();
+
+        final creators = (group['members'] as List)
+            .where((member) => member['Role'] == 'creator')
+            .map((member) => member['user'] as String)
+            .toList();
+
+        String chatTitle = 'Invalid Chat';
+
+        bool messagingPermission = true;
+        if (group['type'] == 'group') {
+          chatTitle = group['name'] ?? 'Group Chat';
+          messagingPermission = group['messagingPermission'];
+        } else if (group['type'] == 'channel') {
+          chatTitle = group['name'] ?? 'Channel';
+          messagingPermission = group['messagingPermission'];
+        } else {
+          chatTitle = 'Error in chat';
+        }
+
+        // todo(ahmed): store the creators list as well as the isSeen, isDeleted attributes
+        // should it be sent in the first place if it is deleted?
+        final chatModel = ChatModel(
+          id: group['id'],
+          title: chatTitle,
+          userIds: members,
+          admins: admins,
+          type: ChatType.getType(group['type']),
+          messages: [],
+          creators: creators,
+          downloadingPermission: group['downloadingPermission'],
+          isFiltered: group['isFilterd'],
+          messagingPermission: messagingPermission,
+          photo: group['picture'],
+          createdAt: group['createdAt'] != null
+              ? DateTime.parse(group['createdAt'])
+              : DateTime.now(),
+        );
+
+        chats.add(chatModel);
+      }
+
+      return (chats: chats, users: <String, UserModel>{}, appError: null);
+    } catch (e, stackTrace) {
+      debugPrint('!!! error in receiving the groups for admin');
+      debugPrint(e.toString());
+      debugPrint(stackTrace.toString());
+      return (
+        chats: <ChatModel>[],
+        users: <String, UserModel>{},
+        appError: AppError('Failed to fetch groups for admin', code: 500),
       );
     }
   }
@@ -214,6 +297,8 @@ class ChatRemoteRepository {
       isAnnouncement: lastMessage['isAnnouncement'],
       threadMessages: threadMessages,
       parentMessage: lastMessage['parentMessageId'],
+      isAppropriate: lastMessage['isAppropriate'],
+      isEdited: lastMessage['isEdited'],
     );
   }
 
@@ -427,7 +512,7 @@ class ChatRemoteRepository {
       String sessionID, String chatID) async {
     try {
       final response = await _dio.patch(
-        '/groups/filter/:$chatID',
+        '/chats/groups/filter/$chatID',
         options: Options(headers: {'X-Session-Token': sessionID}),
       );
 
@@ -444,7 +529,7 @@ class ChatRemoteRepository {
       String sessionID, String chatID) async {
     try {
       final response = await _dio.patch(
-        '/groups/unfilter/:$chatID',
+        '/chats/groups/unfilter/$chatID',
         options: Options(headers: {'X-Session-Token': sessionID}),
       );
 

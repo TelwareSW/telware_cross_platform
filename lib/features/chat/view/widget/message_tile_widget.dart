@@ -64,7 +64,7 @@ class MessageTileWidget extends ConsumerWidget {
     return formatter.format(timestamp);
   }
 
-  Widget textMessage(keyValue, ref, String text) {
+  Widget textMessage(keyValue, ref, String text, bool isAppropriate) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -81,18 +81,21 @@ class MessageTileWidget extends ConsumerWidget {
             Wrap(
               children: [
                 HighlightTextWidget(
-                    key: ValueKey(
-                        '$keyValue${MessageKeys.messageContentPostfix.value}'),
-                    text: text,
-                    normalStyle: const TextStyle(
+                  key: ValueKey(
+                      '$keyValue${MessageKeys.messageContentPostfix.value}'),
+                  text: isAppropriate
+                      ? text
+                      : 'This message has been blocked by the admin',
+                  normalStyle: const TextStyle(
+                    color: Palette.primaryText,
+                    fontSize: 16,
+                  ),
+                  highlightStyle: const TextStyle(
                       color: Palette.primaryText,
                       fontSize: 16,
-                    ),
-                    highlightStyle: const TextStyle(
-                        color: Palette.primaryText,
-                        fontSize: 16,
-                        backgroundColor: Color.fromRGBO(246, 225, 2, 0.43)),
-                    highlights: highlights),
+                      backgroundColor: Color.fromRGBO(246, 225, 2, 0.43)),
+                  highlights: highlights,
+                ),
                 SizedBox(width: isSentByMe ? 70.0 : 55.0),
                 const Text("")
               ],
@@ -227,7 +230,12 @@ class MessageTileWidget extends ConsumerWidget {
               Padding(
                 padding: EdgeInsets.only(top: isForwarded ? 25 : 0),
                 child: _createMessageTile(
-                    messageModel.messageContentType, keyValue, ref, text),
+                  messageModel.messageContentType,
+                  keyValue,
+                  ref,
+                  text,
+                  messageModel.isAppropriate,
+                ),
               ),
               // The timestamp is always in the bottom-right corner if there's space
               Positioned(
@@ -288,11 +296,11 @@ class MessageTileWidget extends ConsumerWidget {
     );
   }
 
-  Widget _createMessageTile(
-      MessageContentType contentType, keyValue, ref, String text) {
+  Widget _createMessageTile(MessageContentType contentType, keyValue, ref,
+      String text, bool isAppropriate) {
     switch (contentType) {
       case MessageContentType.text || MessageContentType.link:
-        return textMessage(keyValue, ref, text);
+        return textMessage(keyValue, ref, text, isAppropriate);
       case MessageContentType.image:
         return ImageMessageWidget(
           onDownloadTap: onDownloadTap,

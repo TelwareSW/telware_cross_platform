@@ -94,14 +94,13 @@ class ChatsViewModel extends _$ChatsViewModel {
   ({
     String msgLocalId,
     String chatId,
-  }) addSentMessage({
-    required MessageContent content,
-    required String chatId,
-    required MessageType msgType,
-    required MessageContentType msgContentType,
-    required String? parentMessageId,
-    required bool isForward
-  }) {
+  }) addSentMessage(
+      {required MessageContent content,
+      required String chatId,
+      required MessageType msgType,
+      required MessageContentType msgContentType,
+      required String? parentMessageId,
+      required bool isForward}) {
     final chatIndex = getChatIndex(chatId);
     final chat = state[chatIndex];
     // todo(ahmed): make sure that new chats are added to the map first
@@ -112,17 +111,17 @@ class ChatsViewModel extends _$ChatsViewModel {
         senderId + DateTime.now().millisecondsSinceEpoch.toString();
 
     final MessageModel msg = MessageModel(
-        senderId: senderId,
-        timestamp: DateTime.now(),
-        content: content,
-        messageContentType: msgContentType,
-        messageType: msgType,
-        userStates: {},
-        id: USE_MOCK_DATA ? getUniqueMessageId() : null,
-        localId: msgLocalId,
-        parentMessage: parentMessageId,
-        isForward: isForward,
-        );
+      senderId: senderId,
+      timestamp: DateTime.now(),
+      content: content,
+      messageContentType: msgContentType,
+      messageType: msgType,
+      userStates: {},
+      id: USE_MOCK_DATA ? getUniqueMessageId() : null,
+      localId: msgLocalId,
+      parentMessage: parentMessageId,
+      isForward: isForward,
+    );
 
     chat.messages.add(msg);
 
@@ -215,10 +214,11 @@ class ChatsViewModel extends _$ChatsViewModel {
     );
 
     // todo: needs to be modified to match the response fields
+    // todo(marwan): add file name instead of content
     content = createMessageContent(
       contentType: contentType,
       text: text,
-      fileName: response['content'],
+      fileName: text,
       mediaUrl: response['media'],
     );
 
