@@ -549,14 +549,10 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                         icon: const Icon(FontAwesomeIcons.share,
                             color: Colors.white),
                         onPressed: () {
-                          context.push(CreateChatScreen.route);
-                        },
-                      ),
-                      // Delete icon
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.white),
-                        onPressed: () {
-                          // TODO call delete function
+                          context.push(
+                            Routes.createChatScreen,
+                            extra: selectedMessages,
+                          );
                         },
                       ),
                     ],
@@ -682,7 +678,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                   ),
                                   GestureDetector(
                                     onTap: () {
-                                      context.push(Routes.createChatScreen, extra: selectedMessages);
+                                      context.push(Routes.createChatScreen,
+                                          extra: selectedMessages);
                                     },
                                     child: const Row(
                                       children: [

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
@@ -107,6 +108,7 @@ class MessageTileWidget extends ConsumerWidget {
     final keyValue = (key as ValueKey).value;
     bool isPinned = messageModel.isPinned;
     bool isEdited = messageModel.isEdited;
+    bool isForwarded = messageModel.isForward;
     String text = messageModel.content?.toJson()['text'] ?? "";
     if (text.length <= 35 && isPinned) text += '   ';
     if (text.length <= 35 && isEdited) text += '        ';
@@ -201,8 +203,32 @@ class MessageTileWidget extends ConsumerWidget {
           ),
           child: Stack(
             children: [
-              _createMessageTile(
-                  messageModel.messageContentType, keyValue, ref, text),
+              if (isForwarded)
+                const Positioned(
+                  top: 0,
+                  left: 0,
+                  child: Row(
+                    children: [
+                      Icon(
+                        FontAwesomeIcons.share,
+                        size: 13,
+                      ),
+                      Text(
+                        '  Forwarded',
+                        style: TextStyle(
+                          fontStyle: FontStyle.italic,
+                          color: Palette.icons,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              Padding(
+                padding: EdgeInsets.only(top: isForwarded ? 25 : 0),
+                child: _createMessageTile(
+                    messageModel.messageContentType, keyValue, ref, text),
+              ),
               // The timestamp is always in the bottom-right corner if there's space
               Positioned(
                 bottom: 0,
