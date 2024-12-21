@@ -43,7 +43,7 @@ class SocketService {
     debugPrint(_sessionId);
 
     _socket = io(_serverUrl, <String, dynamic>{
-      'autoConnect': false,
+      // 'autoConnect': false,
       "transports": ["websocket"],
       'query': {'userId': _userId},
       'auth': {'sessionId': _sessionId}
@@ -76,8 +76,8 @@ class SocketService {
       isConnected = false;
     });
 
-    _socket?.open();
-    _socket?.connect();
+    // _socket?.open();
+    // _socket?.connect();
   }
 
   void onError() {
@@ -107,7 +107,7 @@ class SocketService {
 
   void disconnect() {
     if (_socket != null) {
-      _socket?.close();
+      _socket?.disconnect();
       _socket = null;
       debugPrint('### Socket connection destroyed');
     }
@@ -130,15 +130,8 @@ class SocketService {
   SocketService._internal();
 
   // Singleton instance
-  static SocketService? _instance;
+  static final SocketService _instance = SocketService._internal();
 
   // Getter for the singleton instance
-  static SocketService get instance {
-    return _instance ??= SocketService._internal();
-  }
-
-  // get rid of this opject completely
-  static void clearInstance() {
-    _instance = null;
-  }
+  static SocketService get instance => _instance;
 }

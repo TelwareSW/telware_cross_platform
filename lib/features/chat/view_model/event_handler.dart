@@ -13,7 +13,7 @@ import 'package:telware_cross_platform/features/chat/view_model/chatting_control
 
 class EventHandler {
   final ChattingController _chattingController;
-  SocketService _socket;
+  final SocketService _socket;
   Queue<MessageEvent> _queue;
   String _userId;
   String _sessionId;
@@ -29,7 +29,6 @@ class EventHandler {
     _userId = userId;
     _sessionId = sessionId;
     _queue = eventsQueue;
-    _socket = SocketService.instance;
     _socket.connect(
       serverUrl: SOCKET_URL,
       userId: _userId,
@@ -44,7 +43,6 @@ class EventHandler {
     stopProcessing();
     _queue.clear();
     _socket.clear();
-    SocketService.clearInstance();
   }
 
   void addEvent(MessageEvent event) {
