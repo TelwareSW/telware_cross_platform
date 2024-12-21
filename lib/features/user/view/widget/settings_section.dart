@@ -82,6 +82,7 @@ class SettingsSection extends StatelessWidget {
                                   : option["onTap"];
                           return SettingsOptionWidget(
                             key: key,
+                            tileKey: option["tileKey"],
                             icon: option["icon"],
                             trailingIconKey: option["iconKey"],
                             imagePath: option["imagePath"],
