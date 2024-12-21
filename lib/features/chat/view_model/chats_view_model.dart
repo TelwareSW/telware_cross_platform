@@ -100,6 +100,7 @@ class ChatsViewModel extends _$ChatsViewModel {
     required MessageType msgType,
     required MessageContentType msgContentType,
     required String? parentMessageId,
+    required bool isForward
   }) {
     final chatIndex = getChatIndex(chatId);
     final chat = state[chatIndex];
@@ -119,7 +120,9 @@ class ChatsViewModel extends _$ChatsViewModel {
         userStates: {},
         id: USE_MOCK_DATA ? getUniqueMessageId() : null,
         localId: msgLocalId,
-        parentMessage: parentMessageId);
+        parentMessage: parentMessageId,
+        isForward: isForward,
+        );
 
     chat.messages.add(msg);
 

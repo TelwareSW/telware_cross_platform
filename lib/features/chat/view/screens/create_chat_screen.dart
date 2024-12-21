@@ -9,6 +9,7 @@ import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/core/utils.dart';
@@ -26,8 +27,6 @@ import 'package:telware_cross_platform/features/home/view_model/home_view_model.
 import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
 import 'package:telware_cross_platform/features/user/view/widget/user_chats.dart';
 import 'package:telware_cross_platform/features/user/view_model/user_view_model.dart';
-
-import 'chat_screen.dart';
 
 class CreateChatScreen extends ConsumerStatefulWidget {
   static const String route = '/create-chat';
@@ -108,7 +107,7 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
         .read(chatsViewModelProvider.notifier)
         .getChat(myUser, userInfo, ChatType.private);
     debugPrint('Opening Chat: $chat');
-    context.push(ChatScreen.route, extra: chat);
+    context.pushReplacement(Routes.chatScreen, extra: [chat, widget.forwardedMessages]);
   }
 
   Widget sectionName(String name) {
@@ -434,19 +433,32 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
           localSearchResultsChatTitleMatches[i];
       final List<MapEntry<int, int>> chatMessagesMatches =
           localSearchResultsChatMessagesMatches[i];
+      final bool isForwarding = (widget.forwardedMessages?.length ?? 0) > 0;
+      tile(isForwarding) =>  ChatTileWidget(
+        key: ValueKey(ChatKeys.chatTilePrefix.value +
+            ChatKeys.chatTilePrefixSubvalue +
+            index.toString()),
+        chatModel: chat,
+        displayMessage: message,
+        sentByUser: message.senderId == ref.read(userProvider)!.id,
+        senderID: message.senderId,
+        highlights: chatMessagesMatches,
+        titleHighlights: chatTitleMatches,
+        onChatSelected: (_) {},
+        isForwarding: isForwarding,
+      );
       chatTiles.add(
-        ChatTileWidget(
-          key: ValueKey(ChatKeys.chatTilePrefix.value +
-              ChatKeys.chatTilePrefixSubvalue +
-              index.toString()),
-          chatModel: chat,
-          displayMessage: message,
-          sentByUser: message.senderId == ref.read(userProvider)!.id,
-          senderID: message.senderId,
-          highlights: chatMessagesMatches,
-          titleHighlights: chatTitleMatches,
-          onChatSelected: (_) {},
-        ),
+        isForwarding
+            ? InkWell(
+                onTap: () {
+                  context.pushReplacement(Routes.chatScreen, extra: [
+                    chat,
+                    widget.forwardedMessages,
+                  ]);
+                },
+                child: tile(isForwarding),
+              )
+            : tile(isForwarding),
       );
       index++;
       i++;

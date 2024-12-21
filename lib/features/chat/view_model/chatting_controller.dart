@@ -251,6 +251,7 @@ class ChattingController {
               msgType: msgType,
               msgContentType: contentType,
               parentMessageId: parentMessgeId,
+              isForward: msgType == MessageType.forward,
             );
 
     _localRepository.setChats(
@@ -276,7 +277,7 @@ class ChattingController {
         'isFirstTime': isChatNew,
         'chatType': chatType.type,
         'isReplay': false,
-        'isForward': false,
+        'isForward': msgType == MessageType.forward,
       },
       controller: this,
       msgId: identifier.msgLocalId,

@@ -29,6 +29,7 @@ class ChatTileWidget extends ConsumerStatefulWidget {
     this.showDivider = true,
     required this.onChatSelected,
     this.isMessageDisplayed = true,
+    this.isForwarding = false,
   });
 
   final ChatModel chatModel;
@@ -38,6 +39,7 @@ class ChatTileWidget extends ConsumerStatefulWidget {
   final bool sentByUser;
   final Function(ChatModel) onChatSelected;
   final bool isMessageDisplayed;
+  final bool isForwarding;
 
   final List<MapEntry<int, int>> highlights;
   final List<MapEntry<int, int>> titleHighlights;
@@ -241,7 +243,18 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
           final displayMessageContentType = displayMessage.messageContentType;
           const avatarWidth = 28.0;
 
-          return InkWell(
+          return widget.isForwarding ? _tileBody(
+              keyValue,
+              avatarWidth,
+              imageBytes,
+              isMuted,
+              hasDraft,
+              isGroupChat,
+              senderName,
+              unreadCount,
+              isMentioned,
+              displayMessageContentType,
+            ) : InkWell(
             onTap: () {
               // Get the width of the screen
               double width = MediaQuery.of(context).size.width;
