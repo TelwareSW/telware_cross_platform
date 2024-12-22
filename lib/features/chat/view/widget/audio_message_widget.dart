@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/download_widget.dart';
@@ -160,6 +161,7 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
 
   Widget audioWaveform(BuildContext context) {
     return AudioFileWaveforms(
+      key: GlobalKeyCategoryManager.addKey('audioWaveform'),
       size: Size(200.0, widget.isMessage ? 30 : 40.0),
       playerController: playerController,
       enableSeekGesture: true,
@@ -253,31 +255,33 @@ class AudioMessageWidgetState extends State<AudioMessageWidget>
                 bottomRight: widget.isMessage,
               ), // Set border radius
             ),
-            child:
-                widget.filePath == null || !doesFileExistSync(widget.filePath!)
-                    ? DownloadWidget(
-                        onTap: widget.onDownloadTap,
-                        url: widget.url,
-                        fileName: widget.fileName,
-                      )
-                    : Align(
-                        alignment: Alignment.center,
-                        child: GestureDetector(
-                          onTap: () {
-                            _startOrStopPlaying();
-                          },
-                          child: Lottie.asset(
-                            "assets/json/play_pause${widget.isMessage ? '_message' : ''}.json",
-                            controller: controller,
-                            onLoaded: (composition) {
-                              controller.duration = composition.duration;
-                            },
-                            width: widget.isMessage ? 23 : 20,
-                            height: widget.isMessage ? 23 : 20,
-                            decoder: LottieComposition.decodeGZip,
-                          ),
-                        ),
+            child: widget.filePath == null ||
+                    !doesFileExistSync(widget.filePath!)
+                ? DownloadWidget(
+                    onTap: widget.onDownloadTap,
+                    url: widget.url,
+                    fileName: widget.fileName,
+                  )
+                : Align(
+                    alignment: Alignment.center,
+                    child: GestureDetector(
+                      key:
+                          GlobalKeyCategoryManager.addKey('audioMessageToggle'),
+                      onTap: () {
+                        _startOrStopPlaying();
+                      },
+                      child: Lottie.asset(
+                        "assets/json/play_pause${widget.isMessage ? '_message' : ''}.json",
+                        controller: controller,
+                        onLoaded: (composition) {
+                          controller.duration = composition.duration;
+                        },
+                        width: widget.isMessage ? 23 : 20,
+                        height: widget.isMessage ? 23 : 20,
+                        decoder: LottieComposition.decodeGZip,
                       ),
+                    ),
+                  ),
           ),
           if (!widget.isMessage) ...[
             audioWaveform(context),

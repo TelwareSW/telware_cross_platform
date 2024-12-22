@@ -5,26 +5,38 @@ import 'package:hive/hive.dart';
 
 part 'message_content.g.dart'; // Part file for generated code
 
-abstract class MessageContent {
+@HiveType(typeId: 32)
+class MessageContent {
+  @HiveField(0)
   String? fileName;
+  @HiveField(1)
   String? filePath;
+  @HiveField(2)
   String? mediaUrl;
 
   MessageContent({this.fileName, this.filePath, this.mediaUrl});
 
-  Map<String, dynamic> toJson();
+  Map<String, dynamic> toJson() {
+    return {};
+  }
 
-  MessageContent copyWith();
+  MessageContent copyWith() {
+    return MessageContent();
+  }
 
-  String getContent();
+  String getContent() {
+    return '';
+  }
 
-  String? getMediaURL();
+  String? getMediaURL() {
+    return null;
+  }
 }
 
 // For Text Messages
 @HiveType(typeId: 15)
 class TextContent extends MessageContent {
-  @HiveField(0)
+  @HiveField(3)
   final String text;
 
   TextContent(this.text);
@@ -55,9 +67,9 @@ class TextContent extends MessageContent {
 // For Audio Messages
 @HiveType(typeId: 16)
 class AudioContent extends MessageContent {
-  @HiveField(0)
+  @HiveField(3)
   final int? duration;
-  @HiveField(1)
+  @HiveField(4)
   final bool? isMusic;
 
   AudioContent({
@@ -144,7 +156,7 @@ class DocumentContent extends MessageContent {
 // For Image Messages
 @HiveType(typeId: 18)
 class ImageContent extends MessageContent {
-  @HiveField(0)
+  @HiveField(3)
   final String? caption;
 
   ImageContent({super.mediaUrl, super.filePath, super.fileName, this.caption});
@@ -187,7 +199,7 @@ class ImageContent extends MessageContent {
 // For Video Messages
 @HiveType(typeId: 19)
 class VideoContent extends MessageContent {
-  @HiveField(0)
+  @HiveField(3)
   final int? duration;
 
   VideoContent({super.mediaUrl, this.duration, super.fileName, super.filePath});

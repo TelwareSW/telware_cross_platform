@@ -64,7 +64,7 @@ class MessageTileWidget extends ConsumerWidget {
     return formatter.format(timestamp);
   }
 
-  Widget textMessage(keyValue, ref, String text, bool isAppropriate) {
+  Widget textMessage(keyValue, ref, String text) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -83,9 +83,7 @@ class MessageTileWidget extends ConsumerWidget {
                 HighlightTextWidget(
                   key: ValueKey(
                       '$keyValue${MessageKeys.messageContentPostfix.value}'),
-                  text: isAppropriate
-                      ? text
-                      : 'This message has been blocked by the admin',
+                  text: text,
                   normalStyle: const TextStyle(
                     color: Palette.primaryText,
                     fontSize: 16,
@@ -233,8 +231,9 @@ class MessageTileWidget extends ConsumerWidget {
                   messageModel.messageContentType,
                   keyValue,
                   ref,
-                  text,
-                  messageModel.isAppropriate,
+                  messageModel.isAppropriate
+                      ? text
+                      : 'This message has inappropriate content.',
                 ),
               ),
               // The timestamp is always in the bottom-right corner if there's space
@@ -296,11 +295,11 @@ class MessageTileWidget extends ConsumerWidget {
     );
   }
 
-  Widget _createMessageTile(MessageContentType contentType, keyValue, ref,
-      String text, bool isAppropriate) {
+  Widget _createMessageTile(
+      MessageContentType contentType, keyValue, ref, String text) {
     switch (contentType) {
       case MessageContentType.text || MessageContentType.link:
-        return textMessage(keyValue, ref, text, isAppropriate);
+        return textMessage(keyValue, ref, text);
       case MessageContentType.image:
         return ImageMessageWidget(
           onDownloadTap: onDownloadTap,
