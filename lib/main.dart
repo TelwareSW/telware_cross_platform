@@ -1,3 +1,6 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +11,7 @@ import 'package:telware_cross_platform/core/models/contact_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
+import 'package:telware_cross_platform/core/services/push_notification_service.dart';
 import 'package:telware_cross_platform/core/theme/app_theme.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
 import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
@@ -27,7 +31,10 @@ Future<void> main() async {
 
 Future<void> init() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  await PushNotificationService.instance.initialize();
   Hive.registerAdapter(UserModelAdapter());
   Hive.registerAdapter(ContactModelAdapter());
   Hive.registerAdapter(StoryModelAdapter());

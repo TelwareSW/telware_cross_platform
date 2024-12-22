@@ -204,6 +204,7 @@ class AuthViewModel extends _$AuthViewModel {
       UserModel user = logInResponse.user;
       ref.read(authLocalRepositoryProvider).setToken(logInResponse.token);
       ref.read(tokenProvider.notifier).update((_) => logInResponse.token);
+      ref.read(authRemoteRepositoryProvider).sendFCMToken(logInResponse.token);
       List<UserModel> blockedUsers = await getBlockedUsers();
       user = user.copyWith(blockedUsers: blockedUsers);
       ref.read(authLocalRepositoryProvider).setUser(user);

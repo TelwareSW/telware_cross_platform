@@ -5,6 +5,7 @@ import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
 import 'package:flutter/foundation.dart';
+import 'package:telware_cross_platform/core/services/push_notification_service.dart';
 import 'package:telware_cross_platform/features/auth/models/auth_response_model.dart';
 
 part 'auth_remote_repository.g.dart';
@@ -233,6 +234,35 @@ class AuthRemoteRepository {
         return blockedUsers;
       },
     );
+  }
+
+  Future<void> sendFCMToken(String sessionId) async {
+    final token = PushNotificationService.instance.fcmToken;
+    if (token == null) {
+      debugPrint('FCM Token is null');
+      return;
+    }
+
+    debugPrint('FCM Token: $token');
+
+    try {
+      final response = await _dio.post(
+        '/users/fcm-token',
+        data: {'fcmToken': token},
+        options: Options(
+          headers: {'X-Session-Token': sessionId},
+        ),
+      );
+
+      if (response.statusCode! >= 400) {
+        final String message = response.data?['message'] ?? 'Unexpected Error';
+        debugPrint('Send FCM Token error: $message');
+      }
+    } on DioException catch (dioException) {
+      debugPrint('Send FCM Token error: ${dioException.message}');
+    } catch (error) {
+      debugPrint('Send FCM Token error:\n${error.toString()}');
+    }
   }
 
   AppError handleDioException(DioException dioException) {

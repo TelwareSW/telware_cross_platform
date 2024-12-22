@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "697693205362",
+    "project_id": "test-54168",
+    "storage_bucket": "test-54168.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:697693205362:android:a412f206cecbfc26d1e3eb",
+        "android_client_info": {
+          "package_name": "com.example.telware_cross_platform"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-iv9T-sC8PDxCk3MDzSHn8l7DPttZXXY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
