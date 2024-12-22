@@ -231,7 +231,9 @@ class MessageTileWidget extends ConsumerWidget {
                   messageModel.messageContentType,
                   keyValue,
                   ref,
-                  text,
+                  messageModel.isAppropriate
+                      ? text
+                      : 'This message has inappropriate content.',
                 ),
               ),
               // The timestamp is always in the bottom-right corner if there's space

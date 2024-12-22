@@ -75,11 +75,14 @@ class _ChatTileWidget extends ConsumerState<ChatTileWidget> {
     }
     String content = "";
     if (displayMessage.content?.getContent().isNotEmpty ?? false) {
-      content = ": ${displayMessage.content?.getContent()}";
+      content =
+          ": ${displayMessage.isAppropriate ? displayMessage.content?.getContent() : 'This message has inappropriate content.'}";
     }
     switch (displayMessageContentType) {
       case MessageContentType.text:
-        return displayMessage.content?.getContent() ?? "";
+        return displayMessage.isAppropriate
+            ? (displayMessage.content?.getContent() ?? "")
+            : "This message has inappropriate content.";
       case MessageContentType.image:
         return "Photo$content";
       case MessageContentType.video:

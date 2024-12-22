@@ -277,7 +277,7 @@ class ChatRemoteRepository {
     );
 
     if (isFiltered && lastMessage['isAppropriate'] == false) {
-      text = 'This message has been filtered';
+      text = 'This message has inappropriate content.';
     }
 
     // TODO: needs to be modified to match the response fields

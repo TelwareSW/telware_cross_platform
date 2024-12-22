@@ -134,6 +134,7 @@ class ChatsViewModel extends _$ChatsViewModel {
     required String newMsgId,
     required String msgLocalId,
     required String chatId,
+    required bool isAppropriate,
   }) {
     final chatIndex = getChatIndex(chatId);
     final chat = chatIndex >= 0 ? state[chatIndex] : null;
@@ -145,7 +146,8 @@ class ChatsViewModel extends _$ChatsViewModel {
           chat.messages.indexWhere((msg) => msg.localId == msgLocalId);
 
       if (msgIndex != -1) {
-        final newMsg = chat.messages[msgIndex].copyWith(id: newMsgId);
+        final newMsg = chat.messages[msgIndex]
+            .copyWith(id: newMsgId, isAppropriate: isAppropriate);
         chat.messages[msgIndex] = newMsg;
 
         _moveChatToFront(chatIndex, chat);
@@ -217,7 +219,7 @@ class ChatsViewModel extends _$ChatsViewModel {
     // todo(marwan): add file name instead of content
 
     if (chat.isFiltered && response['isAppropriate'] == false) {
-      text = 'This message has been filtered';
+      text = 'This message has inappropriate content.';
     }
 
     content = createMessageContent(
