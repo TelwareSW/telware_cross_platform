@@ -581,11 +581,13 @@ class ChattingController {
   void updateMessageId(
       {required String msgId,
       required String msgLocalId,
-      required String chatId}) {
+      required String chatId,
+      required bool isAppropriate}) {
     _ref.read(chatsViewModelProvider.notifier).updateMsgId(
           newMsgId: msgId,
           msgLocalId: msgLocalId,
           chatId: chatId,
+          isAppropriate: isAppropriate,
         );
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
@@ -663,7 +665,7 @@ class ChattingController {
     final chat = chats.firstWhere((element) => element.id == chatID);
     final updatedChat = chat.copyWith(draft: draft);
     final updatedChats =
-    chats.map((e) => e.id == chatID ? updatedChat : e).toList();
+        chats.map((e) => e.id == chatID ? updatedChat : e).toList();
     _localRepository.setChats(updatedChats, userId);
     _ref.read(chatsViewModelProvider.notifier).setChats(updatedChats);
   }

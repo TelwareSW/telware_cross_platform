@@ -306,6 +306,8 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                                   },
                                 )
                               : LottieViewer(
+                                  lottieKey: GlobalKeyCategoryManager.addKey(
+                                      'emojiPickerToggle'),
                                   path: "assets/json/sticker_to_keyboard.json",
                                   width: 30,
                                   height: 30,
@@ -390,6 +392,8 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         child: LottieViewer(
+                          lottieKey: GlobalKeyCategoryManager.addKey(
+                              'deleteRecording'),
                           path: "assets/json/group_pip_delete_icon.json",
                           width: 40,
                           height: 40,
@@ -406,6 +410,7 @@ class BottomInputBarWidgetState extends ConsumerState<BottomInputBarWidget> {
                       ),
                     ] else ...[
                       GestureDetector(
+                        key: GlobalKeyCategoryManager.addKey('cancelRecording'),
                         onTap: () {
                           widget.audioRecorderService.cancelRecording();
                           setState(() {});

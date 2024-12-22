@@ -10,6 +10,7 @@ import '../../../user/view/widget/avatar_generator.dart';
 class SettingsOptionWidget extends StatelessWidget {
   final IconData? icon;
   final GlobalKey? trailingIconKey;
+  final GlobalKey? tileKey;
   final String? imagePath;
   final Uint8List? imageMemory;
   final double imageWidth;
@@ -36,6 +37,7 @@ class SettingsOptionWidget extends StatelessWidget {
   const SettingsOptionWidget({
     super.key,
     this.trailingIconKey,
+    this.tileKey,
     this.icon,
     required this.text,
     this.imagePath,
@@ -116,6 +118,7 @@ class SettingsOptionWidget extends StatelessWidget {
               child: Column(
                 children: [
                   ListTile(
+                    key: tileKey,
                     title: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
