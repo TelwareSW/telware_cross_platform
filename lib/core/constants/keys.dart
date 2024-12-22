@@ -21,6 +21,7 @@ class WidgetKeys {
   WidgetKeys._();
 }
 
+//----- DONT USE THIS KEYS YOU CAN FIND THEM INSIDE THE SCREEN IT SELF ---------
 class SignUpKeys {
   static final formKey = GlobalKey<FormState>(debugLabel: 'signup_form');
   static final emailKey =
@@ -64,6 +65,7 @@ class ValidationKeys {
 
   ValidationKeys._();
 }
+//------------------------------------------------------------------------------
 
 class ChangeEmailKeys {
   static final formKey = GlobalKey<FormState>(debugLabel: 'change_email_form');
@@ -79,15 +81,22 @@ class ChangeEmailKeys {
 
 class ChatKeys {
   static const ValueKey<String> chatsListKey = ValueKey('chats-list');
-  static String chatTilePrefixSubvalue = DateTime.now().millisecondsSinceEpoch.toString();
-  static void resetChatTilePrefixSubvalue() => chatTilePrefixSubvalue = DateTime.now().millisecondsSinceEpoch.toString();
+  static String chatTilePrefixSubvalue =
+      DateTime.now().millisecondsSinceEpoch.toString();
 
-  static const ValueKey<String> createChatButton = ValueKey('create-chat-button');
-  static const ValueKey<String> chatSearchButton = ValueKey('chat-search-button');
+  static void resetChatTilePrefixSubvalue() =>
+      chatTilePrefixSubvalue = DateTime.now().millisecondsSinceEpoch.toString();
+
+  static const ValueKey<String> createChatButton =
+      ValueKey('create-chat-button');
+  static const ValueKey<String> chatSearchButton =
+      ValueKey('chat-search-button');
   static const ValueKey<String> chatMuteButton = ValueKey('chat-mute-button');
   static const ValueKey<String> chatSearchInput = ValueKey('chat-search-input');
-  static const ValueKey<String> chatSearchShowMode = ValueKey('chat-search-show-mode');
-  static const ValueKey<String> chatSearchDatePicker = ValueKey('chat-search-date-picker');
+  static const ValueKey<String> chatSearchShowMode =
+      ValueKey('chat-search-show-mode');
+  static const ValueKey<String> chatSearchDatePicker =
+      ValueKey('chat-search-date-picker');
   static const ValueKey<String> chatTilePrefix = ValueKey('chat-tile-');
   static const ValueKey<String> chatMessagePrefix = ValueKey('chat-message-');
   static const ValueKey<String> chatNamePostfix = ValueKey('-name');
@@ -103,15 +112,20 @@ class ChatKeys {
       ValueKey('-message');
   static const ValueKey<String> chatAvatarPostfix = ValueKey('-avatar');
   static const ValueKey<String> chatHeader = ValueKey('chat-header');
+
   ChatKeys._();
 }
 
 class MessageKeys {
-  static const ValueKey<String> messagesContainer = ValueKey('messages-container');
+  static const ValueKey<String> messagesContainer =
+      ValueKey('messages-container');
   static const ValueKey<String> messageInput = ValueKey('message-input');
-  static const ValueKey<String> messageSendButton = ValueKey('message-send-button');
-  static const ValueKey<String> messageAttachmentButton = ValueKey('message-attachment-button');
-  static const ValueKey<String> messageVoiceButton = ValueKey('message-voice-button');
+  static const ValueKey<String> messageSendButton =
+      ValueKey('message-send-button');
+  static const ValueKey<String> messageAttachmentButton =
+      ValueKey('message-attachment-button');
+  static const ValueKey<String> messageVoiceButton =
+      ValueKey('message-voice-button');
   static const ValueKey<String> messagePrefix = ValueKey('message-');
   static const ValueKey<String> messageSenderPostfix = ValueKey('-sender');
   static const ValueKey<String> messageContentPostfix = ValueKey('-content');
@@ -126,40 +140,55 @@ class MessageKeys {
 }
 
 class CallKeys {
-  static const ValueKey<String> acceptCallButton = ValueKey('accept-call-button');
-  static const ValueKey<String> rejectCallButton = ValueKey('reject-call-button');
+  static const ValueKey<String> acceptCallButton =
+      ValueKey('accept-call-button');
+  static const ValueKey<String> rejectCallButton =
+      ValueKey('reject-call-button');
   static const ValueKey<String> endCallButton = ValueKey('end-call-button');
-  static const ValueKey<String> toggleMuteButton = ValueKey('toggle-mute-button');
-  static const ValueKey<String> toggleSpeakerButton = ValueKey('toggle-speaker-button');
-  static const ValueKey<String> toggleVideoButton = ValueKey('toggle-video-button');
-  static const ValueKey<String> minimizeCallButton = ValueKey('minimize-call-button');
+  static const ValueKey<String> toggleMuteButton =
+      ValueKey('toggle-mute-button');
+  static const ValueKey<String> toggleSpeakerButton =
+      ValueKey('toggle-speaker-button');
+  static const ValueKey<String> toggleVideoButton =
+      ValueKey('toggle-video-button');
+  static const ValueKey<String> minimizeCallButton =
+      ValueKey('minimize-call-button');
   static const ValueKey<String> callOverlayBar = ValueKey('call-overlay-bar');
   static const ValueKey<String> callStatusText = ValueKey('call-status-text');
   static const ValueKey<String> startCallButton = ValueKey('start-call-button');
 }
 
-
 class Keys {
   // LogInScreen
-  static final logInFormKey = GlobalKey<FormState>(debugLabel:'login_form');
-  static final logInEmailKey = GlobalKey<FormFieldState>(debugLabel:'login_email_input');
-  static final logInPasswordKey = GlobalKey<FormFieldState>(debugLabel:'login_password_input');
-  static final logInForgotPasswordKey = GlobalKey<State>(debugLabel:'login_forgot_password_button');
-  static final logInSignUpKey = GlobalKey<State>(debugLabel:'login_signup_button');
-  static final logInSubmitKey = GlobalKey<State>(debugLabel:'login_submit_button');
-  static final logInemailShakeKey = GlobalKey<ShakeWidgetState>(debugLabel: 'login_email_shake');
-  static final logInpasswordShakeKey = GlobalKey<ShakeWidgetState>(debugLabel: 'login_password_shake');
+  static final logInFormKey = GlobalKey<FormState>(debugLabel: 'login_form');
+  static final logInEmailKey =
+      GlobalKey<FormFieldState>(debugLabel: 'login_email_input');
+  static final logInPasswordKey =
+      GlobalKey<FormFieldState>(debugLabel: 'login_password_input');
+  static final logInForgotPasswordKey =
+      GlobalKey<State>(debugLabel: 'login_forgot_password_button');
+  static final logInSignUpKey =
+      GlobalKey<State>(debugLabel: 'login_signup_button');
+  static final logInSubmitKey =
+      GlobalKey<State>(debugLabel: 'login_submit_button');
+  static final logInemailShakeKey =
+      GlobalKey<ShakeWidgetState>(debugLabel: 'login_email_shake');
+  static final logInpasswordShakeKey =
+      GlobalKey<ShakeWidgetState>(debugLabel: 'login_password_shake');
 
   // ChangeNumberFormScreen
-  static final changeNumberFormKey = GlobalKey<FormState>(debugLabel: 'change_number_form');
-  static final changeNumberPhoneShakeKey = GlobalKey<ShakeWidgetState>(debugLabel: 'change_number_phone_shake');
+  static final changeNumberFormKey =
+      GlobalKey<FormState>(debugLabel: 'change_number_form');
+  static final changeNumberPhoneShakeKey =
+      GlobalKey<ShakeWidgetState>(debugLabel: 'change_number_phone_shake');
 
   // SocialLogIn
   static const googleLogIn = Key('google_log_in');
   static const githubLogIn = Key('github_log_in');
 
   // ShowTakenStoryScreen
-  static final signatureBoundaryKey  = GlobalKey(debugLabel: 'signature_boundary');
+  static final signatureBoundaryKey =
+      GlobalKey(debugLabel: 'signature_boundary');
 
   // ProfileInfoScreen
   static final profileInfoFirstNameShakeKey = GlobalKey<ShakeWidgetState>();
@@ -169,7 +198,8 @@ class Keys {
   static const profileInfoBioInput = ValueKey("bio-input");
 
   // SettingsScreen
-  static const settingsSetProfilePhotoOptions = ValueKey("set-profile-photo-option");
+  static const settingsSetProfilePhotoOptions =
+      ValueKey("set-profile-photo-option");
 
   // CropImageScreen
   static const refreshImageCropScreen = ValueKey('refresh_key');
@@ -188,5 +218,48 @@ class Keys {
   // General
   static const popupMenuButton = ValueKey('popup_menu_button');
   static const popupMenuItemPrefix = ValueKey('popup_menu_item_');
+
   Keys._();
+}
+
+class GlobalKeyCategoryManager {
+  // Static map to store keys by category
+  static final Map<String, List<GlobalKey>> _keyCategories = {};
+
+  // Static map to store debug labels
+  static final Map<GlobalKey, String> _keyDebugLabels = {};
+
+  // Static method to add a key to a category
+  static GlobalKey addKey(String category) {
+    final key = GlobalKey();
+    final debugLabel = '$category-${_getCategoryKeyCount(category)}';
+
+    // Save the key and its debug label
+    _keyCategories.putIfAbsent(category, () => []).add(key);
+    _keyDebugLabels[key] = debugLabel;
+
+    return key;
+  }
+
+  // Static method to get keys for a category
+  static List<GlobalKey>? getKeys(String category) {
+    return _keyCategories[category];
+  }
+
+  // Static method to get debug labels for a category
+  static List<String>? getDebugLabels(String category) {
+    return _keyCategories[category]
+        ?.map((key) => _keyDebugLabels[key] ?? '')
+        .toList();
+  }
+
+  // Static helper method to get the count of keys in a category
+  static int _getCategoryKeyCount(String category) {
+    return _keyCategories[category]?.length ?? 0;
+  }
+
+  // Static method to get the debug label of a specific key
+  static String? getDebugLabel(GlobalKey key) {
+    return _keyDebugLabels[key];
+  }
 }

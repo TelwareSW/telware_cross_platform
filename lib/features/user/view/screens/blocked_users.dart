@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
@@ -25,7 +26,8 @@ class _BlockedUsersScreen extends ConsumerState<BlockedUsersScreen> {
 
   late List<Map<String, dynamic>> blockSections;
 
-  void unblockMenu(GlobalKey iconButtonKey, {required String userId}) {
+  void unblockMenu(GlobalKey iconButtonKey, GlobalKey menuKey,
+      {required String userId}) {
     // Get the position of the IconButton using the GlobalKey
     final RenderBox renderBox =
         iconButtonKey.currentContext!.findRenderObject() as RenderBox;
@@ -45,9 +47,10 @@ class _BlockedUsersScreen extends ConsumerState<BlockedUsersScreen> {
         0, // Bottom coordinate (ignored)
       ),
       items: <PopupMenuEntry<int>>[
-        const PopupMenuItem<int>(
+        PopupMenuItem<int>(
+          key: menuKey,
           value: 0,
-          child: Text(
+          child: const Text(
             ' Unblock user',
           ),
         ),
@@ -80,6 +83,8 @@ class _BlockedUsersScreen extends ConsumerState<BlockedUsersScreen> {
             "fontSize": 15.5,
             "text": 'Block user',
             "routes": "/block-user",
+            'tileKey':
+                GlobalKeyCategoryManager.addKey('goToBlockUserScreenButton'),
           }
         ],
         "trailing":
@@ -138,7 +143,7 @@ class _BlockedUsersScreen extends ConsumerState<BlockedUsersScreen> {
         "imagePath": photo,
         "subtext": user.phone,
         "userId": user.id,
-        "iconKey": GlobalKey(),
+        "iconKey": GlobalKeyCategoryManager.addKey('unblockUserMenuIcon'),
       } as Map<String, dynamic>;
     }).toList();
 
@@ -151,8 +156,9 @@ class _BlockedUsersScreen extends ConsumerState<BlockedUsersScreen> {
       option["fontSize"] = 18.0;
       option["subtextFontSize"] = 14.0;
       option["fontWeight"] = FontWeight.w500;
-      option["trailingIconAction"] =
-          () => unblockMenu(option["iconKey"], userId: option["userId"]);
+      option["trailingIconAction"] = () => unblockMenu(option["iconKey"],
+          GlobalKeyCategoryManager.addKey('unblockUserMenuConfirm'),
+          userId: option["userId"]);
       option["subtext"] = formatPhoneNumber(option["subtext"]);
     }
 

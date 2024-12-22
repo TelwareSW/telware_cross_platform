@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/contact_service.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
@@ -34,7 +35,12 @@ class _BlockUserScreen extends ConsumerState<BlockUserScreen>
   late TabController _tabController;
   final ScrollController scrollController = ScrollController();
 
-  void blockConfirmationDialog(String user, {String? userId}) {
+  void blockConfirmationDialog(
+    String user, {
+    String? userId,
+    required GlobalKey<State> onConfirmKey,
+    required GlobalKey<State> onCancelKey,
+  }) {
     showConfirmationDialog(
       context: context,
       title: 'Block user',
@@ -50,6 +56,8 @@ class _BlockUserScreen extends ConsumerState<BlockUserScreen>
       confirmPadding: const EdgeInsets.only(left: 40.0),
       cancelText: 'Cancel',
       cancelColor: const Color.fromRGBO(100, 181, 239, 1),
+      onCancelButtonKey: onCancelKey,
+      onConfirmButtonKey: onConfirmKey,
       onConfirm: () {
         // Block the user
         if (userId != null) {
@@ -84,7 +92,13 @@ class _BlockUserScreen extends ConsumerState<BlockUserScreen>
         option["subtextFontSize"] = 14.0;
         option["imageWidth"] = 47.0;
         option["imageHeight"] = 47.0;
-        option["onTap"] = () => blockConfirmationDialog(option["text"]);
+        option["onTap"] = () => blockConfirmationDialog(
+              option["text"],
+              onConfirmKey:
+                  GlobalKeyCategoryManager.addKey('blockContactConfirm'),
+              onCancelKey:
+                  GlobalKeyCategoryManager.addKey('blockContactCancel'),
+            );
       }
       setState(() {});
     } catch (error) {
@@ -205,8 +219,13 @@ class _BlockUserScreen extends ConsumerState<BlockUserScreen>
       option["fontWeight"] = FontWeight.w500;
       option["imageWidth"] = 55.0;
       option["imageHeight"] = 55.0;
-      option["onTap"] = () =>
-          blockConfirmationDialog(option["text"], userId: option["userId"]);
+      option['tileKey'] = GlobalKeyCategoryManager.addKey('blockUserTile');
+      option["onTap"] = () => blockConfirmationDialog(
+            option["text"],
+            userId: option["userId"],
+            onConfirmKey: GlobalKeyCategoryManager.addKey('blockUserConfirm'),
+            onCancelKey: GlobalKeyCategoryManager.addKey('blockUserCancel'),
+          );
     }
   }
 

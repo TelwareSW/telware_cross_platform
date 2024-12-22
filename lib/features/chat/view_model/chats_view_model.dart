@@ -119,13 +119,15 @@ class ChatsViewModel extends _$ChatsViewModel {
   ({
     String msgLocalId,
     String chatId,
-  }) addSentMessage(
-      {required MessageContent content,
-      required String chatId,
-      required MessageType msgType,
-      required MessageContentType msgContentType,
-      required String? parentMessageId,
-      required bool isForward}) {
+
+  }) addSentMessage({
+    required MessageContent content,
+    required String chatId,
+    required MessageType msgType,
+    required MessageContentType msgContentType,
+    required String? parentMessageId,
+    bool isReply = false,
+  }) {
     final chatIndex = getChatIndex(chatId);
     final chat = state[chatIndex];
     // todo(ahmed): make sure that new chats are added to the map first
@@ -136,17 +138,17 @@ class ChatsViewModel extends _$ChatsViewModel {
         senderId + DateTime.now().millisecondsSinceEpoch.toString();
 
     final MessageModel msg = MessageModel(
-      senderId: senderId,
-      timestamp: DateTime.now(),
-      content: content,
-      messageContentType: msgContentType,
-      messageType: msgType,
-      userStates: {},
-      id: USE_MOCK_DATA ? getUniqueMessageId() : null,
-      localId: msgLocalId,
-      parentMessage: parentMessageId,
-      isForward: isForward,
-    );
+
+        senderId: senderId,
+        timestamp: DateTime.now(),
+        content: content,
+        messageContentType: msgContentType,
+        messageType: msgType,
+        userStates: {},
+        id: USE_MOCK_DATA ? getUniqueMessageId() : null,
+        localId: msgLocalId,
+        parentMessage: parentMessageId,
+        );
 
     chat.messages.add(msg);
 
@@ -159,6 +161,7 @@ class ChatsViewModel extends _$ChatsViewModel {
     required String newMsgId,
     required String msgLocalId,
     required String chatId,
+    required bool isAppropriate,
   }) {
     final chatIndex = getChatIndex(chatId);
     final chat = chatIndex >= 0 ? state[chatIndex] : null;
@@ -170,7 +173,8 @@ class ChatsViewModel extends _$ChatsViewModel {
           chat.messages.indexWhere((msg) => msg.localId == msgLocalId);
 
       if (msgIndex != -1) {
-        final newMsg = chat.messages[msgIndex].copyWith(id: newMsgId);
+        final newMsg = chat.messages[msgIndex]
+            .copyWith(id: newMsgId, isAppropriate: isAppropriate);
         chat.messages[msgIndex] = newMsg;
 
         _moveChatToFront(chatIndex, chat);
@@ -231,7 +235,7 @@ class ChatsViewModel extends _$ChatsViewModel {
 
     final encryptionService = EncryptionService.instance;
 
-    final text = encryptionService.decrypt(
+    String text = encryptionService.decrypt(
       chatType: chat.type,
       msg: response['content'],
       encryptionKey: chat.encryptionKey,
@@ -240,6 +244,11 @@ class ChatsViewModel extends _$ChatsViewModel {
 
     // todo: needs to be modified to match the response fields
     // todo(marwan): add file name instead of content
+
+    if (chat.isFiltered && response['isAppropriate'] == false) {
+      text = 'This message has inappropriate content.';
+    }
+
     content = createMessageContent(
       contentType: contentType,
       text: text,
@@ -260,6 +269,7 @@ class ChatsViewModel extends _$ChatsViewModel {
       parentMessage: response['parentMessageId'],
       isPinned: response['isPinned'],
       isForward: response['isForward'],
+      isAppropriate: response['isAppropriate'],
     );
 
     chat.messages.add(msg);
@@ -394,5 +404,34 @@ class ChatsViewModel extends _$ChatsViewModel {
         photo: otherInfo.photo,
       ),
     );
+  }
+
+  void updateGroup({
+    required String chatId,
+    bool? messagingPermission,
+    List<String>? members,
+    List<String>? admins,
+  }) {
+    final chatIndex = getChatIndex(chatId);
+    ChatModel? chat = chatIndex >= 0 ? state[chatIndex] : null;
+
+    if (chat != null) {
+      if (messagingPermission != null) {
+        chat.messagingPermission = messagingPermission;
+      }
+
+      if (members != null) {
+        chat.userIds = [...chat.userIds, ...members];
+      }
+
+      if (admins != null) {
+        chat.admins = [...?chat.admins, ...admins];
+      }
+      state = [
+        ...state.sublist(0, chatIndex),
+        chat.copyWith(),
+        ...state.sublist(chatIndex + 1),
+      ];
+    }
   }
 }

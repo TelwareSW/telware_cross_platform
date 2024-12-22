@@ -107,7 +107,8 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
         .read(chatsViewModelProvider.notifier)
         .getChat(myUser, userInfo, ChatType.private);
     debugPrint('Opening Chat: $chat');
-    context.pushReplacement(Routes.chatScreen, extra: [chat, widget.forwardedMessages]);
+    context.pushReplacement(Routes.chatScreen,
+        extra: [chat, widget.forwardedMessages]);
   }
 
   Widget sectionName(String name) {
@@ -427,26 +428,26 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
     List<Widget> chatTiles = [];
     int index = startIndex;
     int i = 0;
-    for (final message in localSearchResultsMessages) {
-      final ChatModel chat = localSearchResultsChats[i];
+    for (final chat in localSearchResultsChats) {
+      final MessageModel message = localSearchResultsMessages[i];
       final List<MapEntry<int, int>> chatTitleMatches =
           localSearchResultsChatTitleMatches[i];
       final List<MapEntry<int, int>> chatMessagesMatches =
           localSearchResultsChatMessagesMatches[i];
       final bool isForwarding = (widget.forwardedMessages?.length ?? 0) > 0;
-      tile(isForwarding) =>  ChatTileWidget(
-        key: ValueKey(ChatKeys.chatTilePrefix.value +
-            ChatKeys.chatTilePrefixSubvalue +
-            index.toString()),
-        chatModel: chat,
-        displayMessage: message,
-        sentByUser: message.senderId == ref.read(userProvider)!.id,
-        senderID: message.senderId,
-        highlights: chatMessagesMatches,
-        titleHighlights: chatTitleMatches,
-        onChatSelected: (_) {},
-        isForwarding: isForwarding,
-      );
+      tile(isForwarding) => ChatTileWidget(
+            key: ValueKey(ChatKeys.chatTilePrefix.value +
+                ChatKeys.chatTilePrefixSubvalue +
+                index.toString()),
+            chatModel: chat,
+            displayMessage: message,
+            sentByUser: message.senderId == ref.read(userProvider)!.id,
+            senderID: message.senderId,
+            highlights: chatMessagesMatches,
+            titleHighlights: chatTitleMatches,
+            onChatSelected: (_) {},
+            isForwarding: isForwarding,
+          );
       chatTiles.add(
         isForwarding
             ? InkWell(
@@ -618,6 +619,8 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
       confirmColor: const Color.fromRGBO(238, 104, 111, 1),
       confirmPadding: const EdgeInsets.only(left: 40.0),
       cancelText: accountStatus == 'deactivated' ? 'Activate' : 'Deactivate',
+      onCancelButtonKey: GlobalKeyCategoryManager.addKey('deactivateButton'),
+      onConfirmButtonKey: GlobalKeyCategoryManager.addKey('banButton'),
       cancelColor: const Color.fromRGBO(100, 181, 239, 1),
       onConfirm: () {
         if (accountStatus == 'banned') {
@@ -656,6 +659,10 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
       confirmColor: const Color.fromRGBO(238, 104, 111, 1),
       confirmPadding: const EdgeInsets.only(left: 40.0),
       cancelText: 'Cancel',
+      onCancelButtonKey:
+          GlobalKeyCategoryManager.addKey('cancel${action}Button'),
+      onConfirmButtonKey:
+          GlobalKeyCategoryManager.addKey('confirm${action}Button'),
       cancelColor: const Color.fromRGBO(100, 181, 239, 1),
       onConfirm: () async {
         if (userId != null) {

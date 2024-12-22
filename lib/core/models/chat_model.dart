@@ -15,9 +15,9 @@ class ChatModel {
   @HiveField(0)
   final String title;
   @HiveField(1)
-  final List<String> userIds;
+  List<String> userIds;
   @HiveField(2)
-  final List<String>? admins;
+  List<String>? admins;
   @HiveField(3)
   final List<String>? creators;
   @HiveField(4)
@@ -60,6 +60,7 @@ class ChatModel {
   String? nextPage;
   @HiveField(23)
   int unreadMessagesCount;
+
 
   ChatModel({
     required this.title,

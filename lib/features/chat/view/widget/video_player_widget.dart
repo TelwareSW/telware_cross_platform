@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/download_widget.dart';
 import 'package:video_player/video_player.dart';
 import '../../../../core/theme/palette.dart';
@@ -93,6 +94,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       height: 200,
       child: _controller.value.isInitialized
           ? GestureDetector(
+              key: GlobalKeyCategoryManager.addKey('toggleVideoMessageButton'),
               onTap: () {
                 setState(() {
                   if (_controller.value.isPlaying) {

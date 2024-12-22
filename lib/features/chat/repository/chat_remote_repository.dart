@@ -110,6 +110,9 @@ class ChatRemoteRepository {
                   encryptionKey: chat['chat']['encryptionKey'],
                   initializationVector: chat['chat']['initializationVector'],
                   chatType: ChatType.getType(chat['chat']['type']),
+                  isFiltered: chat['chat']['type'] != 'private'
+                      ? chat['chat']['isFilterd']
+                      : false,
                 )
               ];
         String chatTitle = 'Invalid Chat';
@@ -156,6 +159,9 @@ class ChatRemoteRepository {
           unreadMessagesCount:
               unreadMessagesMap[chatID]?['unreadMessagesCount'] ?? 0,
           isMentioned: unreadMessagesMap[chatID]?['isMentioned'] ?? false,
+          isFiltered: chat['chat']['type'] != 'private'
+                ? chat['chat']['isFilterd']
+                : false,
         );
 
         chats.add(chatModel);
@@ -278,6 +284,7 @@ class ChatRemoteRepository {
     required String? encryptionKey,
     required String? initializationVector,
     required ChatType chatType,
+    required bool isFiltered,
   }) {
     Map<String, MessageState> userStates = {};
     MessageContentType contentType =
@@ -292,12 +299,16 @@ class ChatRemoteRepository {
 
     final encryptionService = EncryptionService.instance;
 
-    final text = encryptionService.decrypt(
+    String text = encryptionService.decrypt(
       chatType: chatType,
       msg: lastMessage['content'],
       encryptionKey: encryptionKey,
       initializationVector: initializationVector,
     );
+
+    if (isFiltered && lastMessage['isAppropriate'] == false) {
+      text = 'This message has inappropriate content.';
+    }
 
     // TODO: needs to be modified to match the response fields
     content = createMessageContent(
@@ -422,6 +433,7 @@ class ChatRemoteRepository {
   Future<({AppError? appError, ChatModel? chat})> getChat(
       String sessionID, String chatID) async {
     try {
+
       return (appError: null, chat: null);
     } catch (e) {
       debugPrint('!!! Failed to get other user data, ${e.toString()}');

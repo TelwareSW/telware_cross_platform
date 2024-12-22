@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:faker/faker.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
@@ -222,4 +223,55 @@ MessageContent createMessageContent({
 
 String getUniqueMessageId() {
   return faker.guid.guid();
+}
+
+String getRandomLottieAnimation() {
+  // List of Lottie animation paths
+  List<String> lottieAnimations = [
+    'assets/tgs/curious_pigeon.tgs',
+    'assets/tgs/fruity_king.tgs',
+    'assets/tgs/graceful_elmo.tgs',
+    'assets/tgs/hello_anteater.tgs',
+    'assets/tgs/hello_astronaut.tgs',
+    'assets/tgs/hello_badger.tgs',
+    'assets/tgs/hello_bee.tgs',
+    'assets/tgs/hello_cat.tgs',
+    'assets/tgs/hello_clouds.tgs',
+    'assets/tgs/hello_duck.tgs',
+    'assets/tgs/hello_elmo.tgs',
+    'assets/tgs/hello_fish.tgs',
+    'assets/tgs/hello_flower.tgs',
+    'assets/tgs/hello_food.tgs',
+    'assets/tgs/hello_fridge.tgs',
+    'assets/tgs/hello_ghoul.tgs',
+    'assets/tgs/hello_king.tgs',
+    'assets/tgs/hello_lama.tgs',
+    'assets/tgs/hello_monkey.tgs',
+    'assets/tgs/hello_pigeon.tgs',
+    'assets/tgs/hello_possum.tgs',
+    'assets/tgs/hello_rat.tgs',
+    'assets/tgs/hello_seal.tgs',
+    'assets/tgs/hello_shawn_sheep.tgs',
+    'assets/tgs/hello_snail_rabbit.tgs',
+    'assets/tgs/hello_virus.tgs',
+    'assets/tgs/hello_water_animal.tgs',
+    'assets/tgs/hello_whales.tgs',
+    'assets/tgs/muscles_wizard.tgs',
+    'assets/tgs/plague_doctor.tgs',
+    'assets/tgs/screaming_elmo.tgs',
+    'assets/tgs/shy_elmo.tgs',
+    'assets/tgs/sick_wizard.tgs',
+    'assets/tgs/snowman.tgs',
+    'assets/tgs/spinny_jelly.tgs',
+    'assets/tgs/sus_moon.tgs',
+    'assets/tgs/toiletpaper.tgs',
+  ];
+
+  // Generate a random index
+  Random random = Random();
+  int randomIndex =
+      random.nextInt(lottieAnimations.length); // Gets a random index
+
+  // Return the randomly chosen Lottie animation path
+  return lottieAnimations[randomIndex];
 }

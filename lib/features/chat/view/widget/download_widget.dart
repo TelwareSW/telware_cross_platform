@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/mock/constants_mock.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
@@ -46,6 +47,7 @@ class DownloadWidgetState extends State<DownloadWidget> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      key: GlobalKeyCategoryManager.addKey('downloadMediaButton'),
       onTap: _handelTap,
       child: Container(
         width: 50,
