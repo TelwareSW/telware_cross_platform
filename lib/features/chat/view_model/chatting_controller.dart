@@ -52,6 +52,8 @@ class ChattingController {
   final ChatRemoteRepository _remoteRepository;
   final ChatLocalRepository _localRepository;
   final Ref _ref;
+  List<Map<String, dynamic>> unreadMsgsQuery = [];
+  bool isProcessingUnreadMsgs = false;
 
   ChattingController({
     required ChatRemoteRepository remoteRepository,
@@ -113,20 +115,16 @@ class ChattingController {
   }
 
   Future<void> init() async {
-    debugPrint('!!! tried to enter controller init');
-    debugPrint('!!! enter controller init');
-    // get the chats and give it to the chats view model from local
     final chats = _localRepository.getChats(_ref.read(userProvider)!.id!);
-    debugPrint('!!! chats list length ${chats.length}');
     _ref.read(chatsViewModelProvider.notifier).setChats(chats);
+
+    if (unreadMsgsQuery.isNotEmpty) {
+      _initialLoadUnreadMsgs();
+    }
 
     // get the users list from local
     final otherUsers =
         _localRepository.getOtherUsers(_ref.read(userProvider)!.id!);
-    // * the next three lines are for dubuging
-    // String ids = '';
-    // otherUsers.forEach((key, _) => ids += '$key\n');
-    // debugPrint('!!! OtherUsers Map ID\'s: $ids');
     _ref.read(chatsViewModelProvider.notifier).setOtherUsers(otherUsers);
 
     // get the events and give it to the handler from local
@@ -195,6 +193,8 @@ class ChattingController {
         },
       );
 
+      unreadMsgsQuery = response.unreadMsgsQuery;
+
       _localRepository.setChats(response.chats, _ref.read(userProvider)!.id!);
       _localRepository.setOtherUsers(
           response.users, _ref.read(userProvider)!.id!);
@@ -209,6 +209,76 @@ class ChattingController {
     _localRepository.clearOtherUsers(userId);
     _localRepository.clearEventQueue(userId);
     _ref.read(chatsViewModelProvider.notifier).clear();
+  }
+
+  Future<void> _initialLoadUnreadMsgs() async {
+    if (isProcessingUnreadMsgs) return;
+
+    List<Map<String, dynamic>> totalResponse = [];
+
+    for (var query in unreadMsgsQuery) {
+      final chat = _ref
+          .read(chatsViewModelProvider.notifier)
+          .getChatById(query['chatId']);
+      if (chat == null) continue;
+
+      final response = await _remoteRepository.loadOldMsgs(
+        sessionId: _ref.read(tokenProvider)!,
+        chatId: chat.id!,
+        encryptionKey: (chat.encryptionKey) ?? '',
+        initializationVector: (chat.initializationVector) ?? '',
+        chatType: (chat.type),
+        count: chat.unreadMessagesCount,
+      );
+
+      if (response.messages.isNotEmpty) {
+        totalResponse.add({'chatId': chat.id, 'messages': response.messages});
+      }
+    }
+
+    _ref.read(chatsViewModelProvider.notifier).addUnreadMsgs(totalResponse);
+    _localRepository.setChats(
+        _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
+
+    debugPrint('@@@@@@@@@@@@@@@@@@@@');
+    debugPrint('success');
+    debugPrint('done, total of ${totalResponse.length} chats were updated');
+    debugPrint('@@@@@@@@@@@@@@@@@@@@');
+
+    unreadMsgsQuery = [];
+    isProcessingUnreadMsgs = false;
+  }
+
+  Future<void> loadOldMsgs({
+    required String chatId,
+    int count = 20,
+    required String pageMsgId,
+  }) async {
+    final chat = _ref.read(chatsViewModelProvider.notifier).getChatById(chatId);
+    if (chat == null) return;
+
+    final response = await _remoteRepository.loadOldMsgs(
+        sessionId: _ref.read(tokenProvider)!,
+        chatId: chatId,
+        encryptionKey: (chat.encryptionKey) ?? '',
+        initializationVector: (chat.initializationVector) ?? '',
+        chatType: (chat.type),
+        count: count);
+
+    if (response.appError != null) {
+      // handle the error
+      // debugPrint('@@@@@@@@@@@@@@@@@@@@');
+      // debugPrint('error');
+      // debugPrint('@@@@@@@@@@@@@@@@@@@@');
+    } else {
+      debugPrint('@@@@@@@@@@@@@@@@@@@@');
+      debugPrint('success');
+      debugPrint('response.messages length = ${response.messages.length}');
+      debugPrint('@@@@@@@@@@@@@@@@@@@@');
+      _ref
+          .read(chatsViewModelProvider.notifier)
+          .addOldMsgs(chatId, response.messages);
+    }
   }
 
   /// Send a text message.
@@ -630,7 +700,7 @@ class ChattingController {
     final chat = chats.firstWhere((element) => element.id == chatID);
     final updatedChat = chat.copyWith(draft: draft);
     final updatedChats =
-    chats.map((e) => e.id == chatID ? updatedChat : e).toList();
+        chats.map((e) => e.id == chatID ? updatedChat : e).toList();
     _localRepository.setChats(updatedChats, userId);
     _ref.read(chatsViewModelProvider.notifier).setChats(updatedChats);
   }

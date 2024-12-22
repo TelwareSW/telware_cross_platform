@@ -20,8 +20,10 @@ class ChatRemoteRepository {
         AppError? appError,
         List<ChatModel> chats,
         Map<String, UserModel> users,
+        List<Map<String, dynamic>> unreadMsgsQuery,
       })> getUserChats(String sessionId, String userID, bool isAdmin) async {
     List<ChatModel> chats = [];
+    List<Map<String, dynamic>> unreadMsgsQuery = [];
 
     if (isAdmin) {
       return _getAllGroups(sessionId, userID);
@@ -37,9 +39,12 @@ class ChatRemoteRepository {
       final memberData = response.data['data']['members'] as List? ?? [];
       final lastMessageData =
           response.data['data']['lastMessages'] as List? ?? [];
+      final unreadMessages =
+          response.data['data']['unreadMessages'] as List? ?? [];
 
       Map<String, UserModel> userMap = {};
       Map<String, Map> lastMessageMap = {};
+      Map<String, Map> unreadMessagesMap = {};
       for (var member in memberData) {
         userMap[member['id']] = UserModel(
           id: member['id'],
@@ -71,6 +76,10 @@ class ChatRemoteRepository {
         lastMessageMap[message['chatId']] = lastMessage;
       }
 
+      for (var chatInfo in unreadMessages) {
+        unreadMessagesMap[chatInfo['chatId']] = chatInfo;
+      }
+
       // Iterate through chats and map users
       for (var chat in chatData) {
         final chatID = chat['chat']['id'];
@@ -96,7 +105,7 @@ class ChatRemoteRepository {
         final List<MessageModel> messages = lastMessageMap[chatID] == null
             ? []
             : [
-                _creataLastMsg(
+                _creataMsg(
                   lastMessage: lastMessageMap[chatID]!,
                   encryptionKey: chat['chat']['encryptionKey'],
                   initializationVector: chat['chat']['initializationVector'],
@@ -132,23 +141,36 @@ class ChatRemoteRepository {
         // todo(ahmed): store the creators list as well as the isSeen, isDeleted attributes
         // should it be sent in the first place if it is deleted?
         final chatModel = ChatModel(
-            id: chatID,
-            title: chatTitle,
-            userIds: members,
-            admins: admins,
-            type: ChatType.getType(chat['chat']['type']),
-            messages: messages,
-            draft: chat['draft'],
-            isMuted: chat['isMuted'],
-            creators: creators,
-            messagingPermission: messagingPermission,
-            encryptionKey: chat['chat']['encryptionKey'],
-            initializationVector: chat['chat']['initializationVector']);
+          id: chatID,
+          title: chatTitle,
+          userIds: members,
+          admins: admins,
+          type: ChatType.getType(chat['chat']['type']),
+          messages: messages,
+          draft: chat['draft'],
+          isMuted: chat['isMuted'],
+          creators: creators,
+          messagingPermission: messagingPermission,
+          encryptionKey: chat['chat']['encryptionKey'],
+          initializationVector: chat['chat']['initializationVector'],
+          unreadMessagesCount:
+              unreadMessagesMap[chatID]?['unreadMessagesCount'] ?? 0,
+          isMentioned: unreadMessagesMap[chatID]?['isMentioned'] ?? false,
+        );
 
         chats.add(chatModel);
+        unreadMsgsQuery.add({
+          'chatId': chatModel.id,
+          'count': chatModel.unreadMessagesCount,
+        });
       }
 
-      return (chats: chats, users: userMap, appError: null);
+      return (
+        chats: chats,
+        users: userMap,
+        appError: null,
+        unreadMsgsQuery: unreadMsgsQuery
+      );
     } catch (e, stackTrace) {
       debugPrint('!!! error in recieving the chats');
       debugPrint(e.toString());
@@ -157,6 +179,7 @@ class ChatRemoteRepository {
         chats: <ChatModel>[],
         users: <String, UserModel>{},
         appError: AppError('Failed to fetch chats', code: 500),
+        unreadMsgsQuery: <Map<String, dynamic>>[]
       );
     }
   }
@@ -166,6 +189,7 @@ class ChatRemoteRepository {
         AppError? appError,
         List<ChatModel> chats,
         Map<String, UserModel> users,
+        List<Map<String, dynamic>> unreadMsgsQuery,
       })> _getAllGroups(String sessionId, String userID) async {
     List<ChatModel> chats = [];
 
@@ -230,7 +254,12 @@ class ChatRemoteRepository {
         chats.add(chatModel);
       }
 
-      return (chats: chats, users: <String, UserModel>{}, appError: null);
+      return (
+        chats: chats,
+        users: <String, UserModel>{},
+        appError: null,
+        unreadMsgsQuery: <Map<String, dynamic>>[]
+      );
     } catch (e, stackTrace) {
       debugPrint('!!! error in receiving the groups for admin');
       debugPrint(e.toString());
@@ -239,11 +268,12 @@ class ChatRemoteRepository {
         chats: <ChatModel>[],
         users: <String, UserModel>{},
         appError: AppError('Failed to fetch groups for admin', code: 500),
+        unreadMsgsQuery: <Map<String, dynamic>>[],
       );
     }
   }
 
-  MessageModel _creataLastMsg({
+  MessageModel _creataMsg({
     required Map<dynamic, dynamic> lastMessage,
     required String? encryptionKey,
     required String? initializationVector,
@@ -300,6 +330,50 @@ class ChatRemoteRepository {
       isAppropriate: lastMessage['isAppropriate'],
       isEdited: lastMessage['isEdited'],
     );
+  }
+
+  Future<
+      ({
+        AppError? appError,
+        List<MessageModel> messages,
+      })> loadOldMsgs({
+    required String sessionId,
+    required String chatId,
+    int count = 20,
+    String pageMsgId = '',
+    required String encryptionKey,
+    required String initializationVector,
+    required ChatType chatType,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/chats/messages/$chatId?page=$pageMsgId&limit=$count',
+        options: Options(headers: {'X-Session-Token': sessionId}),
+      );
+
+      final messagesMaps = (response.data['data']['messages'] as List)
+          .map((map) => map as Map<String, dynamic>)
+          .toList();
+
+      final messages = messagesMaps
+          .map(
+            (map) => _creataMsg(
+              lastMessage: map,
+              encryptionKey: encryptionKey,
+              initializationVector: initializationVector,
+              chatType: chatType,
+            ),
+          )
+          .toList();
+
+      return (appError: null, messages: messages);
+    } catch (e) {
+      print(e);
+      return (
+        appError: AppError('Failed to fetch old messages', code: 500),
+        messages: <MessageModel>[]
+      );
+    }
   }
 
 // Fetch user details

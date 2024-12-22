@@ -91,6 +91,37 @@ class ChatsViewModel extends _$ChatsViewModel {
     state = [chat, ...state];
   }
 
+  void addOldMsgs(String chatId, List<MessageModel> messages) {
+    final chatIndex = getChatIndex(chatId);
+    final chat = state[chatIndex];
+
+    debugPrint('JJJJJJJJJJJ ${messages.length}');
+
+    state = [
+      ...state.sublist(0, chatIndex),
+      chat.copyWith(
+          messages: chat.nextPage == null
+              ? messages
+              : [...messages, ...chat.messages],
+          nextPage: messages[0].id),
+      ...state.sublist(chatIndex + 1),
+    ];
+  }
+
+  void addUnreadMsgs(List<Map<String, dynamic>> totalResponse) {
+    for (var response in totalResponse) {
+      final chatIndex = getChatIndex(response['chatId']);
+      final chat = state[chatIndex];
+
+      chat.messages = chat.nextPage == null
+          ? response['messages']
+          : [...(response['messages']), ...chat.messages];
+      chat.nextPage = chat.messages[0].id;
+    }
+
+    state = List.from(state);
+  }
+
   ({
     String msgLocalId,
     String chatId,

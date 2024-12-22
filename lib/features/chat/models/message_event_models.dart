@@ -144,14 +144,12 @@ class SendMessageEvent extends MessageEvent {
       EventType.sendMessage.event,
       timeout: timeout,
       ackCallback: (res, timer, completer) {
+        print(res);
         try {
-          final response = res as Map<String, dynamic>;
-          print(response);
           if (!completer.isCompleted) {
             timer.cancel(); // Cancel the timer on acknowledgment
-            if (response['success'].toString() == 'true') {
-              final res = response['res'] as Map<String, dynamic>;
-              final messageId = res['messageId'] as String;
+            if (res['success'].toString() == 'true') {
+              final messageId = res['data']['id'] as String;
 
               _controller!.updateMessageId(
                 msgId: messageId,
