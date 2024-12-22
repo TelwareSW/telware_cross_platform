@@ -356,6 +356,7 @@ class ChatRemoteRepository {
   Future<({AppError? appError, ChatModel? chat})> getChat(
       String sessionID, String chatID) async {
     try {
+
       return (appError: null, chat: null);
     } catch (e) {
       debugPrint('!!! Failed to get other user data, ${e.toString()}');

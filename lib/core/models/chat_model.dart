@@ -15,9 +15,9 @@ class ChatModel {
   @HiveField(0)
   final String title;
   @HiveField(1)
-  final List<String> userIds;
+  List<String> userIds;
   @HiveField(2)
-  final List<String>? admins;
+  List<String>? admins;
   @HiveField(3)
   final List<String>? creators;
   @HiveField(4)
@@ -56,6 +56,7 @@ class ChatModel {
   final bool downloadingPermission;
   @HiveField(21)
   final DateTime? createdAt;
+
 
   ChatModel({
     required this.title,

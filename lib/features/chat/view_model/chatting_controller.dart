@@ -222,8 +222,10 @@ class ChattingController {
     required ChatType chatType,
     ChatModel? chatModel,
     String? parentMessgeId,
+    bool isReply = false,
     required String? encryptionKey,
     required String? initializationVector,
+
   }) async {
     String? chatID = chatModel?.id;
     bool isChatNew = chatID == null;
@@ -255,6 +257,7 @@ class ChattingController {
               msgType: msgType,
               msgContentType: contentType,
               parentMessageId: parentMessgeId,
+              isReply: isReply,
               isForward: msgType == MessageType.forward,
             );
 
@@ -280,8 +283,11 @@ class ChattingController {
         'senderId': _ref.read(userProvider)!.id,
         'isFirstTime': isChatNew,
         'chatType': chatType.type,
-        'isReplay': false,
+
+        'isReply': isReply,
         'isForward': msgType == MessageType.forward,
+        "isAnnouncement":false,
+
       },
       controller: this,
       msgId: identifier.msgLocalId,
@@ -415,6 +421,33 @@ class ChattingController {
     final sessionID = _ref.read(tokenProvider);
     final response = await _remoteRepository.getChat(sessionID!, chatID);
     return response.chat!;
+  }
+
+  Future<void> addNewGroupToChats(Map<String, dynamic> res) async {
+    List<String> memberIds =
+        List<String>.from(res['members'].map((member) => member['user']));
+    List<String> admins = List<String>.from(res['members']
+        .where((member) => member['Role'] == 'admin')
+        .map((member) => member['user']));
+    ChatModel chat = ChatModel(
+      title: res['name'],
+      userIds: memberIds,
+      type: ChatType.getType(res['type']),
+      messages: [],
+      id: res['id'],
+      admins: admins,
+    );
+    _ref.read(chatsViewModelProvider.notifier).addChat(chat);
+  }
+
+  Future<void> updateExistingGroup(Map<String, dynamic> res) async {
+    print(res);
+    _ref.read(chatsViewModelProvider.notifier).updateGroup(
+          chatId: res['id'],
+          messagingPermission: res['messagingPermission'],
+          members: res['members'],
+          admins: res['admins'],
+        );
   }
 
   Future<UserModel?> getOtherUser(String id) async {

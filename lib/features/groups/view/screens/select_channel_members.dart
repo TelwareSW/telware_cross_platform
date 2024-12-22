@@ -1,37 +1,49 @@
+import 'dart:io';
 import 'dart:math';
-
+import 'package:go_router/go_router.dart';
+import 'package:typed_data/typed_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:telware_cross_platform/core/models/message_model.dart';
-import 'package:telware_cross_platform/core/models/user_model.dart';
-import 'package:telware_cross_platform/core/providers/user_provider.dart';
-import 'package:telware_cross_platform/core/theme/palette.dart';
-import 'package:telware_cross_platform/core/theme/sizes.dart';
-import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/auth_floating_action_button.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
-import 'package:telware_cross_platform/features/chat/view/widget/member_tile_widget.dart';
-import 'package:telware_cross_platform/features/groups/view/screens/group_creation_details.dart';
-import 'package:telware_cross_platform/features/home/models/home_state.dart';
-import 'package:telware_cross_platform/features/home/view_model/home_view_model.dart';
-import 'package:telware_cross_platform/features/user/view_model/user_view_model.dart';
 
-import '../../../../core/routes/routes.dart';
+import '../../../../core/constants/server_constants.dart';
+import '../../../../core/models/chat_model.dart';
+import '../../../../core/models/user_model.dart';
+import '../../../../core/providers/token_provider.dart';
+import '../../../../core/providers/user_provider.dart';
+import '../../../../core/theme/palette.dart';
+import '../../../../core/theme/sizes.dart';
+import '../../../auth/view/widget/auth_floating_action_button.dart';
+import '../../../chat/enum/chatting_enums.dart';
+import '../../../chat/view/screens/chat_screen.dart';
+import '../../../chat/view/widget/member_tile_widget.dart';
+import '../../../chat/view_model/chatting_controller.dart';
+import '../../../home/models/home_state.dart';
+import '../../../home/view_model/home_view_model.dart';
+import '../../../stories/utils/utils_functions.dart';
 
-class CreateGroupScreen extends ConsumerStatefulWidget {
-  static const String route = '/create-group';
+class SelectChannelMembers extends ConsumerStatefulWidget {
+  static const String route = '/select-channel-members';
 
-  const CreateGroupScreen({super.key});
+  final String channelName;
+  final String channelDiscription;
+  final String privacy;
+  // final File? channelImage;
+
+  const SelectChannelMembers({
+    super.key,
+    required this.channelName,
+    required this.privacy,
+    required this.channelDiscription,
+    // required this.channelImage,
+  });
 
   @override
-  ConsumerState<CreateGroupScreen> createState() => _CreateGroupScreen();
+  ConsumerState<SelectChannelMembers> createState() => _SelectChannelMembers();
 }
 
-class _CreateGroupScreen extends ConsumerState<CreateGroupScreen>
+class _SelectChannelMembers extends ConsumerState<SelectChannelMembers>
     with TickerProviderStateMixin {
-  final List<UserModel> fullUserChats = [];
   final TextEditingController searchController = TextEditingController();
   List<UserModel> usersGlobalSearchResults = [];
 
@@ -60,17 +72,11 @@ class _CreateGroupScreen extends ConsumerState<CreateGroupScreen>
     setState(() {});
   }
 
-  void _createNewGroup() {
-    // TODO: Implement group creation
-  }
-
   @override
   Widget build(BuildContext context) {
     ref.listen<HomeState>(
       homeViewModelProvider,
-
-          (_, state) {
-
+      (_, state) {
         usersGlobalSearchResults = state.usersGlobalSearchResults;
         setState(() {});
       },
@@ -89,7 +95,7 @@ class _CreateGroupScreen extends ConsumerState<CreateGroupScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'New Group',
+              'Add Subscribers',
               style: TextStyle(
                 color: Palette.primaryText,
                 fontSize: Sizes.primaryText,
@@ -97,9 +103,7 @@ class _CreateGroupScreen extends ConsumerState<CreateGroupScreen>
               ),
             ),
             Text(
-              _numSelected == 0
-                  ? 'up to 200000 members'
-                  : '$_numSelected of 200000 selected',
+              '$_numSelected members',
               style: const TextStyle(
                 color: Palette.accentText,
                 fontSize: Sizes.secondaryText,
@@ -119,7 +123,7 @@ class _CreateGroupScreen extends ConsumerState<CreateGroupScreen>
                 _filterView(value);
               },
               decoration: const InputDecoration(
-                hintText: 'Who would you like to add?',
+                hintText: 'Add contacts to your channel',
                 hintStyle: TextStyle(color: Palette.accentText),
                 prefixIcon: Icon(Icons.search, color: Palette.accentText),
                 border: InputBorder.none,
@@ -148,24 +152,59 @@ class _CreateGroupScreen extends ConsumerState<CreateGroupScreen>
         ],
       ),
       floatingActionButton: AuthFloatingActionButton(
-        onSubmit: () {
-          print(_selectedUsers);
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => GroupCreationDetails(
-                  members: _selectedUsers,
-                )),
-          );
-          // context.push(GroupCreationDetails.route);
+        onSubmit: () async {
+          print(
+              'channel name ${widget.channelName} \n members ${_selectedUsers} \n privacy ${widget.privacy}');
+          List<String> membersIds = _selectedUsers
+              .where((user) => user.id != null)
+              .map((user) => user.id!)
+              .toList();
+          await ref.read(chattingControllerProvider).createGroup(
+                type: 'channel',
+                name: widget.channelName,
+                members: membersIds,
+                onEventComplete: (res) async {
+                  if (res['success'] == true) {
+                    debugPrint('channel created successfully');
+                    final members = res['data']['members'] as List;
+                    List<String> userIds = members
+                        .map((member) => member['user'] as String)
+                        .toList();
+                    // Uint8List? imageBytes;
+                    // if (widget.channelImage != null) {
+                    //   uploadChatImage(
+                    //       widget.channelImage!,
+                    //       '$API_URL/chats/picture/${res['data']['_id']}',
+                    //       ref.read(tokenProvider) ?? '');
+                    //   imageBytes = await widget.channelImage?.readAsBytes();
+                    // }
+
+                    final ChatModel chat = ChatModel(
+                      title: res['data']['name'],
+                      userIds: userIds,
+                      type: res['data']['type'] == 'group'
+                          ? ChatType.group
+                          : ChatType.channel,
+                      messages: [],
+                      // photoBytes: imageBytes,
+                      id: res['data']['_id'],
+                    );
+                    debugPrint('Opening Chat: $chat');
+                    context.push(ChatScreen.route, extra: chat);
+                  } else {
+                    debugPrint('Failed to create channel');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Failed to create channel'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                },
+              );
         },
       ),
     );
-  }
-
-  List<UserModel> _generateUsersList(List<UserModel> users) {
-    UserModel myUser = ref.read(userProvider)!;
-    return users.where((user) => user.id != myUser.id).toList();
   }
 
   void _getSearchResults(String query, List<String> searchSpace,

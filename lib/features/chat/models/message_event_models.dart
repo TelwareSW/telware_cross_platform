@@ -440,6 +440,7 @@ class CreateGroupEvent extends MessageEvent {
             timer.cancel(); // Cancel the timer on acknowledgment
             if (response['success'].toString() == 'true') {
               final res = response['data'] as Map<String, dynamic>;
+              _controller?.addNewGroupToChats(res);
               print(res.toString());
               if (_onEventComplete != null) {
                 _onEventComplete(response);
@@ -509,7 +510,7 @@ class DeleteGroupEvent extends MessageEvent {
             if (response['success'].toString() == 'true') {
               final res = response['data'] as Map<String, dynamic>;
               print(res.toString());
-              _controller?.getUserChats();
+              _controller?.updateExistingGroup(response);
               completer.complete(true);
             } else {
               completer.complete(false);
@@ -574,7 +575,7 @@ class LeaveGroupEvent extends MessageEvent {
             if (response['success'].toString() == 'true') {
               final res = response['data'] as Map<String, dynamic>;
               print(res.toString());
-              _controller?.getUserChats();
+              _controller?.updateExistingGroup(res);
               completer.complete(true);
             } else {
               completer.complete(false);
@@ -639,7 +640,7 @@ class AddMembersEvent extends MessageEvent {
             if (response['success'].toString() == 'true') {
               final res = response['data'] as Map<String, dynamic>;
               print(res.toString());
-              _controller?.getUserChats();
+              _controller?.updateExistingGroup(res);
               completer.complete(true);
             } else {
               completer.complete(false);
@@ -704,7 +705,7 @@ class AddAdminEvent extends MessageEvent {
             if (response['success'].toString() == 'true') {
               final res = response['data'] as Map<String, dynamic>;
               print(res.toString());
-              _controller?.getUserChats();
+              _controller?.updateExistingGroup(res);
               completer.complete(true);
             } else {
               completer.complete(false);
@@ -769,7 +770,7 @@ class RemoveMemberEvent extends MessageEvent {
             if (response['success'].toString() == 'true') {
               final res = response['data'] as Map<String, dynamic>;
               print(res.toString());
-              _controller?.getUserChats();
+              _controller?.updateExistingGroup(res);
               completer.complete(true);
             } else {
               completer.complete(false);
@@ -834,7 +835,7 @@ class SetPermissions extends MessageEvent {
             if (response['success'].toString() == 'true') {
               final res = response['data'] as Map<String, dynamic>;
               print(res.toString());
-              _controller?.getUserChats();
+              _controller?.updateExistingGroup(res);
               completer.complete(true);
             } else {
               completer.complete(false);

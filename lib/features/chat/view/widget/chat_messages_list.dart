@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telware_cross_platform/core/constants/keys.dart';
+import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/core/utils.dart';
@@ -30,6 +31,8 @@ class ChatMessagesList extends ConsumerStatefulWidget {
     required this.onLongPress,
     required this.onReply,
     required this.onEdit,
+    this.showExtention=true,
+    this.chat,
   });
 
   final ScrollController scrollController;
@@ -46,6 +49,8 @@ class ChatMessagesList extends ConsumerStatefulWidget {
   final Function(MessageModel message) onLongPress;
   final Function(MessageModel message) onReply;
   final Function(MessageModel message) onEdit;
+  final bool showExtention;
+  final ChatModel? chat;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
@@ -57,6 +62,8 @@ class _ChatMessagesListState extends ConsumerState<ChatMessagesList> {
 
   @override
   Widget build(BuildContext context) {
+    print("@@@@@@@@@@@@@@@@@@2");
+    print(widget.messages);
     return SingleChildScrollView(
       reverse: true,
       controller: widget.scrollController, // Use the ScrollController
@@ -74,10 +81,13 @@ class _ChatMessagesListState extends ConsumerState<ChatMessagesList> {
                 parentIndex = widget.messages
                     .indexWhere((msg) => msg.id == item.parentMessage);
               }
+              List<MessageModel> thread = widget.messages
+                  .where((msg) => msg.parentMessage == item.id)
+                  .toList();
               if (parentIndex >= 0) {
                 parentMessage = widget.messages[parentIndex];
               }
-              return Row(
+              return (item.parentMessage==null || widget.chat?.type != ChatType.channel)?Row(
                 mainAxisAlignment: item.senderId == ref.read(userProvider)!.id
                     ? widget.selectedMessages.isNotEmpty
                         ? MainAxisAlignment.spaceBetween
@@ -112,7 +122,6 @@ class _ChatMessagesListState extends ConsumerState<ChatMessagesList> {
                     messageModel: item,
                     chatId: widget.chatId ?? '',
                     isSentByMe: item.senderId == ref.read(userProvider)!.id,
-
                     showInfo: widget.type != ChatType.private,
                     highlights:
                         widget.messageMatches[index] ?? const [MapEntry(0, 0)],
@@ -126,9 +135,12 @@ class _ChatMessagesListState extends ConsumerState<ChatMessagesList> {
                     onPress: widget.selectedMessages.isEmpty ? null : () {},
                     onLongPress: widget.onLongPress,
                     parentMessage: parentMessage,
+                    thread: thread,
+                    showExtention: widget.showExtention,
+                    chat: widget.chat,
                   ),
                 ],
-              );
+              ):SizedBox();
             } else {
               return const SizedBox.shrink();
             }
