@@ -218,13 +218,13 @@ class ChattingController {
       if (chat == null) continue;
 
       final response = await _remoteRepository.loadOldMsgs(
-        sessionId: _ref.read(tokenProvider)!,
-        chatId: chat.id!,
-        encryptionKey: (chat.encryptionKey) ?? '',
-        initializationVector: (chat.initializationVector) ?? '',
-        chatType: (chat.type),
-        count: chat.unreadMessagesCount,
-      );
+          sessionId: _ref.read(tokenProvider)!,
+          chatId: chat.id!,
+          encryptionKey: (chat.encryptionKey) ?? '',
+          initializationVector: (chat.initializationVector) ?? '',
+          chatType: (chat.type),
+          count: chat.unreadMessagesCount,
+          isFiltered: chat.isFiltered);
 
       if (response.messages.isNotEmpty) {
         totalResponse.add({'chatId': chat.id, 'messages': response.messages});
@@ -248,12 +248,14 @@ class ChattingController {
     if (chat == null) return;
 
     final response = await _remoteRepository.loadOldMsgs(
-        sessionId: _ref.read(tokenProvider)!,
-        chatId: chatId,
-        encryptionKey: (chat.encryptionKey) ?? '',
-        initializationVector: (chat.initializationVector) ?? '',
-        chatType: (chat.type),
-        count: count);
+      sessionId: _ref.read(tokenProvider)!,
+      chatId: chatId,
+      encryptionKey: (chat.encryptionKey) ?? '',
+      initializationVector: (chat.initializationVector) ?? '',
+      chatType: (chat.type),
+      count: count,
+      isFiltered: chat.isFiltered,
+    );
 
     if (response.appError != null) {
     } else {
@@ -261,7 +263,7 @@ class ChattingController {
           .read(chatsViewModelProvider.notifier)
           .addOldMsgs(chatId, response.messages);
       _localRepository.setChats(
-        _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
+          _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
     }
   }
 
@@ -279,7 +281,6 @@ class ChattingController {
     bool isReply = false,
     required String? encryptionKey,
     required String? initializationVector,
-
   }) async {
     String? chatID = chatModel?.id;
     bool isChatNew = chatID == null;
@@ -337,11 +338,9 @@ class ChattingController {
         'senderId': _ref.read(userProvider)!.id,
         'isFirstTime': isChatNew,
         'chatType': chatType.type,
-
         'isReply': isReply,
         'isForward': msgType == MessageType.forward,
-        "isAnnouncement":false,
-
+        "isAnnouncement": false,
       },
       controller: this,
       msgId: identifier.msgLocalId,

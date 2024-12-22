@@ -260,7 +260,8 @@ class _ThreadScreen extends ConsumerState<ThreadScreen>
         chatModel: chatModel,
         parentMessgeId: widget.announcement.id,
         isReply: true,
-    );
+        encryptionKey: chatModel.encryptionKey,
+        initializationVector: chatModel.initializationVector);
   }
 
   void _editMessage() {
@@ -270,6 +271,9 @@ class _ThreadScreen extends ConsumerState<ThreadScreen>
           (editMessage?.id)!,
           (chatModel.id)!,
           _messageController.text,
+          chatType: ChatType.channel,
+          encryptionKey: chatModel.encryptionKey,
+          initializationVector: chatModel.initializationVector,
         );
     _messageController.text = '';
   }
@@ -382,7 +386,7 @@ class _ThreadScreen extends ConsumerState<ThreadScreen>
     final membersNumber = chatModel.userIds.length;
     final imageBytes = chatModel.photoBytes;
     final photo = chatModel.photo;
-    final messages = [...widget.thread,widget.announcement];
+    final messages = [...widget.thread, widget.announcement];
     final chatID = chatModel.id;
     final String subtitle = chatModel.type == ChatType.private
         ? "last seen a long time ago"
@@ -433,7 +437,8 @@ class _ThreadScreen extends ConsumerState<ThreadScreen>
                             context.push(Routes.chatInfoScreen,
                                 extra: chatModel);
                           },
-                          child: Text('${widget.announcement.threadMessages.length} Comments'),
+                          child: Text(
+                              '${widget.announcement.threadMessages.length} Comments'),
                         )
                       : TextField(
                           key: ChatKeys.chatSearchInput,
@@ -564,8 +569,8 @@ class _ThreadScreen extends ConsumerState<ThreadScreen>
                                       onReply: _onReply,
                                       onEdit: _onEdit,
                                       onPin: (MessageModel message) {},
-                                    showExtention: false,
-                            chat: chat,
+                                      showExtention: false,
+                                      chat: chat,
                                     ),
                         ),
                         if (replyMessage != null)

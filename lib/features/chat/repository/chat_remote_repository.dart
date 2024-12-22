@@ -105,8 +105,8 @@ class ChatRemoteRepository {
         final List<MessageModel> messages = lastMessageMap[chatID] == null
             ? []
             : [
-                _creataMsg(
-                  lastMessage: lastMessageMap[chatID]!,
+                _createMsg(
+                  message: lastMessageMap[chatID]!,
                   encryptionKey: chat['chat']['encryptionKey'],
                   initializationVector: chat['chat']['initializationVector'],
                   chatType: ChatType.getType(chat['chat']['type']),
@@ -279,8 +279,8 @@ class ChatRemoteRepository {
     }
   }
 
-  MessageModel _creataMsg({
-    required Map<dynamic, dynamic> lastMessage,
+  MessageModel _createMsg({
+    required Map<dynamic, dynamic> message,
     required String? encryptionKey,
     required String? initializationVector,
     required ChatType chatType,
@@ -288,10 +288,10 @@ class ChatRemoteRepository {
   }) {
     Map<String, MessageState> userStates = {};
     MessageContentType contentType =
-        MessageContentType.getType(lastMessage['contentType'] ?? 'text');
+        MessageContentType.getType(message['contentType'] ?? 'text');
     MessageContent? content;
 
-    final Map<String, String> userStatesMap = lastMessage['userStates'] ?? {};
+    final Map<String, String> userStatesMap = message['userStates'] ?? {};
 
     for (var entry in userStatesMap.entries) {
       userStates[entry.key] = MessageState.getType(entry.value);
@@ -301,12 +301,12 @@ class ChatRemoteRepository {
 
     String text = encryptionService.decrypt(
       chatType: chatType,
-      msg: lastMessage['content'],
+      msg: message['content'],
       encryptionKey: encryptionKey,
       initializationVector: initializationVector,
     );
 
-    if (isFiltered && lastMessage['isAppropriate'] == false) {
+    if (isFiltered && message['isAppropriate'] == false) {
       text = 'This message has inappropriate content.';
     }
 
@@ -314,32 +314,32 @@ class ChatRemoteRepository {
     content = createMessageContent(
       contentType: contentType,
       text: text,
-      fileName: lastMessage['fileName'],
-      mediaUrl: lastMessage['mediaUrl'],
+      fileName: message['fileName'],
+      mediaUrl: message['mediaUrl'],
     );
 
-    final threadMessages = (lastMessage['threadMessages'] as List)
+    final threadMessages = (message['threadMessages'] as List)
         .map((e) => e as String)
         .toList();
 
     // the connumicationType attribute is extra
     return MessageModel(
-      id: lastMessage['id'],
-      senderId: lastMessage['senderId'],
+      id: message['id'],
+      senderId: message['senderId'],
       messageContentType: contentType,
-      messageType: MessageType.getType(lastMessage['type'] ?? 'unknown'),
+      messageType: MessageType.getType(message['type'] ?? 'unknown'),
       content: content,
-      timestamp: lastMessage['timestamp'] != null
-          ? DateTime.parse(lastMessage['timestamp'])
+      timestamp: message['timestamp'] != null
+          ? DateTime.parse(message['timestamp'])
           : DateTime.now(),
       userStates: userStates,
-      isForward: lastMessage['isForward'] ?? false,
-      isPinned: lastMessage['isPinned'] ?? false,
-      isAnnouncement: lastMessage['isAnnouncement'],
+      isForward: message['isForward'] ?? false,
+      isPinned: message['isPinned'] ?? false,
+      isAnnouncement: message['isAnnouncement'],
       threadMessages: threadMessages,
-      parentMessage: lastMessage['parentMessageId'],
-      isAppropriate: lastMessage['isAppropriate'],
-      isEdited: lastMessage['isEdited'],
+      parentMessage: message['parentMessageId'],
+      isAppropriate: message['isAppropriate'],
+      isEdited: message['isEdited'],
     );
   }
 
@@ -355,6 +355,7 @@ class ChatRemoteRepository {
     required String encryptionKey,
     required String initializationVector,
     required ChatType chatType,
+    required bool isFiltered,
   }) async {
     try {
       final response = await _dio.get(
@@ -368,11 +369,12 @@ class ChatRemoteRepository {
 
       final messages = messagesMaps
           .map(
-            (map) => _creataMsg(
-              lastMessage: map,
+            (map) => _createMsg(
+              message: map,
               encryptionKey: encryptionKey,
               initializationVector: initializationVector,
               chatType: chatType,
+              isFiltered: isFiltered, 
             ),
           )
           .toList();

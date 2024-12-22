@@ -119,13 +119,13 @@ class ChatsViewModel extends _$ChatsViewModel {
   ({
     String msgLocalId,
     String chatId,
-
   }) addSentMessage({
     required MessageContent content,
     required String chatId,
     required MessageType msgType,
     required MessageContentType msgContentType,
     required String? parentMessageId,
+    required bool isForward,
     bool isReply = false,
   }) {
     final chatIndex = getChatIndex(chatId);
@@ -138,17 +138,17 @@ class ChatsViewModel extends _$ChatsViewModel {
         senderId + DateTime.now().millisecondsSinceEpoch.toString();
 
     final MessageModel msg = MessageModel(
-
-        senderId: senderId,
-        timestamp: DateTime.now(),
-        content: content,
-        messageContentType: msgContentType,
-        messageType: msgType,
-        userStates: {},
-        id: USE_MOCK_DATA ? getUniqueMessageId() : null,
-        localId: msgLocalId,
-        parentMessage: parentMessageId,
-        );
+      senderId: senderId,
+      timestamp: DateTime.now(),
+      content: content,
+      messageContentType: msgContentType,
+      messageType: msgType,
+      userStates: {},
+      id: USE_MOCK_DATA ? getUniqueMessageId() : null,
+      localId: msgLocalId,
+      parentMessage: parentMessageId,
+      isForward: isForward,
+    );
 
     chat.messages.add(msg);
 
@@ -416,10 +416,6 @@ class ChatsViewModel extends _$ChatsViewModel {
     ChatModel? chat = chatIndex >= 0 ? state[chatIndex] : null;
 
     if (chat != null) {
-      if (messagingPermission != null) {
-        chat.messagingPermission = messagingPermission;
-      }
-
       if (members != null) {
         chat.userIds = [...chat.userIds, ...members];
       }
@@ -429,7 +425,7 @@ class ChatsViewModel extends _$ChatsViewModel {
       }
       state = [
         ...state.sublist(0, chatIndex),
-        chat.copyWith(),
+        chat.copyWith(messagingPermission: messagingPermission),
         ...state.sublist(chatIndex + 1),
       ];
     }
