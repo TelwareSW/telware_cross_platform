@@ -335,7 +335,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       AuthSubTextButton(
                         buttonKey: alreadyHaveAccountKey,
                         onPressed: () {
-                          context.pop();
+                          context.pushReplacement(Routes.logIn);
                         },
                         label: 'Log in',
                       ),
