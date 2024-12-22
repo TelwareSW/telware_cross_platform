@@ -366,6 +366,9 @@ class ChatRemoteRepository {
           )
           .toList();
 
+      if (messages.isEmpty) {
+        print(response);
+      }
       return (appError: null, messages: messages);
     } catch (e) {
       print(e);

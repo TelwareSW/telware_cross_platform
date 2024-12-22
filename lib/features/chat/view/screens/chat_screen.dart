@@ -146,6 +146,14 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   List<dynamic> _generateChatContentWithDateLabels(
       List<MessageModel> messages) {
     List<dynamic> chatContent = [];
+    chatContent.add(
+      InkWell(
+        onTap: () {
+          ref.read(chattingControllerProvider).loadOldMsgs(chatId: chatModel.id!, pageMsgId: chatModel.nextPage ?? '');
+        },
+        child: const DateLabelWidget(label: "Load More Messages"),
+      )
+    );
     for (int i = 0; i < messages.length; i++) {
       if (i == 0 ||
           !isSameDay(messages[i - 1].timestamp, messages[i].timestamp)) {

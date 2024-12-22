@@ -158,11 +158,6 @@ class ChattingController {
         for (var user in response.users) user.id!: user
       };
 
-      // * the next three lines are for dubuging
-      // String ids = '';
-      // otherUsersMap.forEach((key, _) => ids += '$key\n');
-      // debugPrint('!!! OtherUsers Map created ID\'s: $ids');
-
       debugPrint((await _localRepository.setChats(
               response.chats, _ref.read(userProvider)!.id!))
           .toString());
@@ -240,11 +235,6 @@ class ChattingController {
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
 
-    debugPrint('@@@@@@@@@@@@@@@@@@@@');
-    debugPrint('success');
-    debugPrint('done, total of ${totalResponse.length} chats were updated');
-    debugPrint('@@@@@@@@@@@@@@@@@@@@');
-
     unreadMsgsQuery = [];
     isProcessingUnreadMsgs = false;
   }
@@ -266,18 +256,12 @@ class ChattingController {
         count: count);
 
     if (response.appError != null) {
-      // handle the error
-      // debugPrint('@@@@@@@@@@@@@@@@@@@@');
-      // debugPrint('error');
-      // debugPrint('@@@@@@@@@@@@@@@@@@@@');
     } else {
-      debugPrint('@@@@@@@@@@@@@@@@@@@@');
-      debugPrint('success');
-      debugPrint('response.messages length = ${response.messages.length}');
-      debugPrint('@@@@@@@@@@@@@@@@@@@@');
       _ref
           .read(chatsViewModelProvider.notifier)
           .addOldMsgs(chatId, response.messages);
+      _localRepository.setChats(
+        _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
     }
   }
 

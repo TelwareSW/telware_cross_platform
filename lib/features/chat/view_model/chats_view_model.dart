@@ -95,17 +95,11 @@ class ChatsViewModel extends _$ChatsViewModel {
     final chatIndex = getChatIndex(chatId);
     final chat = state[chatIndex];
 
-    debugPrint('JJJJJJJJJJJ ${messages.length}');
+    chat.messages =
+        chat.nextPage == null ? messages : [...messages, ...chat.messages];
+    chat.nextPage = chat.messages[0].id;
 
-    state = [
-      ...state.sublist(0, chatIndex),
-      chat.copyWith(
-          messages: chat.nextPage == null
-              ? messages
-              : [...messages, ...chat.messages],
-          nextPage: messages[0].id),
-      ...state.sublist(chatIndex + 1),
-    ];
+    state = [...state];
   }
 
   void addUnreadMsgs(List<Map<String, dynamic>> totalResponse) {
@@ -327,7 +321,7 @@ class ChatsViewModel extends _$ChatsViewModel {
 
   ChatModel? getChatById(String chatId) {
     final chatIndex = getChatIndex(chatId);
-    return chatIndex > 0 ? state[chatIndex] : null;
+    return chatIndex >= 0 ? state[chatIndex] : null;
   }
 
   void _moveChatToFront(int chatIndex, ChatModel chat) {
