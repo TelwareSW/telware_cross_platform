@@ -31,7 +31,7 @@ class ChatMessagesList extends ConsumerStatefulWidget {
     required this.onLongPress,
     required this.onReply,
     required this.onEdit,
-    this.showExtention=true,
+    this.showExtention = true,
     this.chat,
   });
 
@@ -62,89 +62,101 @@ class _ChatMessagesListState extends ConsumerState<ChatMessagesList> {
 
   @override
   Widget build(BuildContext context) {
-    print("@@@@@@@@@@@@@@@@@@2");
-    print(widget.messages);
     return SingleChildScrollView(
       reverse: true,
       controller: widget.scrollController, // Use the ScrollController
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         child: Column(
-          children: widget.chatContent.mapIndexed((index, item) {
-            if (item is DateLabelWidget) {
-              return item;
-            } else if (item is MessageModel) {
-              int parentIndex = -1;
-              MessageModel? parentMessage;
-              if (item.parentMessage != null &&
-                  item.parentMessage!.isNotEmpty) {
-                parentIndex = widget.messages
-                    .indexWhere((msg) => msg.id == item.parentMessage);
-              }
+          children: [
+            SizedBox(
+              height: 5.0 * widget.pinnedMessages.length,
+            ),
+            ...widget.chatContent.mapIndexed(
+              (index, item) {
+                if (item is DateLabelWidget) {
+                  return item;
+                } else if (item is InkWell) {
+                  return item;
+                } else if (item is MessageModel) {
+                  int parentIndex = -1;
+                  MessageModel? parentMessage;
+                  if (item.parentMessage != null &&
+                      item.parentMessage!.isNotEmpty) {
+                    parentIndex = widget.messages
+                        .indexWhere((msg) => msg.id == item.parentMessage);
+                  }
               List<MessageModel> thread = widget.messages
                   .where((msg) => msg.parentMessage == item.id)
                   .toList();
-              if (parentIndex >= 0) {
-                parentMessage = widget.messages[parentIndex];
-              }
-              return (item.parentMessage==null || widget.chat?.type != ChatType.channel)?Row(
-                mainAxisAlignment: item.senderId == ref.read(userProvider)!.id
-                    ? widget.selectedMessages.isNotEmpty
-                        ? MainAxisAlignment.spaceBetween
-                        : MainAxisAlignment.end
-                    : MainAxisAlignment.start,
-                children: [
-                  if (widget.selectedMessages
-                      .isNotEmpty) // Show check icon only if selected
-                    Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                            color: Colors.white, width: 1), // White border
+                  if (parentIndex >= 0) {
+                    parentMessage = widget.messages[parentIndex];
+                  }
+              return (item.parentMessage == null ||
+                      widget.chat?.type != ChatType.channel)
+                  ? Row(
+                    mainAxisAlignment:
+                        item.senderId == ref.read(userProvider)!.id
+                            ? widget.selectedMessages.isNotEmpty
+                                ? MainAxisAlignment.spaceBetween
+                                : MainAxisAlignment.end
+                            : MainAxisAlignment.start,
+                    children: [
+                      if (widget.selectedMessages
+                          .isNotEmpty) // Show check icon only if selected
+                        Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                color: Colors.white, width: 1), // White border
+                          ),
+                          child: CircleAvatar(
+                            radius: 12,
+                            backgroundColor:
+                                widget.selectedMessages.contains(item) == true
+                                    ? Colors.green
+                                    : Colors.transparent,
+                            child:
+                                widget.selectedMessages.contains(item) == true
+                                    ? const Icon(Icons.check,
+                                        color: Colors.white, size: 16)
+                                    : const SizedBox(),
+                          ),
+                        ),
+                      if (widget.selectedMessages.contains(item))
+                        const SizedBox(width: 10),
+                      MessageTileWidget(
+                        key: ValueKey(
+                            '${MessageKeys.messagePrefix}${messagesIndex++}'),
+                        messageModel: item,
+                        chatId: widget.chatId ?? '',
+                        isSentByMe: item.senderId == ref.read(userProvider)!.id,
+                        showInfo: widget.type != ChatType.private,
+                        highlights: widget.messageMatches[index] ??
+                            const [MapEntry(0, 0)],
+                        onDownloadTap: (String? filePath) {
+                          onMediaDownloaded(
+                              filePath, item.id ?? item.localId, widget.chatId);
+                        },
+                        onReply: widget.onReply,
+                        onEdit: widget.onEdit,
+                        onPin: widget.onPin,
+                        onPress: widget.selectedMessages.isEmpty ? null : () {},
+                        onLongPress: widget.onLongPress,
+                        parentMessage: parentMessage,
+                          thread: thread,
+                          showExtention: widget.showExtention,
+                          chat: widget.chat,
                       ),
-                      child: CircleAvatar(
-                        radius: 12,
-                        backgroundColor:
-                            widget.selectedMessages.contains(item) == true
-                                ? Colors.green
-                                : Colors.transparent,
-                        child: widget.selectedMessages.contains(item) == true
-                            ? const Icon(Icons.check,
-                                color: Colors.white, size: 16)
-                            : const SizedBox(),
-                      ),
-                    ),
-                  if (widget.selectedMessages.contains(item))
-                    const SizedBox(width: 10),
-                  MessageTileWidget(
-                    key: ValueKey(
-                        '${MessageKeys.messagePrefix}${messagesIndex++}'),
-                    messageModel: item,
-                    chatId: widget.chatId ?? '',
-                    isSentByMe: item.senderId == ref.read(userProvider)!.id,
-                    showInfo: widget.type != ChatType.private,
-                    highlights:
-                        widget.messageMatches[index] ?? const [MapEntry(0, 0)],
-                    onDownloadTap: (String? filePath) {
-                      onMediaDownloaded(
-                          filePath, item.id ?? item.localId, widget.chatId);
-                    },
-                    onReply: widget.onReply,
-                    onEdit: widget.onEdit,
-                    onPin: widget.onPin,
-                    onPress: widget.selectedMessages.isEmpty ? null : () {},
-                    onLongPress: widget.onLongPress,
-                    parentMessage: parentMessage,
-                    thread: thread,
-                    showExtention: widget.showExtention,
-                    chat: widget.chat,
-                  ),
-                ],
-              ):SizedBox();
-            } else {
-              return const SizedBox.shrink();
-            }
-          }).toList(),
+                    ],
+                    )
+                  : SizedBox();
+                } else {
+                  return const SizedBox.shrink();
+                }
+              },
+            ),
+          ],
         ),
       ),
     );
@@ -152,7 +164,6 @@ class _ChatMessagesListState extends ConsumerState<ChatMessagesList> {
 
   //----------------------------------------------------------------------------
   //-------------------------------Media----------------------------------------
-
 
   void onMediaDownloaded(String? filePath, String messageId, String? chatId) {
     if (filePath == null) {

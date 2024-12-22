@@ -151,6 +151,7 @@ class SendMessageEvent extends MessageEvent {
             if (res['success'].toString() == 'true') {
               final messageId = res['data']['id'] as String;
               final isAppropriate = res['data']['isAppropriate'] as bool;
+              
               _controller!.updateMessageId(
                 msgId: messageId,
                 msgLocalId: msgId!,

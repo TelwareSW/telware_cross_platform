@@ -56,6 +56,10 @@ class ChatModel {
   final bool downloadingPermission;
   @HiveField(21)
   final DateTime? createdAt;
+  @HiveField(22)
+  String? nextPage;
+  @HiveField(23)
+  int unreadMessagesCount;
 
 
   ChatModel({
@@ -81,6 +85,8 @@ class ChatModel {
     this.createdAt,
     this.isFiltered = false,
     this.downloadingPermission = true,
+    this.nextPage,
+    this.unreadMessagesCount = 0
   });
 
   Future<void> _setPhotoBytes() async {
@@ -126,7 +132,10 @@ class ChatModel {
         other.isFiltered == isFiltered &&
         other.downloadingPermission == downloadingPermission &&
         other.createdAt == createdAt &&
-        other.initializationVector == initializationVector;
+        other.initializationVector == initializationVector &&
+        other.nextPage == nextPage &&
+        other.unreadMessagesCount == unreadMessagesCount
+        ;
   }
 
   @override
@@ -150,7 +159,10 @@ class ChatModel {
         isFiltered.hashCode ^
         downloadingPermission.hashCode ^
         createdAt.hashCode ^
-        initializationVector.hashCode;
+        initializationVector.hashCode ^
+        nextPage.hashCode ^
+        unreadMessagesCount.hashCode
+        ;
   }
 
   @override
@@ -176,6 +188,8 @@ class ChatModel {
         'downloadingPermission: $downloadingPermission,\n'
         'createdAt: $createdAt,\n'
         'initializationVecot: $initializationVector,\n'
+        'nextPage: $nextPage,\n'
+        'unreadMessagesCount: $unreadMessagesCount,\n' 
         ')');
   }
 
@@ -201,7 +215,10 @@ class ChatModel {
       bool? isFiltered,
       bool? downloadingPermission,
       DateTime? createdAt,
-      String? initializationVector}) {
+      String? initializationVector,
+      String? nextPage,
+      int? unreadMessagesCount,
+      }) {
     return ChatModel(
         title: title ?? this.title,
         userIds: userIds ?? this.userIds,
@@ -227,7 +244,10 @@ class ChatModel {
             downloadingPermission ?? this.downloadingPermission,
         createdAt: createdAt ?? this.createdAt,
         initializationVector:
-            initializationVector ?? this.initializationVector);
+            initializationVector ?? this.initializationVector,
+        nextPage: nextPage ?? this.nextPage,
+        unreadMessagesCount: unreadMessagesCount ?? this.unreadMessagesCount
+        );
   }
 
   Map<String, dynamic> toMap() {
@@ -252,7 +272,9 @@ class ChatModel {
       'isFiltered': isFiltered,
       'downloadingPermission': downloadingPermission,
       'createdAt': createdAt,
-      'initializationVector': initializationVector
+      'initializationVector': initializationVector,
+      'nextPage': nextPage,
+      'unreadMessagesCount': unreadMessagesCount
     };
   }
 

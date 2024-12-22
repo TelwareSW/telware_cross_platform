@@ -241,6 +241,10 @@ class AuthRemoteRepository {
     if (dioException.response != null) {
       code = dioException.response!.statusCode;
       debugPrint('^&^ get me error with status: $code');
+      if ((code ?? 500) >= 500) {
+        return AppError('Something went wrong. Please, try again later', code: code ?? 500);
+      }
+      
       message =
           dioException.response!.data?['message'] ?? 'Unexpected server Error';
       debugPrint(message);
