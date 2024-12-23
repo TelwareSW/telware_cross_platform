@@ -58,6 +58,14 @@ class ChatsViewModel extends _$ChatsViewModel {
         .toList();
   }
 
+  UserModel getLocalUser(String id) {
+    if (id == ref.read(userProvider)!.id) {
+      // debugPrint('!!!** returning the current user');
+      return ref.read(userProvider)!;
+    }
+    return _otherUsers[id]!;
+  }
+  
   Future<UserModel?> getUser(String id) async {
     // debugPrint('!!!** called');
     if (id == ref.read(userProvider)!.id) {

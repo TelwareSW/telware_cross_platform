@@ -25,11 +25,17 @@ class HighlightTextWidget extends StatelessWidget {
   final TextStyle normalStyle;
   final TextStyle highlightStyle;
   final TextStyle linkStyle;
+  final TextStyle mentionStyle;
   final TextOverflow overFlow;
   final int? maxLines;
 
   final RegExp _linkRegExp = RegExp(
     r'((https?|ftp)://[^\s/$.?#].[^\s]*)',
+    caseSensitive: false,
+  );
+
+  final RegExp _mentionRegExp = RegExp(
+    r'@\[(.*?)\]\((.*?)\)',
     caseSensitive: false,
   );
 
@@ -41,6 +47,11 @@ class HighlightTextWidget extends StatelessWidget {
     this.highlightStyle = const TextStyle(color: Palette.error),
     this.linkStyle = const TextStyle(
       color: Palette.accent,
+      decoration: TextDecoration.underline,
+    ),
+    this.mentionStyle = const TextStyle(
+      color: Color.fromARGB(255, 43, 121, 255),
+      fontWeight: FontWeight.bold,
       decoration: TextDecoration.underline,
     ),
     this.overFlow = TextOverflow.clip,
@@ -64,7 +75,12 @@ class HighlightTextWidget extends StatelessWidget {
 
     // Find all links in the text
     final List<RegExpMatch> linkMatches = _linkRegExp.allMatches(text).toList();
+    final List<RegExpMatch> mantionMatches =
+        _mentionRegExp.allMatches(text).toList();
     final List<MapEntry<int, int>> linkRanges = linkMatches
+        .map((match) => MapEntry(match.start, match.end - match.start))
+        .toList();
+    final List<MapEntry<int, int>> mentionRanges = mantionMatches
         .map((match) => MapEntry(match.start, match.end - match.start))
         .toList();
 
@@ -85,6 +101,22 @@ class HighlightTextWidget extends StatelessWidget {
       }
       if (isHighlight(i, lowerBoundIndex, highlights)) {
         highlightRanges[i] = MapEntry(i, 'highlight');
+        continue;
+      }
+
+      lowerBoundIndex = lowerBound<MapEntry<int, int>>(
+        mentionRanges,
+        MapEntry(i, 0), // Create a temporary MapEntry with the target value
+        compare: (a, b) => a.key.compareTo(b.key), // Compare by the key
+      );
+      if (lowerBoundIndex != 0) {
+        lowerBoundIndex = (lowerBoundIndex < mentionRanges.length &&
+                mentionRanges[lowerBoundIndex].key == i)
+            ? lowerBoundIndex
+            : lowerBoundIndex - 1;
+      }
+      if (isHighlight(i, lowerBoundIndex, mentionRanges)) {
+        highlightRanges[i] = MapEntry(i, 'mention');
         continue;
       }
 
@@ -155,6 +187,18 @@ class HighlightTextWidget extends StatelessWidget {
               recognizer: TapGestureRecognizer()
                 ..onTap =
                     () => _launchURL(text.substring(index, index + length)),
+            ),
+          );
+          break;
+        case 'mention':
+          textSpans.add(
+            TextSpan(
+              text: '@${(text.substring(index, index + length)).splitMapJoin(
+                _mentionRegExp,
+                onMatch: (m) => m.group(1)!,
+                onNonMatch: (m) => m,
+              )}',
+              style: mentionStyle,
             ),
           );
           break;
