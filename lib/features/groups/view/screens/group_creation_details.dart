@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
+import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
@@ -248,7 +249,8 @@ class _GroupCreationDetailsState extends ConsumerState<GroupCreationDetails> {
                 id: res['data']['_id'],
               );
               debugPrint('Opening Chat: $chat');
-              context.push(ChatScreen.route, extra: chat);
+              List<MessageModel> l=[];
+              context.push(ChatScreen.route, extra: [chat,l]);
             } else {
               debugPrint('Failed to create group');
               // Show a SnackBar if group creation failed
