@@ -25,7 +25,6 @@ class ColapsedStorySection extends ConsumerWidget {
       },
     );
 
-    debugPrint('Building ColapsedStorySection...');
     return Row(
       children: [
         Expanded(child: StackedOverlappedImages(users: reorderedUsers)),

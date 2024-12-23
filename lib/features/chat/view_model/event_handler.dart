@@ -65,9 +65,6 @@ class EventHandler {
     if (_isProcessing || USE_MOCK_DATA) return; // Avoid multiple loops
 
     _isProcessing = true;
-    debugPrint('()()() called Processing Queue');
-    debugPrint('()()() ${_queue.length}');
-    debugPrint('()()() $_stopRequested');
 
     int failingCounter = 0;
 
@@ -128,7 +125,6 @@ class EventHandler {
 
   void _onSocketConnect() {
     final Signaling signaling = Signaling.instance;
-    debugPrint('!!! connected successfully');
     // receive a message
     _socket.on(EventType.receiveMessage.event, (response) async {
       print('### got a message: $response');
@@ -313,7 +309,6 @@ class EventHandler {
     // get a call ended
     _socket.on(EventType.receiveCallEnded.event, (response) async {
       try {
-        debugPrint('### got a call ended: $response');
         signaling.onReceiveEndCall?.call(response);
       } on Exception catch (e) {
         debugPrint('!!! Error in receiving a call ended:\n${e.toString()}');
@@ -323,7 +318,6 @@ class EventHandler {
     // get updated draft
     _socket.on(EventType.receiveUpdatedDraft.event, (response) async {
       try {
-        debugPrint('### got a draft: $response');
         _chattingController.receiveUpdatedDraft(response['chatId'], response['draft']);
       } on Exception catch (e) {
         debugPrint('!!! Error in receiving a draft:\n${e.toString()}');
