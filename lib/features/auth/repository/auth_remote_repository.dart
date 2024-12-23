@@ -112,7 +112,6 @@ class AuthRemoteRepository {
         final message = response.data['message'];
         return Left(AppError(message));
       }
-      debugPrint('=========================================');
       debugPrint('Get me was successful');
       UserModel user = await UserModel.fromMap(response.data['data']['user']);
       List<UserModel> blockedUsers = await _handleGetBlockedUsers(sessionId);

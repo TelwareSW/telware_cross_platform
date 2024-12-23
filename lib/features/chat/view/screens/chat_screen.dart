@@ -415,7 +415,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('&*&**&**& rebuild chat screen');
     final chats = ref.watch(chatsViewModelProvider);
     final index = chats.indexWhere((chat) => chat.id == widget.chatId);
     final ChatModel? chat =

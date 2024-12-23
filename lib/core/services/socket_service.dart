@@ -41,9 +41,6 @@ class SocketService {
   void _connect() {
     if (isConnected || USE_MOCK_DATA) return;
     debugPrint('*** Entered the connect method');
-    debugPrint(_serverUrl);
-    debugPrint(_userId);
-    debugPrint(_sessionId);
 
     _socket = io(_serverUrl, <String, dynamic>{
       // 'autoConnect': false,

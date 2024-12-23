@@ -24,7 +24,6 @@ class ChatsList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final chatsList = ref.watch(chatsViewModelProvider);
     ChatKeys.resetChatTilePrefixSubvalue();
-    debugPrint('^*^*^*^*^* chat list rebuilding');
 
     return SliverList(
       key: ChatKeys.chatsListKey,

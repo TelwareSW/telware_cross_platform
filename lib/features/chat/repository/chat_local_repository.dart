@@ -28,13 +28,10 @@ class ChatLocalRepository {
   /////////////////////////////////////
   // set chats
   Future<bool> setChats(List<ChatModel> list, String userId) async {
-    debugPrint('!!! set chats locally called');
     try {
       await _chatsBox.put(_chatsBoxKey+userId, updateMessagesFilePath(list));
-      debugPrint('@@@ did put chats use key: ${_chatsBoxKey+userId} and length of: ${list.length}');
       return true;
     } catch (e) {
-      debugPrint('!!! exception on saving the chats list');
       debugPrint(e.toString());
       return false;
     }
