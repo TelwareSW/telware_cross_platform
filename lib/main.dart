@@ -51,6 +51,7 @@ Future<void> init() async {
   Hive.registerAdapter(StickerContentAdapter());
   Hive.registerAdapter(EmojiContentAdapter());
   Hive.registerAdapter(GIFContentAdapter());
+  Hive.registerAdapter(MessageContentAdapter());
 
   await Hive.initFlutter();
   await Hive.openBox<ContactModel>('contacts');
@@ -88,10 +89,15 @@ class _TelWareState extends ConsumerState<TelWare> {
     ref.listen<CallState>(callStateProvider, (previous, next) {
       debugPrint('*** CallState: $next');
       // Check for the conditions: voiceCallId is not null and isCaller is false
-      if (previous?.voiceCallId == null && next.voiceCallId != null && !next.isCaller) {
+      if (previous?.voiceCallId == null &&
+          next.voiceCallId != null &&
+          !next.isCaller) {
         debugPrint('*** The call is not from the caller');
         // Get the sender from his id
-        router.push(Routes.callScreen, extra: {"voiceCallId": next.voiceCallId, "user": next.callee}).then((_) {
+        router.push(Routes.callScreen, extra: {
+          "voiceCallId": next.voiceCallId,
+          "user": next.callee
+        }).then((_) {
           debugPrint('*** Navigation to call screen completed');
         });
       }
