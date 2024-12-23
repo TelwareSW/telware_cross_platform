@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/server_constants.dart';
 import '../../../../core/models/chat_model.dart';
+import '../../../../core/models/message_model.dart';
 import '../../../../core/models/user_model.dart';
 import '../../../../core/providers/token_provider.dart';
 import '../../../../core/providers/user_provider.dart';
@@ -190,7 +191,8 @@ class _SelectChannelMembers extends ConsumerState<SelectChannelMembers>
                       id: res['data']['_id'],
                     );
                     debugPrint('Opening Chat: $chat');
-                    context.push(ChatScreen.route, extra: chat);
+                    List<MessageModel> l=[];
+                    context.push(ChatScreen.route, extra: [chat,l]);
                   } else {
                     debugPrint('Failed to create channel');
                     ScaffoldMessenger.of(context).showSnackBar(
