@@ -571,6 +571,7 @@ class _ThreadScreen extends ConsumerState<ThreadScreen>
                                       onPin: (MessageModel message) {},
                                       showExtention: false,
                                       chat: chat,
+                            alwaysShow: true,
                                     ),
                         ),
                         if (replyMessage != null)

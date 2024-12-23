@@ -33,6 +33,7 @@ class ChatMessagesList extends ConsumerStatefulWidget {
     required this.onEdit,
     this.showExtention = true,
     this.chat,
+    this.alwaysShow=false,
   });
 
   final ScrollController scrollController;
@@ -51,6 +52,7 @@ class ChatMessagesList extends ConsumerStatefulWidget {
   final Function(MessageModel message) onEdit;
   final bool showExtention;
   final ChatModel? chat;
+  final bool alwaysShow;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
@@ -93,7 +95,8 @@ class _ChatMessagesListState extends ConsumerState<ChatMessagesList> {
                     parentMessage = widget.messages[parentIndex];
                   }
               return (item.parentMessage == null ||
-                      widget.chat?.type != ChatType.channel)
+                      widget.chat?.type != ChatType.channel||
+                      widget.alwaysShow == true)
                   ? Row(
                     mainAxisAlignment:
                         item.senderId == ref.read(userProvider)!.id

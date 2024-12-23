@@ -62,6 +62,7 @@ class ChatModel {
   int unreadMessagesCount;
 
 
+
   ChatModel({
     required this.title,
     required this.userIds,
