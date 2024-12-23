@@ -79,7 +79,7 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
       context.go(Routes.home);
     } else if (state.type == AuthStateType.unverified) {
       ref.read(emailProvider.notifier).update((_) => emailController.text);
-      context.push(
+      context.pushReplacement(
         Routes.verification,
         extra: {'sendVerificationCode': true}, // or false based on your logic
       );
@@ -130,7 +130,8 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<AuthState>(authViewModelProvider, (_, state) => handelState(state));
+    ref.listen<AuthState>(
+        authViewModelProvider, (_, state) => handelState(state));
 
     bool isLoading =
         ref.watch(authViewModelProvider).type == AuthStateType.loading;
@@ -200,7 +201,7 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
                             AuthSubTextButton(
                               buttonKey: Keys.logInSignUpKey,
                               onPressed: () {
-                                context.push(Routes.signUp);
+                                context.pushReplacement(Routes.signUp);
                               },
                               label: 'Sign Up',
                             ),
