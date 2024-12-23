@@ -88,9 +88,11 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
       {"options": <Map<String, dynamic>>[]}
     ];
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        _usersFuture = ref.read(userViewModelProvider.notifier).fetchUsers();
-      });
+      if (isAdmin) {
+        setState(() {
+          _usersFuture = ref.read(userViewModelProvider.notifier).fetchUsers();
+        });
+      }
     });
   }
 

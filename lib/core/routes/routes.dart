@@ -275,11 +275,14 @@ class Routes {
                 print(state.extra.runtimeType);
                 if (state.extra is List) {
                   final chat = (state.extra as List)[0] as ChatModel;
-                  final forwardedMessages = (state.extra as List)[1] as List<MessageModel>;
+                  final forwardedMessages = (state.extra != null &&
+                          (state.extra as List).length > 1 &&
+                          (state.extra as List)[1] is List)
+                      ? (state.extra as List)[1] as List<MessageModel>?
+                      : null;
                   return ChatScreen(
                     chatModel: chat,
-                    forwardedMessages:
-                        forwardedMessages,
+                    forwardedMessages: forwardedMessages,
                   );
                 }
                 final String chatId = state.extra as String;
@@ -377,7 +380,6 @@ class Routes {
             },
           ),
           GoRoute(
-
             path: Routes.createChannel,
             builder: (context, state) => CreateChannelScreen(),
           ),
@@ -419,7 +421,6 @@ class Routes {
               );
             },
           ),
-
           GoRoute(
             path: Routes.dataAndStorageScreen,
             builder: (context, state) => const DataAndStorageScreen(),
@@ -428,7 +429,6 @@ class Routes {
             path: Routes.wifiMediaScreen,
             builder: (context, state) => const WifiMediaScreen(),
           )
-
         ],
       );
 
