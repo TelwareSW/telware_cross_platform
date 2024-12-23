@@ -10,15 +10,14 @@ import 'message_model.dart';
 
 part 'chat_model.g.dart';
 
-
 @HiveType(typeId: 4)
 class ChatModel {
   @HiveField(0)
   final String title;
   @HiveField(1)
-  final List<String> userIds;
+  List<String> userIds;
   @HiveField(2)
-  final List<String>? admins;
+  List<String>? admins;
   @HiveField(3)
   final List<String>? creators;
   @HiveField(4)
@@ -47,7 +46,20 @@ class ChatModel {
   final DateTime? muteUntil; // Add this field
   @HiveField(16)
   final bool messagingPermission; //1->anyone   0->admins
-
+  @HiveField(17)
+  final String? encryptionKey;
+  @HiveField(18)
+  final String? initializationVector;
+  @HiveField(19)
+  final bool isFiltered;
+  @HiveField(20)
+  final bool downloadingPermission;
+  @HiveField(21)
+  final DateTime? createdAt;
+  @HiveField(22)
+  String? nextPage;
+  @HiveField(23)
+  int unreadMessagesCount;
 
 
 
@@ -69,14 +81,20 @@ class ChatModel {
     required this.messages,
     this.muteUntil, // Initialize this field
     this.messagingPermission = true,
+    this.encryptionKey,
+    this.initializationVector,
+    this.createdAt,
+    this.isFiltered = false,
+    this.downloadingPermission = true,
+    this.nextPage,
+    this.unreadMessagesCount = 0
   });
 
   Future<void> _setPhotoBytes() async {
     if (photo == null || photo!.isEmpty) return;
 
-    String url = photo!.startsWith('http')
-        ? photo!
-        : '$API_URL_PICTURES/$photo';
+    String url =
+        photo!.startsWith('http') ? photo! : '$API_URL_PICTURES/$photo';
 
     if (url.isEmpty) return;
 
@@ -109,27 +127,43 @@ class ChatModel {
         other.muteUntil == muteUntil &&
         other.draft == draft &&
         other.isMentioned == isMentioned &&
-        other.messages == messages&&
-        other.messagingPermission == messagingPermission;
+        other.messages == messages &&
+        other.messagingPermission == messagingPermission &&
+        other.encryptionKey == encryptionKey &&
+        other.isFiltered == isFiltered &&
+        other.downloadingPermission == downloadingPermission &&
+        other.createdAt == createdAt &&
+        other.initializationVector == initializationVector &&
+        other.nextPage == nextPage &&
+        other.unreadMessagesCount == unreadMessagesCount
+        ;
   }
 
   @override
   int get hashCode {
     return title.hashCode ^
-    userIds.hashCode ^
-    type.hashCode ^
-    photo.hashCode ^
-    id.hashCode ^
-    admins.hashCode ^
-    description.hashCode ^
-    lastMessageTimestamp.hashCode ^
-    isArchived.hashCode ^
-    isMuted.hashCode ^
-    draft.hashCode ^
-    creators.hashCode ^
-    isMentioned.hashCode ^
-    messages.hashCode^ // Include messages in hashCode
-    messagingPermission.hashCode;
+        userIds.hashCode ^
+        type.hashCode ^
+        photo.hashCode ^
+        id.hashCode ^
+        admins.hashCode ^
+        description.hashCode ^
+        lastMessageTimestamp.hashCode ^
+        isArchived.hashCode ^
+        isMuted.hashCode ^
+        draft.hashCode ^
+        creators.hashCode ^
+        isMentioned.hashCode ^
+        messages.hashCode ^ // Include messages in hashCode
+        messagingPermission.hashCode ^
+        encryptionKey.hashCode ^
+        isFiltered.hashCode ^
+        downloadingPermission.hashCode ^
+        createdAt.hashCode ^
+        initializationVector.hashCode ^
+        nextPage.hashCode ^
+        unreadMessagesCount.hashCode
+        ;
   }
 
   @override
@@ -150,47 +184,71 @@ class ChatModel {
         'isMentioned: $isMentioned,\n'
         'messages: $messages,\n' // Add messages to the string representation
         'messagingPermission: $messagingPermission,\n'
+        'encryptionKey: $encryptionKey,\n'
+        'isFiltered: $isFiltered,\n'
+        'downloadingPermission: $downloadingPermission,\n'
+        'createdAt: $createdAt,\n'
+        'initializationVecot: $initializationVector,\n'
+        'nextPage: $nextPage,\n'
+        'unreadMessagesCount: $unreadMessagesCount,\n' 
         ')');
   }
 
-  ChatModel copyWith({
-    String? title,
-    List<String>? userIds,
-    String? photo,
-    ChatType? type,
-    String? id,
-    Uint8List? photoBytes,
-    List<String>? admins,
-    List<String>? creators,
-    String? description,
-    DateTime? lastMessageTimestamp,
-    bool? isArchived,
-    bool? isMuted,
-    DateTime? muteUntil, // Add this parameter
-    String? draft,
-    bool? isMentioned,
-    List<MessageModel>? messages,
-    bool? messagingPermission,
-  }) {
+  ChatModel copyWith(
+      {String? title,
+      List<String>? userIds,
+      String? photo,
+      ChatType? type,
+      String? id,
+      Uint8List? photoBytes,
+      List<String>? admins,
+      List<String>? creators,
+      String? description,
+      DateTime? lastMessageTimestamp,
+      bool? isArchived,
+      bool? isMuted,
+      DateTime? muteUntil, // Add this parameter
+      String? draft,
+      bool? isMentioned,
+      List<MessageModel>? messages,
+      bool? messagingPermission,
+      String? encryptionKey,
+      bool? isFiltered,
+      bool? downloadingPermission,
+      DateTime? createdAt,
+      String? initializationVector,
+      String? nextPage,
+      int? unreadMessagesCount,
+      }) {
     return ChatModel(
-      title: title ?? this.title,
-      userIds: userIds ?? this.userIds,
-      photo: photo ?? this.photo,
-      type: type ?? this.type,
-      id: id ?? this.id,
-      photoBytes: photoBytes ?? this.photoBytes,
-      admins: admins ?? this.admins,
-      creators: creators ?? this.creators,
-      description: description ?? this.description,
-      lastMessageTimestamp: lastMessageTimestamp ?? this.lastMessageTimestamp,
-      isArchived: isArchived ?? this.isArchived,
-      isMuted: isMuted ?? this.isMuted,
-      muteUntil: muteUntil ?? this.muteUntil, // Copy this field
-      draft: draft ?? this.draft,
-      isMentioned: isMentioned ?? this.isMentioned,
-      messages: messages ?? this.messages,
-      messagingPermission: messagingPermission ?? this.messagingPermission,
-    );
+        title: title ?? this.title,
+        userIds: userIds ?? this.userIds,
+        photo: photo ?? this.photo,
+        type: type ?? this.type,
+        id: id ?? this.id,
+        photoBytes: photoBytes ?? this.photoBytes,
+        admins: admins ?? this.admins,
+        creators: creators ?? this.creators,
+        description: description ?? this.description,
+        lastMessageTimestamp: lastMessageTimestamp ?? this.lastMessageTimestamp,
+        isArchived: isArchived ?? this.isArchived,
+        isMuted: isMuted ?? this.isMuted,
+        muteUntil: muteUntil ?? this.muteUntil,
+        // Copy this field
+        draft: draft ?? this.draft,
+        isMentioned: isMentioned ?? this.isMentioned,
+        messages: messages ?? this.messages,
+        messagingPermission: messagingPermission ?? this.messagingPermission,
+        encryptionKey: encryptionKey ?? this.encryptionKey,
+        isFiltered: isFiltered ?? this.isFiltered,
+        downloadingPermission:
+            downloadingPermission ?? this.downloadingPermission,
+        createdAt: createdAt ?? this.createdAt,
+        initializationVector:
+            initializationVector ?? this.initializationVector,
+        nextPage: nextPage ?? this.nextPage,
+        unreadMessagesCount: unreadMessagesCount ?? this.unreadMessagesCount
+        );
   }
 
   Map<String, dynamic> toMap() {
@@ -211,9 +269,15 @@ class ChatModel {
       'isMentioned': isMentioned,
       'messagingPermission': messagingPermission,
       'messages': messages.map((message) => message.toMap()).toList(),
+      'encryptionKey': encryptionKey,
+      'isFiltered': isFiltered,
+      'downloadingPermission': downloadingPermission,
+      'createdAt': createdAt,
+      'initializationVector': initializationVector,
+      'nextPage': nextPage,
+      'unreadMessagesCount': unreadMessagesCount
     };
   }
-
 
   String toJson() => json.encode(toMap());
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/chat/services/audio_recording_service.dart';
@@ -41,6 +42,8 @@ class MagicRecordingButton extends StatelessWidget {
                     child: Center(
                       child: audioRecorderService.isRecordingLocked
                           ? IconButton(
+                              key: GlobalKeyCategoryManager.addKey(
+                                  'toggleAudioRecording'),
                               onPressed: () => audioRecorderService
                                   .startOrStopRecording(context),
                               padding: const EdgeInsets.all(5),
@@ -100,6 +103,8 @@ class MagicRecordingButton extends StatelessWidget {
                 ),
                 child: Center(
                   child: IconButton(
+                    key: GlobalKeyCategoryManager.addKey(
+                        'sendAudioMessageWhileRecording'),
                     icon: Icon(
                       size: 28,
                       audioRecorderService.isRecordingLocked

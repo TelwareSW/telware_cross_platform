@@ -10,6 +10,7 @@ import 'package:telware_cross_platform/features/chat/classes/message_content.dar
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
+import 'package:telware_cross_platform/features/chat/services/encryption_service.dart';
 import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 
@@ -90,6 +91,31 @@ class ChatsViewModel extends _$ChatsViewModel {
     state = [chat, ...state];
   }
 
+  void addOldMsgs(String chatId, List<MessageModel> messages) {
+    final chatIndex = getChatIndex(chatId);
+    final chat = state[chatIndex];
+
+    chat.messages =
+        chat.nextPage == null ? messages : [...messages, ...chat.messages];
+    chat.nextPage = chat.messages[0].id;
+
+    state = [...state];
+  }
+
+  void addUnreadMsgs(List<Map<String, dynamic>> totalResponse) {
+    for (var response in totalResponse) {
+      final chatIndex = getChatIndex(response['chatId']);
+      final chat = state[chatIndex];
+
+      chat.messages = chat.nextPage == null
+          ? response['messages']
+          : [...(response['messages']), ...chat.messages];
+      chat.nextPage = chat.messages[0].id;
+    }
+
+    state = List.from(state);
+  }
+
   ({
     String msgLocalId,
     String chatId,
@@ -99,6 +125,8 @@ class ChatsViewModel extends _$ChatsViewModel {
     required MessageType msgType,
     required MessageContentType msgContentType,
     required String? parentMessageId,
+    required bool isForward,
+    bool isReply = false,
   }) {
     final chatIndex = getChatIndex(chatId);
     final chat = state[chatIndex];
@@ -110,15 +138,17 @@ class ChatsViewModel extends _$ChatsViewModel {
         senderId + DateTime.now().millisecondsSinceEpoch.toString();
 
     final MessageModel msg = MessageModel(
-        senderId: senderId,
-        timestamp: DateTime.now(),
-        content: content,
-        messageContentType: msgContentType,
-        messageType: msgType,
-        userStates: {},
-        id: USE_MOCK_DATA ? getUniqueMessageId() : null,
-        localId: msgLocalId,
-        parentMessage: parentMessageId);
+      senderId: senderId,
+      timestamp: DateTime.now(),
+      content: content,
+      messageContentType: msgContentType,
+      messageType: msgType,
+      userStates: {},
+      id: USE_MOCK_DATA ? getUniqueMessageId() : null,
+      localId: msgLocalId,
+      parentMessage: parentMessageId,
+      isForward: isForward,
+    );
 
     chat.messages.add(msg);
 
@@ -131,6 +161,7 @@ class ChatsViewModel extends _$ChatsViewModel {
     required String newMsgId,
     required String msgLocalId,
     required String chatId,
+    required bool isAppropriate,
   }) {
     final chatIndex = getChatIndex(chatId);
     final chat = chatIndex >= 0 ? state[chatIndex] : null;
@@ -142,7 +173,8 @@ class ChatsViewModel extends _$ChatsViewModel {
           chat.messages.indexWhere((msg) => msg.localId == msgLocalId);
 
       if (msgIndex != -1) {
-        final newMsg = chat.messages[msgIndex].copyWith(id: newMsgId);
+        final newMsg = chat.messages[msgIndex]
+            .copyWith(id: newMsgId, isAppropriate: isAppropriate);
         chat.messages[msgIndex] = newMsg;
 
         _moveChatToFront(chatIndex, chat);
@@ -201,11 +233,26 @@ class ChatsViewModel extends _$ChatsViewModel {
     MessageContentType contentType =
         MessageContentType.getType(response['contentType'] ?? 'text');
 
+    final encryptionService = EncryptionService.instance;
+
+    String text = encryptionService.decrypt(
+      chatType: chat.type,
+      msg: response['content'],
+      encryptionKey: chat.encryptionKey,
+      initializationVector: chat.initializationVector,
+    );
+
     // todo: needs to be modified to match the response fields
+    // todo(marwan): add file name instead of content
+
+    if (chat.isFiltered && response['isAppropriate'] == false) {
+      text = 'This message has inappropriate content.';
+    }
+
     content = createMessageContent(
       contentType: contentType,
-      text: response['content'],
-      fileName: response['content'],
+      text: text,
+      fileName: text,
       mediaUrl: response['media'],
     );
 
@@ -222,6 +269,7 @@ class ChatsViewModel extends _$ChatsViewModel {
       parentMessage: response['parentMessageId'],
       isPinned: response['isPinned'],
       isForward: response['isForward'],
+      isAppropriate: response['isAppropriate'],
     );
 
     chat.messages.add(msg);
@@ -283,7 +331,7 @@ class ChatsViewModel extends _$ChatsViewModel {
 
   ChatModel? getChatById(String chatId) {
     final chatIndex = getChatIndex(chatId);
-    return chatIndex > 0 ? state[chatIndex] : null;
+    return chatIndex >= 0 ? state[chatIndex] : null;
   }
 
   void _moveChatToFront(int chatIndex, ChatModel chat) {
@@ -356,5 +404,30 @@ class ChatsViewModel extends _$ChatsViewModel {
         photo: otherInfo.photo,
       ),
     );
+  }
+
+  void updateGroup({
+    required String chatId,
+    bool? messagingPermission,
+    List<String>? members,
+    List<String>? admins,
+  }) {
+    final chatIndex = getChatIndex(chatId);
+    ChatModel? chat = chatIndex >= 0 ? state[chatIndex] : null;
+
+    if (chat != null) {
+      if (members != null) {
+        chat.userIds = [...chat.userIds, ...members];
+      }
+
+      if (admins != null) {
+        chat.admins = [...?chat.admins, ...admins];
+      }
+      state = [
+        ...state.sublist(0, chatIndex),
+        chat.copyWith(messagingPermission: messagingPermission),
+        ...state.sublist(chatIndex + 1),
+      ];
+    }
   }
 }

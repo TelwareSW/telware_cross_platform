@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:telware_cross_platform/core/models/chat_model.dart';
+import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 
 import 'package:telware_cross_platform/core/view/screen/splash_screen.dart';
@@ -18,10 +19,13 @@ import 'package:telware_cross_platform/features/chat/view/screens/caption_screen
 import 'package:telware_cross_platform/features/chat/view/screens/chat_info_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/chat_screen.dart';
 import 'package:telware_cross_platform/features/chat/view/screens/create_chat_screen.dart';
+import 'package:telware_cross_platform/features/chat/view/screens/thread_screen.dart';
+import 'package:telware_cross_platform/features/groups/view/screens/channel_setting_screen.dart';
 import 'package:telware_cross_platform/features/groups/view/screens/members_screen.dart';
 import 'package:telware_cross_platform/features/groups/view/screens/add_members_screen.dart';
 import 'package:telware_cross_platform/features/groups/view/screens/create_group_screen.dart';
 import 'package:telware_cross_platform/features/groups/view/screens/group_creation_details.dart';
+import 'package:telware_cross_platform/features/groups/view/screens/select_channel_members.dart';
 import 'package:telware_cross_platform/features/home/view/screens/home_screen.dart';
 import 'package:telware_cross_platform/features/home/view/screens/inbox_screen.dart';
 import 'package:telware_cross_platform/features/stories/view/screens/add_my_image_screen.dart';
@@ -45,6 +49,7 @@ import 'package:telware_cross_platform/features/user/view/screens/user_profile_s
 import 'package:telware_cross_platform/features/user/view/screens/wifi_media_screen.dart';
 
 import '../../features/chat/view/screens/pinned_messages_screen.dart';
+import '../../features/groups/view/screens/create_channel_screen.dart';
 import '../../features/groups/view/screens/edit_group.dart';
 import '../../features/stories/view/screens/crop_image_screen.dart';
 import '../../features/user/view/screens/devices_screen.dart';
@@ -58,6 +63,7 @@ class Routes {
   static const String socialAuthLoading = SocialAuthLoadingScreen.route;
   static const String inboxScreen = InboxScreen.route;
   static const String addMyStory = AddMyImageScreen.route;
+  static const String createChannel = CreateChannelScreen.route;
   static const String showTakenStory = ShowTakenImageScreen.route;
   static const String storyScreen = StoryScreen.route;
   static const String devicesScreen = DevicesScreen.route;
@@ -84,6 +90,9 @@ class Routes {
   static const String chatInfoScreen = ChatInfoScreen.route;
   static const String createGroupScreen = CreateGroupScreen.route;
   static const String groupCreationDetails = GroupCreationDetails.route;
+  static const String channelSettingsScreen = ChannelSettingScreen.route;
+  static const String threadScreen = ThreadScreen.route;
+  static const String selectChannelMembers = SelectChannelMembers.route;
   static const String callScreen = CallScreen.route;
   static const String editGroupScreen = EditGroup.route;
   static const String addMembersScreen = AddMembersScreen.route;
@@ -160,7 +169,8 @@ class Routes {
           GoRoute(
             path: Routes.inboxScreen,
             builder: (context, state) {
-              final Function(ChatModel) onChatSelected = state.extra as Function(ChatModel);
+              final Function(ChatModel) onChatSelected =
+                  state.extra as Function(ChatModel);
               return InboxScreen(onChatSelected: onChatSelected);
             },
           ),
@@ -262,8 +272,15 @@ class Routes {
           GoRoute(
               path: Routes.chatScreen,
               builder: (context, state) {
-                if (state.extra is ChatModel) {
-                  return ChatScreen(chatModel: state.extra as ChatModel);
+                print(state.extra.runtimeType);
+                if (state.extra is List) {
+                  final chat = (state.extra as List)[0] as ChatModel;
+                  final forwardedMessages = (state.extra as List)[1] as List<MessageModel>;
+                  return ChatScreen(
+                    chatModel: chat,
+                    forwardedMessages:
+                        forwardedMessages,
+                  );
                 }
                 final String chatId = state.extra as String;
                 return ChatScreen(chatId: chatId);
@@ -286,7 +303,12 @@ class Routes {
               }),
           GoRoute(
             path: Routes.createChatScreen,
-            builder: (context, state) => const CreateChatScreen(),
+            builder: (context, state) {
+              final forwardedMessages = state.extra as List<MessageModel>?;
+              return CreateChatScreen(
+                forwardedMessages: forwardedMessages,
+              );
+            },
           ),
           GoRoute(
             path: Routes.chatInfoScreen,
@@ -305,12 +327,15 @@ class Routes {
                 final List<UserModel> members = state.extra as List<UserModel>;
                 return GroupCreationDetails(members: members);
               }),
-
           GoRoute(
             path: Routes.callScreen,
             builder: (context, state) {
-              final Map<String, dynamic>? extra = state.extra as Map<String, dynamic>?;
-              return CallScreen(callee: extra?['user'] as UserModel?, voiceCallId: extra?['voiceCallId'] as String?);
+              final Map<String, dynamic>? extra =
+                  state.extra as Map<String, dynamic>?;
+              return CallScreen(
+                  chatId: extra?['chatId'] as String?,
+                  callee: extra?['user'] as UserModel?,
+                  voiceCallId: extra?['voiceCallId'] as String?);
             },
           ),
           GoRoute(
@@ -352,6 +377,50 @@ class Routes {
             },
           ),
           GoRoute(
+
+            path: Routes.createChannel,
+            builder: (context, state) => CreateChannelScreen(),
+          ),
+          GoRoute(
+            path: Routes.channelSettingsScreen,
+            builder: (context, state) {
+              final Map<String, dynamic> channelInfo =
+                  state.extra as Map<String, dynamic>;
+              return ChannelSettingScreen(
+                channelName: channelInfo['channelName']!,
+                channelDescription: channelInfo['channelDescription']!,
+                channelImage: channelInfo['channelImage'],
+              );
+            },
+          ),
+          GoRoute(
+            path: Routes.selectChannelMembers,
+            builder: (context, state) {
+              final Map<String, dynamic> channelInfo =
+                  state.extra as Map<String, dynamic>;
+              return SelectChannelMembers(
+                channelName: channelInfo['name']!,
+                privacy: channelInfo['privacy']!,
+                channelDiscription: channelInfo['channelDiscription']!,
+                // channelImage: null,
+              );
+            },
+          ),
+          GoRoute(
+            path: Routes.threadScreen,
+            builder: (context, state) {
+              final Map<String, dynamic> thread =
+                  state.extra as Map<String, dynamic>;
+              return ThreadScreen(
+                announcement: thread['announcement'],
+                thread: thread['thread'],
+                chatId: thread['chatId'],
+                chatModel: thread['chatModel'],
+              );
+            },
+          ),
+
+          GoRoute(
             path: Routes.dataAndStorageScreen,
             builder: (context, state) => const DataAndStorageScreen(),
           ),
@@ -359,6 +428,7 @@ class Routes {
             path: Routes.wifiMediaScreen,
             builder: (context, state) => const WifiMediaScreen(),
           )
+
         ],
       );
 

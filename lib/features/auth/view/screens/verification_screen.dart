@@ -125,6 +125,9 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
               );
       if (state.type == AuthStateType.verified) {
         if (mounted) {
+          while (context.canPop()) {
+            context.pop();
+          }
           context.push(Routes.logIn);
         }
       } else {

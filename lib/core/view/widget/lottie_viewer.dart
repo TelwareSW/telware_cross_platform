@@ -7,6 +7,7 @@ class LottieViewer extends StatefulWidget {
   final bool isIcon;
   final double width;
   final double height;
+  final GlobalKey? lottieKey;
 
   final int? customDurationInMillis; // Optional custom duration in milliseconds
   final void Function()? onTap;
@@ -15,6 +16,7 @@ class LottieViewer extends StatefulWidget {
 
   const LottieViewer({
     super.key,
+    this.lottieKey,
     required this.path,
     required this.width,
     required this.height,
@@ -89,6 +91,7 @@ class LottieViewerState extends State<LottieViewer>
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      key: widget.lottieKey,
       onTap: () {
         if (!widget.isLooping) _restartAnimation();
         if (widget.onTap != null) widget.onTap!();

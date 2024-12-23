@@ -9,6 +9,7 @@ import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/message_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
+import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/core/utils.dart';
@@ -26,8 +27,6 @@ import 'package:telware_cross_platform/features/home/view_model/home_view_model.
 import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
 import 'package:telware_cross_platform/features/user/view/widget/user_chats.dart';
 import 'package:telware_cross_platform/features/user/view_model/user_view_model.dart';
-
-import 'chat_screen.dart';
 
 class CreateChatScreen extends ConsumerStatefulWidget {
   static const String route = '/create-chat';
@@ -108,7 +107,8 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
         .read(chatsViewModelProvider.notifier)
         .getChat(myUser, userInfo, ChatType.private);
     debugPrint('Opening Chat: $chat');
-    context.push(ChatScreen.route, extra: chat);
+    context.pushReplacement(Routes.chatScreen,
+        extra: [chat, widget.forwardedMessages]);
   }
 
   Widget sectionName(String name) {
@@ -427,27 +427,42 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
   ) {
     List<Widget> chatTiles = [];
     int index = startIndex;
-    for (final message in localSearchResultsMessages) {
-      final ChatModel chat = localSearchResultsChats[index];
+    int i = 0;
+    for (final chat in localSearchResultsChats) {
+      final MessageModel message = localSearchResultsMessages[i];
       final List<MapEntry<int, int>> chatTitleMatches =
-          localSearchResultsChatTitleMatches[index];
+          localSearchResultsChatTitleMatches[i];
       final List<MapEntry<int, int>> chatMessagesMatches =
-          localSearchResultsChatMessagesMatches[index];
+          localSearchResultsChatMessagesMatches[i];
+      final bool isForwarding = (widget.forwardedMessages?.length ?? 0) > 0;
+      tile(isForwarding) => ChatTileWidget(
+            key: ValueKey(ChatKeys.chatTilePrefix.value +
+                ChatKeys.chatTilePrefixSubvalue +
+                index.toString()),
+            chatModel: chat,
+            displayMessage: message,
+            sentByUser: message.senderId == ref.read(userProvider)!.id,
+            senderID: message.senderId,
+            highlights: chatMessagesMatches,
+            titleHighlights: chatTitleMatches,
+            onChatSelected: (_) {},
+            isForwarding: isForwarding,
+          );
       chatTiles.add(
-        ChatTileWidget(
-          key: ValueKey(ChatKeys.chatTilePrefix.value +
-              ChatKeys.chatTilePrefixSubvalue +
-              index.toString()),
-          chatModel: chat,
-          displayMessage: message,
-          sentByUser: message.senderId == ref.read(userProvider)!.id,
-          senderID: message.senderId,
-          highlights: chatMessagesMatches,
-          titleHighlights: chatTitleMatches,
-          onChatSelected: (_) {},
-        ),
+        isForwarding
+            ? InkWell(
+                onTap: () {
+                  context.pushReplacement(Routes.chatScreen, extra: [
+                    chat,
+                    widget.forwardedMessages,
+                  ]);
+                },
+                child: tile(isForwarding),
+              )
+            : tile(isForwarding),
       );
       index++;
+      i++;
     }
     return chatTiles;
   }
@@ -469,11 +484,22 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
     ];
     for (UserModel user in users) {
       if (user.id == myUser.id) continue;
+
+      Color subtextColor = Palette.accentText;
+
+      if (user.accountStatus == 'banned') {
+        subtextColor = Palette.banned;
+      } else if (user.accountStatus == 'deactivated') {
+        subtextColor = Palette.deactivated;
+      } else if (user.accountStatus == 'active') {
+        subtextColor = Palette.active;
+      }
       var option = <String, dynamic>{
         "avatar": true,
         "text": user.username,
         "imagePath": null,
-        "subtext": "last seen Nov 23 at 6:40 PM",
+        "subtext": user.accountStatus,
+        'subtextColor': subtextColor,
         "trailingFontSize": 13.0,
         "trailingPadding": const EdgeInsets.only(bottom: 20.0),
         "trailingColor": Palette.accentText,
@@ -593,6 +619,8 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
       confirmColor: const Color.fromRGBO(238, 104, 111, 1),
       confirmPadding: const EdgeInsets.only(left: 40.0),
       cancelText: accountStatus == 'deactivated' ? 'Activate' : 'Deactivate',
+      onCancelButtonKey: GlobalKeyCategoryManager.addKey('deactivateButton'),
+      onConfirmButtonKey: GlobalKeyCategoryManager.addKey('banButton'),
       cancelColor: const Color.fromRGBO(100, 181, 239, 1),
       onConfirm: () {
         if (accountStatus == 'banned') {
@@ -631,20 +659,43 @@ class _CreateChatScreen extends ConsumerState<CreateChatScreen>
       confirmColor: const Color.fromRGBO(238, 104, 111, 1),
       confirmPadding: const EdgeInsets.only(left: 40.0),
       cancelText: 'Cancel',
+      onCancelButtonKey:
+          GlobalKeyCategoryManager.addKey('cancel${action}Button'),
+      onConfirmButtonKey:
+          GlobalKeyCategoryManager.addKey('confirm${action}Button'),
       cancelColor: const Color.fromRGBO(100, 181, 239, 1),
-      onConfirm: () {
-        // TODO(marwan) ban  the user
-        // if (userId != null) {
-        //   ref.read(userViewModelProvider.notifier).blockUser(userId: userId);
-        // }
-
-        // Close the confirmation dialog
-        context.pop();
-        // Close the initial dialog
-        context.pop();
+      onConfirm: () async {
+        if (userId != null) {
+          if (action == 'BAN') {
+            await ref
+                .read(userViewModelProvider.notifier)
+                .banUser(userId: userId);
+          } else if (action == 'ACTIVATE') {
+            await ref
+                .read(userViewModelProvider.notifier)
+                .activateUser(userId: userId);
+          } else if (action == 'DEACTIVATE') {
+            await ref
+                .read(userViewModelProvider.notifier)
+                .deactivateUser(userId: userId);
+          }
+          ref.read(userViewModelProvider.notifier).fetchUsers().then((users) {
+            fullUserChats = <Map<String, dynamic>>[
+              {"options": <Map<String, dynamic>>[]}
+            ];
+            setState(() {
+              userChats = _generateUsersList(users, false);
+            });
+          });
+        }
+        if (mounted) {
+          // Close the confirmation dialog
+          context.pop();
+          // Close the initial dialog
+          context.pop();
+        }
       },
       onCancel: () {
-        // TODO(marwan) activate or deactivate the user
         context.pop();
         context.pop();
       },

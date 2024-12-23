@@ -22,6 +22,7 @@ import 'package:telware_cross_platform/features/chat/repository/chat_local_repos
 import 'package:telware_cross_platform/features/chat/repository/chat_remote_repository.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/features/chat/services/chat_mocking_service.dart';
+import 'package:telware_cross_platform/features/chat/services/encryption_service.dart';
 import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 import 'package:telware_cross_platform/features/chat/view_model/event_handler.dart';
 
@@ -51,6 +52,8 @@ class ChattingController {
   final ChatRemoteRepository _remoteRepository;
   final ChatLocalRepository _localRepository;
   final Ref _ref;
+  List<Map<String, dynamic>> unreadMsgsQuery = [];
+  bool isProcessingUnreadMsgs = false;
 
   ChattingController({
     required ChatRemoteRepository remoteRepository,
@@ -70,7 +73,9 @@ class ChattingController {
   Future<void> getUserChats() async {
     // todo: make use of the return of this
     final response = await _remoteRepository.getUserChats(
-        _ref.read(tokenProvider)!, _ref.read(userProvider)!.id!);
+        _ref.read(tokenProvider)!,
+        _ref.read(userProvider)!.id!,
+        _ref.read(userProvider)!.isAdmin);
     final String userId = _ref.read(userProvider)!.id!;
     if (response.appError != null) {
       // todo(ahmed): for the notifier provider, return a state of fail
@@ -110,20 +115,16 @@ class ChattingController {
   }
 
   Future<void> init() async {
-    debugPrint('!!! tried to enter controller init');
-    debugPrint('!!! enter controller init');
-    // get the chats and give it to the chats view model from local
     final chats = _localRepository.getChats(_ref.read(userProvider)!.id!);
-    debugPrint('!!! chats list length ${chats.length}');
     _ref.read(chatsViewModelProvider.notifier).setChats(chats);
+
+    if (unreadMsgsQuery.isNotEmpty) {
+      _initialLoadUnreadMsgs();
+    }
 
     // get the users list from local
     final otherUsers =
         _localRepository.getOtherUsers(_ref.read(userProvider)!.id!);
-    // * the next three lines are for dubuging
-    // String ids = '';
-    // otherUsers.forEach((key, _) => ids += '$key\n');
-    // debugPrint('!!! OtherUsers Map ID\'s: $ids');
     _ref.read(chatsViewModelProvider.notifier).setOtherUsers(otherUsers);
 
     // get the events and give it to the handler from local
@@ -157,11 +158,6 @@ class ChattingController {
         for (var user in response.users) user.id!: user
       };
 
-      // * the next three lines are for dubuging
-      // String ids = '';
-      // otherUsersMap.forEach((key, _) => ids += '$key\n');
-      // debugPrint('!!! OtherUsers Map created ID\'s: $ids');
-
       debugPrint((await _localRepository.setChats(
               response.chats, _ref.read(userProvider)!.id!))
           .toString());
@@ -175,7 +171,9 @@ class ChattingController {
     }
 
     final response = await _remoteRepository.getUserChats(
-        _ref.read(tokenProvider)!, _ref.read(userProvider)!.id!);
+        _ref.read(tokenProvider)!,
+        _ref.read(userProvider)!.id!,
+        _ref.read(userProvider)!.isAdmin);
 
     if (response.appError != null) {
       // todo(ahmed): for the notifier provider, return a state of fail
@@ -189,6 +187,8 @@ class ChattingController {
           return b.messages[0].timestamp.compareTo(a.messages[0].timestamp);
         },
       );
+
+      unreadMsgsQuery = response.unreadMsgsQuery;
 
       _localRepository.setChats(response.chats, _ref.read(userProvider)!.id!);
       _localRepository.setOtherUsers(
@@ -206,6 +206,67 @@ class ChattingController {
     _ref.read(chatsViewModelProvider.notifier).clear();
   }
 
+  Future<void> _initialLoadUnreadMsgs() async {
+    if (isProcessingUnreadMsgs) return;
+
+    List<Map<String, dynamic>> totalResponse = [];
+
+    for (var query in unreadMsgsQuery) {
+      final chat = _ref
+          .read(chatsViewModelProvider.notifier)
+          .getChatById(query['chatId']);
+      if (chat == null) continue;
+
+      final response = await _remoteRepository.loadOldMsgs(
+          sessionId: _ref.read(tokenProvider)!,
+          chatId: chat.id!,
+          encryptionKey: (chat.encryptionKey) ?? '',
+          initializationVector: (chat.initializationVector) ?? '',
+          chatType: (chat.type),
+          count: chat.unreadMessagesCount,
+          isFiltered: chat.isFiltered);
+
+      if (response.messages.isNotEmpty) {
+        totalResponse.add({'chatId': chat.id, 'messages': response.messages});
+      }
+    }
+
+    _ref.read(chatsViewModelProvider.notifier).addUnreadMsgs(totalResponse);
+    _localRepository.setChats(
+        _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
+
+    unreadMsgsQuery = [];
+    isProcessingUnreadMsgs = false;
+  }
+
+  Future<void> loadOldMsgs({
+    required String chatId,
+    int count = 20,
+    required String pageMsgId,
+  }) async {
+    final chat = _ref.read(chatsViewModelProvider.notifier).getChatById(chatId);
+    if (chat == null) return;
+
+    final response = await _remoteRepository.loadOldMsgs(
+      sessionId: _ref.read(tokenProvider)!,
+      chatId: chatId,
+      encryptionKey: (chat.encryptionKey) ?? '',
+      initializationVector: (chat.initializationVector) ?? '',
+      chatType: (chat.type),
+      count: count,
+      isFiltered: chat.isFiltered,
+    );
+
+    if (response.appError != null) {
+    } else {
+      _ref
+          .read(chatsViewModelProvider.notifier)
+          .addOldMsgs(chatId, response.messages);
+      _localRepository.setChats(
+          _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
+    }
+  }
+
   /// Send a text message.
   /// Must specify either the chatID or userID in case of new chat,
   /// otherwise, it will throw an error
@@ -217,6 +278,9 @@ class ChattingController {
     required ChatType chatType,
     ChatModel? chatModel,
     String? parentMessgeId,
+    bool isReply = false,
+    required String? encryptionKey,
+    required String? initializationVector,
   }) async {
     String? chatID = chatModel?.id;
     bool isChatNew = chatID == null;
@@ -248,24 +312,35 @@ class ChattingController {
               msgType: msgType,
               msgContentType: contentType,
               parentMessageId: parentMessgeId,
+              isReply: isReply,
+              isForward: msgType == MessageType.forward,
             );
-
 
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
+
+    final encryptionService = EncryptionService.instance;
+
+    final text = encryptionService.encrypt(
+      chatType: chatType,
+      msg: content.getContent(),
+      encryptionKey: encryptionKey,
+      initializationVector: initializationVector,
+    );
 
     final msgEvent = SendMessageEvent(
       {
         'chatId': chatID,
         'media': content.getMediaURL(),
-        'content': content.getContent(),
+        'content': text,
         'contentType': contentType.content,
         'parentMessageId': parentMessgeId,
         'senderId': _ref.read(userProvider)!.id,
         'isFirstTime': isChatNew,
         'chatType': chatType.type,
-        'isReplay': false,
-        'isForward': false,
+        'isReply': isReply,
+        'isForward': msgType == MessageType.forward,
+        "isAnnouncement": false,
       },
       controller: this,
       msgId: identifier.msgLocalId,
@@ -334,10 +409,7 @@ class ChattingController {
           : msgGlobalId = msgId;
 
       final msgEvent = DeleteMessageEvent(
-        {
-          'messageId': msgId,
-          'chatId': chatId
-        },
+        {'messageId': msgId, 'chatId': chatId},
         controller: this,
         msgId: msgId,
         chatId: msgGlobalId,
@@ -354,13 +426,29 @@ class ChattingController {
 
   // edit a message
 
-  void editMsg(String msgId, String chatId, String content) {
+  void editMsg(
+    String msgId,
+    String chatId,
+    String content, {
+    required ChatType chatType,
+    required String? encryptionKey,
+    required String? initializationVector,
+  }) {
+    final encryptionService = EncryptionService.instance;
+
+    final text = encryptionService.encrypt(
+      chatType: chatType,
+      msg: content,
+      encryptionKey: encryptionKey,
+      initializationVector: initializationVector,
+    );
+
     final msgEvent = EditMessageEvent(
       {
         'chatId': chatId,
         'senderId': _ref.read(userProvider)!.id,
         'messageId': msgId,
-        'content': content
+        'content': text
       },
       controller: this,
       msgId: msgId,
@@ -386,6 +474,33 @@ class ChattingController {
     final sessionID = _ref.read(tokenProvider);
     final response = await _remoteRepository.getChat(sessionID!, chatID);
     return response.chat!;
+  }
+
+  Future<void> addNewGroupToChats(Map<String, dynamic> res) async {
+    List<String> memberIds =
+        List<String>.from(res['members'].map((member) => member['user']));
+    List<String> admins = List<String>.from(res['members']
+        .where((member) => member['Role'] == 'admin')
+        .map((member) => member['user']));
+    ChatModel chat = ChatModel(
+      title: res['name'],
+      userIds: memberIds,
+      type: ChatType.getType(res['type']),
+      messages: [],
+      id: res['id'],
+      admins: admins,
+    );
+    _ref.read(chatsViewModelProvider.notifier).addChat(chat);
+  }
+
+  Future<void> updateExistingGroup(Map<String, dynamic> res) async {
+    print(res);
+    _ref.read(chatsViewModelProvider.notifier).updateGroup(
+          chatId: res['id'],
+          messagingPermission: res['messagingPermission'],
+          members: res['members'],
+          admins: res['admins'],
+        );
   }
 
   Future<UserModel?> getOtherUser(String id) async {
@@ -519,11 +634,13 @@ class ChattingController {
   void updateMessageId(
       {required String msgId,
       required String msgLocalId,
-      required String chatId}) {
+      required String chatId,
+      required bool isAppropriate}) {
     _ref.read(chatsViewModelProvider.notifier).updateMsgId(
           newMsgId: msgId,
           msgLocalId: msgLocalId,
           chatId: chatId,
+          isAppropriate: isAppropriate,
         );
     _localRepository.setChats(
         _ref.read(chatsViewModelProvider), _ref.read(userProvider)!.id!);
@@ -580,44 +697,30 @@ class ChattingController {
     }
 
     // create send draft event
-    // final msgEvent = UpdateDraftEvent({
-    //   'chatId': chatID,
-    //   'content': draft,
-    //   'senderId': _ref.read(userProvider)!.id,
-    // }, controller: this);
-    // _eventHandler.addEvent(msgEvent);
-    // final chats = _localRepository.getChats(userId);
-    // final chat = chats.firstWhere((element) => element.id == chatID);
-    // final updatedChat = chat.copyWith(draft: draft);
-    // final updatedChats =
-    //     chats.map((e) => e.id == chatID ? updatedChat : e).toList();
-    // _localRepository.setChats(updatedChats, userId);
-    // _ref.read(chatsViewModelProvider.notifier).setChats(updatedChats);
-    // debugPrint('!!! draft updated remotely and locally: ${updatedChat.draft}');
+    final msgEvent = UpdateDraftEvent({
+      'chatId': chatID,
+      'content': draft,
+    }, controller: this, msgId: '', chatId: chatID);
+    _eventHandler.addEvent(msgEvent);
+    final chats = _localRepository.getChats(userId);
+    final chat = chats.firstWhere((element) => element.id == chatID);
+    final updatedChat = chat.copyWith(draft: draft);
+    final updatedChats =
+        chats.map((e) => e.id == chatID ? updatedChat : e).toList();
+    _localRepository.setChats(updatedChats, userId);
+    _ref.read(chatsViewModelProvider.notifier).setChats(updatedChats);
+    debugPrint('!!! draft updated remotely and locally: ${updatedChat.draft}');
   }
 
-  Future<String?> getDraft(String chatID) async {
-    debugPrint('!!! getDraft called');
-    try {
-      final String userId = _ref.read(userProvider)!.id!;
-      if (USE_MOCK_DATA) {
-        final chats = _localRepository.getChats(userId);
-        final chat = chats.firstWhere((element) => element.id == chatID);
-        return chat.draft;
-      }
-      final sessionID = _ref.read(tokenProvider);
-      final draft = await _remoteRepository.getDraft(
-          sessionID!, _ref.read(tokenProvider)!, chatID);
-      debugPrint('!!! draft: $draft');
-      if (draft.draft == null) {
-        final chats = _localRepository.getChats(userId);
-        final chat = chats.firstWhere((element) => element.id == chatID);
-        return chat.draft;
-      }
-      return draft.draft;
-    } catch (e) {
-      return null;
-    }
+  void receiveUpdatedDraft(String chatID, String draft) {
+    final String userId = _ref.read(userProvider)!.id!;
+    final chats = _localRepository.getChats(userId);
+    final chat = chats.firstWhere((element) => element.id == chatID);
+    final updatedChat = chat.copyWith(draft: draft);
+    final updatedChats =
+        chats.map((e) => e.id == chatID ? updatedChat : e).toList();
+    _localRepository.setChats(updatedChats, userId);
+    _ref.read(chatsViewModelProvider.notifier).setChats(updatedChats);
   }
 
   Future<void> receiveCall(Map<String, dynamic> response) async {
@@ -766,5 +869,37 @@ class ChattingController {
     getUserChats();
     _eventHandler.addEvent(msgEvent);
     return true;
+  }
+
+  Future<void> filterGroup({
+    required String chatId,
+  }) async {
+    final sessionID = _ref.read(tokenProvider);
+    final response = await _remoteRepository.filterGroup(sessionID!, chatId);
+    if (response.appError != null) {
+      debugPrint('Error: Could not filter the group');
+    } else {
+      await getUserChats();
+      _ref
+          .read(chatsViewModelProvider.notifier)
+          .setChats(_localRepository.getChats(_ref.read(userProvider)!.id!));
+      debugPrint('!!! group filtered');
+    }
+  }
+
+  Future<void> unFilterGroup({
+    required String chatId,
+  }) async {
+    final sessionID = _ref.read(tokenProvider);
+    final response = await _remoteRepository.unFilterGroup(sessionID!, chatId);
+    if (response.appError != null) {
+      debugPrint('Error: Could not un filter the group');
+    } else {
+      await getUserChats();
+      _ref
+          .read(chatsViewModelProvider.notifier)
+          .setChats(_localRepository.getChats(_ref.read(userProvider)!.id!));
+      debugPrint('!!! group unfiltered');
+    }
   }
 }

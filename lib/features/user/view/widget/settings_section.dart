@@ -36,7 +36,6 @@ class SettingsSection extends StatelessWidget {
   });
 
   void _navigateTo(BuildContext context, String route, Object? extra) {
-    print('fdsfdsfdsfdsfdsffffffffffffffffffffffff');
     context.push(route, extra: extra);
   }
 
@@ -83,6 +82,7 @@ class SettingsSection extends StatelessWidget {
                                   : option["onTap"];
                           return SettingsOptionWidget(
                             key: key,
+                            tileKey: option["tileKey"],
                             icon: option["icon"],
                             trailingIconKey: option["iconKey"],
                             imagePath: option["imagePath"],

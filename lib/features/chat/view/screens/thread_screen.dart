@@ -22,6 +22,7 @@ import 'package:telware_cross_platform/core/view/widget/popup_menu_widget.dart';
 import 'package:telware_cross_platform/features/chat/classes/message_content.dart';
 import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
 import 'package:telware_cross_platform/features/chat/enum/message_enums.dart';
+import 'package:telware_cross_platform/features/chat/providers/chat_provider.dart';
 import 'package:telware_cross_platform/features/chat/services/audio_recording_service.dart';
 import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
 import 'package:telware_cross_platform/features/chat/view/widget/bottom_input_bar_widget.dart';
@@ -41,23 +42,28 @@ import '../../../../core/routes/routes.dart';
 import '../widget/reply_widget.dart';
 import 'create_chat_screen.dart';
 
-class ChatScreen extends ConsumerStatefulWidget {
-  static const String route = '/chat';
+class ThreadScreen extends ConsumerStatefulWidget {
+  static const String route = '/thread-screen';
   final String chatId;
+  final MessageModel announcement;
+  final List<MessageModel> thread;
   final ChatModel? chatModel;
-  final List<MessageModel>? forwardedMessages;
 
-  const ChatScreen(
-      {super.key, this.chatId = "", this.chatModel, this.forwardedMessages});
+  const ThreadScreen({
+    super.key,
+    this.chatId = "",
+    this.chatModel,
+    required this.announcement,
+    required this.thread,
+  });
 
   @override
-  ConsumerState<ChatScreen> createState() => _ChatScreen();
+  ConsumerState<ThreadScreen> createState() => _ThreadScreen();
 }
 
-class _ChatScreen extends ConsumerState<ChatScreen>
+class _ThreadScreen extends ConsumerState<ThreadScreen>
     with WidgetsBindingObserver {
   late AudioRecorderService _audioRecorderService;
-
   List<dynamic> chatContent = [];
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -68,8 +74,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   List<MessageModel> pinnedMessages = [];
   int indexInPinnedMessage = 0;
 
-  late Timer _draftTimer;
-
   late ChatModel chatModel;
   bool isSearching = false;
   bool isShowAsList = false;
@@ -79,7 +83,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   bool isTextEmpty = true;
   bool showMuteOptions = false;
   bool isAllowedToSend = true;
-  String _previousDraft = "";
 
   // ignore: prefer_final_fields
   int _currentMatch = 1;
@@ -89,34 +92,19 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   Map<int, List<MapEntry<int, int>>> _messageMatches = {};
   List<int> _messageIndices = [];
 
-  late DateTime _lastTypeTimer;
+  late Timer _draftTimer;
+
+  // String _previousDraft = "";
 
   late ChatType type;
 
   @override
   void initState() {
     super.initState();
-    _lastTypeTimer = DateTime.now();
-    _messageController.text = widget.chatModel?.draft ?? "";
-    _messageController.addListener(() {
-      _lastTypeTimer = DateTime.now();
-    });
 
     WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.forwardedMessages != null) {
-        _sendForwardedMessages();
-      }
-    });
     _chosenAnimation = utils.getRandomLottieAnimation();
-    // Initialize the AudioRecorderService
     _audioRecorderService = AudioRecorderService(updateUI: setState);
-    _draftTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
-      if (_previousDraft != _messageController.text) {
-        _updateDraft();
-        _previousDraft = _messageController.text;
-      }
-    });
   }
 
   @override
@@ -124,19 +112,10 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     _messageController.dispose();
     _scrollController.dispose();
     _audioRecorderService.dispose();
+    _draftTimer.cancel();
     SystemChannels.textInput.invokeMethod('TextInput.hide');
     WidgetsBinding.instance.removeObserver(this); // Remove the observer
     super.dispose();
-  }
-
-  void _updateDraft() async {
-    // TODO : server return 500 status code every time try to fix it ASAP
-    if (!mounted) return;
-    final currentDraft = _messageController.text;
-    ref
-        .read(chattingControllerProvider)
-        .updateDraft(chatModel, currentDraft);
-    return;
   }
 
   void _updateChatMessages(List<MessageModel> messages) async {
@@ -148,14 +127,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
   List<dynamic> _generateChatContentWithDateLabels(
       List<MessageModel> messages) {
     List<dynamic> chatContent = [];
-    chatContent.add(
-      InkWell(
-        onTap: () {
-          ref.read(chattingControllerProvider).loadOldMsgs(chatId: chatModel.id!, pageMsgId: chatModel.nextPage ?? '');
-        },
-        child: const DateLabelWidget(label: "Load More Messages"),
-      )
-    );
     for (int i = 0; i < messages.length; i++) {
       if (i == 0 ||
           !isSameDay(messages[i - 1].timestamp, messages[i].timestamp)) {
@@ -214,21 +185,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
     });
   }
 
-  // Send the Forwarded Messages
-  void _sendForwardedMessages() {
-    for (MessageModel message in widget.forwardedMessages!) {
-      ref.read(chattingControllerProvider).sendMsg(
-            content: message.content!,
-            msgType: MessageType.forward,
-            contentType: message.messageContentType,
-            chatType: ChatType.private,
-            chatModel: widget.chatModel,
-            encryptionKey: widget.chatModel?.encryptionKey,
-            initializationVector: widget.chatModel?.initializationVector,
-          );
-    }
-  }
-
   //TODO: Implement the sendMsg method with another types of messages
   void _sendMessage({
     required WidgetRef ref,
@@ -271,7 +227,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
             (me.screenFirstName.isEmpty) && (me.screenLastName.isEmpty)
                 ? me.username
                 : '${me.screenFirstName} ${me.screenLastName}'.trim();
-        fileName = '$displayName ➜ ${chatModel.title}';
+        fileName = '$displayName ➜ ${widget.announcement.id}';
       }
     }
 
@@ -284,6 +240,8 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       text: messageText,
     );
     // TODO : Handle media attribute in the request of sending a message
+    print('##############3');
+    print(widget.announcement);
     MessageModel newMessage = MessageModel(
       senderId: ref.read(userProvider)!.id!,
       messageContentType: messageContentType,
@@ -294,29 +252,29 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       parentMessage: replyMessage?.id,
     );
     _messageController.clear();
-    _updateDraft();
     ref.read(chattingControllerProvider).sendMsg(
-          content: newMessage.content!,
-          msgType: newMessage.messageType,
-          contentType: newMessage.messageContentType,
-          chatType: ChatType.private,
-          chatModel: chatModel,
-          parentMessgeId: replyMessage?.id,
-
-          encryptionKey: chatModel.encryptionKey,
-          initializationVector: chatModel.initializationVector,
-
-        );
+        content: newMessage.content!,
+        msgType: newMessage.messageType,
+        contentType: newMessage.messageContentType,
+        chatType: ChatType.channel,
+        chatModel: chatModel,
+        parentMessgeId: widget.announcement.id,
+        isReply: true,
+        encryptionKey: chatModel.encryptionKey,
+        initializationVector: chatModel.initializationVector);
   }
 
   void _editMessage() {
     if (editMessage == null || _messageController.text.isEmpty) return;
-    // todo(ahmed): handle extreme cases like editing a message that is not yet sent
+    // todo(ahmed): handle extreem cases like editing a message that is not yet sent
     ref.read(chattingControllerProvider).editMsg(
-        (editMessage?.id)!, (chatModel.id)!, _messageController.text,
-        chatType: ChatType.private,
-        encryptionKey: widget.chatModel?.encryptionKey,
-        initializationVector: widget.chatModel?.initializationVector);
+          (editMessage?.id)!,
+          (chatModel.id)!,
+          _messageController.text,
+          chatType: ChatType.channel,
+          encryptionKey: chatModel.encryptionKey,
+          initializationVector: chatModel.initializationVector,
+        );
     _messageController.text = '';
   }
 
@@ -415,18 +373,20 @@ class _ChatScreen extends ConsumerState<ChatScreen>
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('&*&**&**& rebuild chat screen');
+    debugPrint('&*&**&**& rebuild thread screen');
+    print('####################');
+    print(widget.thread);
     final chats = ref.watch(chatsViewModelProvider);
     final index = chats.indexWhere((chat) => chat.id == widget.chatId);
     final ChatModel? chat =
         (index == -1) ? null : chats[index]; // Chat not found
     chatModel = widget.chatModel ?? chat!;
-    final type = chatModel.type;
+    const type = ChatType.channel;
     final String title = chatModel.title;
     final membersNumber = chatModel.userIds.length;
     final imageBytes = chatModel.photoBytes;
     final photo = chatModel.photo;
-    final messages = chatModel.messages;
+    final messages = [...widget.thread, widget.announcement];
     final chatID = chatModel.id;
     final String subtitle = chatModel.type == ChatType.private
         ? "last seen a long time ago"
@@ -435,13 +395,11 @@ class _ChatScreen extends ConsumerState<ChatScreen>
             : "$membersNumber subscribers${membersNumber > 1 ? "s" : ""}";
 
     _isMuted = chatModel.isMuted;
-    if (chatModel.draft != null && chatModel.draft!.isNotEmpty &&
-        _lastTypeTimer.isBefore(DateTime.now().subtract(const Duration(seconds: 1)))) {
+    if (chatModel.draft != null && chatModel.draft!.isNotEmpty) {
       _messageController.text = chatModel.draft ?? '';
     }
-    chatContent = _generateChatContentWithDateLabels(messages);
-    pinnedMessages = messages.where((message) => message.isPinned).toList();
-    // debugPrint('pinned Messages count after is : ${pinnedMessages.length}');
+    chatContent = _generateChatContentWithDateLabels(widget.thread);
+    pinnedMessages = [widget.announcement];
 
     if (chatModel.messagingPermission == false) {
       setState(() {
@@ -469,7 +427,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                           _messageMatches.clear();
                         });
                       } else {
-                        _updateDraft();
                         context.pop();
                       }
                     },
@@ -477,23 +434,11 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                   title: !isSearching
                       ? GestureDetector(
                           onTap: () {
-                            if (chatModel.type == ChatType.private) {
-                              context.push(Routes.userProfile,
-                                  extra: chatModel.userIds.firstWhere(
-                                      (element) =>
-                                          element !=
-                                          ref.read(userProvider)!.id));
-                            } else {
-                              context.push(Routes.chatInfoScreen,
-                                  extra: chatModel);
-                            }
+                            context.push(Routes.chatInfoScreen,
+                                extra: chatModel);
                           },
-                          child: ChatHeaderWidget(
-                            title: title,
-                            subtitle: subtitle,
-                            photo: photo,
-                            imageBytes: imageBytes,
-                          ),
+                          child: Text(
+                              '${widget.announcement.threadMessages.length} Comments'),
                         )
                       : TextField(
                           key: ChatKeys.chatSearchInput,
@@ -554,10 +499,14 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                         icon: const Icon(FontAwesomeIcons.share,
                             color: Colors.white),
                         onPressed: () {
-                          context.push(
-                            Routes.createChatScreen,
-                            extra: selectedMessages,
-                          );
+                          context.push(CreateChatScreen.route);
+                        },
+                      ),
+                      // Delete icon
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.white),
+                        onPressed: () {
+                          // TODO call delete function
                         },
                       ),
                     ],
@@ -605,7 +554,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                   ? NewChatScreenSticker(
                                       chosenAnimation: _chosenAnimation)
                                   : ChatMessagesList(
-                                      messages: messages,
+                                      messages: widget.thread,
                                       scrollController: _scrollController,
                                       chatContent: chatContent,
                                       selectedMessages: selectedMessages,
@@ -616,11 +565,13 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                       pinnedMessages: pinnedMessages,
                                       updateChatMessages:
                                           _generateChatContentWithDateLabels,
-                                      onPin: _onPin,
                                       onLongPress: _onLongPress,
                                       onReply: _onReply,
                                       onEdit: _onEdit,
-                          chat: chat,),
+                                      onPin: (MessageModel message) {},
+                                      showExtention: false,
+                                      chat: chat,
+                                    ),
                         ),
                         if (replyMessage != null)
                           ReplyEditFieldHeader(
@@ -684,8 +635,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                                   ),
                                   GestureDetector(
                                     onTap: () {
-                                      context.push(Routes.createChatScreen,
-                                          extra: selectedMessages);
+                                      context.push(CreateChatScreen.route);
                                     },
                                     child: const Row(
                                       children: [
@@ -713,9 +663,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                             sendMessage: _sendMessage,
                             unreferenceMessages: _unreferenceMessages,
                             editMessage: _editMessage,
-                            notAllowedToSend: !isAllowedToSend ||
-                                (ref.read(userProvider)?.isAdmin == true) ||
-                                (chat?.type == ChatType.channel && chat!.admins!.contains(ref.read(userProvider)?.id)==false),
+                            notAllowedToSend: false,
                           )
                         else
                           Container(
@@ -797,84 +745,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
                           ),
                       ],
                     ),
-                    pinnedMessages.isNotEmpty
-                        ? Positioned(
-                            top: 0,
-                            // Adjust this to position the widget from the top of the screen
-                            left: 0,
-                            right: 0,
-                            child: Container(
-                              color: Palette.secondary,
-                              // Example background color for the widget
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 10, horizontal: 5),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Column(
-                                        children: List.generate(
-                                            pinnedMessages.length, (index) {
-                                          return Container(
-                                            height: 40 / pinnedMessages.length,
-                                            padding: const EdgeInsets.all(1.0),
-                                            margin: const EdgeInsets.all(1.0),
-                                            decoration: BoxDecoration(
-                                              color: Colors.blueAccent,
-                                              borderRadius:
-                                                  BorderRadius.circular(8.0),
-                                            ),
-                                          );
-                                        }),
-                                      ),
-                                      const SizedBox(
-                                        width: 8,
-                                      ),
-                                      const Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Pinned Message',
-                                            style: TextStyle(
-                                                color: Palette.primary,
-                                                fontSize: 12),
-                                          ),
-                                          Text(
-                                            // pinnedMessages[indexInPinnedMessage].content as String,
-                                            'Content placeholder',
-                                            style: TextStyle(fontSize: 12),
-                                          )
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      List<String> senderIds = [];
-                                      for (var message in pinnedMessages) {
-                                        senderIds.add(message.senderId);
-                                      }
-                                      ChatModel newChat = ChatModel(
-                                          title: 'pinnedMessages',
-                                          userIds: senderIds,
-                                          type: ChatType.group,
-                                          messages: pinnedMessages);
-                                      context.push(Routes.pinnedMessagesScreen,
-                                          extra: newChat);
-                                    },
-                                    child: const Icon(
-                                      Icons.menu_open_outlined,
-                                      color: Palette.accentText,
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
-                          )
-                        : const SizedBox(),
                     if (isSearching && _numberOfMatches != 0) ...[
                       Positioned(
                         bottom: 150,
@@ -993,27 +863,7 @@ class _ChatScreen extends ConsumerState<ChatScreen>
           ];
         }
         items.addAll([
-          {
-            'icon': Icons.videocam_outlined,
-            'text': 'Video Call',
-            'value': 'video-call'
-          },
           {'icon': Icons.search, 'text': 'Search', 'value': 'search'},
-          {
-            'icon': Icons.wallpaper_rounded,
-            'text': 'Change Wallpaper',
-            'value': 'change-wallpaper'
-          },
-          {
-            'icon': Icons.cleaning_services,
-            'text': 'Clear History',
-            'value': 'clear-history'
-          },
-          {
-            'icon': Icons.delete_outline,
-            'text': 'Delete Chat',
-            'value': 'delete-chat'
-          },
         ]);
       }
     }
@@ -1100,18 +950,6 @@ class _ChatScreen extends ConsumerState<ChatScreen>
       default:
         showToastMessage("No Bueno");
     }
-  }
-
-  void _onPin(MessageModel message) {
-    setState(() {
-      pinnedMessages.contains(message)
-          ? pinnedMessages.remove(message)
-          : pinnedMessages.add(message);
-      ref.read(chattingControllerProvider).pinMessageClient(
-            message.id ?? '',
-            chatModel.id ?? '',
-          );
-    });
   }
 
   void _onLongPress(MessageModel message) {

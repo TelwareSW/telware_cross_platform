@@ -131,10 +131,9 @@ class EventHandler {
     debugPrint('!!! connected successfully');
     // receive a message
     _socket.on(EventType.receiveMessage.event, (response) async {
+      print('### got a message: $response');
       // todo(ahmed): when the back returns this an object, remove the array
       final message = response[0];
-      // todo(ahmed): Remove backend returns media
-      message['media'] = "8eee5713799015ff.jpg";
       try {
         debugPrint('/|\\ got a message id: ${message['id']}');
         _chattingController.receiveMsg(message);
@@ -177,18 +176,7 @@ class EventHandler {
     _socket.on(EventType.receiveCreateGroup.event, (response) async {
       try {
         debugPrint('/|\\ got a group creation id:');
-        print(response.toString());
-        _chattingController.getUserChats();
-      } on Exception catch (e) {
-        debugPrint('!!! Error in recieving a message:\n${e.toString()}');
-      }
-    });
-
-    _socket.on(EventType.receiveCreateGroup.event, (response) async {
-      try {
-        debugPrint('/|\\ got a group creation id:');
-        print(response.toString());
-        _chattingController.getUserChats();
+        _chattingController.addNewGroupToChats(response);
       } on Exception catch (e) {
         debugPrint('!!! Error in recieving a message:\n${e.toString()}');
       }
@@ -198,7 +186,7 @@ class EventHandler {
       try {
         debugPrint('/|\\ got a delete group id:');
         print(response.toString());
-        _chattingController.getUserChats();
+        _chattingController.updateExistingGroup(response);
       } on Exception catch (e) {
         debugPrint('!!! Error in recieving a event:\n${e.toString()}');
       }
@@ -208,7 +196,7 @@ class EventHandler {
       try {
         debugPrint('/|\\ got a leave group id:');
         print(response.toString());
-        _chattingController.getUserChats();
+        _chattingController.updateExistingGroup(response);
       } on Exception catch (e) {
         debugPrint('!!! Error in recieving a event:\n${e.toString()}');
       }
@@ -218,7 +206,10 @@ class EventHandler {
       try {
         debugPrint('/|\\ got a AddMember :');
         print(response.toString());
-        _chattingController.getUserChats();
+        _chattingController.updateExistingGroup({
+          'id':response['chatId'],
+          'members':response['userId']
+        });
       } on Exception catch (e) {
         debugPrint('!!! Error in recieving a event:\n${e.toString()}');
       }
@@ -228,7 +219,10 @@ class EventHandler {
       try {
         debugPrint('/|\\ got a AddAdmin :');
         print(response.toString());
-        _chattingController.getUserChats();
+        _chattingController.updateExistingGroup({
+          'id':response['chatId'],
+          'admins':response['userId']
+        });
       } on Exception catch (e) {
         debugPrint('!!! Error in recieving a event:\n${e.toString()}');
       }
@@ -238,7 +232,7 @@ class EventHandler {
       try {
         debugPrint('/|\\ got a receiveRemoveMember:');
         print(response.toString());
-        _chattingController.getUserChats();
+        _chattingController.updateExistingGroup(response);
       } on Exception catch (e) {
         debugPrint('!!! Error in recieving a event:\n${e.toString()}');
       }
@@ -247,8 +241,10 @@ class EventHandler {
     _socket.on(EventType.receiveSetPermissions.event, (response) async {
       try {
         debugPrint('/|\\ got a receiveSetPermissions:');
-        print(response.toString());
-        _chattingController.getUserChats();
+        _chattingController.updateExistingGroup({
+          'id':response['chatId'],
+          'messagingPermission':response['who'] == 'admin' ? false:true,
+        });
       } on Exception catch (e) {
         debugPrint(
             '!!! Error in receiveSetPermissions a event:\n${e.toString()}');
@@ -312,6 +308,25 @@ class EventHandler {
         }
       } on Exception catch (e) {
         debugPrint('!!! Error in receiving a call started:\n${e.toString()}');
+      }
+    });
+    // get a call ended
+    _socket.on(EventType.receiveCallEnded.event, (response) async {
+      try {
+        debugPrint('### got a call ended: $response');
+        signaling.onReceiveEndCall?.call(response);
+      } on Exception catch (e) {
+        debugPrint('!!! Error in receiving a call ended:\n${e.toString()}');
+      }
+    });
+
+    // get updated draft
+    _socket.on(EventType.receiveUpdatedDraft.event, (response) async {
+      try {
+        debugPrint('### got a draft: $response');
+        _chattingController.receiveUpdatedDraft(response['chatId'], response['draft']);
+      } on Exception catch (e) {
+        debugPrint('!!! Error in receiving a draft:\n${e.toString()}');
       }
     });
   }

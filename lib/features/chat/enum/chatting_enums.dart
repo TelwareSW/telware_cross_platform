@@ -9,7 +9,8 @@ enum EventType {
   pinMessageServer(event: 'PIN_MESSAGE_SERVER'),
   unpinMessageServer(event: 'UNPIN_MESSAGE_SERVER'),
   sendAnnouncement(event: 'SEND_ANNOUNCEMENT'),
-  updateDraft(event: 'UPDATE_DRAFT'),
+  updateDraft(event: 'UPDATE_DRAFT_CLIENT'),
+  receiveUpdatedDraft(event: 'UPDATE_DRAFT_SERVER'),
   editMessageClient(event: 'EDIT_MESSAGE_CLIENT'),
   editMessageServer(event: 'EDIT_MESSAGE_SERVER'),
   deleteMessageClient(event: 'DELETE_MESSAGE_CLIENT'),
@@ -50,6 +51,7 @@ enum EventType {
   receiveLeftCall(event: 'CLIENT-LEFT'),
   receiveCallSignal(event: 'SIGNAL-CLIENT'),
   receiveCallStarted(event: 'CALL-STARTED'),
+  receiveCallEnded(event: 'CALL-ENDED'),
   ;
 
   final String event;

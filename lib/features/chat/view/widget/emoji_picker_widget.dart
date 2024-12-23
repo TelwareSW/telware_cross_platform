@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 
@@ -55,6 +56,7 @@ class EmojiPickerWidget extends StatelessWidget {
                   children: [
                     // Emojis Tab
                     EmojiPicker(
+                      key: GlobalKeyCategoryManager.addKey('emojiPicker'),
                       textEditingController: textEditingController,
                       scrollController: _scrollController,
                       config: const Config(
@@ -95,8 +97,9 @@ class EmojiPickerWidget extends StatelessWidget {
                       itemBuilder: (context, index) {
                         final gifPath = gifs[index];
                         return GestureDetector(
+                          key: GlobalKeyCategoryManager.addKey('gifPicker'),
                           onTap: () {
-                            onSelectedMedia(gifPath, 'gif');
+                            onSelectedMedia(gifPath, 'GIF');
                           },
                           child: Image.asset(
                             gifPath,
@@ -120,6 +123,8 @@ class EmojiPickerWidget extends StatelessWidget {
                         final stickerPath = lottieAnimations[index];
                         return LottieViewer(
                           path: stickerPath,
+                          lottieKey:
+                              GlobalKeyCategoryManager.addKey('stickerPicker'),
                           width: 10,
                           height: 10,
                           onTap: () {
@@ -133,6 +138,7 @@ class EmojiPickerWidget extends StatelessWidget {
                 ),
               ),
               TabBar(
+                key: GlobalKeyCategoryManager.addKey('emojiPickerTabBar'),
                 dividerHeight: 0,
                 labelColor: Palette.accent,
                 unselectedLabelColor: Colors.grey,
