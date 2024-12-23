@@ -51,6 +51,7 @@ class ChattingController {
   late final EventHandler _eventHandler;
   final ChatRemoteRepository _remoteRepository;
   final ChatLocalRepository _localRepository;
+  String? _lastOpenedChatId;
   final Ref _ref;
   List<Map<String, dynamic>> unreadMsgsQuery = [];
   bool isProcessingUnreadMsgs = false;
@@ -665,7 +666,8 @@ class ChattingController {
     _localRepository.setEventQueue(queue, _ref.read(userProvider)!.id!);
   }
 
-  void updateDraft(ChatModel chatModel, String draft) {
+  void updateDraft(ChatModel chatModel, String draft, bool updateLocal) {
+    _lastOpenedChatId = chatModel.id;
     debugPrint('!!! updateDraft called');
     final String? chatID = chatModel.id;
     final String userId = _ref.read(userProvider)!.id!;
@@ -686,6 +688,7 @@ class ChattingController {
     }
 
     if (USE_MOCK_DATA) {
+      _lastOpenedChatId = null;
       final chats = _localRepository.getChats(userId);
       final chat = chats.firstWhere((element) => element.id == chatID);
       final updatedChat = chat.copyWith(draft: draft);
@@ -702,17 +705,20 @@ class ChattingController {
       'content': draft,
     }, controller: this, msgId: '', chatId: chatID);
     _eventHandler.addEvent(msgEvent);
-    final chats = _localRepository.getChats(userId);
-    final chat = chats.firstWhere((element) => element.id == chatID);
-    final updatedChat = chat.copyWith(draft: draft);
-    final updatedChats =
-        chats.map((e) => e.id == chatID ? updatedChat : e).toList();
-    _localRepository.setChats(updatedChats, userId);
-    _ref.read(chatsViewModelProvider.notifier).setChats(updatedChats);
-    debugPrint('!!! draft updated remotely and locally: ${updatedChat.draft}');
+    if (updateLocal) {
+      _lastOpenedChatId = null;
+      final chats = _localRepository.getChats(userId);
+      final chat = chats.firstWhere((element) => element.id == chatID);
+      final updatedChat = chat.copyWith(draft: draft);
+      final updatedChats =
+          chats.map((e) => e.id == chatID ? updatedChat : e).toList();
+      _localRepository.setChats(updatedChats, userId);
+      _ref.read(chatsViewModelProvider.notifier).setChats(updatedChats);
+    }
   }
 
   void receiveUpdatedDraft(String chatID, String draft) {
+    if (chatID == _lastOpenedChatId) return;
     final String userId = _ref.read(userProvider)!.id!;
     final chats = _localRepository.getChats(userId);
     final chat = chats.firstWhere((element) => element.id == chatID);
