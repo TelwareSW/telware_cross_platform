@@ -160,8 +160,8 @@ class ChatRemoteRepository {
               unreadMessagesMap[chatID]?['unreadMessagesCount'] ?? 0,
           isMentioned: unreadMessagesMap[chatID]?['isMentioned'] ?? false,
           isFiltered: chat['chat']['type'] != 'private'
-                ? chat['chat']['isFilterd']
-                : false,
+              ? chat['chat']['isFilterd']
+              : false,
         );
 
         chats.add(chatModel);
@@ -315,12 +315,11 @@ class ChatRemoteRepository {
       contentType: contentType,
       text: text,
       fileName: message['fileName'],
-      mediaUrl: message['mediaUrl'],
+      mediaUrl: message['media'],
     );
 
-    final threadMessages = (message['threadMessages'] as List)
-        .map((e) => e as String)
-        .toList();
+    final threadMessages =
+        (message['threadMessages'] as List).map((e) => e as String).toList();
 
     // the connumicationType attribute is extra
     return MessageModel(
@@ -374,7 +373,7 @@ class ChatRemoteRepository {
               encryptionKey: encryptionKey,
               initializationVector: initializationVector,
               chatType: chatType,
-              isFiltered: isFiltered, 
+              isFiltered: isFiltered,
             ),
           )
           .toList();
@@ -435,7 +434,6 @@ class ChatRemoteRepository {
   Future<({AppError? appError, ChatModel? chat})> getChat(
       String sessionID, String chatID) async {
     try {
-
       return (appError: null, chat: null);
     } catch (e) {
       debugPrint('!!! Failed to get other user data, ${e.toString()}');

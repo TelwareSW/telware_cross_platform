@@ -66,6 +66,8 @@ class HomeLocalRepository {
               searchResultsChatMessagesMatches.add(matches);
               if (chatTitleMatches.isNotEmpty) {
                 searchResultsChatTitleMatches.add(chatTitleMatches);
+              } else {
+                searchResultsChatTitleMatches.add([]);
               }
             }
           }

@@ -240,13 +240,23 @@ class AuthRemoteRepository {
     if (dioException.response != null) {
       code = dioException.response!.statusCode;
       debugPrint('^&^ get me error with status: $code');
-      if ((code ?? 500) >= 500) {
-        return AppError('Something went wrong. Please, try again later', code: code ?? 500);
-      }
-      
+
       message =
           dioException.response!.data?['message'] ?? 'Unexpected server Error';
       debugPrint(message);
+
+      if ((code ?? 500) >= 500) {
+        return AppError('Something went wrong. Please, try again later',
+            emailError: dioException.response?.data?['error']?['errors']
+                ?['email']?['message'],
+            phoneNumberError: dioException.response?.data?['error']?['errors']
+                ?['phoneNumber']?['message'],
+            passwordError: dioException.response?.data?['error']?['errors']
+                ?['password']?['message'],
+            confirmPasswordError: dioException.response?.data?['error']
+                ?['errors']?['passwordConfirm']?['message'],
+            code: code ?? 500);
+      }
     } else if (dioException.type == DioExceptionType.connectionTimeout ||
         dioException.type == DioExceptionType.connectionError ||
         dioException.type == DioExceptionType.unknown) {

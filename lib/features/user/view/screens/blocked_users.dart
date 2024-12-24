@@ -140,7 +140,7 @@ class _BlockedUsersScreen extends ConsumerState<BlockedUsersScreen> {
       }
       return {
         "text": displayName,
-        "imagePath": photo,
+        "imagePath": null,
         "subtext": user.phone,
         "userId": user.id,
         "iconKey": GlobalKeyCategoryManager.addKey('unblockUserMenuIcon'),
