@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hive/hive.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:flutter/material.dart';
@@ -31,17 +30,18 @@ class VerificationScreen extends ConsumerStatefulWidget {
 }
 
 class _VerificationScreen extends ConsumerState<VerificationScreen> {
-  //-------------------------------------- Keys --------------------------------
   final verificationCodeKey =
       GlobalKey<State>(debugLabel: 'verificationCode_input');
   final resendCodeKey =
       GlobalKey<State>(debugLabel: 'verification_resendCode_button');
   final submitKey = GlobalKey<State>(debugLabel: 'verification_submit_button');
-  final shakeKey = GlobalKey<ShakeWidgetState>();
+  final shakeKey =
+      GlobalKey<ShakeWidgetState>(debugLabel: 'verification_shake');
 
   //------------------------------ Controllers ---------------------------------
   late StreamController<ErrorAnimationType> errorController;
 
+  //----------------------------------------------------------------------------
   String _code = '';
   int remainingTime =
       VERIFICATION_CODE_EXPIRATION_TIME; // Total seconds for countdown
@@ -125,6 +125,9 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
               );
       if (state.type == AuthStateType.verified) {
         if (mounted) {
+          while (context.canPop()) {
+            context.pop();
+          }
           context.push(Routes.logIn);
         }
       } else {
@@ -179,6 +182,7 @@ class _VerificationScreen extends ConsumerState<VerificationScreen> {
                 shakeOffset: 10,
                 shakeDuration: const Duration(milliseconds: 500),
                 child: PinCodeTextField(
+                  key: verificationCodeKey,
                   keyboardType: TextInputType.number,
                   length: VERIFICATION_LENGTH,
                   mainAxisAlignment: MainAxisAlignment.center,

@@ -15,7 +15,7 @@ class MockDevicesViewModel extends StateNotifier<AsyncValue<List<Session>>> {
 
   void fetchSessions() {
     // Simulate successful data fetch after a delay
-    Future.delayed(Duration(seconds: 1), () {
+    Future.delayed(const Duration(seconds: 1), () {
       state = AsyncValue.data([
         Session(title: 'Session 1', options: [], trailing: ''),
         Session(title: 'Session 2', options: [], trailing: ''),

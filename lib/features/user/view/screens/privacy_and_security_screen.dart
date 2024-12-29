@@ -8,7 +8,6 @@ import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/confirmation_dialog.dart';
-import 'package:telware_cross_platform/features/user/view/screens/change_email_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/invites_permissions_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/blocked_users.dart';
 import 'package:telware_cross_platform/features/user/view/screens/last_seen_privacy_screen.dart';
@@ -105,7 +104,7 @@ class _PrivacySettingsScreen extends ConsumerState<PrivacySettingsScreen> {
             "icon": Icons.front_hand_outlined,
             "text": 'Blocked Users',
             "routes": BlockedUsersScreen.route,
-            "trailing": "None"
+            "trailing": "${user?.blockedUsers?.length ?? 0}"
           },
           {"icon": Icons.devices, "text": 'Devices', "trailing": "1"},
         ],

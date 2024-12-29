@@ -8,12 +8,14 @@ import 'package:telware_cross_platform/core/mock/token_mock.dart';
 import 'package:telware_cross_platform/core/mock/user_mock.dart';
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/models/signup_result.dart';
+import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
 import 'package:telware_cross_platform/core/providers/user_provider.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_local_repository.dart';
 import 'package:telware_cross_platform/features/auth/repository/auth_remote_repository.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
+import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 part 'auth_view_model.g.dart';
@@ -38,7 +40,7 @@ class AuthViewModel extends _$AuthViewModel {
     }
 
     if (USE_MOCK_DATA) {
-      final user = userMock;
+      final user = mockUsers[0];
       ref.read(userProvider.notifier).update((_) => user);
       state = AuthState.authenticated;
       return;
@@ -49,6 +51,10 @@ class AuthViewModel extends _$AuthViewModel {
 
     response.match((appError) {
       state = AuthState.fail(appError.error);
+      if (appError.code == 401) {
+        _handleLogOutState();
+        return;
+      }
       // getting user data from local as remote failed
       final user = ref.read(authLocalRepositoryProvider).getMe();
       ref.read(userProvider.notifier).update((_) => user);
@@ -68,7 +74,6 @@ class AuthViewModel extends _$AuthViewModel {
     String? token = ref.read(tokenProvider);
     return token != null && token.isNotEmpty;
   }
-
 
   Future<SignupResult> signUp({
     required String email,
@@ -110,8 +115,8 @@ class AuthViewModel extends _$AuthViewModel {
 
     if (USE_MOCK_DATA) {
       state = AuthState.verified;
-      ref.read(authLocalRepositoryProvider).setUser(userMock);
-      ref.read(userProvider.notifier).update((_) => userMock);
+      ref.read(authLocalRepositoryProvider).setUser(mockUsers[0]);
+      ref.read(userProvider.notifier).update((_) => mockUsers[0]);
 
       ref.read(authLocalRepositoryProvider).setToken(tokenMock);
       ref.read(tokenProvider.notifier).update((_) => tokenMock);
@@ -155,13 +160,28 @@ class AuthViewModel extends _$AuthViewModel {
     state = AuthState.loading;
 
     if (USE_MOCK_DATA) {
-      if (email == userMock.email && password == userMockPassword) {
-        state = AuthState.authenticated;
-        ref.read(authLocalRepositoryProvider).setUser(userMock);
-        ref.read(userProvider.notifier).update((_) => userMock);
+      if (email == mockUsers[0].email && password == userMockPassword) {
+        ref.read(authLocalRepositoryProvider).setUser(mockUsers[0]);
+        ref.read(userProvider.notifier).update((_) => mockUsers[0]);
 
         ref.read(authLocalRepositoryProvider).setToken(tokenMock);
         ref.read(tokenProvider.notifier).update((_) => tokenMock);
+
+        await ref.read(chattingControllerProvider).newLoginInit();
+
+        state = AuthState.authenticated;
+        return;
+      } else if (email == mockUsers[1].email &&
+          password == otherUserMockPassword) {
+        ref.read(authLocalRepositoryProvider).setUser(mockUsers[1]);
+        ref.read(userProvider.notifier).update((_) => mockUsers[1]);
+
+        ref.read(authLocalRepositoryProvider).setToken(tokenMock);
+        ref.read(tokenProvider.notifier).update((_) => tokenMock);
+
+        await ref.read(chattingControllerProvider).newLoginInit();
+
+        state = AuthState.authenticated;
         return;
       } else {
         state = AuthState.fail('Invalid email or password');
@@ -179,12 +199,17 @@ class AuthViewModel extends _$AuthViewModel {
       } else {
         state = AuthState.fail(appError.error);
       }
-    }, (logInResponse) {
-      ref.read(authLocalRepositoryProvider).setUser(logInResponse.user);
-      ref.read(userProvider.notifier).update((_) => logInResponse.user);
-
+    }, (logInResponse) async {
+      // get the blocked users and set them
+      UserModel user = logInResponse.user;
       ref.read(authLocalRepositoryProvider).setToken(logInResponse.token);
       ref.read(tokenProvider.notifier).update((_) => logInResponse.token);
+      List<UserModel> blockedUsers = await getBlockedUsers();
+      user = user.copyWith(blockedUsers: blockedUsers);
+      ref.read(authLocalRepositoryProvider).setUser(user);
+      ref.read(userProvider.notifier).update((_) => user);
+
+      await ref.read(chattingControllerProvider).newLoginInit();
       state = AuthState.authenticated;
     });
   }
@@ -271,7 +296,7 @@ class AuthViewModel extends _$AuthViewModel {
     debugPrint('===============================');
     debugPrint('log out operation ended');
     debugPrint('Error: ${appError?.error}');
-    await _handleLogOutState(appError);
+    await _handleLogOutState();
   }
 
   Future<void> logOutAllOthers() async {
@@ -290,32 +315,28 @@ class AuthViewModel extends _$AuthViewModel {
     state = AuthState.loading;
     final token = ref.read(tokenProvider);
 
-    final appError = await ref
+    await ref
         .read(authRemoteRepositoryProvider)
         .logOut(token: token!, route: 'auth/logout-all');
 
-    await _handleLogOutState(appError);
+    await _handleLogOutState();
   }
 
-  Future<void> _handleLogOutState(AppError? appError) async {
-    if (appError == null) {
-      // successful log out operation
-      await ref.read(authLocalRepositoryProvider).deleteToken();
-      ref.read(tokenProvider.notifier).update((_) => null);
+  Future<void> _handleLogOutState() async {
+    // successful log out operation
+    await ref.read(authLocalRepositoryProvider).deleteToken();
+    ref.read(tokenProvider.notifier).update((_) => null);
 
-      await ref.read(authLocalRepositoryProvider).deleteUser();
-      ref.read(userProvider.notifier).update((_) => null);
-      state = AuthState.unauthenticated;
-    } else {
-      state = AuthState.fail(appError.error);
-    }
+    await ref.read(authLocalRepositoryProvider).deleteUser();
+    ref.read(userProvider.notifier).update((_) => null);
+    state = AuthState.unauthenticated;
   }
 
   Future<void> getMe() async {
     String? token = ref.read(tokenProvider);
 
     if (USE_MOCK_DATA) {
-      final user = userMock;
+      final user = mockUsers[0];
       ref.read(userProvider.notifier).update((_) => user);
       state = AuthState.authenticated;
       return;
@@ -325,11 +346,29 @@ class AuthViewModel extends _$AuthViewModel {
     final response = await ref.read(authRemoteRepositoryProvider).getMe(token!);
 
     response.match((appError) {
-    }, (user) {
+      if (appError.code == 401) {
+        _handleLogOutState();
+      }
+    }, (user) async {
       debugPrint('** getMe is called\nuser supposed to have img');
-      print(user);
+      debugPrint(user.toString());
       ref.read(authLocalRepositoryProvider).setUser(user);
       ref.read(userProvider.notifier).update((_) => user);
     });
+  }
+
+  Future<List<UserModel>> getBlockedUsers() async {
+    String? token = ref.read(tokenProvider);
+    final response =
+        await ref.read(authRemoteRepositoryProvider).getBlockedUsers(token!);
+
+    return response.fold(
+      (appError) {
+        return [];
+      },
+      (blockedUsers) {
+        return blockedUsers;
+      },
+    );
   }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';

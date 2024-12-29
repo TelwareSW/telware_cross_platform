@@ -33,6 +33,7 @@ class _SelfDestructScreen extends ConsumerState<SelfDestructScreen> with TickerP
   @override
   void initState() {
     super.initState();
+    // ignore: unused_local_variable
     final UserModel user = ref.read(userLocalRepositoryProvider).getUser()!;
     _destructTimerSelectedOption = "off";
     _destructTimerInitValue = _destructTimerSelectedOption;
@@ -41,6 +42,7 @@ class _SelfDestructScreen extends ConsumerState<SelfDestructScreen> with TickerP
 
     _imageListener = ImageStreamListener((_, __) {
       if (mounted) {
+        // ignore: invalid_use_of_protected_member
         _controller.repeat(period: _controller.duration);
       }
     });

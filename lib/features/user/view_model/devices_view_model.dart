@@ -5,12 +5,12 @@ import '../model/model.dart';
 import '../view/screens/devices_screen.dart';
 
 class DevicesViewModel extends StateNotifier<AsyncValue<List<Session>>> {
-  DevicesViewModel() : super(AsyncValue.loading());
-
+  DevicesViewModel() : super(const AsyncValue.loading());
 
   Future<void> fetchSessions(BuildContext context) async {
     try {
-      await Future.delayed(Duration(seconds: 2)); // Simulate network delay
+      await Future.delayed(
+          const Duration(seconds: 2)); // Simulate network delay
       final sessions = [
         Session(
           title: "Current session",
@@ -51,12 +51,22 @@ class DevicesViewModel extends StateNotifier<AsyncValue<List<Session>>> {
             ),
           ],
           trailing:
-          "The official Telegram app is available for Android, iPhone, iPad, Windows, macOS and Linux.",
+              "The official Telegram app is available for Android, iPhone, iPad, Windows, macOS and Linux.",
         ),
       ];
       final currentSessionSection = sessions.firstWhere(
-            (section) => section.title == "Current session",
-        orElse: () => Session(title: 'title', options: [SessionOption(icon: FontAwesomeIcons.apple, phoneName: 'phoneName', telegramVersion: 'telegramVersion', location: 'location', state: 'state')], trailing: 'trailing'),
+        (section) => section.title == "Current session",
+        orElse: () => Session(
+            title: 'title',
+            options: [
+              SessionOption(
+                  icon: FontAwesomeIcons.apple,
+                  phoneName: 'phoneName',
+                  telegramVersion: 'telegramVersion',
+                  location: 'location',
+                  state: 'state')
+            ],
+            trailing: 'trailing'),
       );
       currentSessionSection.options.add(SessionOption(
         icon: FontAwesomeIcons.hand,
@@ -74,7 +84,10 @@ class DevicesViewModel extends StateNotifier<AsyncValue<List<Session>>> {
               );
             },
           );
-        }, telegramVersion: '', location: '', state: '',
+        },
+        telegramVersion: '',
+        location: '',
+        state: '',
       ));
       currentSessionSection.options.add(SessionOption(
         icon: FontAwesomeIcons.xmark,
@@ -92,14 +105,19 @@ class DevicesViewModel extends StateNotifier<AsyncValue<List<Session>>> {
               );
             },
           );
-        },telegramVersion: '', location: '', state: '',
+        },
+        telegramVersion: '',
+        location: '',
+        state: '',
       ));
       state = AsyncValue.data(sessions);
     } catch (e) {
+      debugPrint(e.toString());
     }
   }
 }
 
-final devicesViewModelProvider = StateNotifierProvider<DevicesViewModel, AsyncValue<List<Session>>>((ref) {
+final devicesViewModelProvider =
+    StateNotifierProvider<DevicesViewModel, AsyncValue<List<Session>>>((ref) {
   return DevicesViewModel();
 });

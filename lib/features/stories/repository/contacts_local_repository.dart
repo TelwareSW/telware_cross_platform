@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:telware_cross_platform/features/stories/models/contact_model.dart';
 import '../models/story_model.dart';
@@ -8,9 +7,9 @@ import '../utils/utils_functions.dart';
 
 part 'contacts_local_repository.g.dart';
 
-
 @Riverpod(keepAlive: true)
-ContactsLocalRepository contactsLocalRepository(ContactsLocalRepositoryRef ref) {
+ContactsLocalRepository contactsLocalRepository(
+    ContactsLocalRepositoryRef ref) {
   final userBox = Hive.box<ContactModel>('contacts');
   return ContactsLocalRepository(userBox);
 }
@@ -20,16 +19,17 @@ class ContactsLocalRepository {
 
   ContactsLocalRepository(this._userBox);
 
-
-
   Future<void> saveContactsToHive(List<ContactModel> contacts) async {
     for (ContactModel contact in contacts) {
       final existingContact = _userBox.get(contact.userId);
       if (existingContact == null ||
           contact != existingContact ||
           existingContact.userImage == null) {
-        if (contact.userImage == null && existingContact?.userImage != null) {
-          return;
+        if (existingContact!= null &&
+            contact.userImage == null &&
+            existingContact.userImage != null &&
+            existingContact.userImageUrl == contact.userImageUrl) { //the difference is the existing has teh image bytes only
+          contact.userImage=existingContact.userImage;
         }
         await _saveContactImageInHive(contact);
       }
@@ -43,7 +43,7 @@ class ContactsLocalRepository {
       await _userBox.put(contact.userId, contactWithImage);
     } catch (e) {
       if (kDebugMode) {
-        print('Error updating contact in Hive: $e');
+        debugPrint('Error updating contact in Hive: $e');
       }
     }
   }
@@ -74,12 +74,12 @@ class ContactsLocalRepository {
         await _userBox.put(updatedContact.userId, updatedContact);
       } else {
         if (kDebugMode) {
-          print('User not found');
+          debugPrint('User not found');
         }
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Failed to update user in Hive: $e');
+        debugPrint('Failed to update user in Hive: $e');
       }
       throw Exception('Error updating user in Hive');
     }
@@ -93,16 +93,15 @@ class ContactsLocalRepository {
         for (var story in user.stories) {
           if (story.storyId == storyId) {
             story.storyContent = imageData;
-            break; 
+            break;
           }
         }
         await updateContactInHive(user);
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Error saving story image to Hive: $e');
+        debugPrint('Error saving story image to Hive: $e');
       }
     }
   }
 }
-

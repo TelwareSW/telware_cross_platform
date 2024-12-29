@@ -4,8 +4,9 @@ import 'package:dio/dio.dart';
 import 'package:telware_cross_platform/core/constants/server_constants.dart';
 import 'package:telware_cross_platform/core/models/app_error.dart';
 import 'package:flutter/foundation.dart';
+import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/providers/token_provider.dart';
-import 'package:telware_cross_platform/features/auth/repository/auth_local_repository.dart';
+import 'package:telware_cross_platform/features/chat/utils/chat_utils.dart';
 
 part 'user_remote_repository.g.dart';
 
@@ -26,6 +27,43 @@ class UserRemoteRepository {
 
   Future<String?> _getSessionId() async {
     return _ref.read(tokenProvider);
+  }
+
+  // fetch users
+  Future<Either<AppError, List<UserModel>>> fetchUsers() async {
+    try {
+      final sessionId = await _getSessionId();
+      final response = await _dio.get(
+        '/users',
+        options: Options(
+          headers: {'X-Session-Token': sessionId},
+        ),
+      );
+      if (response.statusCode! >= 400) {
+        final String message = response.data?['message'] ?? 'Unexpected Error';
+        return Left(AppError(message));
+      }
+
+      final List<dynamic> users = response.data?['data']['users'] ?? [];
+
+      var filteredUsers = await Future.wait(
+          (users).map((user) => UserModel.fromMap(user)).toList());
+
+      filteredUsers = await Future.wait(filteredUsers.map((user) async {
+        if (user.photo != null) {
+          return user.copyWith(
+              photo: await downloadAndSaveFile(user.photo!, null));
+        }
+        return user;
+      }).toList());
+      return Right(filteredUsers);
+    } on DioException catch (dioException) {
+      return Left(handleDioException(dioException));
+    } catch (error) {
+      debugPrint('Fetch Users error:\n${error.toString()}');
+      return Left(
+          AppError("Couldn't fetch users now. Please, try again later."));
+    }
   }
 
   Future<Either<AppError, void>> changeNumber({
@@ -177,12 +215,17 @@ class UserRemoteRepository {
 
   Future<Either<AppError, bool>> checkUsernameUniqueness({
     required String username,
+    required String sessionId,
   }) async {
     try {
       final response =
-          await _dio.get('/users/username/check', queryParameters: {
+      await _dio.get('/users/username/check', queryParameters: {
         'username': username,
-      });
+      },
+        options: Options(
+          headers: {'X-Session-Token': sessionId},
+        ),
+      );
 
       if (response.statusCode! >= 400) {
         return const Right(false);
@@ -281,6 +324,120 @@ class UserRemoteRepository {
       debugPrint('Change invite permissions error:\n${error.toString()}');
       return Left(AppError(
           "Couldn't change invite permissions now. Please, try again later."));
+    }
+  }
+
+  Future<Either<AppError, void>> blockUser({required String userId}) async {
+    try {
+      final sessionId = await _getSessionId();
+      final response = await _dio.post(
+        '/users/block/$userId',
+        options: Options(
+          headers: {'X-Session-Token': sessionId},
+        ),
+      );
+
+      if (response.statusCode! >= 400) {
+        final String message = response.data?['message'] ?? 'Unexpected Error';
+        return Left(AppError(message));
+      }
+      return const Right(null);
+    } on DioException catch (dioException) {
+      return Left(handleDioException(dioException));
+    } catch (error) {
+      debugPrint('block user error:\n${error.toString()}');
+      return Left(
+          AppError("Couldn't block user now. Please, try again later."));
+    }
+  }
+
+  Future<Either<AppError, void>> unblockUser({required String userId}) async {
+    try {
+      final sessionId = await _getSessionId();
+      final response = await _dio.delete(
+        '/users/block/$userId',
+        options: Options(
+          headers: {'X-Session-Token': sessionId},
+        ),
+      );
+
+      if (response.statusCode! >= 400) {
+        final String message = response.data?['message'] ?? 'Unexpected Error';
+        return Left(AppError(message));
+      }
+      return const Right(null);
+    } on DioException catch (dioException) {
+      return Left(handleDioException(dioException));
+    } catch (error) {
+      debugPrint('block user error:\n${error.toString()}');
+      return Left(
+          AppError("Couldn't block user now. Please, try again later."));
+    }
+  }
+
+  Future<Either<AppError, void>> banUser({
+    required String sessionID,
+    required String userID,
+  }) async {
+    try {
+      final response = await _dio.patch(
+        '/users/ban/$userID',
+        options: Options(headers: {'X-Session-Token': sessionID}),
+      );
+
+      debugPrint("message: ${response.data['message']}");
+
+      return const Right(null);
+    } on DioException catch (dioException) {
+      return Left(handleDioException(dioException));
+    } catch (error) {
+      debugPrint('!!! Failed to ban $userID, ${error.toString()}');
+      return Left(AppError("Failed to ban user. Please, try again later."));
+    }
+  }
+
+  Future<Either<AppError, void>> activateUser({
+    required String sessionID,
+    required String userID,
+  }) async {
+    debugPrint('Activating user $userID');
+    try {
+      final response = await _dio.patch(
+        '/users/activate/$userID',
+        options: Options(headers: {'X-Session-Token': sessionID}),
+      );
+
+      debugPrint("message: ${response.data['message']}");
+
+      return const Right(null);
+    } on DioException catch (dioException) {
+      return Left(handleDioException(dioException));
+    } catch (error) {
+      debugPrint('!!! Failed to activate $userID, ${error.toString()}');
+      return Left(
+          AppError("Failed to activate user. Please, try again later."));
+    }
+  }
+
+  Future<Either<AppError, void>> deactivateUser({
+    required String sessionID,
+    required String userID,
+  }) async {
+    try {
+      final response = await _dio.patch(
+        '/users/deactivate/$userID',
+        options: Options(headers: {'X-Session-Token': sessionID}),
+      );
+
+      debugPrint("message: ${response.data['message']}");
+
+      return const Right(null);
+    } on DioException catch (dioException) {
+      return Left(handleDioException(dioException));
+    } catch (error) {
+      debugPrint('!!! Failed to deactivate $userID, ${error.toString()}');
+      return Left(
+          AppError("Failed to deactivate user. Please, try again later."));
     }
   }
 

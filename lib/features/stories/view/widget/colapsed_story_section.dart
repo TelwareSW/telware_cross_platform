@@ -18,14 +18,20 @@ class ColapsedStorySection extends ConsumerWidget {
     final users = state.contacts;
     final reorderedUsers = reorderUsers(users);
 
-    debugPrint('Building ColapsedStorySection...');
+    final ContactModel myUser = users.firstWhere(
+          (user) => user.userId == 'myUser',
+      orElse: () {
+        throw StateError('myUser not found');
+      },
+    );
+
     return Row(
       children: [
         Expanded(child: StackedOverlappedImages(users: reorderedUsers)),
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Text(
-            '${users.length} Story',
+            '${myUser.stories.isEmpty?users.length - 1:users.length} Story',
             style: const TextStyle(
                 fontSize: Sizes.primaryText, fontWeight: FontWeight.bold),
           ),

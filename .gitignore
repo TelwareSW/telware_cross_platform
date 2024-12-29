@@ -4,6 +4,7 @@
 .pub/
 build/
 flutter_*.png
+*.g.dart
 
 # IDE related files (optional)
 .idea/
@@ -21,3 +22,5 @@ flutter_*.png
 *.iml
 .flutter-plugins*
 coverage/
+
+*.g.dart

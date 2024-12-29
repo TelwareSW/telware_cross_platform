@@ -13,7 +13,11 @@ class Palette {
   static const Color accentText = Color.fromRGBO(125, 139, 153, 1);
   static const Color icons = Colors.white;
   static const Color inactiveSwitch = Color.fromRGBO(94, 98, 101, 1.0);
-  static const Color error = Color.fromRGBO(220, 20, 60, 1);
+  static const Color error = Color.fromRGBO(211, 47, 47, 1.0);
   static const Color black = Color.fromRGBO(0, 0, 0, 1);
   static const Color drawerHeader = Color.fromRGBO(34, 45, 58, 1);
+  static const Color valid = Color.fromRGBO(76, 175, 80, 1.0);
+  static const Color banned = Color.fromRGBO(238, 104, 111, 1);
+  static const Color deactivated = Color.fromRGBO(255, 152, 0, 1);
+  static const Color active = Color.fromRGBO(76, 175, 80, 1.0);
 }

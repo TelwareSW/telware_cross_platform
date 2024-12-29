@@ -34,7 +34,6 @@ class SignUpScreen extends ConsumerStatefulWidget {
 }
 
 class _SignUpScreenState extends ConsumerState<SignUpScreen> {
-  //-------------------------------------- Keys -------------------------
   final formKey = GlobalKey<FormState>(debugLabel: 'signup_form');
   final emailKey = GlobalKey<FormFieldState>(debugLabel: 'signup_email_input');
   final phoneKey = GlobalKey<FormFieldState>(debugLabel: 'signup_phone_input');
@@ -50,10 +49,14 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final onCancellationKey =
       GlobalKey<State>(debugLabel: 'signup_on_cancellation_button');
 
-  final emailShakeKey = GlobalKey<ShakeWidgetState>();
-  final phoneShakeKey = GlobalKey<ShakeWidgetState>();
-  final passwordShakeKey = GlobalKey<ShakeWidgetState>();
-  final confirmPasswordShakeKey = GlobalKey<ShakeWidgetState>();
+  final emailShakeKey =
+      GlobalKey<ShakeWidgetState>(debugLabel: 'signup_email_shake');
+  final phoneShakeKey =
+      GlobalKey<ShakeWidgetState>(debugLabel: 'signup_phone_shake');
+  final passwordShakeKey =
+      GlobalKey<ShakeWidgetState>(debugLabel: 'signup_password_shake');
+  final confirmPasswordShakeKey =
+      GlobalKey<ShakeWidgetState>(debugLabel: 'signup_confirm_password_shake');
 
   //-------------------------------------- Focus nodes -------------------------
   final FocusNode emailFocusNode = FocusNode();
@@ -84,6 +87,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   String? confirmPasswordError;
 
   final String siteKey = dotenv.env['RECAPTCHA_SITE_KEY'] ?? '';
+
+  final bool byPassCaptcha =
+      (dotenv.env['BYPASS_CAPTCHA'] ?? 'false') == 'true';
 
   String? captchaToken;
 
@@ -162,7 +168,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   }
 
   void signUp() async {
-    if (captchaToken == null || captchaToken!.isEmpty) {
+    if ((captchaToken == null || captchaToken!.isEmpty) && !byPassCaptcha) {
       vibrate();
       return;
     }
@@ -173,13 +179,18 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               phone: phoneController.value.international,
               password: passwordController.text,
               confirmPassword: confirmPasswordController.text,
-              reCaptchaResponse: captchaToken!,
+              reCaptchaResponse: byPassCaptcha ? 'dummy' : captchaToken!,
             );
 
     if (mounted) {
       context.pop();
     }
-    if (signUpResult.state.type == AuthStateType.unverified) {
+    // if the error message is not "Please provide all required fields" then
+    // the captcha token is invalid, so if the byPassCaptcha is true then we will
+    // ignore the captcha token and proceed to the verification screen
+    if (signUpResult.state.type == AuthStateType.unverified ||
+        (byPassCaptcha &&
+            signUpResult.error?.error == "reCaptcha verification failed")) {
       ref.read(emailProvider.notifier).update((_) => emailController.text);
       if (mounted) {
         context.push(Routes.verification);
@@ -221,7 +232,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     if (someNotFilled) {
       vibrate();
     } else {
-      // todo make recaptcha better
       showConfirmationDialog(
         context: context,
         title: 'is this the correct email?',
@@ -325,7 +335,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       AuthSubTextButton(
                         buttonKey: alreadyHaveAccountKey,
                         onPressed: () {
-                          context.pop();
+                          context.pushReplacement(Routes.logIn);
                         },
                         label: 'Log in',
                       ),

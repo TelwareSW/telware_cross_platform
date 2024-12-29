@@ -1,10 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
+import 'package:telware_cross_platform/core/models/chat_model.dart';
 import 'package:telware_cross_platform/core/models/user_model.dart';
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
+import 'package:telware_cross_platform/core/theme/sizes.dart';
+import 'package:telware_cross_platform/core/utils.dart';
+import 'package:telware_cross_platform/core/view/widget/tab_bar_widget.dart';
+import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
+import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
+import 'package:telware_cross_platform/features/chat/enum/chatting_enums.dart';
+import 'package:telware_cross_platform/features/chat/providers/call_provider.dart';
+import 'package:telware_cross_platform/features/chat/view/screens/chat_screen.dart';
+import 'package:telware_cross_platform/features/chat/view/widget/call_overlay_widget.dart';
+import 'package:telware_cross_platform/features/chat/view_model/chats_view_model.dart';
 import 'package:telware_cross_platform/features/user/view/widget/profile_header_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_option_widget.dart';
 import 'package:telware_cross_platform/features/user/view/widget/settings_section.dart';
@@ -14,28 +26,61 @@ import '../../../stories/view/screens/add_my_image_screen.dart';
 import '../../view_model/user_view_model.dart';
 
 class UserProfileScreen extends ConsumerStatefulWidget {
-  static const String route = '/profile';
+  static const String route = '/user-profile';
+  final String? userId;
 
-  const UserProfileScreen({super.key});
+  const UserProfileScreen({super.key, this.userId});
 
   @override
   ConsumerState<UserProfileScreen> createState() => _UserProfileScreen();
 }
 
-class _UserProfileScreen extends ConsumerState<UserProfileScreen> {
-  late final UserModel _user;
+class _UserProfileScreen extends ConsumerState<UserProfileScreen>
+    with SingleTickerProviderStateMixin {
+  late UserModel? _user;
+  late final bool _isCurrentUser;
+  late final TabController _tabController;
 
   @override
   void initState() {
+    _isCurrentUser = widget.userId == null ||
+        widget.userId == ref.read(userLocalRepositoryProvider).getUser()!.id;
+    _tabController = TabController(length: _isCurrentUser ? 2 : 5, vsync: this);
+    _user = !_isCurrentUser
+        ? ref.read(chatsViewModelProvider.notifier).getOtherUsers()[widget.userId] ?? null
+    : ref.read(userLocalRepositoryProvider).getUser()!;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (widget.userId != null) {
+        _user = (await ref.read(chatsViewModelProvider.notifier).getUser(widget.userId!))!;
+        setState(() {});
+      }
+    });
     super.initState();
+  }
 
-    _user = ref.read(userLocalRepositoryProvider).getUser()!;
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void _createChat() {
+    UserModel myUser = ref.read(userLocalRepositoryProvider).getUser()!;
+    // Check if a chat already exists between the two users
+    final ChatModel chat = ref.read(chatsViewModelProvider.notifier).getChat(
+        myUser, _user!, ChatType.private);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.go(Routes.home);
+      context.push(ChatScreen.route, extra: chat);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
+      body: _user == null ?
+      const Center(child: CircularProgressIndicator()) :
+      Stack(
         children: [
           CustomScrollView(
             slivers: [
@@ -44,15 +89,29 @@ class _UserProfileScreen extends ConsumerState<UserProfileScreen> {
                 toolbarHeight: 80,
                 floating: false,
                 pinned: true,
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () => context.pop(),
-                ),
+                leading: const BackButton(),
                 actions: [
-                  IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () => context.push(Routes.profileInfo)),
-                  const SizedBox(width: 16),
+                  if (_isCurrentUser) ...[
+                    IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () => context.push(Routes.profileInfo)),
+                  ]
+                  else ...[
+                    IconButton(
+                      key: CallKeys.startCallButton,
+                      icon: const Icon(Icons.call),
+                      onPressed: () {
+                        // if user is in call, show dialog instead
+                        if (ref.read(callStateProvider).voiceCallId != null) {
+                          showToastMessage("You are already in a call");
+                          return;
+                        }
+                        ref.read(callStateProvider.notifier).setCaller(true);
+                        debugPrint("Sending user: $_user");
+                        context.push(Routes.callScreen, extra: {"user": _user, "voiceCallId": null});
+                      },
+                    )
+                  ],
                   PopupMenuButton<String>(
                     padding: EdgeInsets.zero,
                     color: Palette.secondary,
@@ -106,9 +165,14 @@ class _UserProfileScreen extends ConsumerState<UserProfileScreen> {
                 ],
                 flexibleSpace: LayoutBuilder(
                   builder: (context, constraints) {
-                    double factor = _calculateFactor(constraints);
+                    UserModel user = _user!;
                     return FlexibleSpaceBar(
-                      title: ProfileHeader(factor: factor),
+                      title: ProfileHeader(
+                        constraints: constraints,
+                        photoBytes: user.photoBytes,
+                        displayName: '${user.screenFirstName} ${user.screenLastName}',
+                        substring: user.status,
+                      ),
                       centerTitle: true,
                       background: Container(
                         alignment: Alignment.topLeft,
@@ -127,18 +191,25 @@ class _UserProfileScreen extends ConsumerState<UserProfileScreen> {
                       settingsOptions: const [],
                       actions: [
                         SettingsOptionWidget(
-                          text: _user.phone ?? "",
+                          text: _user!.phone,
                           icon: null,
                           subtext: "Mobile",
+                          showDivider: _user!.bio.isNotEmpty || _user!.username.isNotEmpty,
                         ),
-                        if (_user.bio != "")
-                          SettingsOptionWidget(
-                              icon: null, text: _user.bio, subtext: "Bio"),
-                        if (_user.username != "")
+                        if (_user!.bio.isNotEmpty)
                           SettingsOptionWidget(
                               icon: null,
-                              text: "@${_user.username}",
-                              subtext: "Username"),
+                              text: _user!.bio,
+                              subtext: "Bio",
+                              showDivider: _user!.username.isNotEmpty
+                          ),
+                        if (_user!.username.isNotEmpty)
+                          SettingsOptionWidget(
+                              icon: null,
+                              text: "@${_user!.username}",
+                              subtext: "Username",
+                              showDivider: false
+                          ),
                       ],
                     ),
                   ],
@@ -147,6 +218,61 @@ class _UserProfileScreen extends ConsumerState<UserProfileScreen> {
               const SliverToBoxAdapter(
                 child: SizedBox(height: Dimensions.sectionGaps),
               ),
+              SliverToBoxAdapter(
+                child: Container(
+                  color: Palette.secondary,
+                  child: Column(
+                    children: [
+                      TabBarWidget(
+                        controller: _tabController,
+                        tabs: _isCurrentUser ?
+                        const [
+                          Tab(text: "Posts",),
+                          Tab(text: "Archived Posts",),
+                        ] :
+                        const [
+                          Tab(text: "Media",),
+                          Tab(text: "Files",),
+                          Tab(text: "Voice",),
+                          Tab(text: "GIFs",),
+                          Tab(text: "Groups",),
+                        ],
+                        isScrollable: !_isCurrentUser,
+                      ),
+                      const CallOverlay(showDetails: false,),
+                    ],
+                  ),
+                )
+              ),
+              SliverFillRemaining(
+                child: Container(
+                  color: Palette.secondary,
+                  child: TabBarView(
+                      controller: _tabController,
+                      children: List.generate(_isCurrentUser ? 2 : 5, (index) {
+                        return const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            LottieViewer(
+                              path: 'assets/tgs/EasterDuck.tgs',
+                              width: 100,
+                              height: 100,
+                            ),
+                            TitleElement(
+                              name: 'To be implemented',
+                              color: Palette.primaryText,
+                              fontSize: Sizes.primaryText - 2,
+                              fontWeight: FontWeight.bold,
+                              padding: EdgeInsets.only(bottom: 0, top: 10),
+                            ),
+                          ],
+                        );
+                      }
+                      )
+                  ),
+                ),
+              )
             ],
           ),
           Align(
@@ -154,30 +280,24 @@ class _UserProfileScreen extends ConsumerState<UserProfileScreen> {
             child: Padding(
               padding: const EdgeInsets.only(top: 155.0, right: 16.0),
               child: FloatingActionButton(
-                child: Icon(Icons.add),
                 backgroundColor: Palette.primary,
-                shape: CircleBorder(),
+                shape: const CircleBorder(),
                 onPressed: () {
+                  _isCurrentUser ?
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) => const AddMyImageScreen(
-                          destination: 'profile'),
+                          destination: 'user-profile'),
                     ),
-                  );
+                  ) :
+                  _createChat();
                 },
+                child: Icon(_isCurrentUser ? Icons.add : Icons.chat_outlined),
               ),
             ),
           ),
         ],
       ),
     );
-  }
-
-  double _calculateFactor(BoxConstraints constraints) {
-    double maxExtent = 130.0;
-    double scrollOffset = constraints.maxHeight - kToolbarHeight;
-    double factor =
-        scrollOffset > 0 ? (maxExtent - scrollOffset) / maxExtent * 90.0 : 60.0;
-    return factor.clamp(0, 90.0);
   }
 }

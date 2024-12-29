@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phone_form_field/phone_form_field.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:telware_cross_platform/core/view/widget/responsive.dart';
@@ -21,18 +21,16 @@ class ChangeNumberFormScreen extends ConsumerStatefulWidget {
   const ChangeNumberFormScreen({super.key});
 
   @override
-  ConsumerState<ChangeNumberFormScreen> createState() => _ChangeNumberFormScreen();
+  ConsumerState<ChangeNumberFormScreen> createState() =>
+      _ChangeNumberFormScreen();
 }
 
 class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
-  final formKey = GlobalKey<FormState>();
   final FocusNode phoneFocusNode = FocusNode();
   bool isPhoneFocused = false;
 
   final PhoneController phoneController = PhoneController(
       initialValue: const PhoneNumber(isoCode: IsoCode.EG, nsn: ''));
-
-  final phoneShakeKey = GlobalKey<ShakeWidgetState>();
 
   @override
   void initState() {
@@ -59,7 +57,9 @@ class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
     final newPhoneNumber = phoneController.value.international;
 
     // Trigger the update process in UserViewModel
-    await ref.read(userViewModelProvider.notifier).updatePhoneNumber(newPhoneNumber);
+    await ref
+        .read(userViewModelProvider.notifier)
+        .updatePhoneNumber(newPhoneNumber);
   }
 
   void _onEdit() {
@@ -69,11 +69,8 @@ class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
   void _handleSubmit() {
     bool notFilled = phoneController.value.nsn.isEmpty;
     if (phoneController.value.nsn.isEmpty) {
-      phoneShakeKey.currentState?.shake();
+      Keys.changeNumberPhoneShakeKey.currentState?.shake();
     }
-
-    String phoneNumber = "+${phoneController.value.countryCode} "
-        "${phoneController.value.nsn}";
 
     if (notFilled) {
       Vibration.hasVibrator().then((hasVibrator) {
@@ -82,32 +79,33 @@ class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
         }
       });
     } else {
-      // TODO (Ahmed): make it like the sign up if it needs captcha.
+      // todo (Ahmed): make it like the sign up if it needs captcha.
       // showConfirmationDialog(context,
       //     "Is this the correct number?", phoneNumber,
       //     "Yes", "Edit", _updatePhoneNumber, _onEdit);
       _updatePhoneNumber();
       if (kDebugMode) {
-        print("Success");
+        debugPrint("Success");
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final userState = ref.watch(userViewModelProvider);
-
     ref.listen<UserState>(userViewModelProvider, (previous, next) {
       if (next.type == UserStateType.success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.message ?? 'Phone number updated successfully')),
+          SnackBar(
+              content:
+                  Text(next.message ?? 'Phone number updated successfully')),
         );
         // context.pop();
         // context.pushReplacement(Routes.verification);
         context.go(SettingsScreen.route);
       } else if (next.type == UserStateType.fail) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.message ?? 'Failed to update phone number')),
+          SnackBar(
+              content: Text(next.message ?? 'Failed to update phone number')),
         );
       }
     });
@@ -123,7 +121,7 @@ class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
           child: Padding(
             padding: const EdgeInsets.only(bottom: 60),
             child: Form(
-              key: formKey,
+              key: Keys.changeNumberFormKey,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -137,14 +135,14 @@ class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
                   ),
                   const TitleElement(
                       name:
-                      'Your new number will receive a confirmation code via SMS.',
+                          'Your new number will receive a confirmation code via SMS.',
                       color: Palette.accentText,
                       fontSize: Sizes.secondaryText,
                       padding: EdgeInsets.only(bottom: 30),
                       width: 250.0),
                   AuthPhoneNumber(
                     name: 'Phone Number',
-                    shakeKey: phoneShakeKey,
+                    shakeKey: Keys.changeNumberPhoneShakeKey,
                     isFocused: isPhoneFocused,
                     focusNode: phoneFocusNode,
                     controller: phoneController,
@@ -156,7 +154,7 @@ class _ChangeNumberFormScreen extends ConsumerState<ChangeNumberFormScreen> {
         ),
       ),
       floatingActionButton: AuthFloatingActionButton(
-        formKey: formKey,
+        formKey: Keys.changeNumberFormKey,
         onSubmit: _handleSubmit,
       ),
     );

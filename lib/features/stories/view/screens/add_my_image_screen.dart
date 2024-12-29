@@ -14,17 +14,19 @@ import '../widget/toggleCameraMode.dart';
 class AddMyImageScreen extends StatefulWidget {
   static const String route = '/add-my-image';
   final String destination;
-  const AddMyImageScreen({super.key, this.destination = 'story',});
+  const AddMyImageScreen({
+    super.key,
+    this.destination = 'story',
+  });
 
   @override
   State<AddMyImageScreen> createState() => _AddMyImageScreenState();
 }
 
 class _AddMyImageScreenState extends State<AddMyImageScreen> {
-
   CameraController? _controller;
   Future<void>? _initializeControllerFuture;
-  String _selectedMode = 'Photo';
+  final String _selectedMode = 'Photo';
   int _currentCameraIndex = 0;
 
   @override
@@ -42,14 +44,14 @@ class _AddMyImageScreenState extends State<AddMyImageScreen> {
       final cameras = await availableCameras();
       if (cameras.isEmpty) {
         if (kDebugMode) {
-          print('No cameras available');
+          debugPrint('No cameras available');
         }
         return;
       }
       _initializeController(cameras[_currentCameraIndex]);
     } catch (e) {
       if (kDebugMode) {
-        print('Error initializing camera: $e');
+        debugPrint('Error initializing camera: $e');
       }
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -103,12 +105,13 @@ class _AddMyImageScreenState extends State<AddMyImageScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ShowTakenImageScreen(image: savedFile, destination:widget.destination),
+          builder: (context) => ShowTakenImageScreen(
+              image: savedFile, destination: widget.destination),
         ),
       );
     } catch (e) {
       if (kDebugMode) {
-        print('Error capturing image: $e');
+        debugPrint('Error capturing image: $e');
       }
     }
   }

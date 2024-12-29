@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 
 void main() {
@@ -102,8 +103,10 @@ void main() {
       expect(toKebabCase('Hello'), 'hello');
     });
 
+
     test('Multi-Word input', () {
-      expect(toKebabCase('I am the king of the world'), 'i-am-the-king-of-the-world');
+      expect(toKebabCase('I am the king of the world'),
+          'i-am-the-king-of-the-world');
     });
 
     test('handles multiple spaces', () {
@@ -147,6 +150,191 @@ void main() {
       expect(color.red, inInclusiveRange(50, 149));
       expect(color.green, inInclusiveRange(50, 149));
       expect(color.blue, inInclusiveRange(50, 149));
+    });
+  });
+
+  group('capitalizeEachWord', () {
+    test('capitalizes each word in a sentence', () {
+      expect(capitalizeEachWord('hello world'), 'Hello World');
+    });
+
+    test('capitalizes each word in a sentence with mixed cases', () {
+      expect(capitalizeEachWord('hELLo wOrLD'), 'Hello World');
+    });
+
+    test('capitalizes each word in a sentence with special characters', () {
+      expect(capitalizeEachWord('hello, world!'), 'Hello, World!');
+    });
+
+    test('capitalizes each word in a sentence with leading spaces', () {
+      expect(capitalizeEachWord('  hello world'), '  Hello World');
+    });
+
+    test('capitalizes each word in a sentence with trailing spaces', () {
+      expect(capitalizeEachWord('hello world  '), 'Hello World  ');
+    });
+
+    test('capitalizes each word in a sentence with leading and trailing spaces',
+        () {
+      expect(capitalizeEachWord('  hello world  '), '  Hello World  ');
+    });
+
+    test('capitalizes each word in a sentence with multiple spaces', () {
+      expect(capitalizeEachWord('hello   world'), 'Hello   World');
+    });
+
+    test('capitalizes each word in a sentence with empty string', () {
+      expect(capitalizeEachWord(''), '');
+    });
+  });
+
+  group('formatTime', () {
+    test('formats time in seconds to hours, minutes, and seconds', () {
+      expect(formatTime(3661, showHours: true), '01:01:01');
+    });
+
+    test('formats time in seconds to minutes and seconds', () {
+      expect(formatTime(61), '01:01');
+    });
+
+    test('formats time in seconds to seconds', () {
+      expect(formatTime(1), '00:01');
+    });
+
+    test('formats time in seconds to hours', () {
+      expect(formatTime(3600, showHours: true), '01:00:00');
+    });
+
+    test('formats time in seconds to minutes', () {
+      expect(formatTime(60), '01:00');
+    });
+
+    test('formats time in seconds to seconds', () {
+      expect(formatTime(1), '00:01');
+    });
+
+    test('formats time in seconds to seconds with single digit', () {
+      expect(formatTime(1, singleDigit: true), '1 seconds');
+    });
+
+    test('formats time in seconds to minutes with single digit', () {
+      expect(formatTime(60, singleDigit: true), '1 minutes');
+    });
+
+    test('formats time in seconds to minutes with single digit', () {
+      expect(formatTime(3600, singleDigit: true), '60 minutes');
+    });
+
+    test('formats time in seconds to hours with single digit and show hours',
+        () {
+      expect(formatTime(3600, singleDigit: true, showHours: true), '1 hours');
+    });
+
+    test('formats time in seconds to minutes with single digit and show hours',
+        () {
+      expect(formatTime(60, singleDigit: true, showHours: true), '1 minutes');
+    });
+
+    test('formats time in seconds to seconds with single digit and show hours',
+        () {
+      expect(formatTime(1, singleDigit: true, showHours: true), '1 seconds');
+    });
+  });
+
+  group('formatTimestamp', () {
+    test('formats timestamp to hh:mm a', () {
+      final timestamp = DateTime.now().subtract(const Duration(hours: 2));
+      final expectedFormat = DateFormat('hh:mm a').format(timestamp);
+      expect(formatTimestamp(timestamp), expectedFormat);
+    });
+
+    test('formats timestamp to weekday', () {
+      final timestamp = DateTime.now().subtract(const Duration(days: 1));
+      final expectedFormat = DateFormat('E').format(timestamp);
+      expect(formatTimestamp(timestamp), expectedFormat);
+    });
+
+    test('formats timestamp to MMM dd for past months', () {
+      final timestamp = DateTime.now().subtract(const Duration(days: 40));
+      final expectedFormat = DateFormat('MMM dd').format(timestamp);
+      expect(formatTimestamp(timestamp), expectedFormat);
+    });
+
+    test('formats timestamp to dd.MM.yy for past years', () {
+      final timestamp = DateTime.now().subtract(const Duration(days: 366));
+      final expectedFormat = DateFormat('dd.MM.yy').format(timestamp);
+      expect(formatTimestamp(timestamp), expectedFormat);
+
+    });
+  });
+
+  group("kmp string matching", () {
+    test("returns the correct index of the substring", () {
+      String inputText = "ababcababcabcabc";
+      String searchText = "ababcabcabc";
+
+      final expectedOutput = [{5: searchText.length}];
+      final result = kmp(inputText, searchText);
+
+      expect(
+        result.map((e) => Map.fromEntries([e])).toList(),
+        expectedOutput.map((e) => Map.fromEntries([e.entries.first])).toList(),
+        reason: "Expected to find the substring at index 5",
+      );
+    });
+
+    test("returns [MapEntry(0, 0)] when no match is found", () {
+      String inputText = "abcdef";
+      String searchText = "ghij";
+
+      final expectedOutput = [];
+      final result = kmp(inputText, searchText);
+
+      expect(result.map((e) => Map.fromEntries([e])).toList(), expectedOutput,
+          reason: "Expected [MapEntry(0, 0)] when no match is found");
+    });
+
+    test("handles edge case with empty search string", () {
+      String inputText = "abcdef";
+      String searchText = "";
+
+      final expectedOutput = [];
+      final result = kmp(inputText, searchText);
+
+      expect(result.map((e) => Map.fromEntries([e])).toList(), expectedOutput,
+          reason: "Expected [MapEntry(0, 0)] for an empty search string");
+    });
+
+    test("handles multiple matches in input text", () {
+      String inputText = "abcabcabc";
+      String searchText = "abc";
+
+      final expectedOutput = [
+        {0: searchText.length},
+        {3: searchText.length},
+        {6: searchText.length}
+      ];
+      final result = kmp(inputText, searchText);
+
+      expect(
+        result.map((e) => Map.fromEntries([e])).toList(),
+        expectedOutput.map((e) => Map.fromEntries([e.entries.first])).toList(),
+        reason: "Expected multiple matches for repeating patterns",
+      );
+    });
+
+    test("returns correct index when input is the same as search text", () {
+      String inputText = "abc";
+      String searchText = "abc";
+
+      final expectedOutput = [{0: searchText.length}];
+      final result = kmp(inputText, searchText);
+
+      expect(
+        result.map((e) => Map.fromEntries([e])).toList(),
+        expectedOutput.map((e) => Map.fromEntries([e.entries.first])).toList(),
+        reason: "Expected a match at index 0 for identical input and search strings",
+      );
     });
   });
 }

@@ -1,32 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
-import 'package:go_router/go_router.dart';
-import 'package:lottie/lottie.dart';
-import 'package:phone_form_field/phone_form_field.dart';
-import 'package:telware_cross_platform/core/models/signup_result.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/view/widget/lottie_viewer.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/confirmation_dialog.dart';
 import 'package:telware_cross_platform/features/user/view_model/user_state.dart';
 import 'package:telware_cross_platform/features/user/view_model/user_view_model.dart';
 import 'package:vibration/vibration.dart';
-import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
-import 'package:telware_cross_platform/core/providers/sign_up_provider.dart';
-import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/theme/sizes.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/core/view/widget/responsive.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/auth_floating_action_button.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/auth_phone_number.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/auth_sub_text_button.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/shake_my_auth_input.dart';
-import 'package:telware_cross_platform/features/auth/view/widget/social_log_in.dart';
 import 'package:telware_cross_platform/features/auth/view/widget/title_element.dart';
-import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
-import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
 
 class ChangeEmailScreen extends ConsumerStatefulWidget {
   static const String route = '/change-email';
@@ -39,12 +25,6 @@ class ChangeEmailScreen extends ConsumerStatefulWidget {
 
 class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen>
     with TickerProviderStateMixin {
-  //-------------------------------------- Keys -------------------------
-  final formKey = GlobalKey<FormState>(debugLabel: 'change_email_form');
-  final emailKey = GlobalKey<FormFieldState>(debugLabel: 'change_email_input');
-  final submitKey = GlobalKey<State>(debugLabel: 'change_email_submit_button');
-  final emailShakeKey = GlobalKey<ShakeWidgetState>();
-
   //-------------------------------------- Focus nodes -------------------------
   final FocusNode emailFocusNode = FocusNode();
   bool isEmailFocused = false;
@@ -88,7 +68,7 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen>
 
   void handelSubmit() {
     if (emailController.text.isEmpty) {
-      emailShakeKey.currentState?.shake();
+      ChangeEmailKeys.emailShakeKey.currentState?.shake();
       vibrate();
     } else {
       changeEmail();
@@ -118,7 +98,7 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen>
       body: SingleChildScrollView(
         child: Responsive(
           child: Form(
-            key: formKey,
+            key: ChangeEmailKeys.formKey,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -142,8 +122,8 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen>
                 ShakeMyAuthInput(
                   name: 'Your new email',
                   errorText: emailError,
-                  formKey: emailKey,
-                  shakeKey: emailShakeKey,
+                  formKey: ChangeEmailKeys.emailKey,
+                  shakeKey: ChangeEmailKeys.emailShakeKey,
                   isFocused: isEmailFocused,
                   focusNode: emailFocusNode,
                   controller: emailController,
@@ -155,8 +135,8 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen>
         ),
       ),
       floatingActionButton: AuthFloatingActionButton(
-        formKey: formKey,
-        buttonKey: submitKey,
+        formKey: ChangeEmailKeys.formKey,
+        buttonKey: ChangeEmailKeys.submitKey,
         onSubmit: handelSubmit,
       ),
     );

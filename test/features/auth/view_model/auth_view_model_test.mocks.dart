@@ -226,6 +226,25 @@ class MockAuthRemoteRepository extends _i1.Mock
       ) as _i4.Future<_i2.AppError?>);
 
   @override
+  _i4.Future<_i7.Either<_i2.AppError, List<_i5.UserModel>>> getBlockedUsers(
+          String? sessionId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getBlockedUsers,
+          [sessionId],
+        ),
+        returnValue:
+            _i4.Future<_i7.Either<_i2.AppError, List<_i5.UserModel>>>.value(
+                _i8.dummyValue<_i7.Either<_i2.AppError, List<_i5.UserModel>>>(
+          this,
+          Invocation.method(
+            #getBlockedUsers,
+            [sessionId],
+          ),
+        )),
+      ) as _i4.Future<_i7.Either<_i2.AppError, List<_i5.UserModel>>>);
+
+  @override
   _i2.AppError handleDioException(_i10.DioException? dioException) =>
       (super.noSuchMethod(
         Invocation.method(

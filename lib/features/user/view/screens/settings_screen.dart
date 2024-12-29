@@ -5,10 +5,12 @@ import 'package:telware_cross_platform/core/providers/user_provider.dart';
 
 import 'package:telware_cross_platform/core/routes/routes.dart';
 import 'package:telware_cross_platform/core/theme/dimensions.dart';
+import 'package:telware_cross_platform/core/constants/keys.dart';
 import 'package:telware_cross_platform/core/theme/palette.dart';
 import 'package:telware_cross_platform/core/utils.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_state.dart';
 import 'package:telware_cross_platform/features/auth/view_model/auth_view_model.dart';
+import 'package:telware_cross_platform/features/chat/view_model/chatting_controller.dart';
 import 'package:telware_cross_platform/features/stories/view/screens/add_my_image_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/change_number_screen.dart';
 import 'package:telware_cross_platform/features/user/view/screens/change_username_screen.dart';
@@ -50,7 +52,7 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
         {
           "icon": Icons.pie_chart_outline,
           "text": 'Data and Storage',
-          "routes": 'locked'
+          "routes": Routes.dataAndStorageScreen
         },
         {
           "icon": Icons.battery_saver_outlined,
@@ -148,16 +150,21 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
                     const SizedBox(width: 16),
                     IconButton(
                         onPressed: () {
+                          ref.read(chattingControllerProvider).clear();
                           ref.read(authViewModelProvider.notifier).logOut();
                           context.go(Routes.logIn);
                         },
-                        icon: const Icon(Icons.more_vert)),
+                        icon: const Icon(Icons.exit_to_app_rounded)),
                   ],
                   flexibleSpace: LayoutBuilder(
                     builder: (context, constraints) {
-                      double factor = _calculateFactor(constraints);
                       return FlexibleSpaceBar(
-                        title: ProfileHeader(factor: factor),
+                        title: ProfileHeader(
+                          constraints: constraints,
+                          photoBytes: user.photoBytes,
+                          displayName: '${user.screenFirstName} ${user.screenLastName}',
+                          substring: user.status,
+                        ),
                         centerTitle: true,
                         background: Container(
                           alignment: Alignment.topLeft,
@@ -179,12 +186,12 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
                                     builder: (context) => const AddMyImageScreen(
-                                        destination: 'profile'),
+                                        destination: 'user-profile'),
                                   ),
                                 );
                               },
                               child: const SettingsOptionWidget(
-                                key: ValueKey("set-profile-photo-option"),
+                                key: Keys.settingsSetProfilePhotoOptions,
                                 icon: Icons.camera_alt_outlined,
                                 iconColor: Palette.primary,
                                 text: "Set Profile Photo",
@@ -254,13 +261,5 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
               ],
             ),
     );
-  }
-
-  double _calculateFactor(BoxConstraints constraints) {
-    double maxExtent = 130.0;
-    double scrollOffset = constraints.maxHeight - kToolbarHeight;
-    double factor =
-        scrollOffset > 0 ? (maxExtent - scrollOffset) / maxExtent * 90.0 : 60.0;
-    return factor.clamp(0, 90.0);
   }
 }

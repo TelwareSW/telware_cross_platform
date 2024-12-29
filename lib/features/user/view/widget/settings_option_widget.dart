@@ -10,6 +10,7 @@ import '../../../user/view/widget/avatar_generator.dart';
 class SettingsOptionWidget extends StatelessWidget {
   final IconData? icon;
   final GlobalKey? trailingIconKey;
+  final GlobalKey? tileKey;
   final String? imagePath;
   final Uint8List? imageMemory;
   final double imageWidth;
@@ -27,6 +28,7 @@ class SettingsOptionWidget extends StatelessWidget {
   final EdgeInsets? trailingPadding;
   final Color iconColor;
   final Color color;
+  final Color? subtextColor;
   final Color? trailingColor;
   final bool showDivider;
   final bool? avatar;
@@ -35,6 +37,7 @@ class SettingsOptionWidget extends StatelessWidget {
   const SettingsOptionWidget({
     super.key,
     this.trailingIconKey,
+    this.tileKey,
     this.icon,
     required this.text,
     this.imagePath,
@@ -55,6 +58,7 @@ class SettingsOptionWidget extends StatelessWidget {
     this.trailingIconAction,
     this.trailingPadding,
     this.trailingColor = Palette.primary,
+    this.subtextColor = Palette.accentText,
     this.showDivider = true,
     this.onTap,
   });
@@ -105,7 +109,7 @@ class SettingsOptionWidget extends StatelessWidget {
                 padding: const EdgeInsets.only(right: 16),
                 child: AvatarGenerator(
                   name: text,
-                  backgroundColor: getRandomColor(),
+                  backgroundColor: getRandomColor(text),
                   size: imageWidth,
                 ),
               ),
@@ -114,6 +118,7 @@ class SettingsOptionWidget extends StatelessWidget {
               child: Column(
                 children: [
                   ListTile(
+                    key: tileKey,
                     title: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -131,7 +136,7 @@ class SettingsOptionWidget extends StatelessWidget {
                           Text(
                             subtext,
                             style: TextStyle(
-                              color: Palette.accentText,
+                              color: subtextColor ?? Palette.accentText,
                               fontSize: subtextFontSize ?? fontSize * 0.8,
                             ),
                             overflow: TextOverflow.ellipsis,

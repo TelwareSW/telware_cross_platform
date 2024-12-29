@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -14,6 +15,9 @@ class SplashScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // hide the keyboard
+    SystemChannels.textInput.invokeMethod('TextInput.hide');
+    
     const fontSize = 38.0;
 
     ref.listen<AuthState>(

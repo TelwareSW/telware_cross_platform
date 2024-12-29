@@ -19,6 +19,7 @@ class SettingsSection extends StatelessWidget {
   final List<Map<String, dynamic>> settingsOptions;
   final String trailing;
   final List<Widget>? actions;
+  final Color trailingColor;
 
   const SettingsSection({
     super.key,
@@ -30,16 +31,21 @@ class SettingsSection extends StatelessWidget {
     this.title = "",
     required this.settingsOptions,
     this.trailing = "",
-    this.actions
+    this.actions,
+    this.trailingColor = Colors.transparent,
   });
 
-  void _navigateTo(BuildContext context, String route) {
-    context.push(route);
+  void _navigateTo(BuildContext context, String route, Object? extra) {
+    context.push(route, extra: extra);
   }
 
   @override
   Widget build(BuildContext context) {
-    final ValueKey<String>? sectionKey = containerKey ?? (title != "" ? ValueKey("${toKebabCase(title)}${WidgetKeys.settingsSectionSuffix.value}") : null);
+    final ValueKey<String>? sectionKey = containerKey ??
+        (title != ""
+            ? ValueKey(
+                "${toKebabCase(title)}${WidgetKeys.settingsSectionSuffix.value}")
+            : null);
     return Column(
       children: [
         Container(
@@ -50,7 +56,8 @@ class SettingsSection extends StatelessWidget {
                 if (title != "")
                   SectionTitleWidget(
                     key: sectionKey != null
-                        ? ValueKey(sectionKey.value + WidgetKeys.titleSuffix.value)
+                        ? ValueKey(
+                            sectionKey.value + WidgetKeys.titleSuffix.value)
                         : null,
                     title: title,
                     fontSize: titleFontSize ?? 14,
@@ -66,14 +73,16 @@ class SettingsSection extends StatelessWidget {
                               ? ValueKey("${option["key"]}")
                               : null;
                           final String route = option["routes"] ?? "";
+                          final Object? extra = option["extra"] ?? "";
                           final bool lockedRoute = route == 'locked';
                           final onTap = lockedRoute
                               ? () => showToastMessage("Coming Soon...")
                               : route != ""
-                                  ? () => _navigateTo(context, route)
+                                  ? () => _navigateTo(context, route, extra)
                                   : option["onTap"];
                           return SettingsOptionWidget(
                             key: key,
+                            tileKey: option["tileKey"],
                             icon: option["icon"],
                             trailingIconKey: option["iconKey"],
                             imagePath: option["imagePath"],
@@ -96,6 +105,8 @@ class SettingsSection extends StatelessWidget {
                             iconColor:
                                 option["iconColor"] ?? Palette.accentText,
                             color: option["color"] ?? Palette.primaryText,
+                            subtextColor:
+                                option["subtextColor"] ?? Palette.accentText,
                             showDivider: index != settingsOptions.length - 1,
                             onTap: onTap,
                           );
@@ -108,17 +119,21 @@ class SettingsSection extends StatelessWidget {
               ],
             )),
         if (trailing != "")
-          SettingsSectionTrailingWidget(
-            key: sectionKey != null ? ValueKey(sectionKey.value + WidgetKeys.trailingSuffix.value) : null,
-            padding: padding,
-            actions: [
-              Text(trailing,
-                  style: TextStyle(
-                      height: trailingLineHeight,
-                      fontSize: trailingFontSize ?? Dimensions.fontSizeSmall,
-                      color: Palette.accentText)
-              ),
-            ],
+          Container(
+            color: trailingColor,
+            child: SettingsSectionTrailingWidget(
+              key: sectionKey != null
+                  ? ValueKey(sectionKey.value + WidgetKeys.trailingSuffix.value)
+                  : null,
+              padding: padding,
+              actions: [
+                Text(trailing,
+                    style: TextStyle(
+                        height: trailingLineHeight,
+                        fontSize: trailingFontSize ?? Dimensions.fontSizeSmall,
+                        color: Palette.accentText)),
+              ],
+            ),
           ),
       ],
     );

@@ -112,11 +112,10 @@ class AuthRemoteRepository {
         final message = response.data['message'];
         return Left(AppError(message));
       }
-
-      debugPrint('=========================================');
       debugPrint('Get me was successful');
-      final user = await UserModel.fromMap(response.data['data']['user']);
-      debugPrint('** First Creation done');
+      UserModel user = await UserModel.fromMap(response.data['data']['user']);
+      List<UserModel> blockedUsers = await _handleGetBlockedUsers(sessionId);
+      user = user.copyWith(blockedUsers: blockedUsers);
       return Right(user);
     } on DioException catch (dioException) {
       return Left(handleDioException(dioException));
@@ -196,18 +195,68 @@ class AuthRemoteRepository {
     return null;
   }
 
-  // todo(marwan): ask for verification code resend
+  Future<Either<AppError, List<UserModel>>> getBlockedUsers(
+      String sessionId) async {
+    try {
+      final response = await _dio.get(
+        '/users/block',
+        options: Options(
+          headers: {'X-Session-Token': sessionId},
+        ),
+      );
 
-  // todo(marwan): verify user. send the verification code to the back-end to check it
+      if (response.statusCode! >= 400) {
+        final String message = response.data?['message'] ?? 'Unexpected Error';
+        return Left(AppError(message));
+      }
+      final List<dynamic> users = response.data?['data']['users'] ?? [];
+      var blockedUsers = await Future.wait(
+          (users).map((user) => UserModel.fromMap(user)).toList());
+      return Right(blockedUsers);
+    } on DioException catch (dioException) {
+      return Left(handleDioException(dioException));
+    } catch (error) {
+      debugPrint('block user error:\n${error.toString()}');
+      return Left(
+          AppError("Couldn't block user now. Please, try again later."));
+    }
+  }
+
+  Future<List<UserModel>> _handleGetBlockedUsers(String sessionId) async {
+    final response = await getBlockedUsers(sessionId);
+    return response.fold(
+      (appError) {
+        return [];
+      },
+      (blockedUsers) {
+        return blockedUsers;
+      },
+    );
+  }
 
   AppError handleDioException(DioException dioException) {
     String? message;
     int? code;
     if (dioException.response != null) {
+      code = dioException.response!.statusCode;
+      debugPrint('^&^ get me error with status: $code');
+
       message =
           dioException.response!.data?['message'] ?? 'Unexpected server Error';
-      code = dioException.response!.statusCode;
       debugPrint(message);
+
+      if ((code ?? 500) >= 500) {
+        return AppError('Something went wrong. Please, try again later',
+            emailError: dioException.response?.data?['error']?['errors']
+                ?['email']?['message'],
+            phoneNumberError: dioException.response?.data?['error']?['errors']
+                ?['phoneNumber']?['message'],
+            passwordError: dioException.response?.data?['error']?['errors']
+                ?['password']?['message'],
+            confirmPasswordError: dioException.response?.data?['error']
+                ?['errors']?['passwordConfirm']?['message'],
+            code: code ?? 500);
+      }
     } else if (dioException.type == DioExceptionType.connectionTimeout ||
         dioException.type == DioExceptionType.connectionError ||
         dioException.type == DioExceptionType.unknown) {

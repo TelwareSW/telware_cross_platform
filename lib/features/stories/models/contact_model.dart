@@ -88,4 +88,15 @@ class ContactModel {
     }
     return hash;
   }
+
+  factory ContactModel.fromJson(Map<String, dynamic> json) {
+    return ContactModel(
+      userId: json['userId'],
+      userName: json['name'],
+      userImageUrl: json['photo'],
+      stories: (json['stories'] as List<dynamic>)
+          .map((storyJson) => StoryModel.fromJson(storyJson))
+          .toList(),
+    );
+  }
 }
