@@ -73,10 +73,26 @@ For a detailed understanding of the project workflow, refer to [docs/PROJECT_FLO
 ```plaintext
 .
 ├── lib/                # Core application code
-│   ├── components/     # Reusable UI components
-│   ├── screens/        # Screens and page-level widgets
-│   ├── services/       # Backend API integrations and business logic
-│   ├── utils/          # Utility functions and helpers
+│   ├── core/           # Core functionality (e.g., API calls, state management)
+|   |   ├── classes/    # Custom classes
+|   |   ├── constants/  # App constants
+│   |   ├── mocks/      # Mock data for testing
+│   |   ├── models/     # Data models
+|   |   ├── providers/  # State management providers
+|   |   ├── routes/     # Navigation routes
+|   |   ├── services/   # API services
+|   |   ├── theme/      # App themes
+|   |   ├── view/       # Shared UI components
+│   |   └── utils.dart  # Utility functions
+│   ├── features/       # Application features (e.g., chat, settings)
+|   |   ├── example/    # Example feature
+|   |   |   ├── repository/  # Data repository
+|   |   |   ├── services/    # Feature-specific services
+|   |   |   ├── view/       # Feature-specific UI components
+|   |   |   └── view_model/ # Feature-specific logic
+│   |   └── ...         # Other features
+│   ├── .env.example    # Example environment variables
+│   ├── .env            # Local environment variables
 │   └── main.dart       # Application entry point
 ├── test/               # Unit and widget tests
 ├── docs/               # Documentation files
